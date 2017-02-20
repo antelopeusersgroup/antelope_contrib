@@ -10,7 +10,7 @@ Juan Reyes
 reyes@ucsd.edu
 '''
 # pylint: disable=logging-not-lazy
-from __future__ import print_function
+from __future__ import (absolute_import, division, print_function)
 
 import os
 import logging
@@ -26,6 +26,8 @@ except ImportError as ex:
 
 from export_events.functions import table_present
 from export_events.db_collection import Collection
+
+NULL_EVID = -1
 
 
 class DatabaseReader(object):
@@ -69,7 +71,7 @@ class DatabaseReader(object):
         self.database = database  # descriptor
         if not os.path.exists(self.database):
             self.logger.error('Database descriptor does not exist: ' +
-                             database)
+                              database)
         else:
             dirname, basename = os.path.split(self.database)
             self.logger.info('Descriptor path: %s' % dirname)
@@ -166,7 +168,6 @@ class DatabaseReader(object):
         list of integers
             event (evid) identifiers in database meeting subset condition
         '''
-
         evids = []
         self.logger.info('Getting evids matching subset: %s' % subset)
         try:
@@ -177,8 +178,13 @@ class DatabaseReader(object):
                 except datascope.DbsubsetError as ex:
                     self.logger.error('While applying subset: ' + subset)
                     self.logger.error(repr(ex))
-            evids = [record.getv('evid')[0]
-                     for record in view.iter_record()]
+            try:
+                print(repr(view))
+                evids = [record.getv('evid')[0]
+                         for record in view.iter_record()]
+                evids = [evid for evid in evids if evid != NULL_EVID]
+            except (datascope.DbgetvError, TypeError) as ex:
+                self.logger.error(repr(ex))
         except (datascope.DblookupDatabaseError,
                 datascope.DblookupTableError,
                 datascope.DblookupFieldError,
