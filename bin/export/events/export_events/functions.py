@@ -4,7 +4,7 @@ export_events.functions
 Some functions used by event2qml main code
 '''
 # pylint:disable=logging-not-lazy,broad-except
-from __future__ import print_function
+from __future__ import (absolute_import, division, print_function)
 from past.builtins import basestring
 
 import math
@@ -100,8 +100,6 @@ def get_all_fields(dbpointer, nulls=None):
 
         if nulls is not None and table_field in nulls:
             if is_null(value, nulls[table_field]):
-                # logger.debug('Skipping null "%s" in "%s"'
-                #              % (value, table_field))
                 continue
 
         results[table_field] = value
