@@ -2,7 +2,7 @@
 This module defines a class, css2qml, which can be used to convert CSS3.0
 (as extended by Antelope) to the QuakeML schema.
 '''
-from __future__ import print_function
+from __future__ import (absolute_import, division, print_function)
 
 import os
 import re
@@ -259,7 +259,7 @@ class Css2Qml(object):
         info_increment = max(10**floor(log10(max(len(evids), 1)) - 0.5), 1)
         for i, evid in enumerate(evids, start=1):
 
-            if i % info_increment == 0 or i == len(evids):
+            if i % info_increment == 0 or i == 1 or i == len(evids):
                 self.logger.info('Dumping evid %d of %d [%d]'
                                  % (i, len(evids), evid))
             else:
@@ -912,7 +912,7 @@ class Css2Qml(object):
         '''
         Map CSS3.0 detections to QuakeML Pick.
         '''
-        self.logger.debug('Converting detection.srcid [%d]'
+        self.logger.debug('Converting detection.srcid [%s]'
                           % record['detection.srcid'])
 
         self.detection_id_counter = self.detection_id_counter + 1
