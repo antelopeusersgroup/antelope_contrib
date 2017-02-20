@@ -10,7 +10,7 @@ Juan Reyes
 reyes@ucsd.edu
 """
 # pylint: disable=logging-not-lazy
-from __future__ import print_function
+from __future__ import (absolute_import, division, print_function)
 from past.builtins import basestring
 
 from operator import itemgetter
@@ -99,7 +99,7 @@ class Collection(object):
         '''
         Return values, optionally sorted and/or subsetted.
         '''
-        if isinstance(sort_by, str):
+        if isinstance(sort_by, basestring):
             sort_by = [sort_by]
 
         data = self.documents.values()
@@ -140,11 +140,16 @@ class Collection(object):
                 dbview.record = datascope.dbNULL
                 nulls = get_all_fields(dbview)
 
-                for row in dbview.iter_record():
+                for i, row in enumerate(dbview.iter_record()):
 
                     data = get_all_fields(row, nulls)
 
                     if key is not None:
+                        if key not in data:
+                            self.logger.debug(
+                                'Key "%s" not found in row %d of view. '
+                                'Skipping.' % (key, i))
+                            continue
                         self.documents[data[key]] = Document(data)
                     else:
                         self.documents[len(self.documents)] = Document(data)
