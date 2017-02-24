@@ -143,6 +143,10 @@ class Waveforms():
                 return False
 
 
+            # Demean the trace
+            tr.trfilter('DEMEAN')
+
+
             #
             # CONVERT TO CM
             #
@@ -177,10 +181,6 @@ class Waveforms():
             #
             # FILTERING
             #
-
-            # Demean the trace
-            tr.trfilter('DEMEAN')
-
             self.logging.debug('Filter data from %s with [%s]' % (sta, bw_filter))
             try:
                 tr.trfilter( bw_filter )
