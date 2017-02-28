@@ -193,14 +193,14 @@ Collect all BH* channels within 2 degrees (default) of 40N 115W.
 .ft R
 .SS "Station mode"
 .IP \(bu
-Collect all BH* and LD.*_EP channels for Q65A. 
+Collect all BH* and LD.*_EP channels for Q65A, do not start dbpick, keep db for later. 
 .ft CW
 .in 2c
 .nf
 .ne 4
 
-%\fBdbpick_combine -sta "/Q65A/" -chan "/BH.|LD_.*EP/" \
-  -start _2017015_ -end _2017028_ db/usarray db/status \fP
+%\fBdbpick_combine -k -q -sta "/Q65A/" -chan "/BH.|LD_.*EP/" \
+  -start 2017-01-15 -end 2017-01-25 db/usarray db/status \fP
 
 .fi
 .in
