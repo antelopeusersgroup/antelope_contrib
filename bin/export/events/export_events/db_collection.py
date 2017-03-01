@@ -11,17 +11,18 @@ reyes@ucsd.edu
 """
 # pylint: disable=logging-not-lazy
 from __future__ import (absolute_import, division, print_function)
-from past.builtins import basestring
 
-from operator import itemgetter
 import json
 import logging
+from operator import itemgetter
+
+from past.builtins import basestring  # pylint: disable=redefined-builtin
 
 try:
     from antelope import datascope
 except ImportError as ex:
-    print('Do you have Antelope installed correctly?')
-    print(ex)
+    print('Is your Antelope environment set up correctly?')
+    print(repr(ex))
 
 from export_events.functions import table_present, get_all_fields
 
@@ -66,8 +67,7 @@ class Collection(object):
         Checking for existence of tables is done when view is constructed.
         The table property is effectively purely a label.
         '''
-        self.logger = logging.getLogger('.'.join([self.__class__.__module__,
-                                                  self.__class__.__name__]))
+        self.logger = logging.getLogger(self.__class__.__name__)
 
         if (not isinstance(dbpointer, datascope.Dbptr) and
                 isinstance(database, basestring)):
@@ -95,13 +95,25 @@ class Collection(object):
         '''List of keys present in document dictionaries.'''
         return self.documents.keys()
 
-    def values(self, subset_dict=None, sort_by=None, reverse=False):
+    def values(self, subset_dict=None, sort_by=None, reverse=False,
+               preferred_lists=None):
         '''
-        Return values, optionally sorted and/or subsetted.
-        '''
-        if isinstance(sort_by, basestring):
-            sort_by = [sort_by]
+        Return rows in view, optionally sorted and/or subsetted.
 
+        Arguments
+        =========
+        subset_dict: dict
+            a set of key-value pairs to successively select (effective AND)
+        sort_by: str or list of str
+            a set of keys to sort by
+        preferred_lists: list or list of lists
+            a mapping of sort key values to sort priorities
+
+        Returns
+        =======
+        data: list of dict
+            a dictionary for each row in view
+        '''
         data = self.documents.values()
 
         if subset_dict is not None:
@@ -111,9 +123,52 @@ class Collection(object):
                 data = [item for item in data if item[key] == value]
 
         if sort_by is not None:
-            return sorted(data, key=itemgetter(*sort_by), reverse=reverse)
-        else:
-            return data
+            if not isinstance(sort_by, list):
+                sort_by = [sort_by]
+
+            if preferred_lists is not None:
+
+                if not isinstance(preferred_lists, list):
+                    preferred_lists = [preferred_lists]
+                preferred_lists = [
+                    item if isinstance(item, (list, tuple)) or item is None
+                    else [item]
+                    for item in preferred_lists]
+
+                scoring_list = [
+                    {key: i for i, key in enumerate(preferred_list)}
+                    if preferred_list is not None else {}
+                    for preferred_list in preferred_lists]
+                # pad scoring dicts to be as long as scoring keys
+                scoring_list[len(scoring_list):len(sort_by)] = \
+                    [{}]*(len(sort_by) - len(scoring_list))
+
+                def score(item):
+                    '''
+                    Score items for the purpose of sorting.
+
+                    For each item in sort_by, if there is a scoring list that
+                    is used, otherwised the values is used.
+                    '''
+                    scores = []
+                    for key, scoring_dict in zip(sort_by, scoring_list):
+                        if scoring_dict != {}:
+                            max_score = max(
+                                [val for _, val in scoring_dict.items()]) + 1
+                            if item[key] in scoring_dict:
+                                scores += [scoring_dict[item[key]]]
+                            else:
+                                scores += [max_score]
+                        else:  # fall back to regular sorting
+                            scores += [item[key]]
+                    return scores
+
+                data.sort(key=score, reverse=reverse)
+
+            else:
+                data.sort(key=itemgetter(*sort_by), reverse=reverse)
+
+        return data
 
     def get_view(self, steps, key=None):
         """

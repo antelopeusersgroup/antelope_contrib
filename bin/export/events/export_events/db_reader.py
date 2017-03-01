@@ -20,8 +20,8 @@ try:
     from antelope import stock
     from antelope import datascope
 except ImportError as ex:
-    print('Do you have Antelope installed correctly?')
-    print(ex)
+    print('Is your Antelope environment set up correctly?')
+    print(repr(ex))
 
 
 from export_events.functions import table_present
@@ -47,9 +47,8 @@ class DatabaseReader(object):
                  fplane_auth_select=(), fplane_auth_reject=(),
                  detection_state_select=(), detection_state_reject=()):
 
-        self.logger = logging.getLogger('.'.join([self.__class__.__module__,
-                                                  self.__class__.__name__]))
-        self.logger.debug('Initializing')
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.debug('Initializing: ' + self.__class__.__name__)
 
         # configure filters
         self.magnitude_type_subset = magnitude_type_subset
@@ -74,7 +73,8 @@ class DatabaseReader(object):
                               database)
         else:
             dirname, basename = os.path.split(self.database)
-            self.logger.info('Descriptor path: %s' % dirname)
+            if dirname != '':
+                self.logger.info('Descriptor path: %s' % dirname)
             self.logger.info('Descriptor file: %s' % basename)
 
         try:
@@ -179,7 +179,6 @@ class DatabaseReader(object):
                     self.logger.error('While applying subset: ' + subset)
                     self.logger.error(repr(ex))
             try:
-                print(repr(view))
                 evids = [record.getv('evid')[0]
                          for record in view.iter_record()]
                 evids = [evid for evid in evids if evid != NULL_EVID]
@@ -239,7 +238,7 @@ class DatabaseReader(object):
         self._get_netmag()
         self._get_fplane()
         self._get_mts()
-        self._get_comments()
+        self._get_remarks()
 
     def all_origins(self, orid=None, sort_by='origin.lddate', reverse=False):
         '''Get all origins, optionally filtered by orid.'''
@@ -270,14 +269,14 @@ class DatabaseReader(object):
                                    reverse=reverse)
 
     def all_magnitudes(self, orid=None, sort_by='netmag.lddate',
-                       reverse=False):
+                       preferred_lists=None, reverse=False):
         '''
         Get all magnitudes, optionally filtered by evid and orid.
         '''
 
         return self.magnitudes.values(subset_dict={'netmag.orid': orid},
-                                      sort_by=sort_by,
-                                      reverse=reverse)
+                                      sort_by=sort_by, reverse=reverse,
+                                      preferred_lists=preferred_lists)
 
     def all_fplanes(self, orid=None, sort_by='fplane.lddate', reverse=False):
         '''Get all focal planes, optionally filtered by mtid and mechid.'''
@@ -293,11 +292,10 @@ class DatabaseReader(object):
                                sort_by=sort_by,
                                reverse=reverse)
 
-    def all_comments(self, commid=None, sort_by=('remark.commid',
-                                                 'remark.lineno'),
-                     reverse=False):
+    def all_remarks(self, commid=None, sort_by=('remark.commid',
+                                                'remark.lineno'),
+                    reverse=False):
         '''Get all remarks, filtered by commid, and sorted by lineno.'''
-        # TODO: rename all_remarks
 
         return self.remarks.values(subset_dict={'remark.commid': commid},
                                    sort_by=sort_by,
@@ -513,7 +511,7 @@ class DatabaseReader(object):
 
             self.mts.get_view(steps, key='mt.mtid')
 
-    def _get_comments(self):
+    def _get_remarks(self):
         '''
         Open remark table and get all data for current event.
         '''
