@@ -28,6 +28,7 @@ DATA= \
     coefB3-80 \
     coefB3C-80 \
     episensor \
+    episensor2 \
     fba11 \
     fba23_100 \
     fba23_6damp_100hz \

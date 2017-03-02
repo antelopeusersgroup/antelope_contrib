@@ -36,6 +36,11 @@ DATA= \
     episensor_40vpg.pf \
     episensor_5vpg.pf \
     episensor_80vpg.pf \
+    episensor2_10vpg.pf \
+    episensor2_20vpg.pf \
+    episensor2_40vpg.pf \
+    episensor2_5vpg.pf \
+    episensor2_80vpg.pf \
     fba23_0_25g.pf \
     fba23_0_5g.pf \
     fba23_100hz_1g.pf \
