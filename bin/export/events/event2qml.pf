@@ -18,13 +18,7 @@ agency_uri  local               # ie anf.ucsd.edu
 
 agency_id  xx                   # ie TA
 
-#---- NOT IN USE NOW ----#
-agency_catalog_name  demo       # ie ANF
-#------------------------#
-
 author  Antelope event2qml process # ie Array Network Facility, UCSD
-
-author_uri  demo                # ie anf.ucsd.edu
 
 # These are for overriding origin type codes translation
 # mapping set in the code.
@@ -57,6 +51,7 @@ review_flags &Tbl{
     yes
     r
     reviewed
+    orbassoc
 }
 
 

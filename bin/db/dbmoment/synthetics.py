@@ -398,7 +398,7 @@ class Synthetics():
         try:
             f = open("%s/%s"%(self.archive,dfile), 'w')
         except Exception,e:
-            raise SystemExit('\n\nERROR: Cannot open file %s %s %s\n'% (dfile,Exception,e))
+            self.logging.error('Cannot open file %s %s %s'% (dfile,Exception,e))
 
         for element,data in record:
 
@@ -432,12 +432,12 @@ class Synthetics():
 
                 self.db.addv(*keyvals)
             except Exception,e:
-                raise SystemExit('\n\nERROR: Cannot add new line [%s] %s %s\n'% (element,Exception,e))
+                self.logging.error('Cannot add new line [%s] %s %s'% (element,Exception,e))
 
         try:
             f.close()
         except Exception,e:
-            raise SystemExit('\n\nERROR: Cannot close file %s %s %s\n'% (file,Exception,e))
+            self.logging.error('Cannot close file %s %s %s'% (file,Exception,e))
 
 
         return record
@@ -501,12 +501,12 @@ class Synthetics():
         try:
             self.DT = float(self.model['samplerate'])
         except Exception,e:
-            raise SystemExit('\n\nWrong Format of samplerate PF file[%s]. %s %s\n'% (self.model,Exception,e))
+            self.logging.error('Wrong Format of samplerate PF file[%s]. %s %s'% (self.model,Exception,e))
 
         try:
             self.DECAY = float(self.model['decay'])
         except Exception,e:
-            raise SystemExit('\n\nWrong Format of decay PF file[%s]. %s %s\n'% (self.model,Exception,e))
+            self.logging.error('Wrong Format of decay PF file[%s]. %s %s'% (self.model,Exception,e))
 
         try:
             self.N1 = int( self.model['start_frequency'] )
@@ -515,7 +515,7 @@ class Synthetics():
             #self.N  = (self.N2-self.N1+1)*4 # 2 times the total number of freqs
             self.N  = (self.N2)*4 # 4 times the total number of freqs
         except Exception,e:
-            raise SystemExit('\n\nWrong Format of PF file[%s]. %s %s\n'% (self.model,Exception,e))
+            self.logging.error('Wrong Format of PF file[%s]. %s %s'% (self.model,Exception,e))
 
         self.logging.debug("read_model()  -  DECAY=%s N1=%s N2=%s N=%s DT=%s " % (self.DECAY,self.N1,self.N2,self.N,self.DT))
 
@@ -555,7 +555,7 @@ class Synthetics():
                 self.logging.debug('D:%s A:%s B:%s RHO:%s QA:%s QB:%s' % (self.D[x],self.A[x],self.B[x],self.RHO[x],self.QA[x],self.QB[x]))
 
         except Exception,e:
-            raise SystemExit('\n\nWrong Format of input file[%s]. %s(%s) \n RAW: %s'% (self.model,Exception,e,temp))
+            self.logging.error('Wrong Format of input file[%s]. %s(%s) RAW: %s'% (self.model,Exception,e,temp))
 
 
 
@@ -603,7 +603,7 @@ class Synthetics():
                 pyplot.plot(data[start:end])
                 pyplot.legend([trace])
             except Exception,e:
-                sys.exit('ERROR: problem plotting green functions.[%s => %s]' % (Exception,e) )
+                self.logging.error('Problem plotting green functions.[%s => %s]' % (Exception,e) )
 
         pyplot.suptitle("Green Functions: depth:%s distance:%s" % (self.DEPTH,self.DISTANCE))
         pyplot.show()

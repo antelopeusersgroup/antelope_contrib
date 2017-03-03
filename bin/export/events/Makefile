@@ -13,4 +13,4 @@ CLEAN = *.pyc
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
-DIRS = schemas libs
+DIRS = schemas export_events

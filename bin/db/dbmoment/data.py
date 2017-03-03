@@ -40,6 +40,26 @@ class Waveforms():
     def get_waveforms(self, sta, chans, start, esaz=0, seaz=0, delay=0, tw=200,
                     bw_filter=None, debug_plot=False):
 
+        self.logging.debug('Start data extraction for %s' % sta )
+
+        for test_chan in chans:
+            self.logging.debug('Attempt subset for %s_%s' % (sta, test_chan) )
+            results = self._extract_waveforms(sta, test_chan, start, esaz,
+                    seaz, delay, tw, bw_filter, debug_plot)
+
+            if not results:
+                self.logging.warning('Empty object returned.')
+            else:
+                self.logging.debug('Got data.')
+                break
+
+        return results
+
+
+
+    def _extract_waveforms(self, sta, chans, start, esaz, seaz, delay, tw,
+                    bw_filter, debug_plot):
+
         start = int(delay+start)
         end = int(delay+start+tw)
 
@@ -53,6 +73,7 @@ class Waveforms():
                 ( sta, chans, start, end ) ])
         steps.extend(['dbjoin sensor'])
         steps.extend(['dbjoin instrument'])
+        steps.extend(['dbsort sta chan'])
 
         self.logging.debug( 'Database query for waveforms:' )
         self.logging.debug( ', '.join(steps) )
@@ -69,6 +90,7 @@ class Waveforms():
                 self.logging.warning( 'Need 3 traces after subset for [%s]. Now %s' % \
                         (sta, dbview.record_count) )
                 return False
+
 
             # Need some information for trace calibration and later
             # instrument response application to the GreensFunctions.
@@ -90,7 +112,7 @@ class Waveforms():
             ( insname, instype, samprate, ncalib, segtype ) = \
                     dbview.getv( 'instrument.insname', 'instrument.instype',
                             'wfdisc.samprate', 'instrument.ncalib',
-                            'wfdisc.segtype' )
+                            'instrument.rsptype')
 
             dbview.record = datascope.dbALL
 
@@ -107,12 +129,23 @@ class Waveforms():
                 tr = dbview.trload_cssgrp( start, end + 1 )
                 tr.trsplice()
             except Exception, e:
-                sys.exit('Could not prepare data for %s:%s [%s]' % (sta,chans, e))
+                self.logging.error('Could not prepare data for %s:%s [%s]' % (sta,chans, e))
 
             # Stop here if we don't have something to work with.
             if not tr.record_count:
                 self.logging.warning( 'No data after trload for %s' % sta )
                 return False
+
+            if tr.record_count > 3:
+                # Recursive call to a new subset
+                self.logging.warning( 'Too many traces after trload_cssgrp for [%s]. Now %s' % \
+                        (sta, tr.record_count) )
+                return False
+
+
+            # Demean the trace
+            tr.trfilter('DEMEAN')
+
 
             #
             # CONVERT TO CM
@@ -148,10 +181,6 @@ class Waveforms():
             #
             # FILTERING
             #
-
-            # Demean the trace
-            tr.trfilter('DEMEAN')
-
             self.logging.debug('Filter data from %s with [%s]' % (sta, bw_filter))
             try:
                 tr.trfilter( bw_filter )
