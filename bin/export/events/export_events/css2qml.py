@@ -78,8 +78,23 @@ DTYPE_MAP = OrderedDict([
     ('[^dfgmr]', 'other'),
     ])
 
-FELT_KEYWORDS = ['felt', 'damag', 'ressenti', 'dommag']
-AKA_KEYWORDS = ['known as', 'connu']
+# public comments must have a declared comment type, indicating the language of
+# the comment; othersie the comment type reverts to the default and is internal
+COMMENT_KEYWORDS = {
+    'felt': {'comment type': 'E',
+             'description type': 'felt report'},
+    'damag': {'comment type': 'E',
+              'description type': 'felt report'},
+    'ressenti': {'comment type': 'F',
+                 'description type': 'felt report'},
+    'dommag': {'comment type': 'F',
+               'description type': 'felt report'},
+    'known as': {'comment type': 'E',
+                 'description type': 'earthquake name'},
+    'connu': {'comment type': 'F',
+              'description type': 'earthquake name'},
+    }
+DEFAULT_COMMENT_TYPE = 'I'
 
 NAMESPACES = ['BED', 'BED-RT']
 
@@ -517,8 +532,6 @@ class Css2Qml(object):
             public_id = self._id('event', self.reader['event.evid'])
             agency, author, _ = self.split_event_origin_auth(
                 self.reader['event.auth'])
-            description_list, comment_list = \
-                self._event_descriptions_comments()
 
             # infer event type and certainty from preferred origin
             record = self.reader.all_origins(
@@ -531,8 +544,10 @@ class Css2Qml(object):
                 ('certainty', self._regex_get(etype,
                                               self.etype_certainty_map)),
                 ])
-            _optional_update(qml_dict, 'description', description_list)
-            _optional_update(qml_dict, 'comment', comment_list)
+            _optional_update(qml_dict, 'description',
+                             self._event_descriptions())
+            _optional_update(qml_dict, 'comment',
+                             self._comments(self.reader['event.commid']))
             # TODO: add evaluation status and mode? How?
             qml_dict['creationInfo'] = self._creation_info(
                 self.reader.events.values()[0].data, 'event',
@@ -1329,41 +1344,28 @@ class Css2Qml(object):
             self.logger.warning('Stripping unencodable characters from remark')
         return string_ignore
 
-    def _event_descriptions_comments(self):
+    def _event_descriptions(self):
         '''
-        Construct lists of comments and descriptions from event remarks.
-
-        This is one of the few functions here which may be unique to the
-        Geological Survey of Canada - at least the bilingual keywords are.
+        Construct a QuakeML dictionary of descriptions from event remarks.
         '''
         records = self.reader.all_remarks(commid=self.reader['event.commid'])
 
         description_list = []
-        comment_list = []
         for record in records:
-            is_description = False
-            for keywords, description_type in zip(
-                    [FELT_KEYWORDS, AKA_KEYWORDS],
-                    ['felt report', 'earthquake name']):
-
-                if any([keyword.lower() in record['remark.remark'].lower()
-                        for keyword in keywords]):
+            for (keyword, keyword_info) in COMMENT_KEYWORDS.items():
+                if keyword.lower() in record['remark.remark'].lower():
                     self.logger.debug(
-                        'Converting remark commid [%d] lineno [%d] '
+                        'Promoting remark commid [%d] lineno [%d] '
                         'to event description'
                         % (record['remark.commid'], record['remark.lineno']))
 
                     description_list += [OrderedDict([
                         ('text', self._printable(record['remark.remark'])),
-                        ('type', description_type),
+                        ('type', keyword_info['description type']),
                         ])]
-                    is_description = True
-                    continue
+                    break
 
-            if not is_description:
-                comment_list += [self._convert_comment(record)]
-
-        return description_list, comment_list
+        return description_list
 
     def _comments(self, commid):
         '''
@@ -1388,8 +1390,17 @@ class Css2Qml(object):
         self.logger.debug(
             'Converting remark commid [%d] lineno [%d] to comment'
             % (record['remark.commid'], record['remark.lineno']))
+
+        comment_type = DEFAULT_COMMENT_TYPE
+        for (keyword, keyword_info) in COMMENT_KEYWORDS.items():
+            if keyword.lower() in record['remark.remark'].lower():
+                comment_type = keyword_info['comment type']
+                break
+
         qml_dict = OrderedDict([
-            ('@publicID', self._id('internal', record['remark.lineno'])),
+            ('@publicID', self._id(
+                '/'.join(['comment', 'comment_type', 'cmcnt', comment_type]),
+                record['remark.lineno'])),
             ('text', self._printable(record['remark.remark'])),
             ('creationInfo', self._creation_info(record, 'remark')),
             ])
