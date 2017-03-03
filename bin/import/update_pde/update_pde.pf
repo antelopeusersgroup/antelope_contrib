@@ -1,15 +1,17 @@
 # Parameter file for update_pde
 
-pde_dir		/scr/day/eakins/		# Directory where you are going to store all pde weekly catalog info. 
+pde_dir		/some/catalog/area/pde	# Directory where you are going to store all pde weekly catalog info. 
 
 remote_host	hazards.cr.usgs.gov	# The ftp site run by the USGS, should not have to change
 
+remote_dir  	NEICPDE/olderPDEdata/ehdf	# The directory under pub/ where files reside 
+
 author		PDE_monthly		# Name to fill in to author field for weekly catalog
 
-account		jeakins@ucsd.edu	# email address for anonymous ftp
+account		someone@somewhere.edu	# email address for anonymous ftp
 
 mail_to  &Tbl{					# Users to be notified 
-jeakins@ucsd.edu
+someone@somewhere.edu
 }
 
  
