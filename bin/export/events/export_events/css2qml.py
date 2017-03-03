@@ -763,8 +763,8 @@ class Css2Qml(object):
         qml_dict['evaluationMode'] = mode
         qml_dict['evaluationStatus'] = status
 
-        if record['origin.commid'] is not None:
-            qml_dict['comment'] = self._comments(record['origin.commid'])
+        _optional_update(qml_dict, 'comment', self._comments(
+            record['origin.commid']))
 
         agency, author, _ = self.split_event_origin_auth(record['origin.auth'])
         qml_dict['creationInfo'] = self._creation_info(record, 'origin',
@@ -823,8 +823,8 @@ class Css2Qml(object):
         agency, author, module = self.split_mag_auth(record['netmag.auth'])
         _optional_update(qml_dict, 'methodID', self._method_id(module))
         _optional_update(qml_dict, 'stationCount', record['netmag.nsta'])
-        if record['netmag.commid'] is not None:
-            qml_dict['comment'] = self._comments(record['netmag.commid'])
+        _optional_update(qml_dict, 'comment', self._comments(
+            record['netmag.commid']))
 
         qml_dict['creationInfo'] = self._creation_info(record, 'netmag',
                                                        agency, author)
@@ -857,8 +857,8 @@ class Css2Qml(object):
         _optional_update(qml_dict, 'methodID', self._method_id(module))
         qml_dict['waveformID'] = self._waveform_id(record, 'stamag')
 
-        if record['stamag.commid'] is not None:
-            qml_dict['comment'] = self._comments(record['stamag.commid'])
+        _optional_update(qml_dict, 'comment', self._comments(
+            record['stamag.commid']))
 
         qml_dict['creationInfo'] = self._creation_info(record, 'stamag',
                                                        agency, author)
@@ -993,6 +993,7 @@ class Css2Qml(object):
         _optional_update(qml_dict, 'filterID', record['wfmeas.filter'])
         _optional_update(qml_dict, 'magnitudeHint', record['stamag.phase'])
         qml_dict['evaluationMode'] = 'automatic'
+        # TODO: consider carrying this through as an "extra" parameter
         if record['wfmeas.meastype'] is not None:
             qml_dict['comment'] = _dict('text', record['wfmeas.meastype'])
 
@@ -1235,8 +1236,8 @@ class Css2Qml(object):
         _optional_update(qml_dict, 'backazimuthWeight', backazimuth_weight)
         _optional_update(qml_dict, 'earthModelID',
                          self._model_id(record['assoc.vmodel']))
-        if record['assoc.commid'] is not None:
-            qml_dict['comment'] = self._comments(record['assoc.commid'])
+        _optional_update(qml_dict, 'comment', self._comments(
+            record['assoc.commid']))
 
         qml_dict['creationInfo'] = self._creation_info(record, 'assoc')
 
@@ -1372,6 +1373,9 @@ class Css2Qml(object):
         Construct a QuakeML dictionary of comments from the view of all
         comments associated with this event, given a comment id.
         '''
+        if commid is None:
+            return None
+
         comment_records = self.reader.all_remarks(commid=commid)
 
         comment_list = []
@@ -1379,7 +1383,7 @@ class Css2Qml(object):
             comment_list = [self._convert_comment(item)
                             for item in comment_records]
 
-        return comment_list
+        return sorted(comment_list, key=lambda item: item['@id'])
 
     def _convert_comment(self, record):
         '''
