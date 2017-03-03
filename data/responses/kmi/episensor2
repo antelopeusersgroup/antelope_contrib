@@ -1,0 +1,20 @@
+# episensor 2 accelerometer
+# $Id$
+# 
+# Normalized  response relative to acceleration
+# All poles and zeroes in radians/sec
+# 1                   type
+# 0                   num of zeroes
+# 4                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 2.67E+13            normalization factor
+# 1.0                 gain
+theoretical   1 anti-alias   paz  Kinemetrics
+2.67E+13
+4         Poles
+-700.0      1.2500e+03   0.0000E+00    0.0000E+00
+-700.0     -1.2500e+03   0.0000E+00    0.0000E+00
+-1340.0     3.3500e+03   0.0000E+00    0.0000E+00
+-1340.0    -3.3500e+03   0.0000E+00    0.0000E+00
+0         Zeros

@@ -1,0 +1,40 @@
+originator     Mathias Franke, OSS
+last_modified  2016-11-28
+
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.kmi.com
+
+and Document 305801 Rev A August 2015
+}
+
+category	Kinemetrics
+configuration	Episensor2 80 Vpg
+
+description	Episensor2 200 Hz 80 Volt per g
+dfile		epi2_80_vpg
+info		&Literal{
+The nominal sensitivity/gain depends on the initial configuration and
+is provided in the calibration sheet, but needs to be changed
+if modified in lab or field.
+}
+
+rsptype			A	# accelerometer
+band			b	# broad band
+short_period_sensor	no	# Sets first character of SEED channel code 
+sensor_type_code	N	# 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	8.16e-09
+iunits		nm/s**2
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/episensor2) 
+

@@ -230,11 +230,8 @@ sub setup_global_vars{
         $remote_host         = "hazards.cr.usgs.gov";
     }
 
-    if (!$remote_dir) { 
-        $remote_dir = "NEICPDE/olderPDEdata/ehdf";
-    } else {
-        $remote_dir	        = "pde/";
-    }
+# I have hard wired this...  Hopefully USGS doesn't reorganize without warning.
+    $remote_dir	        = "pde/";
 
  # LOCAL STORAGE DIRECTORIES AND LOGS (modify if needed)
     $pde_store           = $pde_dir.$opt_y."_HDF_monthly/";

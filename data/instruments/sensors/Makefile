@@ -29,6 +29,7 @@ DATA= \
     cmg6t.pf \
     dpg2_water.pf \
     dpg_obsip.pf \
+    episensor_0_625vpg.pf \
     episensor_10vpg.pf \
     episensor_1_25vpg.pf \
     episensor_20vpg.pf \
@@ -36,6 +37,13 @@ DATA= \
     episensor_40vpg.pf \
     episensor_5vpg.pf \
     episensor_80vpg.pf \
+    episensor2_10vpg.pf \
+    episensor2_20vpg.pf \
+    episensor2_40vpg.pf \
+    episensor2_5vpg.pf \
+    episensor2_80vpg.pf \
+    etna2_acausal.pf \
+    etna2_causal.pf \
     fba23_0_25g.pf \
     fba23_0_5g.pf \
     fba23_100hz_1g.pf \
