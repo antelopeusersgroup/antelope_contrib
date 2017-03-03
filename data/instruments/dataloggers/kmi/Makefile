@@ -1,5 +1,7 @@
 DATADIR=instruments/dataloggers
 DATA=     etna.pf \
+    etna2_acausal.pf \
+    etna2_causal.pf \
     k2_whitney_c.pf \
     k2_whitney_nc.pf \
     makalu_c.pf \

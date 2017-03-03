@@ -42,8 +42,6 @@ DATA= \
     episensor2_40vpg.pf \
     episensor2_5vpg.pf \
     episensor2_80vpg.pf \
-    etna2_acausal.pf \
-    etna2_causal.pf \
     fba23_0_25g.pf \
     fba23_0_5g.pf \
     fba23_100hz_1g.pf \
