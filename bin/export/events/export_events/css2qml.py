@@ -426,7 +426,7 @@ class Css2Qml(object):
 
         This class serves as a container for Event objects.
 
-        Creation info must be added later,once the newest lddate is known.
+        Creation info must be added later, once the newest lddate is known.
         '''
         event_parameters_dict = OrderedDict()
         event_parameters_dict['@publicID'] = self._id(
@@ -1398,7 +1398,7 @@ class Css2Qml(object):
                 break
 
         qml_dict = OrderedDict([
-            ('@publicID', self._id(
+            ('@id', self._id(
                 '/'.join(['comment', 'comment_type', 'cmcnt', comment_type]),
                 record['remark.lineno'])),
             ('text', self._printable(record['remark.remark'])),
