@@ -4,7 +4,7 @@
 
 #include"tdmt_invb.h"
 
- void gaussj();
+ void gj();
  int correlate(),fclose();
  FILE *fopen(), *par,*fd, *fd1, *fd2, *fd3, *out;
 
@@ -90,6 +90,14 @@ gg=(struct GREEN *)malloc(sizeof(struct GREEN)*(2*nsta));
    ss[i].t=(float *)malloc(sizeof(float)*vsize*2);
    ss[i].r=(float *)malloc(sizeof(float)*vsize*2);
    ss[i].z=(float *)malloc(sizeof(float)*vsize*2);
+
+   // NULL all values
+   for(j=0 ; j < vsize*2 ; j++)
+    {
+    ss[i].t[j]=0.0;
+    ss[i].r[j]=0.0;
+    ss[i].z[j]=0.0;
+    }
 
    for(j=0 ; j < nn ; j++)
     {

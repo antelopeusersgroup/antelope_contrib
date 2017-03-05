@@ -319,10 +319,13 @@ sub cmdline { # &cmdline();
 
     
     $cmdline = "command line:	$0 " ;
+    $cmdline = $cmdline . " -p $opt_p " if $opt_p;
     $cmdline = $cmdline . " -v " if $opt_v;
     $cmdline = $cmdline . " -V " if $opt_V;
+    $cmdline = $cmdline . " -q " if $opt_q;
+    $cmdline = $cmdline . " -X " if $opt_X;
     $cmdline = $cmdline . " -l '$opt_l' " if $opt_l;
-    $cmdline = $cmdline . " -p $opt_p " if $opt_p;
+    $cmdline = $cmdline . " -S $opt_S " if $opt_S;
     $cmdline = $cmdline . " -s $opt_s " if $opt_s;
     $cmdline = $cmdline . " @ARGV \n" ;
 

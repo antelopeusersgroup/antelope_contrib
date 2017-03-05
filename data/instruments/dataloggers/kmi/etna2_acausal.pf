@@ -1,0 +1,67 @@
+category	Kinemetrics
+configuration	Etna-2 Acausal Filter 5Vpp Input
+
+originator	Mathias Franke
+last_modified	December 16, 2016
+
+description	KMI Etna-2 Acausal
+dfile etna2_ac
+info &Literal{
+These are the decimation FIR filters with a final acausal brickwall filter.
+The information was derived from Kinemetrics Document 300905 Revision X5
+}
+
+
+streams		500sps 250sps 200sps 100sps 50sps 20sps 10sps 1sps
+
+# definitions of streams
+500sps	  500 a/d coefA8_197 coefB2_80
+250sps	  250 a/d coefA8_197 coefA2_20 coefB2_80
+200sps	  200 a/d coefA8_197 coefB5_350
+100sps	  100 a/d coefA8_197 coefA5_50 coefB2_80
+50sps	  50 a/d coefA8_197 coefA5_50 coefA2_20 coefB2_80
+20sps	  20 a/d coefA8_197 coefA5_50 coefA5_50 coefB2_80
+10sps	  10 a/d coefA8_197 coefA5_50 coefA5_50 coefA2_20 coefB2_80
+1sps	  1 a/d coefA8_197 coefA5_50 coefA5_50 coefA5_50 coefA2_20 coefA2_20 coefB2_80
+
+gains		3355443		# in units of counts/volt
+# Stages
+a/d	&Arr{
+samprate	8000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+coefA8_197 	&Arr{ # first filter of Etna-2
+gtype	FIR_decimator
+decifac	8
+response	&datafile(responses/coefA8-197)
+samplerate	1000
+}
+
+coefA5_50	&Arr{ # an intermediate filter
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/coefA5-50)
+}
+
+coefA2_20	&Arr{ # an intermediate filter
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/coefA2-20)
+}
+
+coefB5_350	&Arr{ # a non-causal brickwall filter
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/coefB5-350)
+}
+
+coefB2_80	&Arr{ # a non-causal brickwall filter
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/coefB2-80)
+}
+

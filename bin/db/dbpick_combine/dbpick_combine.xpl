@@ -1,23 +1,31 @@
 use Datascope ;
 #use diagnostics;
+use strict;
 
 use Getopt::Std ;
+use File::Basename ;
 
 #
-# This is a quick set of commands that takes two databases, subsets them and  
-# creates a new db that will be displayed in dbpick 
+# Second verion of a set of commands that takes two databases, subsets them and  
+# creates a new db that can be displayed in dbpick 
 #
 # J.Eakins
-# 9/11/2006
+# 2/28/2017
 #
 
 
-our ($anarr, $bnarr, $ansite, $bnsite, $simple) = ();
 our ($reflat,$reflon) ;
-our ($select_sta_expr, $select_chan_expr, $start, $end, $nearby, $dist, $keep, $next, $opt_v) ;
+our ($select_sta_expr, $select_chan_expr, $start, $end, $nearby, $dist);
+our ($opt_n, $opt_k, $opt_q, $opt_v, $opt_V) ;
+our ($next, $tmpdir);
+
 our ($db1, $db2, $tmpdb, ) ; 
 our ($sub, $subsite) ;
+our (@possible_subset, @idbs, @rm_list);
+our (@db,@arrival,@wfdisc,@site, @dbj);
+our ($cmd, $cnt, $atmpdb, $nsite, $nwfs, $narr, $nrecs, $wfdir) ;
 
+our ($input_db, $idb) ;
 
 while ( $_ = $ARGV[0], /^-/ ) {
 	shift ;
@@ -54,10 +62,21 @@ while ( $_ = $ARGV[0], /^-/ ) {
 		$nearby = shift ; 
 	} elsif (/^-dist$/) {
 		$dist = shift ; 
-	} elsif (/^-keep$/) {
-		$keep = shift ; 
+	} elsif (/^-tmpdir$/) {
+		$tmpdir = shift ; 
+        } elsif (/^-n/) {
+                $opt_n++;
+	} elsif (/^-k/) {
+		$opt_k++; 
+	} elsif (/^-keep/) {	
+		$opt_k++; 
+	} elsif (/^-q/) {
+		$opt_q++; 
 	} elsif (/^-v/) {
-		$opt_v++; 
+		$opt_v = "-v" ; 
+	} elsif (/^-V/) {		# toggle very verbose/debug mode
+		$opt_v = "-v" ; 
+		$opt_V = "-V" ; 
 	} else {
 		printf STDERR "Unknown argument\n" ;
 		usage () ;
@@ -84,267 +103,161 @@ if ( defined $db2 ) {
 	}
 }
 
-# open and then subset catted db1 and db2
+push(@idbs,$db1);
+push(@idbs,$db2);
 
- @dba  		= dbopen ( $db1, "r") ;
- @dba_wf	= dblookup (@dba, "","wfdisc","","");
- @dba_site	= dblookup (@dba, "","site","","");
- @dba_arrival	= dblookup (@dba, "","arrival","","");
+# verify that db1 != db2?  (this isn't very critical, just nice)
+# but it would involved a check of wfdisc tables being the same, not just dbname
+# If wfdiscs are the same, you would just get overlapping waveforms in dbpick view
+# I think I'll ignore the deeper check for now and just go with basic
 
-#
-# create subsets
-#
-
-
-if ( $select_sta_expr ) {
-   if ($nearby) {
-	print STDERR "Error: specify either -sta or -nearby, not both.\n";
-	usage () ;
-	exit(1);
-   }
-
-# build a site subset based on a station list from command line
-   if ($select_sta_expr !~ /^\//) {
-	print STDERR "\nYour subset expression for -sta is: $select_sta_expr\n";
-	print STDERR "Please use a subset expression such as:\n";
-	print STDERR "  -sta /G1.\*A/ \n";
-
-	$select_sta_expr = "/".$select_sta_expr."/" ;
-
-	print STDERR "  Will guess you want to use:\n";
-	print STDERR "  $select_sta_expr \n\n";
-   }
-	
-   $subsite = "sta=~$select_sta_expr";
-   $sub = $subsite ;
-
-   &build_wf_subset ;
-
-} elsif ( $nearby ) {
-   if (!$dist) {
-	$dist= 2 ;	# default to find stations within 2 degrees
-	print STDERR "Defaulting to using stations within 2 degrees of $nearby\n" if $opt_v;
-   }
-
-   if ($nearby =~ /:/) {
-	print STDERR "Using coordinates rather than station from site table\n" if $opt_v;
-	($reflat,$reflon) = split(/:/,$nearby);
-
-	$subsite	= "distance(lat,lon,$reflat,$reflon) <= '$dist'";
-   } else {
-	@dba_refsite	= dblookup(@dba,"","site","sta",$nearby) ;
-	if ($dba_refsite[3] < 0 )   {
-	   print STDERR "\nStation, $nearby, not found in the primary database site table, $db1.\n";
-	   print STDERR "\nPlease reverse your database order, or\n";
-	   print STDERR "use a specific station subset with -sta, or \n";
-	   print STDERR "make sure $db1 has a site table. \n\n";
-	   exit ();
-	} else {
-	   ($lat, $lon)	= dbgetv(@dba_refsite,qw(lat lon));  
-	   $subsite	= "distance(lat,lon,$lat,$lon) <= '$dist'";
-   	} 
-   }
-
-   &build_wf_subset ;
-
-} else {
-   print STDERR "Must specify a station subset or nearby station\n";
-   usage ();
-   exit 1;
+if ($db1 eq $db2) {
+   printf STDERR "Must use different databases for db1 and db2\n";
+   print STDERR "Check your input db names: $db1 and $db2\n";
+   die ();
 }
 
+# verify that neither db1 nor db2 =~ dbpick_combine\* as that will get removed
 
-# create tmp db
- if ($keep) {
-     $tmpdb	= $keep;
- } else {
-     $tmpdb	= "/tmp/dbpick_combine".$$;
- }
+if (/dbpick_combine/i ~~ @idbs) {
+   print STDERR "Cannot use input db name which contains 'dbpick_combine' due to cleanup procedures\n";
+   print STDERR "Check your input db names: $db1 and $db2\n";
+   die();
+} 
 
- print STDERR "Subsetting first db\n";
+#
+# various temporary databases need to be created prior to dbcp
+#
 
- print STDERR "Attempting site table subset: $subsite\n" if $opt_v;
- @dba_site	= dbsubset (@dba_site,$subsite);
+$tmpdir = "tmpdbpc" if (!$tmpdir) ;
+mkdir $tmpdir if ( ! -d $tmpdir) ;
+$tmpdb	= $tmpdir . "/dbpick_combine".$$; 
 
- print STDERR "Attempting wfdisc table subset: $sub\n" if $opt_v;
- @dba_wf	= dbsubset (@dba_wf,$sub);
+push (@rm_list,$tmpdb);
 
- print STDERR "Attempting arrival table: $sub\n" if $opt_v;
- @dba_arrival	= dbsubset (@dba_arrival,$sub);
+#
+# open database, create site and wf subsets
+#
 
- $adir		= dbquery (@dba_wf, dbTABLE_DIRNAME);
- $anwfs		= dbquery (@dba_wf, dbRECORD_COUNT);
- $anarr		= dbquery (@dba_arrival, dbRECORD_COUNT);
- $ansite	= dbquery (@dba_site, dbRECORD_COUNT);
+$cnt = 1 ;
 
- print STDERR "Number of wfs: $anwfs; arr: $anarr; site: $ansite\n" if $opt_v;
+for $idb (@idbs) {
 
-# changed below from $anwfs to $ansite
+   print "Calling open_tables for $idb\n" if $opt_V ;
+   &open_tables ;
 
- if ($ansite) {
-    print STDERR "Joining site to wf\n"  if $opt_v; 
-    @dbaswj	= dbjoin (@dba_site, @dba_wf) ; 
- } else {
-    @dbaswj	= @dba_wf ; 
- }
+   print STDERR "Subsetting db: $idb \n";
+
+   @site		= dbsubset (@site,$subsite);
+   @wfdisc 	= dbsubset (@wfdisc,$sub);
+   @arrival	= dbsubset (@arrival,$sub);
+
+   $wfdir		= dbquery (@wfdisc, dbTABLE_DIRNAME);
+   $nwfs		= dbquery (@wfdisc, dbRECORD_COUNT);
+   $narr		= dbquery (@arrival, dbRECORD_COUNT);
+   $nsite		= dbquery (@site, dbRECORD_COUNT);
+
+   print STDERR "Number of wfs for $idb: $nwfs; arrivals: $narr; sites: $nsite\n" if $opt_v;
+
+   @dbj = $nsite ? dbjoin (@site, @wfdisc) : @wfdisc ;
+
+   $nrecs 		= dbquery (@dbj, dbRECORD_COUNT);
+   print STDERR "number of rows before arrival join: $nrecs\n" if $opt_V ;
 	
-    print STDERR "Joining site/wf to arrival \n" if ($anarr && $opt_v);
-# @dbaswj	= dbjoin (@dba_arrival, @dbaswj) if ($anarr) ; 
- @dbaswj	= dbjoin (@dbaswj, @dba_arrival) if ($anarr) ; 
+   print STDERR "Joining site/wf to arrival \n" if ($narr && $opt_V);
 
- #@dbaswj	= dbjoin (@dba_site, @dba_wf) if ($anwfs) ; 
- #@dbaswj	= dbjoin (@dbaswf, @dba_arrival) if ($anarr); 
-# @dbaswj	= dbjoin (@dba_site, @dba_wf) ; 
-# @dbaswj	= dbjoin (@dbaswf, @dba_arrival) ;
+   @dbj = $narr  ? dbjoin (@arrival, @dbj) : @dbj    ;
 
- $atmpdb	= "$adir/dbpick_combine".$$;
+   $nrecs 		= dbquery (@dbj, dbRECORD_COUNT);
+   print STDERR "number of rows after arrival join: $nrecs\n" if $opt_V ;
 
- dbunjoin (@dbaswj, $atmpdb); 
+   # temporary database saved in same directory as the original db1 wfdisc
+   # this is a problem if wfdir is the same for db1 and db2 !!!! Hopefully earlier check catches issue
 
- @dbb  		= dbopen ( $db2, "r") ;
- @dbb_wf	= dblookup (@dbb, "","wfdisc","","");
- @dbb_site	= dblookup (@dbb, "","site","","");
- @dbb_arrival	= dblookup (@dbb, "","arrival","","");
+   my ($file, $path) = fileparse($idb);
+   $atmpdb	= "$wfdir/dbpick_combine_".$file.$$;
 
- print STDERR "Subsetting second db\n";
+   print STDERR "atmpdb: $atmpdb\n" if $opt_V ;
 
- print STDERR "Subset site table: $subsite\n" if $opt_v;
- @dbb_site	= dbsubset (@dbb_site,$subsite);
+   dbunjoin (@dbj, $atmpdb); 
+   dbclose @db ;
 
- print STDERR "Subset wfdisc table: $sub\n" if $opt_v;
- @dbb_wf	= dbsubset (@dbb_wf,$sub);
+   print "Tmp db for db$cnt is: $atmpdb\n" if $opt_v ;
+   push (@rm_list,$atmpdb);
+   $cmd = "dbcp $opt_v $atmpdb $tmpdir/idb$cnt" ;
+   &run($cmd);
+   push (@rm_list,"$tmpdir/idb$cnt");
+   $cnt++;
+}
 
- print STDERR "Subset arrival table: $sub\n" if $opt_v;
- @dbb_arrival	= dbsubset (@dbb_arrival,$sub);
-
- $bdir		= dbquery (@dbb_wf, dbTABLE_DIRNAME);
- $bnwfs		= dbquery (@dbb_wf, dbRECORD_COUNT);
- $bnarr		= dbquery (@dbb_arrival, dbRECORD_COUNT);
- $bnsite	= dbquery (@dbb_site, dbRECORD_COUNT);
-
- print STDERR "Number of wfs: $bnwfs; arr: $bnarr; site: $bnsite\n" if $opt_v;
-
-# change from $bnwfs to $bnsite 
- if ($bnsite) {
-    print STDERR "Joining site to wf\n" if $opt_v;
-    @dbbswj	= dbjoin (@dbb_site, @dbb_wf) ; 
- } else {
-    @dbbswj	= @dbb_wf ; 
- }
-	
-    print STDERR "Joining site/wf to arrival \n" if ($bnarr && $opt_v);
- @dbbswj	= dbjoin (@dbb_arrival, @dbbswj) if ($bnarr) ; 
-
- $btmpdb	= "$bdir/dbpick_combine".$$;
-
- dbunjoin (@dbbswj, $btmpdb); 
-
-
-print STDERR "Dir for db1 is: $adir\n" if $opt_v; 
-print STDERR "Dir for db2 is: $bdir\n" if $opt_v; 
-
-# dbcp subsetted wfdiscs
-
-print STDERR "Running dbcp for first db\n" ;
- $cmd = "dbcp $atmpdb /tmp/db1";
- $cmd = "dbcp -v $atmpdb /tmp/db1" if $opt_v;
- &run($cmd);
-
-print STDERR "Running dbcp for second db\n" ;
- $cmd = "dbcp $btmpdb /tmp/db2";
- $cmd = "dbcp -v $btmpdb /tmp/db2" if $opt_v;
- &run($cmd);
-
-# cat together subsetted wfdiscs
-## cat atmpdb and btmpdb 
-
- if ( $anwfs != 0 ) {
-   if ($bnwfs != 0)  {
-	$cmd = "cat /tmp/db1.wfdisc /tmp/db2.wfdisc > $tmpdb.wfdisc " ;
-	&run($cmd);
+foreach my $tbls ( qw (arrival site wfdisc) ) {
+   if (-e "$tmpdir"."/idb1.".$tbls || -e "$tmpdir"."/idb2.".$tbls) { 
+     print STDERR "Combining $tbls tables\n" if $opt_V ;
+     $cmd = "cat $tmpdir/idb*.$tbls > $tmpdb.$tbls" ;
+     &run($cmd) ; 
    } else {
-	print STDERR "No data to review after subsets of second db: $db2.\n";
- 	&rm_tmp_dbs; 			# cleanup detritus before exit?
-	exit; 
+     print STDERR "No records for $tbls table\n";
+     next ;
    }
- } else {
-   print STDERR "No data to review after subsets of first db: $db1.\n";
-   &rm_tmp_dbs; 			# cleanup detritus before exit?
-   exit; 
- }
-
- if ($anarr != 0) {
-   $cmd = "cat /tmp/db1.arrival  > $tmpdb.arrival" ;
-   &run($cmd);
-
-   if ($bnarr != 0)  {
-      $cmd = "cat /tmp/db2.arrival >> $tmpdb.arrival" ;
-      &run($cmd);
-   }
-
- } elsif ($ansite != 0) {
-      $cmd = "cat /tmp/db1.site > $tmpdb.site" ;
-      &run($cmd);
-
- } else {
-   print STDERR "No site info to merge from $db1\n" if $opt_v;
- }
-
- if ($ansite != 0) {
-   $cmd = "cat /tmp/db1.site > $tmpdb.site " ;
-   &run($cmd);
-
-   if ($bnsite != 0)  {
-      $cmd = "cat /tmp/db2.site >> $tmpdb.site" ;
-      &run($cmd);
-   }
-
- } elsif ($bnsite != 0) {
-      $cmd = "cat /tmp/db2.site > $tmpdb.site" ;
-      &run($cmd);
-
- } else {
-   print STDERR "No site info to merge from $db2\n" if $opt_v;
- }
+}
 
 # start dbpick
 
- $cmd	= "dbpick -nostarttalk $tmpdb ";
+if (!$opt_q) {
+    $cmd	= "dbpick -nostarttalk $tmpdb ";
+ } else {
+    if ($opt_k) {
+	print STDERR "\nNot automatically starting dbpick per '-q' option\n";
+	print STDERR "Combined database can be viewed by running dbpick $tmpdb\n\n";
+    } else {
+	print STDERR "\nNot sure why you wasted your time...\n";
+	print STDERR "Using the '-q' option prevented start of dbpick.\n";
+	print STDERR "Combined with \*not\* using '-k' the created combined database was removed\n\n";
+    }
+}
 
- &run("$cmd");
+&run("$cmd");
 
- &rm_tmp_dbs;
+&cleanup_tmp (@rm_list); 			# cleanup detritus before exit?
 
- exit(0);
+exit(0);
 
 
 #
 # start subs here
 #
 
-sub rm_tmp_dbs {
+sub cleanup_tmp {
 
-# cleanup
+    my (@rmdbs) = @_ ;
 
-    unless ($keep) { # remove all temporary dbs
+   while ( $_ = shift @rmdbs) {
 
-       print "Cleaning up temporary dbs\n";
+     print ("\t  $_ \n") if ($opt_v) ;
 
-       $cmd = "/usr/bin/rm -r $tmpdb*";
-       &run($cmd);
+     if ($opt_k) {
+       print "Skipping db cleanup for $_\n";
+     } else { 	# remove all temporary dbs
 
-       $cmd = "/usr/bin/rm -r $atmpdb*";
-       &run($cmd);
+       $cmd = "/bin/rm -r $_\.*";
+       if ($opt_n) {	# test mode
+	  print "cmd is: $cmd\n";
+       } else { 
+          print "Removing $_\.*\n";
+          &run($cmd);
+       }
 
-       $cmd = "/usr/bin/rm -r $btmpdb*";
-       &run($cmd);
+     }
 
-       $cmd = "/usr/bin/rm -r /tmp/db1*";
-       &run($cmd);
+   }
 
-       $cmd = "/usr/bin/rm -r /tmp/db2*";
-       &run($cmd);
-    }
+
+   unless ($opt_k || $opt_n) { 
+	$cmd = "/bin/rm -r $tmpdir" unless ($opt_k || $opt_n);
+	print "Removing tmpdir $tmpdir\n";
+	&run ("$cmd"); 			# cleanup detritus before exit?
+   }
+
 
 }
 
@@ -352,9 +265,7 @@ sub build_wf_subset {
 
    print STDERR "Subset with sta subset only is: $sub\n" if ($select_sta_expr && $opt_v);
 
-#   print STDERR "Sub prior to loop over possible_subset is: $sub\n";
-
-   foreach $ps (@possible_subset) {
+   foreach my $ps (@possible_subset) {
 	if (!$sub) {
 	   $sub = "$ps" ; 
 	} else {
@@ -367,8 +278,90 @@ sub build_wf_subset {
    return;
 }
 
+sub open_tables {
+
+ $input_db = $idb;
+ print STDERR "Opening tables for $input_db\n" if ($opt_V); 
+
+ @db            = dbopen   ( $input_db, "r") ;
+ @wfdisc        = dblookup (@db, "","wfdisc","","");
+ @site          = dblookup (@db, "","site","","");
+ @arrival       = dblookup (@db, "","arrival","","");
+
+ &site_subset if (!$subsite) ;
+
+}
+
+
+sub site_subset {
+
+# check for duplicate options
+
+   if ( $select_sta_expr ) {
+       if ($nearby) {
+	   print STDERR "Error: specify either -sta or -nearby, not both.\n";
+	   usage () ;
+	   exit(1);
+       }
+
+    # option 1 
+    # build a site subset based on a station list from command line
+
+       if ($select_sta_expr !~ /^\//) {
+	   print STDERR "\nYour subset expression for -sta is: $select_sta_expr\n";
+	   print STDERR "Please use a subset expression such as:\n";
+	   print STDERR "  -sta /G1.\*A/ \n";
+
+	   $select_sta_expr = "/".$select_sta_expr."/" ;
+
+	   print STDERR "  Will guess you want to use:\n";
+	   print STDERR "  $select_sta_expr \n\n";
+       }
+	
+       $subsite = "sta=~$select_sta_expr";
+       $sub = $subsite ;
+
+       &build_wf_subset ;
+
+   # option 2 - seite station based on stations being nearby a central site/location
+
+   } elsif ( $nearby ) {
+      if (!$dist) {
+	   $dist= 2 ;	# default to find stations within 2 degrees
+	   print STDERR "Defaulting to using stations within 2 degrees of $nearby\n" if $opt_v;
+      }
+
+      if ($nearby =~ /:/) {
+	   print STDERR "Using coordinates rather than station from site table\n" if $opt_v;
+	   ($reflat,$reflon) = split(/:/,$nearby);
+	   $subsite	= "distance(lat,lon,$reflat,$reflon) <= '$dist'";
+      } else {
+	   my @refsite	= dblookup(@db,"","site","sta",$nearby) ;	# this assumes 1st db only used?
+	   if ($refsite[3] < 0 )   {
+	      print STDERR "\nStation, $nearby, not found in the primary database site table, $input_db.\n";
+	      print STDERR "\nPlease reverse your database order, or\n";
+	      print STDERR "use a specific station subset with -sta, or \n";
+	      print STDERR "make sure $input_db has a site table. \n\n";
+	      exit ();
+	   } else {
+	      my ($lat, $lon)	= dbgetv(@refsite,qw(lat lon));  
+	      $subsite	= "distance(lat,lon,$lat,$lon) <= '$dist'";
+   	   } 
+      }
+
+      &build_wf_subset ;
+
+   } else {
+      print STDERR "Must specify a station subset or nearby station\n";
+      usage ();
+      exit 1;
+   }
+
+}
+
 sub run {               # run system cmds safely
     my ( $cmd ) = @_ ;
+    print STDERR "cmd: $cmd\n" if ($opt_v) ;
     system ( $cmd ) ; if ($?) { print STDERR "$cmd error $? \n" ; exit(1);
     }   
 }
@@ -376,11 +369,11 @@ sub run {               # run system cmds safely
 
 sub usage { 
         print STDERR <<END;
-		\nUSAGE: $0 {-sta station_subset | -nearby sta [-dist distance] } [-chan channel_subset] [-start time] [-end time] [-keep outputdb] [-v] db1 db2 
+		\nUSAGE: $0 {-sta station_subset | -nearby sta [-dist distance] } [-chan channel_subset] [-start time] [-end time] [-tmpdir dir] [-n] [-keep] [-q] [-v] [-V] db1 db2 
 
-\nEXAMPLE: $0 -sta "/A04A|B04A|C04A|A03A/" -chan "/BH./" -start 2006245:00:00:00 db/usarray db/usarray2
+\nEXAMPLE: $0 -sta "/A04A|B04A|C04A|A03A/" -chan "/BH./" -start 2016245:00:00:00 db/usarray db2/usarray
 \n or  
-\nEXAMPLE: $0 -nearby "A04A" -dist 1.0 -chan "/BH.|VM./" -start 2006245:00:00:00  db/usarray db/usarray2
+\nEXAMPLE: $0 -nearby "Q65A" -dist 5.0 -chan "/BH.|VM./" -start 2016245:00:00:00  db/usarray db/status  
 
 
 END

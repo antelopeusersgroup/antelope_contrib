@@ -1,3 +1,4 @@
+#include "TimeWindow.h"
 #include "TimeWindowPicker.h"
 #include "seiswplot.h"
 using namespace SEISPP;
@@ -25,13 +26,13 @@ void pick_tw_callback(Widget w, XtPointer client_data, XtPointer userdata)
         cerr << "Time Window currently set is not valid"<<endl
             << "Code fix required"<<endl;
     }
-    // Silently drop a pick if not properly tagged.  
-    if(spick->type == WINDOW) 
+    // Silently drop a pick if not properly tagged.
+    if(spick->type == WINDOW)
         picker_handle->setpick(twinpicked);
 
     //cerr << "Leaving pick_tw_callback"<<endl;
 }
-void arm_tw_pick_callback(Widget w, 
+void arm_tw_pick_callback(Widget w,
         XtPointer client_data, XtPointer userdata)
 {
     //cerr << "Entering arm_tw_pick_callback"  <<endl;
@@ -108,8 +109,8 @@ TimeWindow TimeWindowPicker::get()
 }
 void TimeWindowPicker::repick()
 {
-    // This is a protected method is SeismicPlot so this method is 
-    // little more than an alias for that method 
+    // This is a protected method is SeismicPlot so this method is
+    // little more than an alias for that method
     this->launch_Xevent_thread_handler();
     pick_completed=true;
 }

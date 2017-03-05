@@ -9,8 +9,8 @@ elog_init("batch_evproc", @ARGV ) ;
 
 our ($opt_p, $opt_s, $opt_t, $opt_v, $opt_V, $opt_l ) ; 
 our ($db, $tmpdir, $nonos, $norigin, $cmd) ;
-our ($dir, $base, $suf, $dbpath, $sitefile, $wffile, $dblocks, $dbidserver ) ;
-our (@db, @nomags, @origin, @netmag, @assoc, @arrival, @site, @wfdisc) ;
+our ($dir, $base, $suf, $dbpath, $snetfile, $sitefile, $wffile, $dblocks, $dbidserver ) ;
+our (@db, @nomags, @origin, @netmag, @assoc, @arrival, @snet, @site, @wfdisc) ;
 
 if ( ! getopts('l:p:s:t:vV') || @ARGV !=1  ) {
     my $pgm = $0 ;
@@ -47,12 +47,14 @@ if ( $@ ) {
   @assoc  = dblookup(@db, 0, "assoc", 0, 0 ) ;
   @arrival = dblookup(@db, 0, "arrival", 0, 0 ) ;
   @netmag = dblookup(@db, 0, "netmag", 0, 0 ) ;
+  @snet   = dblookup(@db, 0, "snetsta", 0, 0 ) ;
   @site   = dblookup(@db, 0, "site", 0, 0 ) ;
   @wfdisc = dblookup(@db, 0, "wfdisc", 0, 0 ) ;
 
   # use this to build dbpath for tempdb
-  $sitefile = dbquery(@site, dbTABLE_FILENAME); 
-  $wffile = dbquery(@wfdisc, dbTABLE_FILENAME); 
+  $snetfile = dbquery(@snet, dbTABLE_FILENAME);
+  $sitefile = dbquery(@site, dbTABLE_FILENAME);
+  $wffile = dbquery(@wfdisc, dbTABLE_FILENAME);
   $dbidserver = dbquery(@origin, dbIDSERVER); 
   $dblocks = dbquery(@origin, dbLOCKS); 
 
@@ -107,8 +109,22 @@ if ( $@ ) {
   $cmd = "dbevproc $opt_v $opt_p -tmpdbdir $tmpdir $tmpdir/nomags $db   ";
   elog_notify ( "running $cmd ") if $opt_v ;
 
+# need to build long dbpath if snet needs to be pulled from elsewhere, shorten if snet db and site db are the same
+
   ($dir,$base,$suf) = parsepath(abspath($sitefile)) ;
-  $dbpath  = $dir . "/{" . $base . "}";
+  $dbpath  = $dir . "/{" . $base . "}" ;
+
+  my ($ndir, $nbase) ;
+  ($ndir,$nbase,$suf) = parsepath(abspath($snetfile)) ;
+  if ( ($ndir eq $dir)  && ($nbase eq $base) ) {
+     elog_notify("site and snet are in same database") if $opt_V;
+  } else {
+     elog_notify("site and snet are in different databases") if $opt_v ;
+     elog_notify("Modifying descriptor file") if $opt_v;
+     $dbpath  = $ndir . "/{" . $nbase . "}" . ":" . $dbpath ;
+  }
+
+# wfdisc is assumed to be in different area than dbmaster
 
   ($dir,$base,$suf) = parsepath(abspath($wffile)) ;
   $dbpath  = $dir . "/{" . $base . "}" . ":" . $dbpath ;

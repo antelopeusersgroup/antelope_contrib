@@ -8,13 +8,19 @@
 #
 #  Program setup
 #
-#{{{
 
 use sysinfo;
 use Datascope;
 use Pod::Usage;
 use Getopt::Std;
 use List::Util qw[max min];
+use utilfunct qw[getparam];
+use JSON::PP;
+use LWP::Simple ;
+use Data::Dumper;
+
+
+our(%pf) ;
 
 
     $parent = $$;
@@ -23,7 +29,7 @@ use List::Util qw[max min];
 
 
 
-    unless ( &getopts('s:r:vh') ) {
+    unless ( &getopts('u:p:s:r:vh') ) {
         elog_complain("Problem with flags.");
         pod2usage({-verbose => 2});
     }
@@ -64,19 +70,31 @@ use List::Util qw[max min];
         unlink($json) if -e $json;
     }
 
+
+    #
+    # Get parameters from config file (PF file)
+    #
+    $opt_p ||= "rsync_baler.pf" ;
+    %pf = getparam($opt_p) ;
+
+    #
+    # Use this default URL
+    #
+    $url ||= "http://anf.ucsd.edu/api/ta/stations/?fields=id|sta|snet|time|endtime|orbcomms&snet=TA" ;
+
     #
     # Verify Database
     #
-    @db = dbopen ( $database, "r" ) or elog_die("Can't open DB: $database");
+    #@db = dbopen ( $database, "r" ) or elog_die("Can't open DB: $database");
 
     # Open table for list of valid stations
-    @db_on = dblookup(@db, "", "deployment" , "", "");
+    #@db_on = dblookup(@db, "", "deployment" , "", "");
 
     # Open table for list of station types ie 'PacketBaler44'
-    @db_sta = dblookup(@db, "", "stabaler", "", "");
+    #@db_sta = dblookup(@db, "", "stabaler", "", "");
 
     # Open table for list of current ips
-    @db_ip = dblookup(@db, "", "staq330" , "", "");
+    #@db_ip = dblookup(@db, "", "staq330" , "", "");
 
     #
     # Verify access to directory
@@ -84,14 +102,13 @@ use List::Util qw[max min];
     elog_die("Can't access dir => $dir.") unless -e $dir;
 
 
-
-    elog_notify('Get list of stations:') if $opt_v;
-    $stations = get_stations_from_db();
-
     #
     # Report and/or JSON file export
     #
-    build_json($stations);
+    build_json( get_stations_from_url( $url )  );
+    #my %list =  get_stations_from_url( $url );
+    #print Dumper(%list) ;
+    #build_json( %list );
 
     #
     # Calc total time for script
@@ -107,99 +124,187 @@ use List::Util qw[max min];
 
     exit 0;
 
-#}}}
 
-sub get_stations_from_db {
-#{{{
-    my ($dlsta,$vnet,$net,$sta,$time,$endtime);
-    my %sta_hash;
-    my @db_1;
-    my $nrecords;
-    my $ip;
+#sub get_stations_from_db {
+#    my ($dlsta,$vnet,$net,$sta,$time,$endtime);
+#    my %sta_hash;
+#    my @db_1;
+#    my $nrecords;
+#    my $ip;
+#
+#    #
+#    # Get stations with baler44s
+#    #
+#    elog_notify("dbsubset ( stablaler.model =~ /Packet Baler44/)") if $opt_v;
+#    @db_1 = dbsubset ( @db_sta, "stabaler.model =~ /PacketBaler44/ ");
+#
+#    elog_notify("dbsubset ( sta =~ /$opt_s/)") if $opt_v && $opt_s;
+#    @db_1 = dbsubset ( @db_1, "sta =~ /$opt_s/") if $opt_s;
+#
+#    elog_notify("dbsubset ( sta !~ /$opt_r/)") if $opt_v && $opt_r;
+#    @db_1 = dbsubset ( @db_1, "sta !~ /$opt_r/") if $opt_r;
+#
+#    $nrecords = dbquery(@db_1,dbRECORD_COUNT) or elog_die("No records to work with after dbsubset()");
+#    elog_notify("dbsubset => nrecords = $nrecords") if $opt_v;
+#
+#
+#    for ( $db_1[3] = 0 ; $db_1[3] < $nrecords ; $db_1[3]++ ) {
+#
+#        ($dlsta,$net,$sta,$time,$endtime) = dbgetv(@db_1, qw/dlsta net sta time endtime/);
+#
+#        elog_notify("[$sta] [$net] [$dlsta] [$time] [$endtime]") if $opt_v;
+#
+#        $sta_hash{$sta}{dlsta}      = $dlsta;
+#        $sta_hash{$sta}{net}        = $net;
+#        $sta_hash{$sta}{status}     = 'Decom';
+#        $sta_hash{$sta}{ip}         = 0;
+#
+#        push @{ $sta_hash{$sta}{dates} }, [$time,$endtime];
+#
+#    }
+#
+#    dbfree(@db_1);
+#
+#
+#    foreach $sta (sort keys %sta_hash) {
+#
+#        $dlsta = $sta_hash{$sta}{dlsta};
+#        $net   = $sta_hash{$sta}{net};
+#
+#        #
+#        # Test if station is active
+#        #
+#        $sta_hash{$sta}{status} = 'Active' if ( dbfind(@db_on, "sta =~ /$sta/ && snet =~ /$net/ && endtime == NULL", -1)>= 0);
+#
+#        next if $sta_hash{$sta}{status} eq 'Decom';
+#
+#        #
+#        # Get ip for station
+#        #
+#        $db_ip[3] = dbfind ( @db_ip, " dlsta =~ /$dlsta/ && endtime == NULL",-1);
+#
+#        if ( $db_ip[3] >= 0 ) {
+#
+#            $ip = dbgetv(@db_ip, qw/inp/);
+#
+#            # regex for the ip
+#            $ip =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})/;
+#            problem("Failed grep on IP stabaler{inp}->(ip'$ip',dlsta'$dlsta')") unless $1;
+#            $sta_hash{$sta}{ip} = $1 if $1;
+#
+#        }
+#
+#        elog_notify("$dlsta $sta_hash{$sta}{status} $sta_hash{$sta}{ip}") if $opt_v;
+#
+#        foreach (sort @{$sta_hash{$sta}{dates}}) { elog_notify("\t\t@$_") if $opt_v; }
+#
+#    }
+#
+#    eval { dbclose(@db_sta); };
+#    eval { dbclose(@db_ip);  };
+#    eval { dbclose(@db_on);  };
+#
+#    return \%sta_hash;
+#}
 
-    #
-    # Get stations with baler44s
-    #
-    elog_notify("dbsubset ( stablaler.model =~ /Packet Baler44/)") if $opt_v;
-    @db_1 = dbsubset ( @db_sta, "stabaler.model =~ /PacketBaler44/ ");
+sub get_json {
+    # Get informaiton from URL in JSON format
+    my $url = shift ;
 
-    elog_notify("dbsubset ( sta =~ /$opt_s/)") if $opt_v && $opt_s;
-    @db_1 = dbsubset ( @db_1, "sta =~ /$opt_s/") if $opt_s;
+    my $json        = JSON::PP->new->utf8 ;
 
-    elog_notify("dbsubset ( sta !~ /$opt_r/)") if $opt_v && $opt_r;
-    @db_1 = dbsubset ( @db_1, "sta !~ /$opt_r/") if $opt_r;
+    elog_notify("Get URL: $url");
 
-    $nrecords = dbquery(@db_1,dbRECORD_COUNT) or elog_die("No records to work with after dbsubset()");
-    elog_notify("dbsubset => nrecords = $nrecords") if $opt_v;
+    my $network = LWP::UserAgent->new ;
+    $network->timeout( 120 ) ;
+    my $resp = $network->get( $url ) ;
 
+    elog_die( "No response from server for $url" ) unless ( $resp->is_success ) ;
 
-    for ( $db_1[3] = 0 ; $db_1[3] < $nrecords ; $db_1[3]++ ) {
-
-        ($dlsta,$net,$sta,$time,$endtime) = dbgetv(@db_1, qw/dlsta net sta time endtime/);
-
-        elog_notify("[$sta] [$net] [$dlsta] [$time] [$endtime]") if $opt_v;
-
-        $sta_hash{$sta}{dlsta}      = $dlsta;
-        $sta_hash{$sta}{net}        = $net;
-        $sta_hash{$sta}{status}     = 'Decom';
-        $sta_hash{$sta}{ip}         = 0;
-
-        push @{ $sta_hash{$sta}{dates} }, [$time,$endtime];
-
-    }
-
-    dbfree(@db_1);
-
-
-    foreach $sta (sort keys %sta_hash) {
-
-        $dlsta = $sta_hash{$sta}{dlsta};
-        $net   = $sta_hash{$sta}{net};
-
-        #
-        # Test if station is active
-        #
-        $sta_hash{$sta}{status} = 'Active' if ( dbfind(@db_on, "sta =~ /$sta/ && snet =~ /$net/ && endtime == NULL", -1)>= 0);
-
-        next if $sta_hash{$sta}{status} eq 'Decom';
-
-        #
-        # Get ip for station
-        #
-        $db_ip[3] = dbfind ( @db_ip, " dlsta =~ /$dlsta/ && endtime == NULL",-1);
-
-        if ( $db_ip[3] >= 0 ) {
-
-            $ip = dbgetv(@db_ip, qw/inp/);
-
-            # regex for the ip
-            $ip =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})/;
-            problem("Failed grep on IP stabaler{inp}->(ip'$ip',dlsta'$dlsta')") unless $1;
-            $sta_hash{$sta}{ip} = $1 if $1;
-
-        }
-
-        elog_notify("$dlsta $sta_hash{$sta}{status} $sta_hash{$sta}{ip}") if $opt_v;
-
-        foreach (sort @{$sta_hash{$sta}{dates}}) { elog_notify("\t\t@$_") if $opt_v; }
-
-    }
-
-    eval { dbclose(@db_sta); };
-    eval { dbclose(@db_ip);  };
-    eval { dbclose(@db_on);  };
-
-    return \%sta_hash;
-#}}}
+    return @{$json->decode( $resp->content )} ;
 }
 
+sub get_stations_from_url {
+    my $url = shift;
+    my ($ip,$dlsta,$net,$sta) ;
+    my %sta_hash ;
+
+    for my $data_hash ( get_json( $url ) ) {
+
+        my $sta = $data_hash->{'sta'};
+
+        elog_debug( "Test for [$sta]" ) ;
+
+        # Filter out station if needed
+        next if $opt_s and $sta !~ /$opt_s/ ;
+        next if $opt_r and $sta =~ /$opt_r/ ;
+
+        $sta_hash{$sta} = {};
+
+        for my $url_response ( get_json( "$url&sta=$sta" ) ) {
+
+            elog_debug( "Got metadata for $sta" ) ;
+
+            $sta_hash{$sta}{id} = $url_response->{'id'};
+            $sta_hash{$sta}{dlsta} = $url_response->{'id'};
+            $sta_hash{$sta}{net} = $url_response->{'snet'};
+            $sta_hash{$sta}{snet} = $url_response->{'snet'};
+            $sta_hash{$sta}{sta} = $url_response->{'sta'};
+            $sta_hash{$sta}{time} = $url_response->{'time'};
+            $sta_hash{$sta}{endtime} = $url_response->{'endtime'};
+            $sta_hash{$sta}{ip} = 0 ;
+
+            $sta_hash{$sta}{status} = 'Decom' ;
+            if ($sta_hash{$sta}{endtime} eq '-') {
+                $sta_hash{$sta}{status} = 'Active' ;
+            }
+
+
+            if ( $url_response->{'orbcomms'} ) {
+                $sta_hash{$sta}{ip} = $url_response->{'orbcomms'}->{'inp'};
+                elog_debug( "\tip: $sta_hash{$sta}{ip}" ) ;
+
+                #
+                # Use this regex to clean the IP string...
+                #
+                if ( $sta_hash{$sta}{ip} =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}):([\d]{4}):/ ) {
+                    $sta_hash{$sta}{ip} = $1 ;
+                    $sta_hash{$sta}{port} = int($2) + int($pf{http_port_offset}) ;
+
+                }
+                else {
+                    elog_notify("Failed grep on IP (ip'$sta_hash{$sta}{ip}',dlsta'$sta_hash{$sta}{dlsta}')") ;
+                    $sta_hash{$sta}{ip} = 0 ;
+                    $sta_hash{$sta}{port} = 0 ;
+                }
+
+            }
+
+            elog_debug( "\tdlsta $sta_hash{$sta}{dlsta}" ) ;
+            elog_debug( "\ttime: $sta_hash{$sta}{time}" ) ;
+            elog_debug( "\tendtime: $sta_hash{$sta}{endtime}" ) ;
+            elog_debug( "\tstatus: $sta_hash{$sta}{status}" ) ;
+            elog_debug( "\tip: $sta_hash{$sta}{ip}" ) ;
+            elog_debug( "\tport: $sta_hash{$sta}{port}" ) ;
+
+        }
+    }
+
+    elog_notify( Dumper(\%sta_hash) ) if $opt_v;
+
+    elog_die("NO STATIONS SELECTED FROM DATABASE.") unless %sta_hash ;
+
+    return %sta_hash ;
+}
+
+
+
 sub build_json {
-#{{{
-    $stations = shift;
+    my %stations = @_;
     my (@bw);
     my ($dfile);
     my (@flagged,@downloaded,@missing);
-    my ($text,$time);
+    my ($text,$time,$endtime);
     my (@dbr,@dbr_temp,@queries);
     my (@dbr_grouped);
     my ($average,$median);
@@ -208,13 +313,16 @@ sub build_json {
     my ($md5_missing,$md5_error,$last_file,$last_time);
 
 
+    elog_notify( Dumper( \%stations ) ) if $opt_v;
 
     open ( JSON, ">$json") if $json;
 
     print JSON "{" if $json;
 
-    foreach $temp_sta ( sort keys %$stations ) {
 
+    foreach my $temp_sta ( sort keys %stations ) {
+
+        #elog_notify( Dumper($temp_sta) );
         elog_notify("Now report on $temp_sta.") if $opt_v;
 
         $text = "\"$temp_sta\": {";
@@ -272,19 +380,13 @@ sub build_json {
         @dbr_grouped = dbgroup(@dbr_sorted,'status');
 
 
-        #elog_notify("FIELD: ".$_) foreach dbquery(@dbr_grouped,'dbTABLE_FIELDS');
-        #$recs =  dbquery(@dbr_grouped,'dbRECORD_COUNT');
-        #for ( $dbr_grouped[3] = 0 ; $dbr_grouped[3] < $recs; @dbr_grouped[3]++ ) {
-        #elog_notify( $_ ) foreach dbgetv(@dbr_grouped,qw/status bundle/);
-        #}
-
-
 
         $f = dbfind(@dbr_grouped, 'status =~ /flagged/', -1);
         $e = dbfind(@dbr_grouped, 'status =~ /error-download/', -1);
         $d = dbfind(@dbr_grouped, 'status =~ /downloaded/', -1);
+        #$s = dbfind(@dbr_grouped, 'status =~ /(skipped|avoid)/', -1);
 
-        #elog_notify("d: $d f: $f e: $e");
+
 
         #
         # Get list of flagged files
@@ -310,7 +412,7 @@ sub build_json {
             for ( $t = $dbr_temp[3] ; $t < $dbr_temp[2] ; $t++ ) {
                 $dbr_temp[3] = $t;
 
-                ($file, $time, $bytes, $bandwidth, $md5) = dbgetv(@dbr_temp, qw/dfile time filebytes bandwidth md5/);
+                ($file, $time, $endtime, $bytes, $bandwidth, $md5) = dbgetv(@dbr_temp, qw/dfile time endtime filebytes bandwidth md5/);
                 #elog_notify("$file, $time, $status, $bytes, $bandwidth, $md5");
 
                 push @downloaded, $file;
@@ -329,19 +431,12 @@ sub build_json {
                 $md5_error += 1 if  $md5 =~ /.*error.*/;
                 $md5_missing += 1 if  $md5 =~ /.*missing.*/;
 
-                $total_7 += $bytes if $time > $last_7;
-                $total_30 += $bytes if $time > $last_30;
+                $total_7 += $bytes if $time > $last_7 and $endtime < now();
+                $total_30 += $bytes if $time > $last_30 and $endtime < now();
 
-                #elog_notify("$time ?> $last_7");
-                #elog_notify("true") if $endtime > $last_7;
-                #elog_notify("total_7 = $total_7");
-                #elog_notify("$endtime ?> $last_30");
-                #elog_notify("true") if $endtime > $last_30;
-                #elog_notify("total_30 = $total_30");
 
             }
         }
-        #elog_die('end');
 
         #
         # Check for missing files
@@ -352,13 +447,37 @@ sub build_json {
 
             @missing =  grep { $_ = "\"$_\"" } @missing;
             $text .= ",\n\t\"missing_files\": [" . join(',',@missing) . "]";
-            $text .= ",\n\t\"error\": \"Missing ".@missing." files. \"";
+            #$text .= ",\n\t\"error\": \"Missing ".@missing." files. \"";
             elog_notify("Station $temp_sta missing files:[@missing]") if $opt_v;
 
         }
 
         $text .= ",\n\t\"missing\": " . scalar(@missing);
         $text .= ",\n\t\"downloaded\": " . scalar(@downloaded);
+
+        #
+        # Get list of skipped files
+        #
+        #if ( $s >= 0 ) {
+        #    @dbr_grouped[3] = $s;
+        #    @dbr_temp= split(" ",dbgetv(@dbr_grouped,"bundle"));
+        #    for ( $t = $dbr_temp[3] ; $t < $dbr_temp[2] ; $t++ ) {
+        #        $dbr_temp[3] = $t;
+        #        push @skipped, dbgetv (@dbr_temp, 'dfile');
+        #    }
+        #}
+        #if ( scalar @skipped ) {
+
+        #    @skipped =  grep { $_ = "\"$_\"" } @skipped;
+        #    $text .= ",\n\t\"skipped_files\": [" . join(',',@skipped) . "]";
+
+        #}
+        #else {
+        #    $text .= ",\n\t\"skipped_files\": 0";
+        #}
+
+        #elog_notify("Station $temp_sta skipped files:[@skipped]") if $opt_v;
+
 
         if ( $last_file  and $last_time ) {
             $last_time = epoch2str($last_time,"%Y-%m-%d");
@@ -412,32 +531,6 @@ sub build_json {
             $text .= ",\n\t\"error-download\": \"UNKNOWN\"";
         }
 
-        #
-        # Get list by month
-        #
-        #$text .= ",\n\t\"files\": {";
-
-        #@queries = build_time_regex($temp_sta,$stations->{$temp_sta}->{dates});
-
-        #foreach (@queries) {
-
-        #    #
-        #    # Open db and search for files here
-        #    #
-        #    @dbr_temp= dbsubset ( @dbr, "dfile =~ /($_)/ && status == 'downloaded'");
-        #    $nrecords = dbquery(@dbr_temp, 'dbRECORD_COUNT') ;
-
-        #    $text .= " \"$_\": \"$nrecords\",";
-        #    dbfree(@dbr_temp);
-
-        #}
-
-        #dbclose(@dbr);
-
-
-        #$text .= "{" if (chop($text) eq '{');
-
-        #$text .= "}\n";
 
         # for Kbytes
         $total_7 = sprintf("%0.2f", $total_7/1024);
@@ -462,11 +555,9 @@ sub build_json {
     export("\n}");
     close( JSON ) if $json;
 
-#}}}
 }
 
 sub export {
-#{{{
     $text = shift;
 
     if ( $json ) {
@@ -476,11 +567,9 @@ sub export {
     else {
         elog_notify($text);
     }
-#}}}
 }
 
 sub build_time_regex {
-#{{{
     my $sta      = shift;
     my @dates    = shift;
     my $folder   = shift || '';
@@ -563,11 +652,9 @@ sub build_time_regex {
 
     return sort keys %queries;
 
-#}}}
 }
 
 sub open_db {
-#{{{
     my $sta = shift;
     my @db;
 
@@ -598,11 +685,9 @@ sub open_db {
     return unless @db;
     return @db;
 
-#}}}
 }
 
 sub read_local {
-#{{{
     my $sta = shift;
     my %list;
     my $file;
@@ -639,11 +724,9 @@ sub read_local {
 
     return sort keys %list;
 
-#}}}
 }
 
 sub prepare_path {
-#{{{
     my $station  = shift;
 
     elog_die("prepare_path(). Cannot produce path! We need a station name...") unless $station;
@@ -652,11 +735,9 @@ sub prepare_path {
 
     elog_notify("$sta path: $path ") if $opt_v;
     return $path;
-#}}}
 }
 
 sub average {
-#{{{
     # usage: $average = average(\@array)
     my ($array_ref) = @_;
     my $sum;
@@ -664,11 +745,9 @@ sub average {
     return unless $count;
     foreach (@$array_ref) { $sum += $_; }
     return $sum / $count;
-#}}}
 }
 
 sub median {
-#{{{
     # usage: $median = median(\@array)
     my ($array_ref) = @_;
     my $count = scalar @$array_ref;
@@ -687,11 +766,9 @@ sub median {
     else {
         return ($array[$count/2] + $array[$count/2 - 1]) / 2;
     }
-#}}}
 }
 
 sub unique_array {
-#{{{
     # usage 1: $unique = unique_array(\@array)
     # usage 2: $unique = unique_array(\@array,\@delete)
     my $original = shift;
@@ -701,11 +778,9 @@ sub unique_array {
     @temp{@$original} = ();
     delete @temp {@$delete} if $delete;
     return sort keys %temp;
-#}}}
 }
 
 __END__
-#{{{
 =pod
 
 =head1 NAME
@@ -772,4 +847,3 @@ The script is simple and may fail if used outside ANF-TA installation.
 Juan C. Reyes <reyes@ucsd.edu>
 
 =cut
-#}}}

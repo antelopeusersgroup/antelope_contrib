@@ -36,6 +36,7 @@ import stat
 import json
 import inspect
 import logging
+import logging.handlers
 
 from tempfile import mkstemp
 from distutils import spawn
@@ -44,6 +45,19 @@ from time import gmtime, time
 from optparse import OptionParser
 from collections import defaultdict
 import subprocess
+
+"""
+Some parameters are needed on all modlues. Listing those
+here as "global" variables.
+"""
+executables = {}
+clean_tmp = False
+
+# synth_channels will be accessed in functions.py
+synth_channels = ["TSS","TDS","XSS","XDS","XDD","ZSS","ZDS","ZDD"]
+# seismic_channels will be accessed on functions.py and data.py
+seismic_channels = ["T", "R", "Z"]
+
 
 # ANTELOPE
 try:
@@ -82,19 +96,10 @@ try:
 except Exception,e:
     beachball = False
 
-
-
-"""
-Some parameters are needed on all modlues. Listing those
-here as "global" variables.
-"""
-executables = {}
-clean_tmp = False
-
-# synth_channels will be accessed in functions.py
-synth_channels = ["TSS","TDS","XSS","XDS","XDD","ZSS","ZDS","ZDD"]
-# seismic_channels will be accessed on functions.py and data.py
-seismic_channels = ["T", "R", "Z"]
+#try:
+#    from dbmoment.functions import open_verify_pf
+#except Exception,e:
+#    sys.exit("Import Error: [%s] Problem with mt_fucntions load." % e)
 
 
 
@@ -120,6 +125,10 @@ parser.add_option("-v", action="store_true", dest="verbose",
 # Debug output
 parser.add_option("-d", action="store_true", dest="debug",
         default=False, help="debug output")
+
+# Log to file if needed
+parser.add_option("-l", action="store_true", dest="logfile",
+        default=False, help="Save logs to a file.")
 
 # Plot each data group for a site (real and synth) and wait.
 parser.add_option("-x", action="store_true", dest="debug_each",
@@ -166,6 +175,58 @@ if len(args) != 2:
     sys.exit( usage );
 
 
+
+'''
+Read parameters from the ParameterFile.
+Defaults to the dbmoment.pf name.
+'''
+if not options.pf: options.pf = 'dbmoment'
+options.pf = stock.pffiles(options.pf)[-1]
+
+'''
+Need to verify that we have a modern version of the parameter file.
+Older versions will break the code or will produce erroneous results.
+
+Function pfrequire will return any of these:
+PF_MTIME_OK, PF_MTIME_NOT_FOUND, PF_MTIME_OLD, PF_SYNTAX_ERROR, or PF_NOT_FOUND
+
+Set limit to parameter file. Only versions after 2017-02-09
+'''
+#pf_object = open_verify_pf( options.pf, 1486598400 )
+PF_STATUS = stock.pfrequire(options.pf, 1486598400)
+if PF_STATUS == stock.PF_MTIME_NOT_FOUND:
+    sys.exit( 'No MTTIME in PF file. Need a new version of the %s file!!!' % options.pf )
+elif PF_STATUS == stock.PF_MTIME_OLD:
+    sys.exit( 'Need a new version of the %s file!!!' % options.pf )
+elif PF_STATUS == stock.PF_SYNTAX_ERROR:
+    sys.exit( 'Need a working version of the %s file!!!' % options.pf )
+elif PF_STATUS == stock.PF_NOT_FOUND:
+    sys.exit( 'No file  %s found!!!' % options.pf )
+
+try:
+    pf_object = stock.pfread( options.pf )
+except Exception,e:
+    sys.exit( 'Problem looking for %s => %s' % ( options.pf, e ) )
+
+#pf_object = stock.pfread(options.pf)
+
+
+# Need to have all 3 variables defined before imports!!!
+if options.logfile:
+    # If we want a logfile
+    LOG_FILENAME = pf_object['log_filename']
+    LOG_MAX_COUNT = pf_object['log_max_count']
+else:
+    LOG_FILENAME = False
+
+# All modules should use the same logging function. We have
+# a nice method defined in the logging_helper lib that helps
+# link the logging on all of the modules.
+try:
+    from dbmoment.logging_helper import getLogger
+except Exception,e:
+    sys.exit('Problems loading logging lib. %s' % e)
+
 # Set log level
 loglevel = 'WARNING'
 if options.debug:
@@ -177,22 +238,6 @@ elif options.verbose:
 if beachball and not options.beachball:
     beachball = False
 
-# All modules should use the same logging function. We have
-# a nice method defined in the logging_helper lib that helps
-# link the logging on all of the modules.
-try:
-    from dbmoment.logging_helper import getLogger
-except Exception,e:
-    sys.exit('Problems loading logging lib. %s' % e)
-
-
-# New logger object and set loglevel
-logging = getLogger(loglevel=loglevel)
-logging.info('loglevel=%s' % loglevel)
-
-
-
-
 # The main process runs on the "mt" class and the
 # "functions" import is needed by almost ALL modules.
 try:
@@ -201,35 +246,22 @@ try:
 except Exception,e:
     sys.exit("Import Error: [%s] Problem with mt_fucntions load." % e)
 
+# New logger object and set loglevel
+logging = getLogger(loglevel=loglevel)
 
 
 # Parse arguments from command-line
 database = args[0]
-id     = args[1]
-logging.info("database [%s]" % database)
-logging.info("id [%s]" % id)
+evid = args[1]
+orid = args[1]
+
+logging.notify( "%s\n" % ' '.join( sys.argv ) )
+logging.info( "database [%s]" % database )
+logging.info( "id [%s]" % orid )
+logging.info( "Parameter file to use [%s]" % options.pf )
+logging.info('loglevel=%s' % loglevel)
 
 
-
-'''
-Read parameters from the ParameterFile.
-Defaults to the dbmoment.pf name.
-'''
-if not options.pf: options.pf = 'dbmoment'
-options.pf = stock.pffiles(options.pf)[-1]
-logging.info("Parameter file to use [%s]" % options.pf)
-
-'''
-Need to verify that we have a modern version of the parameter file.
-Older versions will break the code or will produce erroneous results.
-
-Function pfrequire will return any of these:
-PF_MTIME_OK, PF_MTIME_NOT_FOUND, PF_MTIME_OLD, PF_SYNTAX_ERROR, or PF_NOT_FOUND
-
-Set limit to parameter file. Only versions after 2016-02-27
-'''
-pf_object = open_verify_pf( options.pf, 1456531200 )
-pf_object = stock.pfread(options.pf)
 tmp_folder = os.path.relpath(safe_pf_get(pf_object, 'tmp_folder','.dbmoment'))
 clean_tmp = stock.yesno(str(safe_pf_get(pf_object, 'clean_tmp', True)))
 execs = safe_pf_get(pf_object, 'find_executables', [])
@@ -259,7 +291,7 @@ then we stop here and we print a nice log about it.
 """
 find_executables( execs )
 if not os.path.isfile(options.pf):
-    sys.exit('ERROR: Cannot find pf(%s)' % options.pf )
+    logging.error('ERROR: Cannot find pf(%s)' % options.pf )
 
 
 
@@ -268,7 +300,7 @@ if not os.path.isfile(options.pf):
 try:
     db = datascope.dbopen( database, "r+" )
 except Exception,e:
-    error('Problems opening database: %s %s %s' % (database,Exception, e) )
+    logging.error('Problems opening database: %s %s %s' % (database,Exception, e) )
 
 
 """
@@ -283,24 +315,25 @@ logging.info('Test if event table present: %s' % event_table.query(datascope.dbT
 if options.evid and event_table.query(datascope.dbTABLE_PRESENT):
     steps = [ 'dbopen event' ]
     steps.extend([ 'dbjoin origin' ])
-    steps.extend([ 'dbsubset (evid==%s && prefor==orid) ' % id ])
+    steps.extend([ 'dbsubset (evid==%s && prefor==orid) ' % evid ])
 else:
     steps = ['dbopen origin']
-    steps.extend(['dbsubset orid==%s' % id ])
+    steps.extend(['dbsubset orid==%s' % orid ])
 
 logging.info( ', '.join(steps) )
 
 with datascope.freeing(db.process( steps )) as dbview:
-    logging.debug( 'Found (%s) events with id=[%s]' % (dbview.record_count,id) )
+    logging.debug( 'Found (%s) events with id=[%s]' % (dbview.record_count,orid) )
 
     if not dbview.record_count:
-        logging.error( 'No records found for id=[%s]' % id )
+        logging.error( 'No records found for id=[%s]' % orid )
     elif dbview.record_count > 1:
-        logging.error( 'Found (%s) events/orids with id=[%s]' % (dbview.record_count,id) )
+        logging.error( 'Found (%s) events/orids with id=[%s]' % (dbview.record_count,orid) )
     else:
         dbview.record = 0
         orid = dbview.getv('orid')[0]
-        logging.info('Found 1 record for id=[%s] => orid=%s' % (id,orid))
+        evid = dbview.getv('evid')[0]
+        logging.info('Found 1 record with evid=[%s] orid=[%s]' % (evid,orid) )
 
 
 """
@@ -322,7 +355,7 @@ dbmnt = DbMoment(database, options, model_pf)
 
 # This should bring back all the information need for us to
 # push this back to the database.
-logging.info("Process id [ %s ]" % orid )
+logging.info("Process orid [ %s ]" % orid )
 results = dbmnt.mt( orid )
 
 
@@ -362,7 +395,7 @@ ADD RESULTS TO MT TABLE
 try:
     db = datascope.dbopen( database, "r+" )
 except Exception,e:
-    error('Problems opening database: %s %s %s' % (database,Exception, e) )
+    logging.error('Problems opening database: %s %s %s' % (database,Exception, e) )
 
 mt_table = db.lookup(table='mt')
 to_insert.append( ('orid', orid) )
@@ -403,7 +436,7 @@ ADD RESULTS TO NETMAG TABLE
 try:
     db = datascope.dbopen( database, "r+" )
 except Exception,e:
-    error('Problems opening database: %s %s %s' % (database,Exception, e) )
+    logging.error('Problems opening database: %s %s %s' % (database,Exception, e) )
 
 netmag_table = db.lookup(table='netmag')
 
@@ -412,7 +445,7 @@ cleanup_db(netmag_table, 'orid==%s && auth=~/mt.%s/' % (orid,model_name) )
 to_insert = [
     ('magid',netmag_table.nextid('magid')),
     ('orid',orid),
-    ('evid',id),
+    ('evid',evid),
     ('net','-'),
     ('magtype',results['drmagt']),
     ('magnitude',results['drmag']),
@@ -446,4 +479,4 @@ if clean_tmp: cleanup(tmp_folder)
 
 
 
-sys.exit(0)
+sys.exit()

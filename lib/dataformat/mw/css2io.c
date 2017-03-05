@@ -1,15 +1,17 @@
 /* @(#)css2io.c 8/20/91 */
+#include <stdlib.h>
 #include <stdio.h>
-css2io_(list,rlx,rhx,filnam,nrecx)
+#include <unistd.h>
+/* Fixed 2016 by glp - old code didn't have these required prototype for 
+   anything but ancient C code */
+int getfdcss(char filnam[80], int *iact);
+int ioredercss(char fname[80], int rl, int rh, int nbr, int lastp);
 /*Fortran callable routine for reading and writing short integers on disk */
 
 /*Identical to shrtio in the nio library except that files are specified
 by name rather than number*/
 
-char filnam[80];
-short list[];
-long *rlx,*rhx;
-int *nrecx;
+int css2io_(short list[], long *rlx,long *rhx,char filnam[80],int *nrecx)
 {
    int ity,iloc,lun,nb,nbr,nrec;
    long lastp,rl,rh,sp;
@@ -48,7 +50,7 @@ int *nrecx;
       }
    }
    close(lun);
-   return;
+   return(0);
 }
 
 

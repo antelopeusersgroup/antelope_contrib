@@ -20,3 +20,4 @@ putmt
 *.o
 *.a
 test_rotation.py
+dbmoment_run_example

@@ -4,13 +4,15 @@ local_data_dir          /anf/TA/baler/work/ #local directory for archive
 
 download_timeout        300                 # in seconds
 
-http_port               5381                #port for http connections
+http_port_offset        49                  #port for http connections 5381. For rt 5332
 
 max_procs               35                  #number of simultaneous processes
 
 max_child_run_time      36000               #stop downloading files
                                             #after this number of
                                             #seconds. 0 = disable.
+
+limit_innactive_age     15552000   # Max time to work on closed sites. Skip after this age. 180 days
 
 limit_history           0   # in secs. 0 to avoid limit
 
@@ -37,7 +39,7 @@ md5_folder              recover
 #md5_folder
 
 avoid_ips  &Tbl{
-    10.10.10.0/23       # TEST
+    10.0.0.0/8          # TEST
     192.168.0.0         # TEST
 }
 force_include  &Tbl{

@@ -10,6 +10,12 @@
 
 antelope        &env(ANTELOPE)
 
+# Save logs to this file if running
+# with the -l flag. Keep the logs of
+# the last x number of runs of the
+# dbmoment code.
+log_filename    dbmoment.log
+log_max_count   10
 
 tmp_folder      .dbmoment
 image_folder    dbmoment_images
@@ -41,9 +47,19 @@ data_lib data
 # for Event class
 event_lib origin
 
-# channel to use in MT-inversion, default is LH. If higher sample rate channels are chosen, 
-# the data is downsampled to 1 Hz.
-chan_to_use .*
+# channel search list to use in MT-inversion. Use the first regex
+# that brigs 3 channels back. The data is downsampled to 1 Hz.
+chan_to_use &Tbl{
+    HN.
+    HN._.*
+    HH.
+    HH._.*
+    BH.
+    BH._.*
+    LH.
+    LH._.*
+    .*
+}
 
 # Name of the model parameter file
 model_path  &Tbl{
@@ -189,4 +205,4 @@ acknowledgement &Literal{
     Antelope's implementation of code by "Juan Reyes"<jreyes1108@gmail.com>
 }
 
-pf_revision_time 1456531200
+pf_revision_time 1486598400
