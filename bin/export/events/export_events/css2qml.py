@@ -340,7 +340,7 @@ class Css2Qml(object):
             if self.add_magnitude:
 
                 converted_mags = [
-                    self._convert_magnitudes(item)
+                    self._convert_magnitude(item)
                     for item in self.reader.all_magnitudes(
                         sort_by=['netmag.orid',
                                  'netmag.magtype',
@@ -366,10 +366,10 @@ class Css2Qml(object):
 
             if self.add_stamag:
                 converted_stamags = [
-                    self._convert_stamags(item)
+                    self._convert_stamag(item)
                     for item in self.reader.all_station_magnitudes()]
                 converted_amplitudes = [
-                    self._convert_amplitudes(item)
+                    self._convert_amplitude(item)
                     for item in self.reader.all_station_magnitudes()]
 
                 if namespace == self.qml_bed_ns:
@@ -807,7 +807,7 @@ class Css2Qml(object):
 
         return agency, author, module
 
-    def _convert_magnitudes(self, record):
+    def _convert_magnitude(self, record):
         '''
         Return a dict of QuakeML magnitude from a dict of CSS key/values
         corresponding to one record.
@@ -838,7 +838,7 @@ class Css2Qml(object):
         '''Consistent format for cross-referencing amplitudes.'''
         return self._id('amplitude', arid, sta)
 
-    def _convert_stamags(self, record):
+    def _convert_stamag(self, record):
         '''
         Convert CSS3.0 stamag view record to QuakeML stationMagnitude
         dictionary.
@@ -957,7 +957,7 @@ class Css2Qml(object):
 
         return amplitude, unit, period
 
-    def _convert_amplitudes(self, record):
+    def _convert_amplitude(self, record):
         '''
         Convert CSS3.0 stamag & arrival & wfmeas view record to QuakeML
         amplitude dictionary.
@@ -1415,9 +1415,9 @@ class Css2Qml(object):
                 break
 
         qml_dict = OrderedDict([
-            ('@id', self._id(
-                '/'.join(['comment', 'type', 'count']), comment_type,
-                record['remark.lineno'])),
+            ('@id', self._id('/'.join([
+                    'comment', 'type', 'commid', 'lineno', comment_type]),
+                record['remark.commid'], record['remark.lineno'])),
             ('text', remark),
             ('creationInfo', self._creation_info(record, 'remark')),
             ])
