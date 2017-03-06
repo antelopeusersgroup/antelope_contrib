@@ -1404,7 +1404,7 @@ class Css2Qml(object):
 
         qml_dict = OrderedDict([
             ('@id', self._id(
-                '/'.join(['comment', 'comment_type', 'cmcnt', comment_type]),
+                '/'.join(['comment', 'type', 'count']), comment_type,
                 record['remark.lineno'])),
             ('text', self._printable(record['remark.remark'])),
             ('creationInfo', self._creation_info(record, 'remark')),
