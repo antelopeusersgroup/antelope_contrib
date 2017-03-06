@@ -78,23 +78,24 @@ DTYPE_MAP = OrderedDict([
     ('[^dfgmr]', 'other'),
     ])
 
-# public comments must have a declared comment type, indicating the language of
-# the comment; othersie the comment type reverts to the default and is internal
+# public comments can have a comment type, e.g. indicating the language used
+# for a public comment; otherwise the comment type reverts to a default value
+
 COMMENT_KEYWORDS = {
-    'felt': {'comment type': 'E',
+    'felt': {'comment type': 'English',
              'description type': 'felt report'},
-    'damag': {'comment type': 'E',
+    'damag': {'comment type': 'English',
               'description type': 'felt report'},
-    'ressenti': {'comment type': 'F',
+    'ressenti': {'comment type': 'French',
                  'description type': 'felt report'},
-    'dommag': {'comment type': 'F',
+    'dommag': {'comment type': 'French',
                'description type': 'felt report'},
-    'known as': {'comment type': 'E',
+    'known as': {'comment type': 'English',
                  'description type': 'earthquake name'},
-    'connu': {'comment type': 'F',
+    'connu': {'comment type': 'French',
               'description type': 'earthquake name'},
     }
-DEFAULT_COMMENT_TYPE = 'I'
+DEFAULT_COMMENT_TYPE = 'Internal'
 
 NAMESPACES = ['BED', 'BED-RT']
 
