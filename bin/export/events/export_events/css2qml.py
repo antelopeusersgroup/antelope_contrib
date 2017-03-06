@@ -1,12 +1,15 @@
+# -*- coding: utf-8 -*-
 '''
 This module defines a class, css2qml, which can be used to convert CSS3.0
 (as extended by Antelope) to the QuakeML schema.
 '''
-from __future__ import (absolute_import, division, print_function)
+from __future__ import (
+    absolute_import, division, print_function, unicode_literals)
 
 import os
 import re
 import logging
+import unicodedata
 from collections import OrderedDict
 from math import floor, log10
 
@@ -82,20 +85,20 @@ DTYPE_MAP = OrderedDict([
 # for a public comment; otherwise the comment type reverts to a default value
 
 COMMENT_KEYWORDS = {
-    'felt': {'comment type': 'English',
+    'felt': {'comment type': 'english',
              'description type': 'felt report'},
-    'damag': {'comment type': 'English',
+    'damag': {'comment type': 'english',
               'description type': 'felt report'},
-    'ressenti': {'comment type': 'French',
+    'ressenti': {'comment type': u'français',
                  'description type': 'felt report'},
-    'dommag': {'comment type': 'French',
+    'dommag': {'comment type': u'français',
                'description type': 'felt report'},
-    'known as': {'comment type': 'English',
+    'known as': {'comment type': 'english',
                  'description type': 'earthquake name'},
-    'connu': {'comment type': 'French',
+    'connu': {'comment type': u'français',
               'description type': 'earthquake name'},
     }
-DEFAULT_COMMENT_TYPE = 'Internal'
+DEFAULT_COMMENT_TYPE = 'internal'
 
 NAMESPACES = ['BED', 'BED-RT']
 
@@ -1346,6 +1349,11 @@ class Css2Qml(object):
             self.logger.warning('Stripping unencodable characters from remark')
         return string_ignore
 
+    @staticmethod
+    def _unaccented(string):
+        nfkd_form = unicodedata.normalize('NFKD', string)
+        return u''.join([c for c in nfkd_form if not unicodedata.combining(c)])
+
     def _event_descriptions(self):
         '''
         Construct a QuakeML dictionary of descriptions from event remarks.
@@ -1354,15 +1362,17 @@ class Css2Qml(object):
 
         description_list = []
         for record in records:
+            remark = self._printable(record['remark.remark'])
+            remark_lower = self._unaccented(remark).lower()
             for (keyword, keyword_info) in COMMENT_KEYWORDS.items():
-                if keyword.lower() in record['remark.remark'].lower():
+                if self._unaccented(keyword).lower() in remark_lower:
                     self.logger.debug(
                         'Promoting remark commid [%d] lineno [%d] '
                         'to event description'
                         % (record['remark.commid'], record['remark.lineno']))
 
                     description_list += [OrderedDict([
-                        ('text', self._printable(record['remark.remark'])),
+                        ('text', remark),
                         ('type', keyword_info['description type']),
                         ])]
                     break
@@ -1397,8 +1407,10 @@ class Css2Qml(object):
             % (record['remark.commid'], record['remark.lineno']))
 
         comment_type = DEFAULT_COMMENT_TYPE
+        remark = self._printable(record['remark.remark'])
+        remark_lower = self._unaccented(remark).lower()
         for (keyword, keyword_info) in COMMENT_KEYWORDS.items():
-            if keyword.lower() in record['remark.remark'].lower():
+            if self._unaccented(keyword).lower() in remark_lower:
                 comment_type = keyword_info['comment type']
                 break
 
@@ -1406,7 +1418,7 @@ class Css2Qml(object):
             ('@id', self._id(
                 '/'.join(['comment', 'type', 'count']), comment_type,
                 record['remark.lineno'])),
-            ('text', self._printable(record['remark.remark'])),
+            ('text', remark),
             ('creationInfo', self._creation_info(record, 'remark')),
             ])
 
@@ -1552,7 +1564,9 @@ class Css2Qml(object):
                 serial = '%d' % int(float(serial))
         except (ValueError, TypeError):
             # Other elements just need to be unique.
-            serial = str(serial).replace('/', '_').replace(' ', '_').lower()
+            if not isinstance(serial, basestring):
+                serial = str(serial)
+            serial = serial.replace('/', '_').replace(' ', '_').lower()
 
         rid = '%s:%s.%s/%s/%s' % (self.uri_prefix, self.agency_id.lower(),
                                   self.agency_uri, name, serial)
