@@ -434,7 +434,7 @@ class Css2Qml(object):
         '''
         event_parameters_dict = OrderedDict()
         event_parameters_dict['@publicID'] = self._id(
-            'catalog', os.path.basename(self.reader.database))
+            'catalog/descriptor', os.path.basename(self.reader.database))
 
         _optional_update(event_parameters_dict, 'description',
                          self.info_description)
@@ -533,7 +533,7 @@ class Css2Qml(object):
         if self.reader and self.reader.evid == evid and self.reader.valid:
 
             self.logger.debug('event.evid [%d]' % self.reader['event.evid'])
-            public_id = self._id('event', self.reader['event.evid'])
+            public_id = self._id('event/evid', self.reader['event.evid'])
             agency, author, _ = self.split_event_origin_auth(
                 self.reader['event.auth'])
 
@@ -679,7 +679,7 @@ class Css2Qml(object):
 
     def _origin_id(self, orid):
         '''Consistent format for cross-referencing origins.'''
-        return self._id('origin', orid)
+        return self._id('origin/orid', orid)
 
     def _method_id(self, module):
         '''
@@ -705,7 +705,7 @@ class Css2Qml(object):
                 parts = ['vmodel'] + parts
             else:
                 if len(parts) > 3:
-                    self.logger.warn(
+                    self.logger.warning(
                         'Too many parts in model name, keeping first 3: ' +
                         model)
             return self._id(*parts[:3])
@@ -816,7 +816,7 @@ class Css2Qml(object):
         self.logger.debug('netmag.magid [%d]' % record['netmag.magid'])
 
         qml_dict = OrderedDict([
-            ('@publicID', self._id('magnitude', record['netmag.magid'])),
+            ('@publicID', self._id('magnitude/magid', record['netmag.magid'])),
             ('mag', _value_dict(record['netmag.magnitude'])),
             ('type', record['netmag.magtype']),
             ('originID', self._origin_id(record['netmag.orid'])),
@@ -836,7 +836,7 @@ class Css2Qml(object):
 
     def _amplitude_id(self, arid, sta):
         '''Consistent format for cross-referencing amplitudes.'''
-        return self._id('amplitude', arid, sta)
+        return self._id('amplitude/arid/sta', arid, sta)
 
     def _convert_stamag(self, record):
         '''
@@ -846,7 +846,8 @@ class Css2Qml(object):
         self.logger.debug('stamag.magid [%d]' % record['stamag.magid'])
 
         qml_dict = OrderedDict([
-            ('@publicID', self._id('magnitude/station', record['stamag.magid'],
+            ('@publicID', self._id('stationMagnitude/magid/sta',
+                                   record['stamag.magid'],
                                    record['stamag.sta'])),
             ('originID', self._origin_id(record['stamag.orid'])),
             ('mag', _value_dict(record['stamag.magnitude'])),
@@ -923,8 +924,8 @@ class Css2Qml(object):
                 amplitude = amplitude*1e-9
                 unit = 'm/s'
             else:
-                self.logger.warn('Unit "%s" for arid [%d] not recognized'
-                                 % (unit, record['wfmeas.arid']))
+                self.logger.warning('Unit "%s" for arid [%d] not recognized'
+                                    % (unit, record['wfmeas.arid']))
 
             if record['arrival.amp'] is not None:
                 self.logger.debug(
@@ -1092,7 +1093,7 @@ class Css2Qml(object):
 
     def _pick_id(self, arid):
         '''Consistent format for cross-referencing picks.'''
-        return self._id('pick', arid)
+        return self._id('pick/arid', arid)
 
     def _convert_pick(self, record):
         '''
@@ -1138,12 +1139,12 @@ class Css2Qml(object):
         self.detection_id_counter = self.detection_id_counter + 1
 
         qml_dict = OrderedDict([
-            ('@publicID', self._id('detection', self.detection_id_counter,
+            ('@publicID', self._id('detection/counter/srcid',
+                                   self.detection_id_counter,
                                    record['detection.srcid'])),
             ('time', self._time_dict(record['detection.time'])),
             ('waveformID', self._waveform_id(record, 'detection')),
-            ('filterID', self._id(
-                'filter', record['detection.filter'].replace(' ', '_'))),
+            ('filterID', self._id('filter', record['detection.filter'])),
             ('evaluationMode', 'automatic'),
             ('evaluationStatus', 'preliminary'),
             ('comment', OrderedDict([
@@ -1217,7 +1218,7 @@ class Css2Qml(object):
         self.logger.debug('assoc.arid [%d]' % record['assoc.arid'])
 
         qml_dict = OrderedDict([
-            ('@publicID', self._id('arrival', record['assoc.arid'],
+            ('@publicID', self._id('arrival/arid/orid', record['assoc.arid'],
                                    record['assoc.orid'])),
             ('pickID', self._pick_id(record['assoc.arid'])),
             ('phase', record['assoc.phase']),
@@ -1254,10 +1255,13 @@ class Css2Qml(object):
         '''
         if table == 'fplane':
             id_key = 'fplane.mtid'
+            rid_name = 'focalPlane/mtid'
         if table == 'mt':
             id_key = 'mt.mechid'
+            rid_name = 'momentTensor/mtid'
         else:
             id_key = '%s.lddate' % table
+            rid_name = id_key.replace('.', '/')
 
         self.logger.debug('%s [%d]' % (id_key, record[id_key]))
 
@@ -1298,7 +1302,7 @@ class Css2Qml(object):
             ])
         qml_dict = OrderedDict([
             ('@publicID', (record['mt.qmlid'] or
-                           self._id('focalMechanism', record[id_key]))),
+                           self._id(rid_name, record[id_key]))),
             ('triggeringOriginID', self._origin_id(record['%s.orid' % table])),
             ('nodalPlanes', nodal_planes),
             ('principalAxes', principal_axes),
@@ -1319,7 +1323,7 @@ class Css2Qml(object):
         qml_dict = self._convert_fplane(record, table='mt')
 
         moment_tensor = OrderedDict([
-            ('@publicID', self._id('momentTensor', record['mt.mtid'])),
+            ('@publicID', self._id('momentTensor/mtid', record['mt.mtid'])),
             ('derivedOrigin', self._origin_id(record['mt.orid'])),
             ('scalarMoment', record['mt.scm']),
             ('doubleCouple', record['mt.pdc']),
@@ -1557,7 +1561,7 @@ class Css2Qml(object):
                 magnitude type
         '''
         try:
-            if name == 'event':
+            if 'event' in name:
                 # Event elements most be 8 digit ints.
                 serial = '%08d' % int(float(serial))
             else:
