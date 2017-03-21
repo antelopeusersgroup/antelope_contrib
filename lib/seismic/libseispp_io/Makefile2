@@ -1,0 +1,16 @@
+LIB=libseispp_io.a
+INCLUDE=seispp_io.h
+SUBDIR=/contrib
+
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+CXXFLAGS += -g -I$(BOOSTINCLUDE)
+OBJS=SeisppIOStream.o
+SeisppIOStream.cc : seispp_io.h
+
+$(LIB) : $(OBJS)
+	$(RM) $@
+	$(CXXAR) $(CXXARFLAGS) $@ $(OBJS)  
+	$(RANLIB) $@
