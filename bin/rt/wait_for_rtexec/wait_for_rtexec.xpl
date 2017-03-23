@@ -18,8 +18,6 @@ our $PROGNAME = 'wait_for_rexec';
 
 our $PID_FILE_BASE = 'logs/rtexec.pid';
 
-$opt_verbose = 0;
-
 sub sig_handler {
     our $pid_file;
     our $opt_debug;
@@ -61,7 +59,7 @@ sub sig_handler {
 }
 
 sub init {
-    our ($opt_debug, $opt_verbose, $PROGNAME, $PID_FILE_BASE, $rtsystem,
+    our ($opt_debug, $PROGNAME, $PID_FILE_BASE, $rtsystem,
         $pid_file);
     elog_init($PROGNAME);
     elog_debug("Starting ${PROGNAME}");
