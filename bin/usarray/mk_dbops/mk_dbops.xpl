@@ -23,8 +23,9 @@ use Getopt::Std;
 #
 
 our ($opt_k,$opt_v,$opt_y,$opt_I,$opt_R,$opt_U,$opt_A,$opt_D,$opt_m,$opt_w,$opt_W);
-our ($opt_s,$opt_S,$opt_p,$opt_P,$opt_C,$opt_V,$opt_d,$opt_e);
-our ($dbops,$snet,$sta,$mytime,$newprovider,$newcommtype,$newvnet,$mydb,$newpower,$newdutycycle,$power,$dutycycle);
+our ($opt_s,$opt_S,$opt_p,$opt_P,$opt_C,$opt_V,$opt_d,$opt_e,$opt_q);
+our ($dbops,$snet,$sta,$mytime,$newprovider,$newcommtype,$newvnet,$mydb,$newpower,$newdutycycle);
+our ($power,$dutycycle,$equiptype,$newequiptype);
 our ($samecomm,$type,$atype,$stime,$table,$table_filename);
 our ($newnet,$newsta,$newDCC);
 our ($ctime,$cendtime,$wfendtime,$sendtime,$dtime,$endtime);
@@ -48,8 +49,8 @@ our (@tr,$wfsta,$wfchan,$wfstr,$wfstart,$wfend,$nseg) ;
 
   elog_notify($cmd);
 
-  if ( !getopts('knvyIRUADm:w:W:s:S:p:P:C:V:d:e:') || @ARGV < 4 || @ARGV > 6 ) {
-    die ("USAGE: $0 { -I | -U | -R | -A | -D }  [-k] [-y] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-C cmdORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] [-d yes|no|string] [-e powersource] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
+  if ( !getopts('knvyIRUADm:w:W:s:S:p:P:C:V:d:e:q:') || @ARGV < 4 || @ARGV > 6 ) {
+    die ("USAGE: $0 { -I | -U | -R | -A | -D }  [-k] [-y] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-C cmdORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] [-d yes|no|string] [-e powersource] [-q equipment] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
   }
 
   $dbops	= $ARGV[0];
@@ -92,6 +93,7 @@ our (@tr,$wfsta,$wfchan,$wfstr,$wfstart,$wfend,$nseg) ;
 
 $power = $opt_e ? $opt_e : "-" ;
 $dutycycle = $opt_d ? $opt_d : "-" ;
+$equiptype = $opt_q ? $opt_q : "-" ;
 
 # set up some defaults
 
@@ -328,8 +330,9 @@ if ($opt_U) {
 
   $newpower     = $opt_e && ($opt_e !~ $power)     ? $opt_e  : $power ;
   $newdutycycle = $opt_d && ($opt_d !~ $dutycycle) ? $opt_d  : $dutycycle ;
+  $newequiptype = $opt_q && ($opt_q !~ $equiptype) ? $opt_q  : $equiptype ;
 
-  &add2comm($dbops,$sta,$mytime,$newcommtype,$newprovider,$newpower,$newdutycycle) ;
+  &add2comm($dbops,$sta,$mytime,$newcommtype,$newprovider,$newpower,$newdutycycle,$newequiptype) ;
 
   &modifydlsite($dbops) if $opt_y ;	# only look for dlsite if specifically requested via -y/$opt_y
 
@@ -376,7 +379,7 @@ if ($opt_U) {
 
     #  add to the new comm table
       elog_notify("\t starting add2comm for new comm table\n");
-      &add2comm($newdb,$newsta,$earntime+0.001,$commtype,$provider,$power,$dutycycle) ;
+      &add2comm($newdb,$newsta,$earntime+0.001,$commtype,$provider,$power,$dutycycle,$equiptype) ;
     # close out old deployment, comm, and dlsite records
       elog_notify("\t starting close_deployment for old deployment table\n");
       &close_deployment ($dbops, $earntime, $endnull, $mytime ) ; 
@@ -480,7 +483,7 @@ if ($opt_U) {
 
   $stime = &get_stagestarttime ;
 
-  &add2comm($dbops,$sta,$stime,$newcommtype,$newprovider,$power,$dutycycle) ;
+  &add2comm($dbops,$sta,$stime,$newcommtype,$newprovider,$power,$dutycycle,$equiptype) ;
 
 # get deployment.time from (first time in wfdisc?  stage.time?  first data in orb?)
 #   chose to use first data in orb - override with -w
@@ -761,7 +764,7 @@ my ($db,$endcommtime)  = @_ ;
   elog_die("Too many records in comm matching $sta\n") if (dbquery(@single_comm, "dbRECORD_COUNT") > 1) ; 
   $single_comm[3] = 0 ;
 
-  ($ctime,$cendtime,$commtype,$provider,$power,$dutycycle) = dbgetv(@single_comm, qw(time endtime commtype provider power dutycycle) );
+  ($ctime,$cendtime,$commtype,$provider,$power,$dutycycle,$equiptype) = dbgetv(@single_comm, qw(time endtime commtype provider power dutycycle equiptype) );
 
   if ( $endcommtime > $ctime ) {
      dbputv(@single_comm,"endtime",$endcommtime);
@@ -809,9 +812,9 @@ sub add2dlsite	{	# add2dlsite ($db) 		# add a new record to the dlsite table
 
 }
 
-sub add2comm {	#add2comm($db, $sta, $time, $commtype, $provider, $power, $dutycycle)		# add a new record to the comm table
+sub add2comm {	#add2comm($db, $sta, $time, $commtype, $provider, $power, $dutycycle, $equiptype)		# add a new record to the comm table
 
-  my ($db, $sta, $stime, $commtype, $provider, $power, $dutycycle) = @_;
+  my ($db, $sta, $stime, $commtype, $provider, $power, $dutycycle, $equiptype) = @_;
   elog_notify ("Starting add2comm\n") if $opt_v ;
 
   @comm_record = ();
@@ -821,7 +824,8 @@ sub add2comm {	#add2comm($db, $sta, $time, $commtype, $provider, $power, $dutycy
                         "commtype",     $commtype,
                         "provider",     $provider,
                         "power",        $power,
-                        "dutycycle",    $dutycycle
+                        "dutycycle",    $dutycycle,
+                        "equiptype",    $equiptype
         ) ;
 
   @commtable = defined $newdb && ($db eq $newdb)   ? @newcomm : @comm ;
@@ -982,11 +986,11 @@ sub usage {
 
    For a new installation:
 
-       USAGE: $0  -I [-k] [-n] [-v] [-V vnet] [-d dutycycle] [-e power] [-m source_match] [-p pf] [-C cmdORB] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-s siteDB] dbopsdb snet sta certify_time comm_provider comm_type  \n");
+       USAGE: $0  -I [-k] [-n] [-v] [-V vnet] [-d dutycycle] [-e power] [-q equiptype] [-m source_match] [-p pf] [-C cmdORB] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-s siteDB] dbopsdb snet sta certify_time comm_provider comm_type  \n");
 
    For a comms update:    
 
-       USAGE: $0 -U [-k] [-p pf] [-d dutycycle] [-e power] dbopsdb snet sta time_of_comm_change comm_provider [comm_type]  \n");
+       USAGE: $0 -U [-k] [-p pf] [-d dutycycle] [-e power] [-q equiptype] dbopsdb snet sta time_of_comm_change comm_provider [comm_type]  \n");
 
    For a station removal:
 
