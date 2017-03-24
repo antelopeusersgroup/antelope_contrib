@@ -40,11 +40,17 @@ class BasicObjectWriter
    at the end of the file.  We seek back this many bytes to read the
    number of objects written */
 const int TextIOStreamEOFOffset(64);
+const int BinaryIOStreamEOFOffset(4+sizeof(long));
 /*! This string is written after each object when more data follows..*/
 const string more_data_tag("MORE_DATA_FOLLOW");
 /*! This is written at the end of the file immediately before text conversion
 of nobject count */
 const string eof_tag("END_OF_FILE");
+/* For binary files it is preferable to use a simpler set of keywords to 
+ * define blocks with a fixed size. */
+#define BINARY_TAG_SIZE 4
+const char binary_more_data_tag[BINARY_TAG_SIZE]="MOR";
+const char binary_eof_tag[BINARY_TAG_SIZE]="EOF";
 /*! \brief Generic object reader to read serialized test data from a sequential file.
 
 This object abstracts reading of objects based on two standard concepts:
@@ -68,12 +74,9 @@ class TextIOStreamReader : BasicObjectReader
         constructors may also throw special error object (needs research).
         */
     TextIOStreamReader(string fname);
-    /*! Standard copy constructor.  Seems impossible with boost text_iarchive*/
-    //TextIOStreamReader(const TextIOStreamReader& parent);
     /*! Destructor - has to close io channel */
      ~TextIOStreamReader();
-     /*! Standard assignment operator. Appears impossible for boost serialization*/
-    //TextIOStreamReader& operator=(const TextIOStreamReader& parent);
+     /*! Read the next object in file. */
     template <class T> T read();
     /*! Returns number of objects in the file being read. */
     long number_available();
@@ -151,6 +154,125 @@ class TextIOStreamWriter : BasicObjectWriter
     long number_already_written(){return nobjects;};
   private:
     boost::archive::text_oarchive *ar;
+    /* input from stdio is special and is flagged by this boolean */
+    bool output_is_stdio;
+    /* This is the name of the file linked to ofs.*/
+    string parent_filename;
+    /* stream linked to ar */
+    ofstream ofs;
+    /* To support multiple objects in one serial file we need to
+       count the number of objects written.   This number is written to
+       the end of the file.   It is incremted by each write. */
+    long nobjects;
+};
+/*! \brief Generic object reader to read serialized test data from a sequential file in a binary format.
+
+This object abstracts reading of objects based on two standard concepts:
+(1) access is sequential as in reading from a tape, and (2) data are
+serialized and written as binary data.   The implementation uses the
+boost binary archive library, but the design of the interface is intended to
+insulate the application from this implementation detail.  The interface
+is very similar to the text version but the file is binary.   This approach
+should only be used when the data being read was written on the 
+same machine or at least a machine with the same architecture. */
+class BinaryIOStreamReader : BasicObjectReader
+{
+  public:
+    /*! \brief Default constructor.
+
+      Default constructor uses boost text serialization to stdin*/
+    BinaryIOStreamReader();
+    /*! \brief Create handle to read from file.
+
+      Creates an input handle to read from a file.
+      \param fname - file name opened as ifs
+
+      \exception - throws a SeisppError object if operation fails.  Boost
+        constructors may also throw special error object (needs research).
+        */
+    BinaryIOStreamReader(string fname);
+    /*! Destructor - has to close io channel */
+     ~BinaryIOStreamReader();
+     /*! Read next object. */
+    template <class T> T read();
+    /*! Returns number of objects in the file being read. */
+    long number_available();
+    /*! \brief Return the number of objects already read.
+
+    In loops going through a sequential file it can be useful to know the
+    position.   This effectively returns a count of position as an integer
+    of how many objects are read.   Since most objects are not a fixed size
+    this is not directly linked to file position.  It is of use in a loop
+    of for information on how a job is progressing. */
+    long number_already_read(){return n_previously_read;};
+    /*! \brief Test if ok to read more.
+
+    This method can be used to drive a while loop.  Returns true as long
+    as the count of object read is less than the number in the file */
+    bool good(){return more_data_available;};
+    /*! Test for end of file condition.  */
+    bool eof();
+    /*! \brief position to beginning of file.
+
+    Since a serial file is basd on the concept of sequential access it is
+    useful to have the concept of rewind as in a tape. 
+     \exception - will throw a SeisppError if you attempt to call this
+     method when the input is stdin (default constructor).*/
+    void rewind();
+  private:
+    boost::archive::binary_iarchive *ar;
+    /* input from stdio is special and is flagged by this boolean */
+    bool input_is_stdio;
+    /* This string defines the parent filename opened as ifstream ifs*/
+    string parent_filename;
+    /* stream linked to ar */
+    ifstream ifs;
+    /* To support multiple objects in one serial file we need to
+       cache the number of objects expected and the number already
+       read */
+    long nobjects;
+    long n_previously_read;
+    /* When reading from stdin this boolean is set based on the
+    tag string written at the end of each object.  Set true as long
+    as the tag is not the eof_tag. */
+    bool more_data_available;
+};
+/*! \brief Generic object writer saving data in a sequential text file.
+
+This object abstracts reading of objects based on two standard concepts:
+(1) access is sequential as in reading from a tape, and (2) data are
+serialized and written as ascii text.   The implementation uses the
+boost text archive library, but the design of the interface is intended to
+insulate the application from this implementation detail. */
+class BinaryIOStreamWriter : BasicObjectWriter
+{
+  public:
+    /*! \brief Default constructor.
+
+      Default constructor uses boost text serialization to stdout*/
+    BinaryIOStreamWriter();
+    /*! \brief Create handle to write to file.
+
+      Creates an input handle to write to a file.
+      \param file - file to open for output
+
+      \exception - throws a SeisppError object if operation fails.  Boost
+        constructors may also throw special error object (needs research).
+        */
+    BinaryIOStreamWriter(string fname);
+    /*! Destructor - has to close io channel */
+     ~BinaryIOStreamWriter();
+    /*! \brief write one object.
+
+    This is the primary method of this object.  Writes a single object to
+    the output.  Assumes d has a serialization defined.
+
+    \param d - object to be written
+    */
+    template <class T> void write(T& d);
+    long number_already_written(){return nobjects;};
+  private:
+    boost::archive::binary_oarchive *ar;
     /* input from stdio is special and is flagged by this boolean */
     bool output_is_stdio;
     /* This is the name of the file linked to ofs.*/
