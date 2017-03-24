@@ -23,19 +23,19 @@ get your program to work.  Alternatively, start from template_plain.cc.
 #include <stdio.h>
 #include <string>
 #include <iostream>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 /* These are SEISPP includes that are a base requirement 
    to use this template file */
 #include "seispp.h"
 /* Replace these as needed.  This one is here only to make
    this do nothing template compile for testing configuration */
 #include "ensemble.h"
+/* This file defines the object that abstracts object io */
+#include "seispp_io.h"
 /* You will get lots of errors without these namespace
    declaration*/
 using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
-/* You shoudl always include a usage procedure like this to trap
+/* You should always include a usage procedure like this to trap
    command line parsing problems. */
 void usage()
 {
@@ -43,44 +43,6 @@ void usage()
         <<endl
         << "add short explanation of args here if needed"<<endl;
     exit(-1);
-}
-/* This is a generic routine to read a single object from 
-   a boost text archive.   The object type is defined by
-   the type InputObject as the template argument in standard
-   C++ convention.   Note we return the object.   If 
-   the object you are reading is huge you should consider 
-   modifying this to return a pointer or auto_ptr.*/
-template <class InputObject> InputObject 
-    read_object(boost::archive::text_iarchive& ia)
-{
-    InputObject d;
-    try{
-        ia>>d;
-    }catch(...)
-    {
-        /* This template ignores errors thrown by boost 
-           and converts to a standard error for the seispp 
-           library - perhaps not ideal but what is done here. */
-        throw SeisppError(string("read_object failed:  ")
-                    + "Check that input file is a boost text archive file");
-    }
-    return d;
-}
-/* This generic function is the inverse of read_object.  It writes
-an object of type ObjectType to the boost archive stream.  
-The write will fail with an exception if serialization is not 
-defined for OutputObject. */
-template <class OutputObject> void write_object(OutputObject& d,
-        boost::archive::text_oarchive& oa)
-{
-    try {
-        oa << d;
-    }catch(...)
-    {
-        throw SeisppError(string("write_object failed\n")
-                +"Is serialization defined for this object type?\n"
-                +"Do you have write permission for output directory?");
-    }
 }
 /* This obnoxious external variable is a necessary evil to deal with 
    error logging in the SEISPP library. Your code will probably not link 
@@ -136,28 +98,38 @@ int main(int argc, char **argv)
        to change the name pffile on the command line. 
     */
     try{
-        /* This allows input and output of objects through
-           the boost serialization mechanism.   This assumes
-           input and output of streams of data.  It has only
-           been tested on single objects, but in principle it
-           should work for arbitrarily complex formats mixing
-           text data with boost archive text data. */
-        boost::archive::text_iarchive ia(cin);
-        boost::archive::text_oarchive oa(cout);
-        /* This uses the generic template above to read a single
-           object.  This example uses a ThreeComponentEnsemble 
-           but any object with serialization define should work
-           with this template. Note use of an auto_ptr for 
-           efficiency with large objects*/
+        /* This reader and writer perform the serialization.  
+         * The default constructors used in this example connect
+         * stdin for input and stdout for output. 
+         * Alternatively to read from fname use 
+         * TextIOStreamReader inp(fname);
+         * and to write to fname use
+         * TextIOStreamWriter out(fname);   
+         * - In both cases fname should be an std::string for a valid
+         *   file name */
+        TextIOStreamReader inp;
+        TextIOStreamWriter out;
+        /* This example uses the ThreeComponentEnsemble object.  
+         * Note the same logic can be used for any object that
+         * has boost serialization defined. */
         ThreeComponentEnsemble d;
-        d=read_object<ThreeComponentEnsemble>(ia);
-        /* Insert your algorithm here.  This example
-        simple writes this message to cerr */
-        cerr << "Template seispp unix filter:  copying stdin to stdout"
+        /* We can loop through a file by one of two methods.   
+         * This example uses a for loop construct.   An alternative is
+         * to use a while loop broken by the eof or good method.  
+         * i.e. while(!inp.eof()) or while(inp.gooe()) */
+        int i,n;
+        n=inp.number_available();
+        cerr << "Template seispp unix filter:  copying "
+            <<n<<" ThreeComponentSeismogram objects from stdin to stdout"
             <<endl;
-        /*This is the output equivalent of read_object.  This 
-         is again only an example and should be changed.*/
-        write_object<ThreeComponentEnsemble>(d,oa);
+        /* Insert your algorithm here.  This example
+        simple writes a message for each ensemble it reads */
+        for(i=0;i<n;++i)
+        {
+            d=inp.read<ThreeComponentEnsemble>();
+            out.write<ThreeComponentEnsemble>(d);
+            cerr << "Copied ensemble number "<<i<<endl;
+        }
     }catch(SeisppError& serr)
     {
         serr.log_error();
