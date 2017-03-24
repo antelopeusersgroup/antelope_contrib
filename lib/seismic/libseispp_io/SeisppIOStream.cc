@@ -42,42 +42,6 @@ TextIOStreamReader::~TextIOStreamReader()
   delete ar;
   if(!input_is_stdio) ifs.close();
 }
-template <class InputObject> InputObject TextIOStreamReader::read()
-{
-  const string base_error("TextIOStreamReader read method:  ");
-  InputObject d;
-  try{
-    /* This little test is probably an unnecessary overhead, but the cost is
-    tiny */
-    if(!input_is_stdio)
-      if(n_previously_read>=(nobjects-1)) throw SeisppError(base_error
-        + "Trying to read past end of file - code should test for this condition with at_eof method");
-    (*ar)>>d;
-    ++n_previously_read;
-    string tag;
-    if(input_is_stdio)
-      cin>>tag;
-    else
-      ifs>>tag;
-    if(tag==more_data_tag)
-      more_data_available=true;
-    else if(tag==eof_tag)
-      more_data_available=false;
-    else
-    {
-      more_data_available=false;
-      cerr << "TextIOStreamReader read method (WARNING): invalid end of data tag="
-        << tag<<endl
-        << "Read may be truncated"<<endl
-        << "Number of objects read so far="<<n_previously_read<<endl;
-    }
-    return d;
-  }catch(...)
-  {
-    throw SeisppError(base_error
-      + "boost text serialization read failed\nCheck that input is a valid boost text serialization file");
-  }
-}
 bool TextIOStreamReader::eof()
 {
   if(input_is_stdio)
@@ -148,25 +112,6 @@ TextIOStreamWriter::~TextIOStreamWriter()
   }
   ofs.close();
   delete ar;
-}
-template <class OutputObject> void TextIOStreamWriter::write(OutputObject& d)
-{
-    try {
-      if(nobjects>0)
-      {
-        if(output_is_stdio)
-          cout<<more_data_tag<<endl;
-        else
-          ofs<<more_data_tag<<endl;
-      }
-      (*ar) << d;
-      ++nobjects;
-    }catch(...)
-    {
-        throw SeisppError(string("TextIOStreamWriter write method failed\n")
-                +"Is serialization defined for this object type?\n"
-                +"Do you have write permission for output directory?");
-    }
 }
 /* Binary versions go next - silly to do them until we at least get
 the painfully similar text versions above to at least compile */

@@ -1,7 +1,15 @@
+#include <string>
+#include <iostream>
+#include <fstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#ifndef _SEISPP_IO_H_
+#define _SEISPP_IO_H_
+namespace SEISPP{
+using namespace std;
+using namespace SEISPP;
 /*! \brief Abstract base class for generic object reader.
 
 This is the base class for a collection of C++ classes designed to
@@ -14,7 +22,7 @@ class BasicObjectReader
   public:
     /*! Pure virtual method used to allow an abstract base class.*/
     virtual bool good()=0;
-    virtual long number_available();
+    virtual long number_available()=0;
 };
 /*! \brief Abstract base class for generic object writer.
 
@@ -26,7 +34,7 @@ a set of polymorphic objects for saving data in varous forms.
 class BasicObjectWriter
 {
   public:
-    virtual long number_already_written();
+    virtual long number_already_written()=0;
 };
 /*! We write the number of objects in set of concatenated serial objects
    at the end of the file.  We seek back this many bytes to read the
@@ -154,6 +162,61 @@ class TextIOStreamWriter : BasicObjectWriter
        the end of the file.   It is incremted by each write. */
     long nobjects;
 };
+template <class InputObject> InputObject TextIOStreamReader::read()
+{
+  const string base_error("TextIOStreamReader read method:  ");
+  InputObject d;
+  try{
+    /* This little test is probably an unnecessary overhead, but the cost is
+    tiny */
+    if(!input_is_stdio)
+      if(n_previously_read>=(nobjects-1)) throw SeisppError(base_error
+        + "Trying to read past end of file - code should test for this condition with at_eof method");
+    (*ar)>>d;
+    ++n_previously_read;
+    string tag;
+    if(input_is_stdio)
+      cin>>tag;
+    else
+      ifs>>tag;
+    if(tag==more_data_tag)
+      more_data_available=true;
+    else if(tag==eof_tag)
+      more_data_available=false;
+    else
+    {
+      more_data_available=false;
+      cerr << "TextIOStreamReader read method (WARNING): invalid end of data tag="
+        << tag<<endl
+        << "Read may be truncated"<<endl
+        << "Number of objects read so far="<<n_previously_read<<endl;
+    }
+    return d;
+  }catch(...)
+  {
+    throw SeisppError(base_error
+      + "boost text serialization read failed\nCheck that input is a valid boost text serialization file");
+  }
+}
+template <class OutputObject> void TextIOStreamWriter::write(OutputObject& d)
+{
+    try {
+      if(nobjects>0)
+      {
+        if(output_is_stdio)
+          cout<<more_data_tag<<endl;
+        else
+          ofs<<more_data_tag<<endl;
+      }
+      (*ar) << d;
+      ++nobjects;
+    }catch(...)
+    {
+        throw SeisppError(string("TextIOStreamWriter write method failed\n")
+                +"Is serialization defined for this object type?\n"
+                +"Do you have write permission for output directory?");
+    }
+}
 /***** Should be able to add: (1) read/write binary sequential, (2) read/write
 xml sequential, (3) forms of indexed files with keys generated seperately, and
 (4) database access through a nonsql db */
@@ -189,3 +252,5 @@ template <class InputObject> InputObject
     }
     return d;
 }
+} // End namespace SEISPP declaration 
+#endif
