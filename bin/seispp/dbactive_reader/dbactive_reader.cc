@@ -12,6 +12,7 @@
 #include "SourceData.h"
 #include "GapDefinition.h"
 #include "HFArray.h"
+#include "seispp_io.h"
 using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
@@ -162,18 +163,6 @@ void mask_bad(ThreeComponentEnsemble& d, GapDefinition& badtimes)
     }
     }catch(...){throw;};
 }
-template <class OutputObject> void write_object(OutputObject& d,
-        boost::archive::text_oarchive& oa)
-{
-    try {
-        oa << d;
-    }catch(...)
-    {
-        throw SeisppError(string("write_object failed\n")
-                +"Is serialization defined for this object type?\n"
-                +"Do you have write permission for output directory?");
-    }
-}
 
 bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
@@ -224,7 +213,7 @@ int main(int argc, char **argv)
       log.open(logfile.c_str(),ios::out);
       log << argv[0]<<" starting reading from db="<<dbname<<endl;
       Metadata control(pf);
-      boost::archive::text_oarchive oa(cout);
+      TextIOStreamWriter out;
       DatascopeHandle dbh(dbname,true);
       GapDefinition goodtimes;
       if(mask_bad_data)
@@ -330,7 +319,7 @@ int main(int argc, char **argv)
         test for this */
         if(dout.member.size()>0)
         {
-          write_object<ThreeComponentEnsemble>(dout,oa);
+          out.write<ThreeComponentEnsemble>(dout);
           log << "Wrote "<<dout.member.size()<<" seismograms for ffid="
               << dout.get_int("ffid")<<endl;
         }
