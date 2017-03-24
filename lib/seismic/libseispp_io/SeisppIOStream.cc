@@ -42,6 +42,14 @@ TextIOStreamReader::~TextIOStreamReader()
   delete ar;
   if(!input_is_stdio) ifs.close();
 }
+long TextIOStreamReader::number_available()
+{
+    if(input_is_stdio)
+        throw SeisppError(string("TextIOStreamReader::number_available method:")
+               + "  input is stdio - cannot determine file size from stdin");
+    else
+        return nobjects;
+}
 bool TextIOStreamReader::eof()
 {
   if(input_is_stdio)

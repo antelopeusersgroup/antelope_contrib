@@ -8,7 +8,7 @@ include $(ANTELOPEMAKELOCAL)
 
 CXXFLAGS += -g -I$(BOOSTINCLUDE)
 OBJS=SeisppIOStream.o
-SeisppIOStream.cc : seispp_io.h
+SeisppIOStream.o: seispp_io.h
 
 $(LIB) : $(OBJS)
 	$(RM) $@

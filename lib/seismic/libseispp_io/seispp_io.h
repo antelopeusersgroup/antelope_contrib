@@ -76,7 +76,7 @@ class TextIOStreamReader : BasicObjectReader
     //TextIOStreamReader& operator=(const TextIOStreamReader& parent);
     template <class T> T read();
     /*! Returns number of objects in the file being read. */
-    long number_available(){return nobjects;};
+    long number_available();
     /*! \brief Return the number of objects already read.
 
     In loops going through a sequential file it can be useful to know the

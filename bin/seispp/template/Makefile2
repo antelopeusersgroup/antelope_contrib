@@ -8,7 +8,7 @@ BIN=template
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization
+ldlibs=-lseispp -lseispp_io -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp -lseispp_io
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE) 
