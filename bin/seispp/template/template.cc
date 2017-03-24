@@ -114,22 +114,22 @@ int main(int argc, char **argv)
          * has boost serialization defined. */
         ThreeComponentEnsemble d;
         /* We can loop through a file by one of two methods.   
-         * This example uses a for loop construct.   An alternative is
-         * to use a while loop broken by the eof or good method.  
-         * i.e. while(!inp.eof()) or while(inp.gooe()) */
-        int i,n;
-        n=inp.number_available();
+         * This example uses a while loop.  For reading from a file 
+         * instead of stdio one can use a for loop and the number_available
+         * method */
+        int n(0);
         cerr << "Template seispp unix filter:  copying "
-            <<n<<" ThreeComponentSeismogram objects from stdin to stdout"
+            <<"ThreeComponentSeismogram objects from stdin to stdout"
             <<endl;
         /* Insert your algorithm here.  This example
         simple writes a message for each ensemble it reads */
-        for(i=0;i<n;++i)
+        while(inp.good())
         {
             d=inp.read<ThreeComponentEnsemble>();
             out.write<ThreeComponentEnsemble>(d);
-            cerr << "Copied ensemble number "<<i<<endl;
+            ++n;
         }
+        cerr << "Total number of ensembles copied ="<<n<<endl;
     }catch(SeisppError& serr)
     {
         serr.log_error();
