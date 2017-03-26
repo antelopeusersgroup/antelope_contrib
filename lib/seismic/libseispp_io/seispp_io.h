@@ -17,12 +17,13 @@ abstract and simplify the process of reading and writing of seispp data
 objects.   The purpose of this base class is to provide the foundation for
 a set of polymorphic objects for reading data in various generic forms.
 */
-class BasicObjectReader
+template <class T> class BasicObjectReader
 {
   public:
     /*! Pure virtual method used to allow an abstract base class.*/
     virtual bool good()=0;
     virtual long number_available()=0;
+    T read();
 };
 /*! \brief Abstract base class for generic object writer.
 
@@ -31,10 +32,12 @@ abstract and simplify the process of reading and writing of seispp data
 objects.   The purpose of this base class is to provide the foundation for
 a set of polymorphic objects for saving data in varous forms.
 */
-class BasicObjectWriter
+template <class T> class BasicObjectWriter
 {
   public:
     virtual long number_already_written()=0;
+    /*! Writer - cannot be virtual for reasons unclear to me. */
+    void write(T);
 };
 /*! We write the number of objects in set of concatenated serial objects
    at the end of the file.  We seek back this many bytes to read the
@@ -58,7 +61,7 @@ This object abstracts reading of objects based on two standard concepts:
 serialized and written as ascii text.   The implementation uses the
 boost text archive library, but the design of the interface is intended to
 insulate the application from this implementation detail. */
-class TextIOStreamReader : BasicObjectReader
+template <class T> class TextIOStreamReader : public BasicObjectReader<T>
 {
   public:
     /*! \brief Default constructor.
@@ -77,7 +80,7 @@ class TextIOStreamReader : BasicObjectReader
     /*! Destructor - has to close io channel */
      ~TextIOStreamReader();
      /*! Read the next object in file. */
-    template <class T> T read();
+    T read();
     /*! Returns number of objects in the file being read. */
     long number_available();
     /*! \brief Return the number of objects already read.
@@ -125,7 +128,7 @@ This object abstracts reading of objects based on two standard concepts:
 serialized and written as ascii text.   The implementation uses the
 boost text archive library, but the design of the interface is intended to
 insulate the application from this implementation detail. */
-class TextIOStreamWriter : BasicObjectWriter
+template <class T> class TextIOStreamWriter : public BasicObjectWriter<T>
 {
   public:
     /*! \brief Default constructor.
@@ -150,7 +153,7 @@ class TextIOStreamWriter : BasicObjectWriter
 
     \param d - object to be written
     */
-    template <class T> void write(T& d);
+    void write(T& d);
     long number_already_written(){return nobjects;};
   private:
     boost::archive::text_oarchive *ar;
@@ -175,7 +178,7 @@ insulate the application from this implementation detail.  The interface
 is very similar to the text version but the file is binary.   This approach
 should only be used when the data being read was written on the 
 same machine or at least a machine with the same architecture. */
-class BinaryIOStreamReader : BasicObjectReader
+template <class T> class BinaryIOStreamReader : public BasicObjectReader<T>
 {
   public:
     /*! \brief Default constructor.
@@ -194,7 +197,7 @@ class BinaryIOStreamReader : BasicObjectReader
     /*! Destructor - has to close io channel */
      ~BinaryIOStreamReader();
      /*! Read next object. */
-    template <class T> T read();
+     T read();
     /*! Returns number of objects in the file being read. */
     long number_available();
     /*! \brief Return the number of objects already read.
@@ -244,7 +247,7 @@ This object abstracts reading of objects based on two standard concepts:
 serialized and written as ascii text.   The implementation uses the
 boost text archive library, but the design of the interface is intended to
 insulate the application from this implementation detail. */
-class BinaryIOStreamWriter : BasicObjectWriter
+template <class T> class BinaryIOStreamWriter : public BasicObjectWriter<T>
 {
   public:
     /*! \brief Default constructor.
@@ -269,7 +272,7 @@ class BinaryIOStreamWriter : BasicObjectWriter
 
     \param d - object to be written
     */
-    template <class T> void write(T& d);
+    void write(T& d);
     long number_already_written(){return nobjects;};
   private:
     boost::archive::binary_oarchive *ar;
@@ -339,9 +342,61 @@ template <class OutputObject> void TextIOStreamWriter::write(OutputObject& d)
                 +"Do you have write permission for output directory?");
     }
 }
-/***** Should be able to add: (1) read/write binary sequential, (2) read/write
-xml sequential, (3) forms of indexed files with keys generated seperately, and
-(4) database access through a nonsql db */
+template <class InputObject> InputObject BinaryIOStreamReader::read()
+{
+  const string base_error("BinaryIOStreamReader read method:  ");
+  InputObject d;
+  try{
+    /* This little test is probably an unnecessary overhead, but the cost is
+    tiny */
+    if(!input_is_stdio)
+      if(n_previously_read>=(nobjects-1)) throw SeisppError(base_error
+        + "Trying to read past end of file - code should test for this condition with at_eof method");
+    (*ar)>>d;
+    ++n_previously_read;
+    string tag;
+    if(input_is_stdio)
+      cin>>tag;
+    else
+      ifs>>tag;
+    if(tag==more_data_tag)
+      more_data_available=true;
+    else if(tag==eof_tag)
+      more_data_available=false;
+    else
+    {
+      more_data_available=false;
+      cerr << "BinaryIOStreamReader read method (WARNING): invalid end of data tag="
+        << tag<<endl
+        << "Read may be truncated"<<endl
+        << "Number of objects read so far="<<n_previously_read<<endl;
+    }
+    return d;
+  }catch(...)
+  {
+    throw SeisppError(base_error
+      + "boost text serialization read failed\nCheck that input is a valid boost text serialization file");
+  }
+}
+template <class OutputObject> void BinaryIOStreamWriter::write(OutputObject& d)
+{
+    try {
+      if(nobjects>0)
+      {
+        if(output_is_stdio)
+          cout<<more_data_tag<<endl;
+        else
+          ofs<<more_data_tag<<endl;
+      }
+      (*ar) << d;
+      ++nobjects;
+    }catch(...)
+    {
+        throw SeisppError(string("BinaryIOStreamWriter write method failed\n")
+                +"Is serialization defined for this object type?\n"
+                +"Do you have write permission for output directory?");
+    }
+}
 
 /*! Legacy writer for archive connected to stdout - original seispp_filters */
 template <class OutputObject> void write_object(OutputObject& d,
