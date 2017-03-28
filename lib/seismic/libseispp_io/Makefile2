@@ -1,16 +1,14 @@
-LIB=libseispp_io.a
-INCLUDE=seispp_io.h
+BIN=test
 SUBDIR=/contrib
 
 
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
-
 CXXFLAGS += -g -I$(BOOSTINCLUDE)
-OBJS=SeisppIOStream.o
-SeisppIOStream.o: seispp_io.h
+ldflags=-L$(ANTELOPE)/contrib/static -L$(BOOSTLIB)
+ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization
+OBJS=test.o
 
-$(LIB) : $(OBJS)
+$(BIN) : $(OBJS)
 	$(RM) $@
-	$(CXXAR) $(CXXARFLAGS) $@ $(OBJS)  
-	$(RANLIB) $@
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
