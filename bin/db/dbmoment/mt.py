@@ -209,7 +209,7 @@ class DbMoment(Station):
 
 
         # Verify we have a valid event
-        if self.my_event.depth > self.depth_min and self.my_event.depth < self.depth_max:
+        if self.my_event.depth >= self.depth_min and self.my_event.depth <= self.depth_max:
             self.logging.info("Event depth [%s] within our limits." % (self.my_event.depth))
         else:
             self.logging.error("Event depth [%s] out of limits.[%s,%s]" % \
