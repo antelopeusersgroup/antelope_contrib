@@ -1,7 +1,7 @@
 #ifndef _BASICOBJECTREADER_H_
 #define _BASICOBJECTREADER_H_
-//namespace SEISPP{
-//using namespace SEISPP;
+namespace SEISPP{
+using namespace SEISPP;
 /*! \brief Abstract base class for generic object reader.
 
 This is the base class for a collection of C++ classes designed to
@@ -17,5 +17,5 @@ template <class T> class BasicObjectReader
     virtual long number_available()=0;
     T read();
 };
-//}
+}
 #endif
