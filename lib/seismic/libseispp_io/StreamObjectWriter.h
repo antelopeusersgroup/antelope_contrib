@@ -180,5 +180,33 @@ template <class T> StreamObjectWriter<T>::~StreamObjectWriter()
       delete [] buf;
   };
 }
+/*! \brief Generic algorithm to dismember an ensemble into components.
+ *
+ * Ensembles are defined in the seispp library as vectors of objects with
+ * the reserved name "members".   Ensembles also have Metadata parameters
+ * that are global.   This generic algorithm copes the global metadata to 
+ * each member and writes the members to a stream output defined by 
+ * the handle out.   Tens is the type of the ensemble and Tmem defines
+ * the type of the members of that ensemble.
+ *
+ * \param d - input ensemble.
+ * \param out - output handle (StreamObjectWriter template class)
+ * */
+template <class Tens,class Tmem> int write_ensemble(Tens& d,
+        shared_ptr<StreamObjectWriter<Tmem>> out)
+{
+    try {
+      int i;
+      Metadata ensmd(dynamic_cast<Metadata&>(d));
+      MetadataList keylist=ensmd.keys();
+      for(i=0;i<d.member.size();++i)
+      {
+        Tmem dmem(d.member[i]);
+        copy_selected_metadata(ensmd,dynamic_cast<Metadata&>(dmem),keylist);
+        out->write(dmem);
+      }
+      return i;
+    }catch(...){throw;}
+}
 }
 #endif

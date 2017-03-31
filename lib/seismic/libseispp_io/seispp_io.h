@@ -41,23 +41,5 @@ template <class OutputObject> void write_object(OutputObject& d,
                 +"Do you have write permission for output directory?");
     }
 }
-/*! Legacy reader for archive connected to stdin- original seispp_filters */
-
-template <class InputObject> InputObject
-    read_object(boost::archive::text_iarchive& ia)
-{
-    InputObject d;
-    try{
-        ia>>d;
-    }catch(...)
-    {
-        /* This template ignores errors thrown by boost
-           and converts to a standard error for the seispp
-           library - perhaps not ideal but what is done here. */
-        throw SeisppError(string("read_object failed:  ")
-                    + "Check that input file is a boost text archive file");
-    }
-    return d;
-}
-} // End namespace SEISPP declaration
+} //End SEISPP namespace encapsulation
 #endif

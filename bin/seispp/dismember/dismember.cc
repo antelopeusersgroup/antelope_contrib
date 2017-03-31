@@ -28,27 +28,6 @@ void usage()
         <<endl;
     exit(-1);
 }
-/* Generic algorithm to do the main task of this program.   Made
- * generic to allow application to both TimeSeries and ThreeComponent 
- * ensemble objects with common code.  Tens is the type of the ensemble
- * and Tmem is the type of the ensemble components that are the result
- * of dismembering. */
-template <class Tens,class Tmem> int write_ensemble(Tens& d,
-        shared_ptr<StreamObjectWriter<Tmem>> out)
-{
-    try {
-      int i;
-      Metadata ensmd(dynamic_cast<Metadata&>(d));
-      MetadataList keylist=ensmd.keys();
-      for(i=0;i<d.member.size();++i)
-      {
-        Tmem dmem(d.member[i]);
-        copy_selected_metadata(ensmd,dynamic_cast<Metadata&>(dmem),keylist);
-        out->write(dmem);
-      }
-      return i;
-    }catch(...){throw;}
-}
 bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
