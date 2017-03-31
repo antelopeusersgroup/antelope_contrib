@@ -34,7 +34,7 @@ void usage()
  * and Tmem is the type of the ensemble components that are the result
  * of dismembering. */
 template <class Tens,class Tmem> int write_ensemble(Tens& d,
-        StreamObjectWriter<Tmem> *out)
+        shared_ptr<StreamObjectWriter<Tmem>> out)
 {
     try {
       int i;
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
               if(ias->eof()) break;
               d=ias->read();
               count=write_ensemble<TimeSeriesEnsemble,TimeSeries>
-                  (d,oas.get());
+                  (d,oas);
               nd+=count;
             }
             else
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
               if(ia3c->eof()) break;
               d3c=ia3c->read();
               count=write_ensemble<ThreeComponentEnsemble,ThreeComponentSeismogram>
-                  (d3c,oa3c.get());
+                  (d3c,oa3c);
               nd+=count;
             }
             ++nensembles;
