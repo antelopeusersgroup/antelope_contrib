@@ -2,83 +2,86 @@
 #include <stdio.h>
 #include <string>
 #include <iostream>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <memory>
 #include "seispp.h"
 #include "ensemble.h"
-using namespace std;
-using namespace SEISPP;
-
+#include "StreamObjectReader.h"
+#include "StreamObjectWriter.h"
+using namespace std;   
+using namespace SEISPP; 
 void usage()
 {
-    cerr << "usage line goes here"
+    cerr << "template < in > out [--help -binary]"
         <<endl
-        << "add short explanation of args here if needed"<<endl;
+        << "Example, do nothing filter using seismic unix style pipeline"<<endl
+        << "Reads serialized ThreeComponentEnsemble objects from stdin"<<endl
+        << "and writes a copy to stdout"<<endl
+        << " --help - prints this message"<<endl
+        << " -binary - switch to binary input and output (default is text)"
+        <<endl;
     exit(-1);
 }
-
-template <class InputObject> InputObject
-    read_object(boost::archive::text_iarchive& ia)
-{
-    InputObject d;
-    try{
-        ia>>d;
-    }catch(...)
-    {
-        throw SeisppError(string("read_object failed:  ")
-                    + "Check that input file is a boost text archive file");
-    }
-    return d;
-}
-
-template <class OutputObject> void write_object(OutputObject& d,
-        boost::archive::text_oarchive& oa)
-{
-    try {
-        oa << d;
-    }catch(...)
-    {
-        throw SeisppError(string("write_object failed\n")
-                +"Is serialization defined for this object type?\n"
-                +"Do you have write permission for output directory?");
-    }
-}
-
 bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
-
     int i;
     const int narg_required(0);
-    double example_real(0.0);
-    bool example_boolean(false);
+    bool binary_data(false);
 
     for(i=narg_required+1;i<argc;++i)
     {
         string sarg(argv[i]);
-        if(sarg=="-x")
+        if(sarg=="--help")
         {
-            ++i;
-            if(i>=argc)usage();
-            example_real=atof(argv[i]);
+            usage();
         }
-        else if(sarg=="-flag")
+        }
+        else if(sarg=="-binary")
         {
-            /* flags normally set a boolean like this
-               true or false */
-            example_boolean=true;
+            binary_data=true;
         }
         else
             usage();
     }
     try{
-        boost::archive::text_iarchive ia(cin);
-        boost::archive::text_oarchive oa(cout);
+        shared_ptr<StreamObjectReader<ThreeComponentEnsemble>> inp;
+        if(binary_data)
+        {
+          inp=shared_ptr<StreamObjectReader<ThreeComponentEnsemble>>
+             (new StreamObjectReader<ThreeComponentEnsemble>('b'));
+        }
+        else
+        {
+          inp=shared_ptr<StreamObjectReader<ThreeComponentEnsemble>>
+             (new StreamObjectReader<ThreeComponentEnsemble>);
+        }
+        shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>> out;
+        if(binary_data)
+        {
+          out=shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
+             (new StreamObjectWriter<ThreeComponentEnsemble>('b'));
+        }
+        else
+        {
+          out=shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
+             (new StreamObjectWriter<ThreeComponentEnsemble>);
+        }
         ThreeComponentEnsemble d;
-        d=read_object<ThreeComponentEnsemble>(ia);
-        cerr << "Template seispp unix filter:  copying stdin to stdout"
+        int n(0);
+        cerr << "Template seispp unix filter:  copying "
+            <<"ThreeComponentEnsemble object from stdin to stdout"
             <<endl;
-        write_object<ThreeComponentEnsemble>(d,oa);
+        if(binary_data)
+            cerr << "Assuming binary format data"<<endl;
+        else
+            cerr << "Assuming ascii formatted data"<<endl;
+        while(inp->good())
+        {
+            d=inp->read();
+            out->write(d);
+            ++n;
+        }
+        cerr << "Total number of ensembles copied ="<<n<<endl;
     }catch(SeisppError& serr)
     {
         serr.log_error();
@@ -88,3 +91,4 @@ int main(int argc, char **argv)
         cerr << stexc.what()<<endl;
     }
 }
+
