@@ -13,7 +13,7 @@ serialized and written as ascii text.   The implementation uses the
 boost text archive library, but the design of the interface is intended to
 insulate the application from this implementation detail. */
 
-template <typename T, typename Tbase=typename SEISPP::Metadata> 
+template <typename T>
     class StreamObjectReader : public BasicObjectReader<T>
 {
   public:
@@ -56,26 +56,6 @@ template <typename T, typename Tbase=typename SEISPP::Metadata>
     Since a serial file is basd on the concept of sequential access it is
     useful to have the concept of rewind as in a tape. */
     void rewind();
-    /*! \brief read but return only a base class.
-     *
-     A basic concept in objct oriented programming is inheritance.
-     C++ allows multiple inheritance, so it can be helpful to 
-     return only a base class from larger objects. This template
-     funciton does that.   The default return is SEISPP::Metadata
-     which is used all the time in this library.
-     
-     \exception - Can throw a SeisppError if the reader fails.
-         std::exception will be thrown if the downcast to Tbase  fails.
-     */
-    Tbase  read_and_extract()
-    {
-      try{
-        T d;
-        d=this->read();
-        Tbase base(dynamic_cast<Tbase&>(d));
-        return base;
-      }catch(...){throw;};
-    };
   private:
     char format;
     boost::archive::text_iarchive *txt_ar;
@@ -96,8 +76,8 @@ template <typename T, typename Tbase=typename SEISPP::Metadata>
     as the tag is not the eof_tag. */
     bool more_data_available;
 };
-template <typename T, typename Tbase> 
-        T StreamObjectReader<T,Tbase>::read()
+template <typename T>
+        T StreamObjectReader<T>::read()
 {
   const string base_error("StreamObjectReader read method:  ");
   T d;
@@ -140,8 +120,8 @@ template <typename T, typename Tbase>
       + "boost text serialization read failed\nCheck that input is a valid boost text serialization file");
   }
 }
-template <typename T, typename Tbase> 
-      StreamObjectReader<T,Tbase>::StreamObjectReader(const char format)
+template <typename T>
+      StreamObjectReader<T>::StreamObjectReader(const char format)
 {
   /* Note when this constructor is called ifs is not initialized and must
   not be touched. */
@@ -161,8 +141,8 @@ template <typename T, typename Tbase>
       txt_ar=new boost::archive::text_iarchive(std::cin);
   };
 }
-template <typename T, typename Tbase> 
-   StreamObjectReader<T,Tbase>::StreamObjectReader(string fname,const char format)
+template <typename T> 
+   StreamObjectReader<T>::StreamObjectReader(string fname,const char format)
 {
   try{
     const string base_error("StreamObjectReader file constructor:  ");
@@ -214,8 +194,8 @@ template <typename T, typename Tbase>
     };
   }catch(...){throw;};
 }
-template <typename T, typename Tbase> 
-   StreamObjectReader<T,Tbase>::~StreamObjectReader()
+template <typename T>
+   StreamObjectReader<T>::~StreamObjectReader()
 {
   switch(format)
   {
@@ -228,8 +208,8 @@ template <typename T, typename Tbase>
   };
   if(!input_is_stdio) ifs.close();
 }
-template <typename T, typename Tbase> 
-   long StreamObjectReader<T,Tbase>::number_available()
+template <typename T>
+   long StreamObjectReader<T>::number_available()
 {
     if(input_is_stdio)
         throw SeisppError(string("StreamObjectReader::number_available method:")
@@ -237,8 +217,8 @@ template <typename T, typename Tbase>
     else
         return nobjects;
 }
-template <typename T, typename Tbase> 
-     bool StreamObjectReader<T,Tbase>::eof()
+template <typename T>
+     bool StreamObjectReader<T>::eof()
 {
   if(input_is_stdio)
   {
@@ -257,8 +237,8 @@ template <typename T, typename Tbase>
       return false;
   }
 }
-template <typename T, typename Tbase> 
-    void StreamObjectReader<T,Tbase>::rewind()
+template <typename T>
+    void StreamObjectReader<T>::rewind()
 {
   if(input_is_stdio)
   {
@@ -271,10 +251,10 @@ template <typename T, typename Tbase>
 
 }
 template <typename T>
-T* BuildReadHandle(string fname, bool binary_mode, bool use_stdin)
+StreamObjectReader<T>* BuildReadHandle(string fname, bool binary_mode, bool use_stdin)
 {
     try{
-        T* handle;
+        StreamObjectReader<T> *handle;
         if(use_stdin)
         {
             if(binary_mode)
