@@ -1,5 +1,6 @@
 #ifndef _BASICOBJECTREADER_H_
 #define _BASICOBJECTREADER_H_
+#include "Metadata.h"
 namespace SEISPP{
 using namespace SEISPP;
 /*! \brief Abstract base class for generic object reader.
@@ -9,7 +10,8 @@ abstract and simplify the process of reading and writing of seispp data
 objects.   The purpose of this base class is to provide the foundation for
 a set of polymorphic objects for reading data in various generic forms.
 */
-template <class T> class BasicObjectReader
+template <typename T>
+   class BasicObjectReader
 {
   public:
     /*! Pure virtual method used to allow an abstract base class.*/
