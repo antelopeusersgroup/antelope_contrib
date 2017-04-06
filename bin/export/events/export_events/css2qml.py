@@ -152,7 +152,7 @@ class Css2Qml(object):
                  preferred_magtypes=('mw', 'ms', 'mb', 'ml'),
                  add_origin=True, add_magnitude=True, add_stamag=True,
                  add_arrival=True, add_fplane=True, add_mt=True,
-                 add_detection=True, extend_anss_catalog=False):
+                 add_detection=False, extend_anss_catalog=False):
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.debug('Initializing: ' + self.__class__.__name__)
@@ -225,7 +225,8 @@ class Css2Qml(object):
             qml_dict['agencyID'] = agency
         if author is not None:
             qml_dict['author'] = author
-        qml_dict['creationTime'] = self._utc_datetime(time)
+        if time is not None:
+            qml_dict['creationTime'] = self._utc_datetime(time)
 
         return qml_dict
 
