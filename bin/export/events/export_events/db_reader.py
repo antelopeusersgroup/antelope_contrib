@@ -30,6 +30,15 @@ from export_events.db_collection import Collection
 NULL_EVID = -1
 
 
+def ordered_set(items):
+    '''
+    Returns unique members of a list while preserving order.
+    '''
+    seen = set()
+    seen_add = seen.add
+    return [item for item in items if not (item in seen or seen_add(item))]
+
+
 class DatabaseReader(object):
     '''
     Reads and stores event data from an Antelope database.
@@ -151,7 +160,7 @@ class DatabaseReader(object):
                                                 self.evid,
                                                 ', '.join(contents))
 
-    def get_evids(self, subset=None):
+    def get_evids(self, subset=None, sort_by='origin.time'):
         '''
         Returns list of events by evid.
 
@@ -173,30 +182,35 @@ class DatabaseReader(object):
         try:
             view = self.db.lookup(table='origin')
             if subset is not None:
-                try:
-                    view = view.subset(subset)
-                except datascope.DbsubsetError as ex:
-                    self.logger.error('While applying subset: ' + subset)
-                    self.logger.error(repr(ex))
-            try:
-                evids = [record.getv('evid')[0]
-                         for record in view.iter_record()]
-                evids = [evid for evid in evids if evid != NULL_EVID]
-            except (datascope.DbgetvError, TypeError) as ex:
-                self.logger.error(repr(ex))
+                view = view.subset(subset)
+            if sort_by is not None:
+                view = view.sort(sort_by)
+            evids = [record.getv('evid')[0]
+                     for record in view.iter_record()]
         except (datascope.DblookupDatabaseError,
                 datascope.DblookupTableError,
                 datascope.DblookupFieldError,
                 datascope.DblookupRecordError) as ex:
             self.logger.error('While looking up table: origin')
             self.logger.error(repr(ex))
+        except datascope.DbsubsetError as ex:
+            self.logger.error('While applying subset: ' + subset)
+            self.logger.error(repr(ex))
+        except datascope.DbsortError as ex:
+            self.logger.error('While sorting by: ' + sort_by)
+            self.logger.error(repr(ex))
+        except (datascope.DbgetvError, TypeError) as ex:
+            self.logger.error(repr(ex))
+        finally:
+            view.free()
 
+        evids = [evid for evid in evids if evid != NULL_EVID]
         if len(evids) == 0:
             self.logger.error('No events found.')
         else:
             self.logger.info('%d events found.' % len(evids))
 
-        return sorted(list(set(evids)))
+        return ordered_set(evids)
 
     def get_event(self, evid=None):
         '''
