@@ -1,0 +1,58 @@
+SUVariableArea_grey_value	1
+VariableArea	true
+WiggleTrace	true
+blabel	Data Window
+blabel2	Data Window
+clip_data	true
+clip_percent	98
+clip_wiggle_traces	false
+d1num	0.0
+d2num	0.0
+database_output_metadata	&Tbl{
+    iphase string
+    sta string
+    chan string
+}
+default_curve_color	black
+f1num	0.0
+f2num	0.0
+first_trace_offset	0.0
+grid1	1
+grid2	1
+gridcolor	blue
+hbox	5000
+initial_active_component	1
+interpolate	true
+label1	time
+label2	index
+labelcolor	blue
+labelfont	Rom14
+labelsize	18.0
+n1tic	5
+n2tic	1
+plot_file_name	SeismicPlot.ps
+style	normal
+t0_align_key	origin.time
+time_axis_grid_type	solid
+time_scaling	auto
+title	display_ensemble
+titlecolor	red
+titlefont	Rom22
+titlesize	36.0
+trace_axis_attribute	assoc.delta
+trace_axis_grid_type	none
+trace_axis_scaling	auto
+trace_spacing	1.0
+trim_gap_edges	true
+use_variable_trace_spacing	false
+verbose	true
+wbox	1000
+windowtitle	display_ensemble
+x1beg	0.0
+x1end	120.0
+x2beg	0.0
+x2end	24.0
+xbox	50
+xcur	1.0
+ybox	50
+pf_revision_time 1468600777

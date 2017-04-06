@@ -66,16 +66,21 @@ vector<SeismicPick> GenericTimePicker::pick_all()
     /* As a sanity check we should impose a limit on times through this
     loop to prevent a runaway if btn2 is stuck for some reason.
     */
-    int count;
+    int lastcount,count;
     XtRemoveAllCallbacks(this->seisw[0],ExmNbtn2Callback);
     XtAddCallback(this->seisw[0],ExmNbtn2Callback,GTPBtn2Callback,this);
     /* This will loop until we enter x on the display or hit the exit menu
     item in the SeismicPlot gui.   Simple solution requiring no new widgets */
-    cerr << "GerericTimePicker is active"<<endl;
+    cerr << "GenericTimePicker is active"<<endl;
+    lastcount=0;
     while(this->EventLoopIsActive)
     {
         count=allpicks.size();
-        cerr << "Number of picks made so far="<<count<<endl;
+        if(count!=lastcount)
+        {
+            cerr << "Number of picks made so far="<<count<<endl;
+            lastcount=count;
+        }
         sleep(1);
     }
     picker_active=false;

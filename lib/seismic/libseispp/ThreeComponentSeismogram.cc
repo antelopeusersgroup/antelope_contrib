@@ -805,11 +805,19 @@ void ThreeComponentSeismogram::rotate_to_standard()
 		//Perf lib matrix inversion routine using LU factorizatoin
 		// Note this is changed from parent code.  Untested.
 		dgetrf_(&asize,&asize,a,&asize,ipivot,&info);
-		if(info!=0) throw(SeisppError(
+		if(info!=0) 
+                {
+                    for(i=0;i<3;++i) delete [] work[i];
+                    throw(SeisppError(
 			string("rotate_to_standard:  LU factorization of transformation matrix failed")));
+                }
 		dgetri_(&asize,a,&asize,ipivot,awork,&ldwork,&info);
-		if(info!=0) throw(SeisppError(
+		if(info!=0) 
+                {
+                    for(i=0;i<3;++i) delete [] work[i];
+                    throw(SeisppError(
 			string("rotate_to_standard:  LU factorization inversion of transformation matrix failed")));
+                }
 		
 		tmatrix[0][0] = a[0];
 		tmatrix[1][0] = a[1];
@@ -1137,15 +1145,8 @@ ThreeComponentSeismogram& ThreeComponentSeismogram::operator
 {
 	if(this!=&seisin)
 	{
-		mreal=seisin.mreal;
-		mint=seisin.mint;
-		mbool=seisin.mbool;
-		mstring=seisin.mstring;
-		live=seisin.live;
-		dt=seisin.dt;
-		t0=seisin.t0;
-		ns=seisin.ns;
-		tref=seisin.tref;
+                this->BasicTimeSeries::operator=(seisin);
+                this->Metadata::operator=(seisin);
 		components_are_orthogonal=seisin.components_are_orthogonal;
 		components_are_cardinal=seisin.components_are_cardinal;
 		for(int i=0;i<3;++i)
@@ -1156,7 +1157,6 @@ ThreeComponentSeismogram& ThreeComponentSeismogram::operator
 			}
 		}
 		u=seisin.u;
-		gaps=seisin.gaps;
 	}
 	return(*this);
 }
