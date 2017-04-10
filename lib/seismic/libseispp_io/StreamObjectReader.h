@@ -140,6 +140,7 @@ template <typename T>
       bin_ar=NULL;
       txt_ar=new boost::archive::text_iarchive(std::cin);
   };
+  more_data_available=true;
 }
 template <typename T> 
    StreamObjectReader<T>::StreamObjectReader(string fname,const char format)
