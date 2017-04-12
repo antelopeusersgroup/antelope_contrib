@@ -21,15 +21,22 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "fragment basename [-dir outdir -v]"
+    cerr << "fragment basename [-i infile -dir outdir -binary -dismember -v]"
         <<endl
         << "seispp filter fragments file with multiple ensembles into individual files"
         <<endl
-        << "basename is root name for each ensemble.  Adds a sequence number for each ensemble"
+        << "basename is root name for each output ensemble.  Adds a sequence number for each ensemble"
         <<endl
+        << "-i optional read from file infile (default is stdin)"<<endl
         << "-dir optional write to outdir (default is .)"
         <<endl
+        << "-binary - assume input and outputs should be binary format"
+        << "(Default is text)"<<endl
+        << "-dismember - ungroup ensembles to build output files as a collection of 3C seismograms"<<endl
+        << "(Default is put one ensemble in each output file)"<<endl
         << "-v verbose output (mostly logs each ensembles gather metadata"
+        <<endl
+        << "Note:   Only works at present with ThreeComponentEnsemble objects"
         <<endl;
     exit(-1);
 }
@@ -42,6 +49,7 @@ int main(int argc, char **argv)
     string outdir(".");
     string basename(argv[1]);
     bool binary_data(false);
+    bool dismember(false);
     for(i=2;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -61,6 +69,8 @@ int main(int argc, char **argv)
             Verbose=true;
         else if(sarg=="-binary")
             binary_data=true;
+        else if(sarg=="-dismember")
+            dismember=true;
         else
             usage();
     }
@@ -94,18 +104,37 @@ int main(int argc, char **argv)
                 cerr << dynamic_cast<Metadata&>(d3c)<<endl;
             }
             shared_ptr<StreamObjectWriter<ThreeComponentSeismogram>> out;
-            if(binary_data)
+            shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>> outens;
+            if(dismember)
             {
-              out=shared_ptr<StreamObjectWriter<ThreeComponentSeismogram>>
-                 (new StreamObjectWriter<ThreeComponentSeismogram>('b'));
+              if(binary_data)
+              {
+                out=shared_ptr<StreamObjectWriter<ThreeComponentSeismogram>>
+                 (new StreamObjectWriter<ThreeComponentSeismogram>(path,'b'));
+              }
+              else
+              {
+                out=shared_ptr<StreamObjectWriter<ThreeComponentSeismogram>>
+                 (new StreamObjectWriter<ThreeComponentSeismogram>(path,'t'));
+              }
+              count=write_ensemble<ThreeComponentEnsemble,ThreeComponentSeismogram>
+                (d3c,out);
             }
             else
             {
-              out=shared_ptr<StreamObjectWriter<ThreeComponentSeismogram>>
-                 (new StreamObjectWriter<ThreeComponentSeismogram>);
+              if(binary_data)
+              {
+                outens=shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
+                 (new StreamObjectWriter<ThreeComponentEnsemble>(path,'b'));
+              }
+              else
+              {
+                outens=shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
+                 (new StreamObjectWriter<ThreeComponentEnsemble>(path,'t'));
+              }
+              outens->write(d3c);
+              count=d3c.member.size();
             }
-            count=write_ensemble<ThreeComponentEnsemble,ThreeComponentSeismogram>
-                (d3c,out);
             ++nensembles;
             nseis+=count;
         }
