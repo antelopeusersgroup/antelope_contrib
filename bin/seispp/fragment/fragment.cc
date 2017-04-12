@@ -89,6 +89,8 @@ int main(int argc, char **argv)
         ThreeComponentEnsemble d3c;
         int nensembles(0);
         int nseis(0);
+        StreamObjectWriter<ThreeComponentSeismogram> *out;
+        StreamObjectWriter<ThreeComponentEnsemble> *outens;
         while(!ia->eof())
         {
             int count;
@@ -103,36 +105,32 @@ int main(int argc, char **argv)
                     << path<<endl;
                 cerr << dynamic_cast<Metadata&>(d3c)<<endl;
             }
-            shared_ptr<StreamObjectWriter<ThreeComponentSeismogram>> out;
-            shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>> outens;
             if(dismember)
             {
               if(binary_data)
               {
-                out=shared_ptr<StreamObjectWriter<ThreeComponentSeismogram>>
-                 (new StreamObjectWriter<ThreeComponentSeismogram>(path,'b'));
+                out=new StreamObjectWriter<ThreeComponentSeismogram>(path,'b');
               }
               else
               {
-                out=shared_ptr<StreamObjectWriter<ThreeComponentSeismogram>>
-                 (new StreamObjectWriter<ThreeComponentSeismogram>(path,'t'));
+                out=new StreamObjectWriter<ThreeComponentSeismogram>(path,'t');
               }
               count=write_ensemble<ThreeComponentEnsemble,ThreeComponentSeismogram>
-                (d3c,out);
+                (d3c,shared_ptr<StreamObjectWriter<ThreeComponentSeismogram>>(out));
+              //delete out;
             }
             else
             {
               if(binary_data)
               {
-                outens=shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
-                 (new StreamObjectWriter<ThreeComponentEnsemble>(path,'b'));
+                outens=new StreamObjectWriter<ThreeComponentEnsemble>(path,'b');
               }
               else
               {
-                outens=shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
-                 (new StreamObjectWriter<ThreeComponentEnsemble>(path,'t'));
+                outens=new StreamObjectWriter<ThreeComponentEnsemble>(path,'t');
               }
               outens->write(d3c);
+              delete outens;
               count=d3c.member.size();
             }
             ++nensembles;
