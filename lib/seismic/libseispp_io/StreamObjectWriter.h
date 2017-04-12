@@ -166,17 +166,14 @@ template <class T> StreamObjectWriter<T>::~StreamObjectWriter()
       /* Initialize the buffer to all blanks */
       for(i=0;i<TextIOStreamEOFOffset;++i) buf[i]=' ';
       sprintf(buf,"%s %ld\n",eof_tag.c_str(),nobjects);
-      for(i=0;i<TextIOStreamEOFOffset;++i)
+      if(output_is_stdio)
+        cout<<buf[i];
+      else
       {
-        if(output_is_stdio)
-          cout<<buf[i];
-        else
-        {
-          ofs<<buf[i];
-          ofs.close();
-          delete txt_ar;
-        }
+        ofs<<buf[i];
+        ofs.close();
       }
+      delete txt_ar;
       delete [] buf;
   };
 }
