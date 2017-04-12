@@ -27,10 +27,14 @@ Hypocenter LoadHypo(DatascopeHandle& dbh)
 {
   try{
     double lat,lon,depth,otime;
-    lat=dbh.get_double("origin.lat");
-    lon=dbh.get_double("origin.lon");
-    depth=dbh.get_double("origin.depth");
-    otime=dbh.get_double("origin.time");
+    DBBundle bun=dbh.get_range();
+    Dbptr db=bun.parent;
+    db.record=bun.start_record;
+    int iret;
+    iret=dbgetv(db,0,"origin.lat",&lat,"origin.lon",&lon,
+            "origin.depth",&depth,"origin.time",&otime,NULL);
+    if(iret==dbINVALID) throw SeisppError(string("LoadHypo procedure:  ")
+            + "dbgetv failed reading hypocenter information from view before group");
     /* These need to be radians */
     lat=rad(lat);
     lon=rad(lon);
@@ -67,7 +71,12 @@ void SetHypo(Hypocenter& h, ThreeComponentEnsemble& d)
     d.put("otime",h.time);
   }catch(...){throw;};
 }
-StaMap LoadArrivals(DatascopeHandle dbh)
+/* This procedure loads a map container keyed by sta with 
+ * a double values returned by dbgetv calls using the key.
+ * The DatascopeHandle object is copied because it is altered
+ * internally.  dbh is assumed to be a group pointer.  If not
+ * this will throw a SeippError exception. */
+StaMap LoadStaMap(DatascopeHandle dbh,const char* key)
 {
   try{
     StaMap sts;
@@ -78,29 +87,14 @@ StaMap LoadArrivals(DatascopeHandle dbh)
                                         ++dbwork.record)
     {
       char sta[20];
-      double atime;
-      dbgetv(dbwork,0,"sta",sta,"time",&time,NULL);
-      sts.insert(pair<string,double>(string(sta),atime));
-    }
-    return sts;
-  }catch(...){throw;};
-}
-/* Painfull parallel routine for getting robust weight values.   Could
-be a template */
-StaMap LoadWeights(DatascopeHandle dbh)
-{
-  try{
-    StaMap sts;
-    DBBundle bundle=dbh.get_range();
-    Dbptr dbwork;
-    dbwork=bundle.parent;
-    for(dbwork.record=bundle.start_record;dbwork.record<bundle.end_record;
-                                        ++dbwork.record)
-    {
-      char sta[20];
-      double wt;
-      dbgetv(dbwork,0,"sta",sta,"stackwgt",&wt,NULL);
-      sts.insert(pair<string,double>(string(sta),wt));
+      double val;
+      int ierr;
+      ierr=dbgetv(dbwork,0,"sta",sta,key,&val,NULL);
+      if(ierr==dbINVALID)
+          throw SeisppError(string("LoadStaMap: ")
+                  + "dbgetv failed trying to extract attributes sta and "
+                  + key);
+      sts.insert(pair<string,double>(string(sta),val));
     }
     return sts;
   }catch(...){throw;};
@@ -185,8 +179,9 @@ int main(int argc, char **argv)
   int i;
   if(argc<2)usage();
   string dbname(argv[1]);
+  if(dbname=="--help") usage();
   string pffile("dbxcor_import");
-  bool binary_data("false");
+  bool binary_data(false);
   for(i=2;i<argc;++i)
   {
     string sarg(argv[i]);
@@ -206,6 +201,14 @@ int main(int argc, char **argv)
     }
   }
   try{
+    Pf *pf;
+    char *stmp;
+    stmp=strdup(pffile.c_str());
+    if(pfread(stmp,&pf))
+    {
+      cerr << "pfread failed on pffile="<<pffile<<endl;
+      exit(-1);
+    }
     AttributeMap am("css3.0");
     shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>> oa;
     if(binary_data)
@@ -218,14 +221,6 @@ int main(int argc, char **argv)
       oa=shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
              (new StreamObjectWriter<ThreeComponentEnsemble>);
     }
-    Pf *pf;
-    char *stmp;
-    stmp=strdup(pffile.c_str());
-    if(pfread(stmp,&pf))
-    {
-      cerr << "pfread failed on pffile="<<pffile<<endl;
-      exit(-1);
-    }
     StationChannelMap scm(pf);
     Metadata control(pf);
     DatascopeHandle dbh(dbname,true); // opens read only
@@ -234,10 +229,14 @@ int main(int argc, char **argv)
     dbh.natural_join("evlink");
     dbh.natural_join("event");
     dbh.natural_join("origin");
+    //DEBUG
+    cerr << "View size after join of origin="<<dbh.number_tuples()<<endl;
     list<string> grpkeys;
     grpkeys.push_back("pwfid");
     dbh.sort(grpkeys);
     dbh.group(grpkeys);
+    //DEBUG
+    cerr << "View group operation="<<dbh.number_tuples()<<endl;
     DatascopeHandle dbhwf(dbh); //points to wfdisc, but used as arg for read
     dbhwf.lookup("wfdisc");
     /* We always define these even if we don't save all of them */
@@ -271,8 +270,8 @@ int main(int argc, char **argv)
       /* Neither of these procedures will alter dbh */
       Hypocenter h=LoadHypo(dbh);
       SetHypo(h,d);  //Loads hypocenter data into ensemble metadata
-      StaMap arrivals=LoadArrivals(dbh);
-      StaMap weights=LoadWeights(dbh);
+      StaMap arrivals=LoadStaMap(dbh,"xcorarrival.time");
+      StaMap weights=LoadStaMap(dbh,"stackwgt");
       double avgtime=average_times(arrivals);
       TimeWindow abs_read_window(avgtime+read_window.start,avgtime+read_window.end);
       ThreeComponentEnsemble rawgather(dbh,abs_read_window,scm);

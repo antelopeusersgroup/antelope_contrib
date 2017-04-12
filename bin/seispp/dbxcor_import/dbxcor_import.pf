@@ -1,0 +1,20 @@
+dbxcor_beam_sta XCORBEAM
+robust_beam_sta RBEAM
+simple_beam_sta BEAM
+read_window_start_relative_time -2.0
+read_window_end_relative_time 5.0
+stack_window_start_time -1.0
+stack_window_end_time 4.0
+StationChannelMap &Arr{
+  default     &Tbl{
+    BHE 0 0
+    BHN 1 0
+    BHZ 2 0
+    HHE 0 1
+    HHN 1 1
+    HHZ 2 1
+    LHE 0 2
+    LHN 1 2
+    LHZ 2 2
+  }
+}
