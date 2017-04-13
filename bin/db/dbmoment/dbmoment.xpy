@@ -115,20 +115,20 @@ usage += "\t\tdbmoment -e [-xvd] [-m MODELNAME.pf] [-c min_variance] [-p pfname]
 parser = OptionParser(usage=usage)
 
 # Use provided ID as EVID
-parser.add_option("-e", action="store_true", dest="evid",
-        default=False, help="id is EVID")
+parser.add_option("-e", "--evid", action="store_true",
+        dest="evid", default=False, help="id is EVID")
 
 # Vebose output
-parser.add_option("-v", action="store_true", dest="verbose",
-        default=False, help="verbose output")
+parser.add_option("-v", "--verbose", action="store_true",
+        dest="verbose", default=False, help="verbose output")
 
 # Debug output
-parser.add_option("-d", action="store_true", dest="debug",
-        default=False, help="debug output")
+parser.add_option("-d", "--debug", action="store_true",
+        dest="debug", default=False, help="debug output")
 
 # Log to file if needed
-parser.add_option("-l", action="store_true", dest="logfile",
-        default=False, help="Save logs to a file.")
+parser.add_option("-l", "--logfile", action="store_true",
+        dest="logfile", default=False, help="Save logs to a file.")
 
 # Plot each data group for a site (real and synth) and wait.
 parser.add_option("-x", action="store_true", dest="debug_each",
@@ -139,33 +139,50 @@ parser.add_option("-b", action="store_true", dest="beachball",
         default=False, help="debug flag for development only")
 
 # MinVariance: forced the min-limit threshold of the variance reduction value
-parser.add_option("-c", action="store", dest="min_fit", type="string",
-        default='', help="Set min. variance reduction threshold")
+parser.add_option("-c", "--variance", action="store",
+        dest="min_fit", type="string", default='',
+        help="Set variance reduction threshold")
 
 # Zcor: forced the zcor value of a station. Format: "STA1:2,STA2:1,STA3:4"
-parser.add_option("-z", action="store", dest="zcor", type="string",
-        default='', help="Set some Zcor values for stations")
+parser.add_option("-z", "--zcor", action="store",
+        dest="zcor", type="string", default='',
+        help="Set some Zcor values for stations")
 
 # Master parameter file for dbmoment. NOT THE MODEL!
-parser.add_option("-p", action="store", dest="pf", type="string",
-        default='dbmoment.pf', help="parameter file path")
+parser.add_option("-p", "--pf", action="store",
+        dest="pf", type="string", default='dbmoment.pf',
+        help="Parameter File path")
 
 # MODEL parameter file!
-parser.add_option("-m", action="store", dest="model", type="string",
-        default='', help="Forced this MODEL file")
+parser.add_option("-m", "--model", action="store",
+        dest="model", type="string", default='',
+        help="Forced this MODEL file")
 
 # BW filter to use for all traces. If not set then get one from the PF
 # following the value of the event's magnitude.
-parser.add_option("-f", action="store", dest="filter", type="string",
-        default=False, help="Forced a filter on the data")
+parser.add_option("-f", "--filter", action="store",
+        dest="filter", type="string", default=False,
+        help="Forced a filter on the data")
 
 # Select the listed stations ONLY!
-parser.add_option("-s", action="store", dest="select", type="string",
-        default='', help="only select these stations")
+parser.add_option("-s", "--select", action="store",
+        dest="select", type="string", default='',
+        help="Only select these stations")
 
 # Reject The listed stations from the process.
-parser.add_option("-r", action="store", dest="reject", type="string",
-        default='', help="reject these stations")
+parser.add_option("-r", "--reject", action="store",
+        dest="reject", type="string", default='',
+        help="reject these stations")
+
+# Overwrite Minimal Event-Station distance
+parser.add_option("--mindistance", action="store",
+        dest="mindistance", type="string", default=False,
+        help="Overwrite minimal distance value from PF file")
+
+# Overwrite Maximum Event-Station distance
+parser.add_option("--maxdistance", action="store",
+        dest="maxdistance", type="string", default=False,
+        help="Overwrite maximum distance value from PF file")
 
 (options, args) = parser.parse_args()
 
