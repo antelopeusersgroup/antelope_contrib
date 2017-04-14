@@ -311,6 +311,11 @@ void SeismicPlot::plot(ThreeComponentEnsemble& d,bool block_for_event)
 {
     try {
         const string base_error("SeismicPlot::plot method:  ");
+        if(!ThreeComponentMode)
+            throw SeisppError(base_error
+              + "Coding Error:  called plot method for ThreeComponentEnsemble "
+              + "with object defined in scalar mode");
+
         /* The Seisw widget only works with relative time.   Abort
            if any seismograms are on an absolute time base */
         for(int i=0;i<d.member.size();++i)

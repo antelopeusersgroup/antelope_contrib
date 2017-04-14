@@ -88,28 +88,34 @@ dynamically and stored in a dedicated database with a wfdisc. The tool uses a
 Frequency-Wavenumber integration program included in Dreger's original distribution.
 
 .SH OPTIONS
-.IP -v
+.IP "\fB-h, --help\fR"
+Print description on command lines arguments.
+.IP "\fB-v, --verbose\fR"
 Verbose output. Opens final PNG image with results.
-.IP -d
+.IP "\fB-d, --debug\fR"
 Debug output. Opens final PNG image with results.
-.IP -e
+.IP "\fB-e, --evid\fR"
 The provided id in command-line is an EVID instead of an ORID
-.IP -x
+.IP "\fB-x   \fR"
 Debug data processing. Makes an image on every data extraction and waits for user review.
-.IP "-f 'BW 0.02 4 0.05 4'"
-Use the quoted text as filter instead of option from PF file.
-.IP "-p pfname"
+.IP "\fB-f FILTER, --filter=FILTER\fR"
+Use the quoted text as filter instead of option from PF file. ie. \fBBW 0.02 4 0.05 4\fP
+.IP "\fB-p PF, --pf=PF\fR"
 Override the default parameter-file \fBdbmoment.pf\fP
-.IP "-m SOCAL_MODEL"
+.IP "\fB-m MODEL, --model=MODEL\fR"
 Use a different velocity model instead of the PF configured value. \fBSOCAL_MODEL.pf\fP
-.IP "-c value"
+.IP "\fB-c MIN_FIT, --variance=MIN_FIT\fR"
 Set a new minimum correlation value threshold instead of using the one in the PF.
-.IP "-s 'STA1|STA2|STA3'"
-String to subset the list of stations to use.
-.IP "-r 'STA1|STA2|STA3'"
-String to reject stations.
-.IP "-z 'STA1:3,STA2:3,STA3:5'"
-Forced ZCOR values of some stations. This is a shift in time.
+.IP "\fB-s SELECT, --seelct=SELECT\fR"
+String to subset the list of stations to use. Regex form. ie. \fBSTA1|STA2|STA3\fP
+.IP "\fB-r SELECT, --reject=SELECT\fR"
+String to subset the list of stations to use. Regex form. ie. \fBSTA1|STA2|STA3\fP
+.IP "\fB-z ZCOR, --zcor=ZCOR\fR"
+Forced ZCOR values of some stations. This is a shift in time.ie. \fBSTA1:3,STA2:3,STA3:5\fP
+.IP "\fB--maxdistance=DISTANCE\fR"
+Overwrite station to event maximum distance on PF file.
+.IP "\fB--mindistance=DISTANCE\fR"
+Overwrite station to event minimum distance on PF file.
 
 
 .SH PARAMETER FILE

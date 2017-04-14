@@ -262,6 +262,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 		clear_register(1);   
 		free(sta_expr);
 		free(chan_expr);
+                trdestroy(&dbsc);
 		throw SeisppError(base_error_message
 			+string("grdb_sc_loadcss procedure failed\n"));
 	}
@@ -282,6 +283,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 		clear_register(1);   
 		free(sta_expr);
 		free(chan_expr);
+                trdestroy(&dbtr);
 		throw SeisppError(base_error_message
 			+string("grdb_sc_create procedure failed\n"));
 	}
@@ -459,6 +461,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			}
 			if(require_response)
 			{
+                            trdestroy(&dbtr);
 				cerr << base_error_message
 					<<" WARNING "
 					<< "  request to load response information ignored."

@@ -25,6 +25,11 @@ const double null_pick_test(-1e20);
 for a seismogram handled by this object.  Caller needs to make sure
 this is so or chaos may result.*/
 const string t0shift_key("t0shift");
+/* This metadata key is used internally to store most recent pick
+   for retrieval by get_member_picks method.   That differs from 
+   the get_member_times method which only returns an absolute time
+   comparable to an epoch time in an arrival table. */
+const string last_pick_key("picked_lag");
 /*! Used to store times indexed by a station name. */
 typedef map<string,double> StaTimes;
 /*! Used to store times indexed by the integer index of the member vector 
@@ -104,6 +109,17 @@ public:
   That means an epoch time for absolute tref or relative to some 0 for 
   something like active source data. */
   IndexTimes get_member_times();
+  /*! Return relative time lags.
+
+    The get_member_times method returns a pick in the original time
+    standard, which is implicitly assumed to be epoch time or something
+    equivalent.  This method returns time shift of any seismogram 
+    that has been picked. Note it returns ONLY the most recent pick.  
+   This was done because the get_member_times method can always be used
+   to get total lag by comparing to original t0 reference stored in the
+   metadata. As with similar members this should be called only after
+   calling the align method which sets the correct metadata field.*/
+ IndexTimes get_member_picks(); 
   /*! \brief Align displayed data with pick times.
 
   When working with multichannel data adjacent seismograms will have similar
@@ -192,7 +208,21 @@ public:
     This method restores data marked dead with any previous calls to the
     kill_unpicked method.  */
   void resurrect();
+  /*! Mark all live data valid.
+
+    Sometimes one wants to assume the data have previously been 
+    picked and all we want to do is tweek the previous picks.   
+    This method sets internals to define all live data as
+    having been picked already.  Warning:  it also zeros the pick
+    lag field so if called after a set of picks not stored with
+    align the picks will be lost. 
+
+    This method should always be called when working on previously 
+    picked data.
+    */
+  void mark_all_live_picked();
   /*! \brief Return data with picks set in headers.
+
    
     Because this beast works by setting pick relative times in the 
     data ensemble header an alternative to the pick retrieval methods
@@ -224,9 +254,6 @@ private:
   int active_component;
   /* This is used by constructors to build the above 4 widgets. */
   void build_pick_menu();
-  /* This is set from Metadata.  The  t0shift attribute is initialized
-   * with the value extracted by this key */
-  string t0_align_key_d0;
   /* This vector is used by resurrect to know which data to restore.   
    * This is not just a true false test because there are three possiblities:
    * dead on entry, marked dead by not being picked, and live.  Hence

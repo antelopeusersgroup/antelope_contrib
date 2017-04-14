@@ -7,7 +7,8 @@ INCLUDE=BasicSeisPlot.h \
         TraceEditPlot.h \
         TimeWindowPicker.h \
         GenericTimePicker.h \
-        ThreeCEnsembleTimePicker.h
+        ThreeCEnsembleTimePicker.h \
+	ThreeCPlot.h
 SUBDIR=/contrib
 
 #Needed eventually
@@ -25,7 +26,8 @@ CXXFLAGS += -I$(XMOTIFINCLUDE) -I$(BOOSTINCLUDE)
 OBJS=   SeismicPlot.o \
     ThreeCEnsembleTimePicker.o \
     TimeWindowPicker.o \
-    GenericTimePicker.o
+    GenericTimePicker.o \
+    ThreeCPlot.o
 $(LIB) : $(OBJS)
 	$(RM) $@
 	$(CXXAR) $(CXXARFLAGS) $@ $(OBJS)  
