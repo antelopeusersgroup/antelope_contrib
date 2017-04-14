@@ -167,12 +167,12 @@ template <class T> StreamObjectWriter<T>::~StreamObjectWriter()
       for(i=0;i<TextIOStreamEOFOffset;++i) buf[i]=' ';
       sprintf(buf,"%s %ld\n",eof_tag.c_str(),nobjects);
       if(output_is_stdio)
-        cout<<buf[i];
+        for(i=0;i<TextIOStreamEOFOffset;++i) cout<<buf[i];
       else
       {
-        ofs<<buf[i];
-        ofs.close();
+        for(i=0;i<TextIOStreamEOFOffset;++i) ofs<<buf[i];
       }
+      ofs.close();
       delete txt_ar;
       delete [] buf;
   };
