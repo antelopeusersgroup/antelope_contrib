@@ -82,10 +82,11 @@ template <class T> void StreamObjectWriter<T>::write(T& d)
                 +"Do you have write permission for output directory?");
     }
 }
-template <class T> StreamObjectWriter<T>::StreamObjectWriter(const char format)
+template <class T> StreamObjectWriter<T>::StreamObjectWriter(const char form)
 {
   /* Note ofs is left invalid in this condition - stdin cannot seek
   which creates a disconnect */
+  format=form;
   output_is_stdio=true;
   nobjects=0;
   parent_filename="STDOUT";
@@ -103,10 +104,11 @@ template <class T> StreamObjectWriter<T>::StreamObjectWriter(const char format)
       txt_ar=new boost::archive::text_oarchive(std::cout);
   };
 }
-template <class T> StreamObjectWriter<T>::StreamObjectWriter(string fname,const char format)
+template <class T> StreamObjectWriter<T>::StreamObjectWriter(string fname,const char form)
 {
   try{
     const string base_error("StreamObjectWriter file constructor:  ");
+    format=form;
     switch(format)
     {
       case 'b':

@@ -121,10 +121,11 @@ template <typename T>
   }
 }
 template <typename T>
-      StreamObjectReader<T>::StreamObjectReader(const char format)
+      StreamObjectReader<T>::StreamObjectReader(const char form)
 {
   /* Note when this constructor is called ifs is not initialized and must
   not be touched. */
+  format=form;
   input_is_stdio=true;
   nobjects=0;
   parent_filename="STDIN";
@@ -143,10 +144,11 @@ template <typename T>
   more_data_available=true;
 }
 template <typename T> 
-   StreamObjectReader<T>::StreamObjectReader(string fname,const char format)
+   StreamObjectReader<T>::StreamObjectReader(string fname,const char form)
 {
   try{
     const string base_error("StreamObjectReader file constructor:  ");
+    format=form;
     switch(format)
     {
       case 'b':
