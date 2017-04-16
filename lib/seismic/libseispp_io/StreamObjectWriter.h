@@ -67,6 +67,7 @@ template <class T> void StreamObjectWriter<T>::write(T& d)
                 cout.write(more_data_tag.c_str(),BINARY_TAG_SIZE);
             else
                 ofs.write(more_data_tag.c_str(),BINARY_TAG_SIZE);
+            break;
           case 't':
           default:
             if(output_is_stdio)
@@ -122,11 +123,11 @@ template <class T> StreamObjectWriter<T>::StreamObjectWriter(string fname,const 
     switch(format)
     {
       case 'b':
-        ofs.open(fname.c_str(),ios::out | ios::trunc);
+        ofs.open(fname.c_str(),ios::out | ios::binary | ios::trunc);
         break;
       case 't':
       default:
-        ofs.open(fname.c_str(),ios::out | ios::binary | ios::trunc);
+        ofs.open(fname.c_str(),ios::out | ios::trunc);
     };
     if(ofs.fail())
     {

@@ -88,7 +88,7 @@ template <typename T>
       if(n_previously_read>=(nobjects-1)) throw SeisppError(base_error
         + "Trying to read past end of file - code should test for this condition with at_eof method");
     string tag;
-    char tagbuf[BINARY_TAG_SIZE];
+    char tagbuf[BINARY_TAG_SIZE+1];
     switch(this->format)
     {
       case 'b':
@@ -97,6 +97,7 @@ template <typename T>
             cin.read(tagbuf,BINARY_TAG_SIZE);
         else
             ifs.read(tagbuf,BINARY_TAG_SIZE);
+        tagbuf[BINARY_TAG_SIZE]='\0';
         tag=string(tagbuf);
         break;
       case 't':
