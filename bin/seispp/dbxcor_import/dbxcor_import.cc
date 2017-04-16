@@ -11,17 +11,78 @@ will have a lot of options driven by a pf file.
 #include "dbpp.h"
 #include "PfStyleMetadata.h"
 #include "ensemble.h"
+#include "filter++.h"
 using namespace std;
 using namespace SEISPP;
 typedef map<string,double> StaMap;   // tuple of station name and arrival time
 void usage()
 {
-    cerr << "dbxcor_import db [-pf pffile]" <<endl
+    cerr << "dbxcor_import db [-filter -pf pffile]" <<endl
         << "Constructs a serialized 3C ensemble from Antelope database db"<<endl
         << "serialized data written to stdout"<<endl
+        << "use -filter to apply the same filter used to compute beam (stored in xcorbeam)"<<endl
         << "use -pf to specify alternate pf file to default dbxcor_import.pf"
         <<endl;
     exit(-1);
+}
+/* When a DatascopeHandle points to a group pointer attributes within the 
+ * group are not directly accessible because of the way Quinlan implemented
+ * this concept.   This generic procedure can be used to extract a common
+ * attribute for the entire group accessible by the name defined by key.   
+ * The procedure will throw an exception if dbh is not a group pointer or
+ * if the dbgetv fails.   AttributeType must be either a long int  or double 
+ * to match requirements of datascope */
+/*
+template <class AttributeType> 
+  AttributeType get_value(string key, DatascopeHandle& dbh)
+{
+    try{
+      const string base_error("get_value procedure:  ");
+      if(dbh.is_bundle)
+      {
+        AttributeType val;
+        DBBundle bun=dbh.get_range();
+        Dbptr db=bun.parent;
+        db.record=bun.start_record;
+        int iret;
+        iret=dbgetv(db,0,key.c_str(),&val,NULL);
+        if(iret==dbINVALID)
+            throw SeisppError(base_error +"dbgetv failed trying to fetch attribute="
+                    key);
+        else
+            return val;
+      }
+      else
+          throw SeisppError(base_error + "Programming error\n"
+                  + "DatascopeHandle received is not a group pointer");
+    }catch(...){throw;};
+}
+*/
+/* This is a prototype.  If this works I'll put this in libseispp as a 
+ * specialization of the above along with an interface change that allows
+ * get and puts with templates */
+string get_string_attribute(const char *key, DatascopeHandle& dbh)
+{
+    try{
+      const string base_error("get_string_attribute procedure:  ");
+      if(dbh.is_bundle)
+      {
+        char str[256];
+        DBBundle bun=dbh.get_range();
+        Dbptr db=bun.parent;
+        db.record=bun.start_record;
+        int iret;
+        iret=dbgetv(db,0,key,str,NULL);
+        if(iret==dbINVALID)
+            throw SeisppError(base_error +"dbgetv failed trying to fetch attribute="
+                    + key);
+        else
+            return string(str);
+      }
+      else
+          throw SeisppError(base_error + "Programming error\n"
+                  + "DatascopeHandle received is not a group pointer");
+    }catch(...){throw;};
 }
 Hypocenter LoadHypo(DatascopeHandle& dbh)
 {
@@ -173,7 +234,7 @@ ThreeComponentSeismogram stack3c(ThreeComponentEnsemble& d,StaMap& weights,
     return stack;
   }catch(...){throw;};
 }
-bool SEISPP::SEISPP_verbose(true);
+bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
   int i;
@@ -182,6 +243,7 @@ int main(int argc, char **argv)
   if(dbname=="--help") usage();
   string pffile("dbxcor_import");
   bool binary_data(false);
+  bool filter_data(false);
   for(i=2;i<argc;++i)
   {
     string sarg(argv[i]);
@@ -193,6 +255,10 @@ int main(int argc, char **argv)
     }
     if(sarg=="-binary")
       binary_data=true;
+    if(sarg=="-filter")
+      filter_data=true;
+    else if(sarg=="-v")
+      SEISPP_verbose=true;
     else if(sarg=="--help")
       usage();
     else
@@ -275,6 +341,32 @@ int main(int argc, char **argv)
       double avgtime=average_times(arrivals);
       TimeWindow abs_read_window(avgtime+read_window.start,avgtime+read_window.end);
       ThreeComponentEnsemble rawgather(dbh,abs_read_window,scm);
+      if(filter_data)
+      {
+          try{
+              string filter_def=get_string_attribute("xcorbeam.filter",dbh);
+              if(filter_def.length()<=0)
+              {
+                  cerr << "xcorbeam.filter was empty.   Applying default DEMEAN filter"
+                      <<endl;
+                  filter_def="DEMEAN";
+              }
+              if(SEISPP_verbose)
+              {
+                  cerr << "Filtering ensemble number "<<irec<<" with brtt filter "
+                      << filter_def<<endl;
+              }
+              TimeInvariantFilter filter_operator(filter_def);
+              FilterEnsemble(rawgather,filter_operator);
+          }catch(SeisppError& serr)
+          {
+              cerr << "Warning:  something went wrong trying to filter ensemble number "
+                  <<irec<<endl
+                  << "The following SeisppError message was posted:"<<endl;
+              serr.log_error();
+              cerr << "Attempting to blunder on"<<endl;
+          }
+      }
       /* Now we cut each seismogram to a constant time window around the
       the arrival times found in arrivals.   Only keep those that have arrivals */
       auto_ptr<ThreeComponentSeismogram> dcut;
