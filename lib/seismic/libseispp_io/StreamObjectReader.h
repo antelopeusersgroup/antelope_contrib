@@ -87,20 +87,27 @@ template <typename T>
     if(!input_is_stdio)
       if(n_previously_read>=(nobjects-1)) throw SeisppError(base_error
         + "Trying to read past end of file - code should test for this condition with at_eof method");
+    string tag;
+    char tagbuf[BINARY_TAG_SIZE];
     switch(this->format)
     {
       case 'b':
         (*bin_ar)>>d;
+        if(input_is_stdio)
+            cin.read(tagbuf,BINARY_TAG_SIZE);
+        else
+            ifs.read(tagbuf,BINARY_TAG_SIZE);
+        tag=string(tagbuf);
+        break;
       case 't':
       default:
         (*txt_ar)>>d;
+        if(input_is_stdio)
+          cin>>tag;
+        else
+          ifs>>tag;
     };
     ++n_previously_read;
-    string tag;
-    if(input_is_stdio)
-      cin>>tag;
-    else
-      ifs>>tag;
     if(tag==more_data_tag)
       more_data_available=true;
     else if(tag==eof_tag)

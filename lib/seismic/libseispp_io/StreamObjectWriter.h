@@ -60,10 +60,20 @@ template <class T> void StreamObjectWriter<T>::write(T& d)
     try {
       if(nobjects>0)
       {
-        if(output_is_stdio)
-          cout<<more_data_tag<<endl;
-        else
-          ofs<<more_data_tag<<endl;
+        switch(this->format)
+        {
+          case 'b':
+            if(output_is_stdio)
+                cout.write(more_data_tag.c_str(),BINARY_TAG_SIZE);
+            else
+                ofs.write(more_data_tag.c_str(),BINARY_TAG_SIZE);
+          case 't':
+          default:
+            if(output_is_stdio)
+              cout<<more_data_tag<<endl;
+            else
+              ofs<<more_data_tag<<endl;
+        };
       }
       switch(this->format)
       {
