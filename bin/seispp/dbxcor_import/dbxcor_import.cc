@@ -32,9 +32,8 @@ void usage()
  * The procedure will throw an exception if dbh is not a group pointer or
  * if the dbgetv fails.   AttributeType must be either a long int  or double 
  * to match requirements of datascope */
-/*
 template <class AttributeType> 
-  AttributeType get_value(string key, DatascopeHandle& dbh)
+  AttributeType get_value(const char* key, DatascopeHandle& dbh)
 {
     try{
       const string base_error("get_value procedure:  ");
@@ -45,10 +44,10 @@ template <class AttributeType>
         Dbptr db=bun.parent;
         db.record=bun.start_record;
         int iret;
-        iret=dbgetv(db,0,key.c_str(),&val,NULL);
+        iret=dbgetv(db,0,key,&val,NULL);
         if(iret==dbINVALID)
             throw SeisppError(base_error +"dbgetv failed trying to fetch attribute="
-                    key);
+                    +key);
         else
             return val;
       }
@@ -57,7 +56,6 @@ template <class AttributeType>
                   + "DatascopeHandle received is not a group pointer");
     }catch(...){throw;};
 }
-*/
 /* This is a prototype.  If this works I'll put this in libseispp as a 
  * specialization of the above along with an interface change that allows
  * get and puts with templates */
@@ -102,18 +100,6 @@ Hypocenter LoadHypo(DatascopeHandle& dbh)
     Hypocenter h(lat,lon,depth,otime,string("tttaup"),string("iasp91"));
     return h;
   }catch(...){throw;};
-}
-template <class OutputObject> void write_object(OutputObject& d,
-        boost::archive::text_oarchive& oa)
-{
-    try {
-        oa << d;
-    }catch(...)
-    {
-        throw SeisppError(string("write_object failed\n")
-                +"Is serialization defined for this object type?\n"
-                +"Do you have write permission for output directory?");
-    }
 }
 void SetHypo(Hypocenter& h, ThreeComponentEnsemble& d)
 {
@@ -336,6 +322,10 @@ int main(int argc, char **argv)
       /* Neither of these procedures will alter dbh */
       Hypocenter h=LoadHypo(dbh);
       SetHypo(h,d);  //Loads hypocenter data into ensemble metadata
+      /* Helpful to get evid and orid */
+      long evid,orid;
+      evid=get_value<long>("evid",dbh);
+      orid=get_value<long>("orid",dbh);
       StaMap arrivals=LoadStaMap(dbh,"xcorarrival.time");
       StaMap weights=LoadStaMap(dbh,"stackwgt");
       double avgtime=average_times(arrivals);
