@@ -276,20 +276,12 @@ TimeSeries& TimeSeries::operator=(const TimeSeries& tsi)
 {
 	if(this!=&tsi)
 	{
-		live=tsi.live;
-		dt=tsi.dt;
-		t0=tsi.t0;
-		ns=tsi.ns;
-		tref=tsi.tref;
-		if(tsi.live)
-		{
-			s=tsi.s;
-		}
-		gaps=tsi.gaps;
-		mreal=tsi.mreal;
-		mint=tsi.mint;
-		mbool=tsi.mbool;
-		mstring=tsi.mstring;
+            this->BasicTimeSeries::operator=(tsi);
+            this->Metadata::operator=(tsi);
+	    if(tsi.live)
+	    {
+		s=tsi.s;
+	    }
 	}
 	return(*this);
 }			

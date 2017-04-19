@@ -118,22 +118,22 @@ int i;
 return tempmat;
 }
 
-dmatrix operator*(dmatrix& x1,dmatrix& b)
+dmatrix operator*(const dmatrix& x1,const dmatrix& b)
 {
 	int i,j,k;
 	double xval,bval;
         /* The computed length in last arg to the error object is a relic*/
-	if(x1.columns()!=b.rows())
-		throw dmatrix_size_error(x1.rows(), x1.columns(), 
-                        b.rows(), b.rows()*b.columns());
-	dmatrix prod(x1.rows(),b.columns());
-	for(i=0;i<x1.rows();i++)
-	  for(j=0;j<b.columns();j++)
+	if(const_cast<dmatrix&>(x1).columns()!=const_cast<dmatrix&>(b).rows())
+		throw dmatrix_size_error(const_cast<dmatrix&>(x1).rows(), const_cast<dmatrix&>(x1).columns(), 
+                        const_cast<dmatrix&>(b).rows(), const_cast<dmatrix&>(b).rows()*const_cast<dmatrix&>(b).columns());
+	dmatrix prod(const_cast<dmatrix&>(x1).rows(),const_cast<dmatrix&>(b).columns());
+	for(i=0;i<const_cast<dmatrix&>(x1).rows();i++)
+	  for(j=0;j<const_cast<dmatrix&>(b).columns();j++)
 	  {
               double *x1ptr,*bptr;
-              x1ptr=x1.get_address(i,0);
-              bptr=b.get_address(0,j);
-              prod(i,j)=ddot(x1.columns(),x1ptr,x1.rows(),bptr,1);
+              x1ptr=const_cast<dmatrix&>(x1).get_address(i,0);
+              bptr=const_cast<dmatrix&>(b).get_address(0,j);
+              prod(i,j)=ddot(const_cast<dmatrix&>(x1).columns(),x1ptr,const_cast<dmatrix&>(x1).rows(),bptr,1);
 	  }
 	return prod;
 }

@@ -26,7 +26,7 @@ rsptype		a
 }
 
 wDir &Arr{
-gtype		Wind Direction
+gtype		wxt wind direction
 gnom		1.000
 iunits  	degrees
 ounits		counts
@@ -176,7 +176,7 @@ rsptype		j
 }
 
 epHI &Arr{
-gtype		Hail Intensity 
+gtype		wxt hail intensity 
 gnom		1.0
 iunits  	h/cm**2*hr 
 ounits		counts
@@ -192,7 +192,7 @@ rsptype		R
 }
 
 epRI &Arr{
-gtype		Rain Intensity 
+gtype		wxt rain intensity 
 # check this
 gnom		10
 iunits  	mm/hr	

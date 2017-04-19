@@ -1,0 +1,9 @@
+# When true rotate all data using spherical coordinate angles phi and theta
+# when false extract geometry information from metadata using keys below
+  constant_transformation false
+  phi 90.0
+  theta 0.0
+  station_longitude_key site.lon
+  station_latitude_key site.lat
+  event_longitude_key origin.lon
+  event_latitude_key origin.lat
