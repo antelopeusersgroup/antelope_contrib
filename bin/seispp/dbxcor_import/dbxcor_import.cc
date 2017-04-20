@@ -17,10 +17,13 @@ using namespace SEISPP;
 typedef map<string,double> StaMap;   // tuple of station name and arrival time
 void usage()
 {
-    cerr << "dbxcor_import db [-filter -pf pffile]" <<endl
+    cerr << "dbxcor_import db [-filter -binary -v --help -pf pffile]" <<endl
         << "Constructs a serialized 3C ensemble from Antelope database db"<<endl
         << "serialized data written to stdout"<<endl
         << "use -filter to apply the same filter used to compute beam (stored in xcorbeam)"<<endl
+        << "Use -binary to write output in binary format"<<endl
+        << "--help returns this usage message and exits"<<endl
+        << "Use -v to be more verbose"<<endl
         << "use -pf to specify alternate pf file to default dbxcor_import.pf"
         <<endl;
     exit(-1);
@@ -239,9 +242,9 @@ int main(int argc, char **argv)
       if(i>=argc)usage();
       pffile=string(argv[i]);
     }
-    if(sarg=="-binary")
+    else if(sarg=="-binary")
       binary_data=true;
-    if(sarg=="-filter")
+    else if(sarg=="-filter")
       filter_data=true;
     else if(sarg=="-v")
       SEISPP_verbose=true;
@@ -291,8 +294,6 @@ int main(int argc, char **argv)
     cerr << "View group operation="<<dbh.number_tuples()<<endl;
     DatascopeHandle dbhwf(dbh); //points to wfdisc, but used as arg for read
     dbhwf.lookup("wfdisc");
-    /* We always define these even if we don't save all of them */
-    string dbxcor_beam_sta=control.get_string("dbxcor_beam_sta");
     string robust_beam_sta=control.get_string("robust_beam_sta");
     string simple_beam_sta=control.get_string("simple_beam_sta");
     double ts,te;
@@ -376,6 +377,11 @@ int main(int argc, char **argv)
           dcut=ArrivalTimeReference(*rgptr,atimekey,stack_window);
           d.member.push_back(*dcut);
         }
+      }
+      if(SEISPP_verbose)
+      {
+          cerr << "Constructing stack for evid="<<evid
+              <<" from "<<d.member.size()<<" stations"<<endl;
       }
       /* Now we compute simple and robust stack */
       ThreeComponentSeismogram simplestack,robuststack;

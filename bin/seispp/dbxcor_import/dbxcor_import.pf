@@ -1,4 +1,3 @@
-dbxcor_beam_sta XCORBEAM
 robust_beam_sta RBEAM
 simple_beam_sta BEAM
 read_window_start_relative_time -2.0
