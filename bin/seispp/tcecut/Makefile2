@@ -1,4 +1,4 @@
-BIN=cut
+BIN=tcecut
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
@@ -9,7 +9,7 @@ include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 CXXFLAGS += -I$(BOOSTINCLUDE)
 
-OBJS=cut.o
+OBJS=tcecut.o
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
