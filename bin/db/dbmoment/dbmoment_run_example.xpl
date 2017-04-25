@@ -5,6 +5,7 @@
 #   This software may be used freely in any way as long as
 #   the copyright statement above is not removed.
 
+use Cwd;
 use Datascope ;
 use File::Path;
 
