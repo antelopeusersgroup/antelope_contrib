@@ -87,20 +87,28 @@ template <typename T>
     if(!input_is_stdio)
       if(n_previously_read>=(nobjects-1)) throw SeisppError(base_error
         + "Trying to read past end of file - code should test for this condition with at_eof method");
+    string tag;
+    char tagbuf[BINARY_TAG_SIZE+1];
     switch(this->format)
     {
       case 'b':
         (*bin_ar)>>d;
+        if(input_is_stdio)
+            cin.read(tagbuf,BINARY_TAG_SIZE);
+        else
+            ifs.read(tagbuf,BINARY_TAG_SIZE);
+        tagbuf[BINARY_TAG_SIZE]='\0';
+        tag=string(tagbuf);
+        break;
       case 't':
       default:
         (*txt_ar)>>d;
+        if(input_is_stdio)
+          cin>>tag;
+        else
+          ifs>>tag;
     };
     ++n_previously_read;
-    string tag;
-    if(input_is_stdio)
-      cin>>tag;
-    else
-      ifs>>tag;
     if(tag==more_data_tag)
       more_data_available=true;
     else if(tag==eof_tag)
@@ -121,10 +129,11 @@ template <typename T>
   }
 }
 template <typename T>
-      StreamObjectReader<T>::StreamObjectReader(const char format)
+      StreamObjectReader<T>::StreamObjectReader(const char form)
 {
   /* Note when this constructor is called ifs is not initialized and must
   not be touched. */
+  format=form;
   input_is_stdio=true;
   nobjects=0;
   parent_filename="STDIN";
@@ -140,12 +149,14 @@ template <typename T>
       bin_ar=NULL;
       txt_ar=new boost::archive::text_iarchive(std::cin);
   };
+  more_data_available=true;
 }
 template <typename T> 
-   StreamObjectReader<T>::StreamObjectReader(string fname,const char format)
+   StreamObjectReader<T>::StreamObjectReader(string fname,const char form)
 {
   try{
     const string base_error("StreamObjectReader file constructor:  ");
+    format=form;
     switch(format)
     {
       case 'b':

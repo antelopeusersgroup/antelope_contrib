@@ -22,7 +22,7 @@ const string eof_tag("ENDF");
  * define blocks with a fixed size.  This should be the size of the above +1.
  Binary tag is text tag values above result with c_str() method.
  e.g. eof_tag.c_str()*/
-#define BINARY_TAG_SIZE 5
+#define BINARY_TAG_SIZE 4
 /*! We write the number of objects in set of concatenated serial objects
    at the end of the file.  We seek back this many bytes to read the
    number of objects written */

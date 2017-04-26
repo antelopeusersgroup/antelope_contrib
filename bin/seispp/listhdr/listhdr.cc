@@ -181,14 +181,13 @@ bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
     int i;
-    if(argc<2) usage();
     string infile("Standard Input");
     bool csv_output(false);
     string otype("ThreeComponentSeismogram");
     string fname_csvo;
     bool use_stdin(true);
     bool binary_data(false);
-    for(i=2;i<argc;++i)
+    for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
         if(sarg=="-csv")

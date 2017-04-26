@@ -154,7 +154,7 @@ void BundleChannels(TimeSeriesEnsemble& rawdata, ThreeComponentEnsemble& dtcs,
     int rawsize=rawdata.member.size();
     try{
         if(SEISPP_verbose)
-            cout << "BundleChannels procedure:  attempting to assemble "
+            cerr << "BundleChannels procedure:  attempting to assemble "
                 << rawdata.member.size()<<" channels into 3C bundles"<<endl;
         /* Sort the data by sta chan for the algorithm here to work */
         StaChanSort(rawdata);
@@ -275,7 +275,7 @@ void BundleChannels(TimeSeriesEnsemble& rawdata, ThreeComponentEnsemble& dtcs,
             }
         }
         if(SEISPP_verbose)
-            cout << "BundleChannels procedure:  "
+            cerr << "BundleChannels procedure:  "
                 << "ensemble number of 3C stations assembled="
                 << dtcs.member.size()<<endl;
     }catch(...){throw;};
