@@ -28,6 +28,7 @@ int main(int argc, char **argv)
     int i;
     const int narg_required(2);
     double tmin,tmax;
+    if(string(argv[1]) == "--help") usage();
     tmin=atof(argv[1]);
     tmax=atof(argv[2]);
     if(tmin>tmax)
@@ -55,6 +56,8 @@ int main(int argc, char **argv)
             usage();
     }
     try{
+        if(SEISPP_verbose) cerr << "cut:  windowing data between "
+            << tmin<<" and "<<tmax<<" seconds"<<endl;
         shared_ptr<StreamObjectReader<ThreeComponentEnsemble>> inp;
         if(binary_data)
         {

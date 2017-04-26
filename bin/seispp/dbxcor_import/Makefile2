@@ -1,4 +1,5 @@
 BIN=dbxcor_import
+PF=dbxcor_import.pf
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
