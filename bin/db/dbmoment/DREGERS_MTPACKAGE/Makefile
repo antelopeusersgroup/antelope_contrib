@@ -11,8 +11,6 @@ SUBDIR=/contrib
 
 include $(ANTELOPEMAKE)
 
-LINKFIX=-L$(ANTELOPE)/lib $(LDRUN) -static-libgcc -static-libgfortran
-
 DIRS= GETPAR C_CODE
 
 %.o: %.c
@@ -41,23 +39,10 @@ putmt: libget.a
 	$(CC) $(CFLAGS) -g -o putmt putmt.c readhelm.c libget.a -lm
 
 fortran_fkrprog:
-	$(FC) $(FFLAGS) -o $@ fortran_fkrprog.f $(LINKFIX)
-	if [ `uname` = "Darwin" ]; then \
-		install_name_tool -change /usr/local/gfortran/lib/libquadmath.0.dylib $(ANTELOPE)/lib/libquadmath.0.dylib $@ ; \
-		install_name_tool -change /usr/local/lib/libquadmath.0.dylib $(ANTELOPE)/lib/libquadmath.0.dylib $@ ; \
-	fi
-
+	$(FC) $(FFLAGS) -o $@ fortran_fkrprog.f
 
 wvint9:
-	$(FC) $(FFLAGS) -o $@ wvint9.f cwrite.c $(LINKFIX)
-	if [ `uname` = "Darwin" ]; then \
-		install_name_tool -change /usr/local/gfortran/lib/libquadmath.0.dylib $(ANTELOPE)/lib/libquadmath.0.dylib $@ ; \
-		install_name_tool -change /usr/local/lib/libquadmath.0.dylib $(ANTELOPE)/lib/libquadmath.0.dylib $@ ; \
-	fi
+	$(FC) $(FFLAGS) -o $@ wvint9.f cwrite.c
 
 tdmt_invc: c_libs.a  tdmt_invc_linux.o minvdbl_linux.o correl2b_linux.o readhelm.o  fitcheck2.o fmap_subs_linux.o
-	$(FC) $(FFLAGS) -o tdmt_invc tdmt_invc_linux.o minvdbl_linux.o correl2b_linux.o readhelm.o fitcheck2.o fmap_subs_linux.o c_libs.a $(LINKFIX)
-	if [ `uname` = "Darwin" ]; then \
-		install_name_tool -change /usr/local/gfortran/lib/libquadmath.0.dylib $(ANTELOPE)/lib/libquadmath.0.dylib $@ ; \
-		install_name_tool -change /usr/local/lib/libquadmath.0.dylib $(ANTELOPE)/lib/libquadmath.0.dylib $@ ; \
-	fi
+	$(FC) $(FFLAGS) -o tdmt_invc tdmt_invc_linux.o minvdbl_linux.o correl2b_linux.o readhelm.o fitcheck2.o fmap_subs_linux.o c_libs.a

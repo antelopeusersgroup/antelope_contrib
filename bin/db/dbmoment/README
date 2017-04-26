@@ -40,13 +40,14 @@ The data needed for the example is located on folders "EXAMPLE_1" and
 "EXAMPLE_2". You can run the code from the same repo or run the script
 *dbmoment_run_example* to automate the process.
 
-For this you have to (folder is optional, default to working directory):
+Run this in terminal:
 
-    dbmoment_run_example [/tmpfolder/]
+    dbmoment_run_example
 
-This will go or create an example folder (working directory or other) and
+This will go to the example folder "$ANTELOPE/contrib/example/dbmoment/" and
 will run both examples. You will see several new folders.
 
     .dbmoment       => Temp folder for calculations.
     synthetics_db   => Includes all databases for synthetics.
     dbmoment_images => Default folder to save the results in PNG files.
+    mt db tables    => Results will go into a new 'mt' table.
