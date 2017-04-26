@@ -1,0 +1,16 @@
+BIN=seispp_b2t
+
+cxxflags=-g
+ldflags=-L$(ANTELOPE)/contrib/static
+ldlibs=-lseispp -lseispp_io -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp -lseispp_io
+SUBDIR=/contrib
+
+include $(ANTELOPEMAKE) 
+include $(ANTELOPEMAKELOCAL)
+CXXFLAGS += -I$(BOOSTINCLUDE)
+
+OBJS=seispp_b2t.o
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+LDFLAGS += -L$(BOOSTLIB)

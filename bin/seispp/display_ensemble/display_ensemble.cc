@@ -13,10 +13,12 @@ using namespace std;
 using namespace SEISPP; 
 void usage()
 {
-    cerr << "display_ensemble [-pf pffile] < infile"
+    cerr << "display_ensemble [-binary -pf pffile] < infile"
         <<endl
         << "Display a ThreeComponentEnsemble object (typically end of a pipeline)"<<endl
-        << "(Accepts only text file input.)"<<endl;
+        << "Use -binary for binary input (default is text format)"<<endl
+        << "Use -pf to specify alternative parameter file to default display_ensemble.pf"
+        <<endl;
     exit(-1);
 }
 bool SEISPP::SEISPP_verbose(true);
@@ -25,6 +27,7 @@ int main(int argc, char **argv)
     int i;
     if(argc>3) usage();
     char *pffile=argv[0];
+    bool binary_data(false);
     for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -33,6 +36,10 @@ int main(int argc, char **argv)
             ++i;
             if(i>=argc)usage();
             pffile=argv[i];
+        }
+        else if(sarg=="-binary")
+        {
+            binary_data=true;
         }
         else
             usage();
@@ -45,9 +52,19 @@ int main(int argc, char **argv)
     }
     try{
         Metadata control(pf);
-        StreamObjectReader<ThreeComponentEnsemble> ia;
+        shared_ptr<StreamObjectReader<ThreeComponentEnsemble>> inp;
+        if(binary_data)
+        {
+          inp=shared_ptr<StreamObjectReader<ThreeComponentEnsemble>>
+             (new StreamObjectReader<ThreeComponentEnsemble>('b'));
+        }
+        else
+        {
+          inp=shared_ptr<StreamObjectReader<ThreeComponentEnsemble>>
+             (new StreamObjectReader<ThreeComponentEnsemble>);
+        }
         ThreeComponentEnsemble d;
-        d=ia.read();
+        d=inp->read();
         ThreeCEnsembleTimePicker win(control);
         int nseis;
         nseis=win.plot(d,true);

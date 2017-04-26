@@ -46,7 +46,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 		// Will throw an exception if this isn't a group pointer
 		DBBundle ensemble_bundle=dbh.get_range();
 		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
-                if(SEISPP_verbose) cout << this_function_base_message
+                if(SEISPP_verbose) cerr << this_function_base_message
                     <<":  Attempting to read an ensemble with "
                         << nsta << " seismograms"<<endl;
 		// We need a copy of this pointer 
@@ -105,7 +105,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 			member.push_back(*d);
 			delete d;
 		}
-                if(SEISPP_verbose) cout <<this_function_base_message
+                if(SEISPP_verbose) cerr <<this_function_base_message
                     << ":  Number of seismograms loaded="
                         <<member.size()<<endl;;
 
@@ -247,7 +247,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 	else
 		ir=0;
 	Dbptr dbsc,dbscgr;
-        if(SEISPP_verbose) cout << base_error_message
+        if(SEISPP_verbose) cerr << base_error_message
             << "Attempting to load data in time interval "
                 << strtime(twin.start) << " to "
                 << strtime(twin.end)<<endl;
@@ -301,7 +301,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 	}
         else if (SEISPP_verbose)
         {
-            cout << base_error_message
+            cerr << base_error_message
                 <<"Successfully read "<<ntraces<<" seismograms"<<endl;
         }
 	try {
@@ -491,7 +491,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			}
 			else
 			{
-                                if(SEISPP_verbose) cout << base_error_message
+                                if(SEISPP_verbose) cerr << base_error_message
                                     << "(Warning) seismogram number "
                                     << irec <<" of this ensemble has a data gap"
                                     << endl;
@@ -522,7 +522,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 								twin.start,
 								t0_this_segment));
                                                         if(SEISPP_verbose)
-                                                            cout << "Gap is at start of seismogram"
+                                                            cerr << "Gap is at start of seismogram"
                                                                 <<endl;
 						}
 					}
@@ -540,7 +540,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 								etime_this_segment,
 								twin.end));
                                                         if(SEISPP_verbose)
-                                                            cout << "Gap is at end of seismogram"
+                                                            cerr << "Gap is at end of seismogram"
                                                                 <<endl;
 						}
 					}
@@ -550,7 +550,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 							etime_last_segment,
 							t0_this_segment));
                                                 if(SEISPP_verbose)
-                                                  cout << "Gap is in middle of seismogram"
+                                                  cerr << "Gap is in middle of seismogram"
                                                                 <<endl;
 					}
 					// In all cases we just copy into
@@ -669,7 +669,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 		// Will throw an exception if this isn't a group pointer
 		DBBundle ensemble_bundle=dbh.get_range();
 		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
-                if(SEISPP_verbose) cout << this_function_base_message
+                if(SEISPP_verbose) cerr << this_function_base_message
                     <<":  Attempting to read an ensemble with "
                         << nsta << " 3C seismograms"<<endl;
 		// We need a copy of this pointer 
@@ -728,7 +728,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 			member.push_back(*data3c);
 			delete data3c;
 		}
-                if(SEISPP_verbose) cout <<this_function_base_message
+                if(SEISPP_verbose) cerr <<this_function_base_message
                     << ":  Number of seismograms loaded="
                         <<member.size()<<endl;;
 

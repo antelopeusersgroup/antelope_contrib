@@ -32,7 +32,12 @@ void usage()
 class RotateControl
 {
   public:
+    /* When true use the same angle for all data */
     bool constant_transformation;
+    /* When true get event metadata from ensemble metadata not 
+     * trace data. This is a valid approximation only form small
+     * arrays */
+    bool saamode;
     double phi,theta;
     string stalatkey,stalonkey;
     string evlatkey,evlonkey;
@@ -46,6 +51,13 @@ RotateControl::RotateControl(string pffile)
   try{
     Metadata md(pf);
     constant_transformation=md.get_bool("constant_transformation");
+    saamode=md.get_bool("small_aperture_array_mode");
+    if(saamode && constant_transformation)
+    {
+        throw SeisppError(string("RotateControl constructor:  ")
+                + "Illegal parameter combination\n"
+                +"constant_transformation and small_aperture_array mode cannot both be true");
+    }
     if(constant_transformation)
     {
       phi=md.get_double("phi");
@@ -66,7 +78,7 @@ RotateControl::RotateControl(string pffile)
   }catch(...){throw;};
 }
 
-bool SEISPP::SEISPP_verbose(true);
+bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
   int i;
@@ -85,6 +97,8 @@ int main(int argc, char **argv)
       binary_data=true;
     else if(sarg=="--help")
       usage();
+    else if(sarg=="-v")
+      SEISPP_verbose=true;
     else
       usage();
   }
@@ -117,14 +131,20 @@ int main(int argc, char **argv)
              (new StreamObjectWriter<ThreeComponentEnsemble>);
       }
       ThreeComponentEnsemble d;
+      int nensembles(0);
       while(!ia->eof())
       {
         d=ia->read();
         vector<ThreeComponentSeismogram>::iterator dptr;
+        double slat,slon,evlat,evlon;
         int k;
-        for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
+        if(rc.saamode)
         {
-          double slat,slon,evlat,evlon;
+           evlat=d.get_double(rc.evlatkey);
+           evlon=d.get_double(rc.evlonkey);
+        }
+        for(dptr=d.member.begin(),k=0;dptr!=d.member.end();++dptr,++k)
+        {
           double az,delta;
           if(rc.constant_transformation)
           {
@@ -134,14 +154,29 @@ int main(int argc, char **argv)
           {
             slat=dptr->get_double(rc.stalatkey);
             slon=dptr->get_double(rc.stalonkey);
-            evlat=dptr->get_double(rc.evlatkey);
-            evlon=dptr->get_double(rc.evlonkey);
-            dist(slat,slon,evlat,evlon,&delta,&az);
-            dptr->rotate(az+M_PI_2);
+            if(!rc.saamode)
+            {
+              evlat=dptr->get_double(rc.evlatkey);
+              evlon=dptr->get_double(rc.evlonkey);
+            }
+            dist(rad(slat),rad(slon),rad(evlat),rad(evlon),&delta,&az);
+            /* az is backazimuth but rotate needs amount y should rotate
+             * to be R = azimuth so add pi */
+            dptr->rotate(az+M_PI);
+            if(SEISPP_verbose)
+            {
+                cerr << "Ensemble index="<<nensembles<<" Member index="<<k<<endl
+                    <<"Station coordinates(degrees):  "<<slat<<" "<<slon<<endl
+                    <<"Event coordinates (degrees):  "<<evlat<<" "<<evlon<<endl
+                    <<"Rotation angle (degrees)="<<deg(az+M_PI)<<endl;
+            }
           }
         }
         oa->write(d);
+        ++nensembles;
       }
+      if(SEISPP_verbose) cerr << "rotate:  processed "<<nensembles+1
+          << " ensembles"<<endl;
     }catch(SeisppError& serr)
     {
         serr.log_error();

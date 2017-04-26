@@ -60,10 +60,21 @@ template <class T> void StreamObjectWriter<T>::write(T& d)
     try {
       if(nobjects>0)
       {
-        if(output_is_stdio)
-          cout<<more_data_tag<<endl;
-        else
-          ofs<<more_data_tag<<endl;
+        switch(this->format)
+        {
+          case 'b':
+            if(output_is_stdio)
+                cout.write(more_data_tag.c_str(),BINARY_TAG_SIZE);
+            else
+                ofs.write(more_data_tag.c_str(),BINARY_TAG_SIZE);
+            break;
+          case 't':
+          default:
+            if(output_is_stdio)
+              cout<<more_data_tag<<endl;
+            else
+              ofs<<more_data_tag<<endl;
+        };
       }
       switch(this->format)
       {
@@ -82,10 +93,11 @@ template <class T> void StreamObjectWriter<T>::write(T& d)
                 +"Do you have write permission for output directory?");
     }
 }
-template <class T> StreamObjectWriter<T>::StreamObjectWriter(const char format)
+template <class T> StreamObjectWriter<T>::StreamObjectWriter(const char form)
 {
   /* Note ofs is left invalid in this condition - stdin cannot seek
   which creates a disconnect */
+  format=form;
   output_is_stdio=true;
   nobjects=0;
   parent_filename="STDOUT";
@@ -103,18 +115,19 @@ template <class T> StreamObjectWriter<T>::StreamObjectWriter(const char format)
       txt_ar=new boost::archive::text_oarchive(std::cout);
   };
 }
-template <class T> StreamObjectWriter<T>::StreamObjectWriter(string fname,const char format)
+template <class T> StreamObjectWriter<T>::StreamObjectWriter(string fname,const char form)
 {
   try{
     const string base_error("StreamObjectWriter file constructor:  ");
+    format=form;
     switch(format)
     {
       case 'b':
-        ofs.open(fname.c_str(),ios::out | ios::trunc);
+        ofs.open(fname.c_str(),ios::out | ios::binary | ios::trunc);
         break;
       case 't':
       default:
-        ofs.open(fname.c_str(),ios::out | ios::binary | ios::trunc);
+        ofs.open(fname.c_str(),ios::out | ios::trunc);
     };
     if(ofs.fail())
     {
@@ -166,17 +179,14 @@ template <class T> StreamObjectWriter<T>::~StreamObjectWriter()
       /* Initialize the buffer to all blanks */
       for(i=0;i<TextIOStreamEOFOffset;++i) buf[i]=' ';
       sprintf(buf,"%s %ld\n",eof_tag.c_str(),nobjects);
-      for(i=0;i<TextIOStreamEOFOffset;++i)
+      if(output_is_stdio)
+        for(i=0;i<TextIOStreamEOFOffset;++i) cout<<buf[i];
+      else
       {
-        if(output_is_stdio)
-          cout<<buf[i];
-        else
-        {
-          ofs<<buf[i];
-          ofs.close();
-          delete txt_ar;
-        }
+        for(i=0;i<TextIOStreamEOFOffset;++i) ofs<<buf[i];
       }
+      ofs.close();
+      delete txt_ar;
       delete [] buf;
   };
 }
