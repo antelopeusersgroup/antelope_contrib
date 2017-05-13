@@ -35,7 +35,6 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        }
         else if(sarg=="-binary")
         {
             binary_data=true;
