@@ -182,6 +182,7 @@ int main(int argc, char **argv)
                 dout.member.push_back(d);
               }
             }
+            ++nseis;
         }
         cerr << "Gather processed "<<nseis<<" 3c seismograms"<<endl
                 << "Assembled "<<ngather<<" ensembles"<<endl;
