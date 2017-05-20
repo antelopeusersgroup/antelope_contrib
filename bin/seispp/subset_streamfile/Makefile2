@@ -2,7 +2,7 @@ BIN=subset_streamfile
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lseispp -lseispp_io -lgclgrid -lmwtpp -lmultiwavelet -lgenloc $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization
+ldlibs=-lseispp -lgclgrid -lmwtpp -lmultiwavelet -lgenloc $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE) 

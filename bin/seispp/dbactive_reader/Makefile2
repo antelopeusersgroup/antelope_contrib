@@ -3,8 +3,8 @@ PF=dbactive_reader.pf
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lseispp -lseispp_io -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization \
-   -lgeocoords -lmwtpp
+ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization \
+   -lgeocoords 
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE)
