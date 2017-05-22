@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 {
     int iarg;
     bool binary_data(false);
-    for(iarg=0;iarg<argc;++iarg)
+    for(iarg=1;iarg<argc;++iarg)
     {
       string sarg(argv[iarg]);
       if(sarg=="-binary")
