@@ -244,19 +244,20 @@ tmp_folder = os.path.relpath(safe_pf_get(pf_object, 'tmp_folder','.dbmoment'))
 clean_tmp = stock.yesno(str(safe_pf_get(pf_object, 'clean_tmp', True)))
 execs = safe_pf_get(pf_object, 'find_executables', [])
 
-log_folder = os.path.relpath(safe_pf_get(pf_object, 'log_folder','.'))
-
-# Using an ORID variable but at this point it could be an EVID. Just
-# considering this a simple ID.
-log_filename = '%s/dbmoment_%s_%s.log' % (log_folder, database_name, orid)
-log_max_count = int(safe_pf_get(pf_object, 'log_max_count',10))
-
 model_path = safe_pf_get(pf_object, 'model_path')
 model_file = safe_pf_get(pf_object, 'model_file')
 
 model_pf = get_model_pf( model_file, model_path, options.model)
 
 model_name = safe_pf_get(model_pf, 'name')
+log_folder = os.path.relpath(safe_pf_get(pf_object, 'log_folder','.'))
+
+# Using an ORID variable but at this point it could be an EVID. Just
+# considering this a simple ID.
+log_filename = '%s/dbmoment_%s_%s_%s.log' % \
+        (log_folder, database_name, orid, model_name)
+log_max_count = int(safe_pf_get(pf_object, 'log_max_count',10))
+
 
 
 try:
@@ -270,6 +271,47 @@ except Exception,e:
 if beachball and not options.beachball:
     beachball = False
 
+
+
+"""
+Default is for ID as an "orid".
+If command line flag -e is used then the
+ID is forced to be EVID.
+"""
+# Open database and make new object for it
+try:
+    db = datascope.dbopen( database, "r+" )
+except Exception,e:
+    sys.exit('Problems opening database: %s %s %s' % (database,Exception, e) )
+
+
+event_table = db.lookup(table='event')
+#logging.info('Test if event table present: %s' % event_table.query(datascope.dbTABLE_PRESENT) )
+
+# Test if we see the table
+if options.evid and event_table.query(datascope.dbTABLE_PRESENT):
+    steps = [ 'dbopen event' ]
+    steps.extend([ 'dbjoin origin' ])
+    steps.extend([ 'dbsubset (evid==%s && prefor==orid) ' % evid ])
+else:
+    steps = ['dbopen origin']
+    steps.extend(['dbsubset orid==%s' % orid ])
+
+#logging.info( ', '.join(steps) )
+
+with datascope.freeing(db.process( steps )) as dbview:
+    #logging.debug( 'Found (%s) events with id=[%s]' % (dbview.record_count,orid) )
+
+    if not dbview.record_count:
+        sys.exit( 'No records found for id=[%s]' % orid )
+    elif dbview.record_count > 1:
+        sys.exit( 'Found (%s) events/orids with id=[%s]' % (dbview.record_count,orid) )
+    else:
+        dbview.record = 0
+        orid = dbview.getv('orid')[0]
+        evid = dbview.getv('evid')[0]
+        event_time = dbview.getv('time')[0]
+        #print('Found 1 record with evid=[%s] orid=[%s]' % (evid,orid) )
 
 # All modules should use the same logging function. We have
 # a nice method defined in the logging_helper lib that helps
@@ -295,6 +337,7 @@ logging.info( "database [%s]" % database )
 logging.info( "id [%s]" % orid )
 logging.info( "Parameter file to use [%s]" % options.pf )
 logging.info('loglevel=%s' % loglevel)
+logging.info('log_filename=%s' % log_filename)
 
 
 
@@ -330,47 +373,6 @@ if not os.path.isfile(options.pf):
     logging.error('ERROR: Cannot find pf(%s)' % options.pf )
 
 
-
-
-# Open database and make new object for it
-try:
-    db = datascope.dbopen( database, "r+" )
-except Exception,e:
-    logging.error('Problems opening database: %s %s %s' % (database,Exception, e) )
-
-
-"""
-Default is for ID as an "orid".
-If command line flag -e is used then the
-ID is forced to be EVID.
-"""
-event_table = db.lookup(table='event')
-logging.info('Test if event table present: %s' % event_table.query(datascope.dbTABLE_PRESENT) )
-
-# Test if we see the table
-if options.evid and event_table.query(datascope.dbTABLE_PRESENT):
-    steps = [ 'dbopen event' ]
-    steps.extend([ 'dbjoin origin' ])
-    steps.extend([ 'dbsubset (evid==%s && prefor==orid) ' % evid ])
-else:
-    steps = ['dbopen origin']
-    steps.extend(['dbsubset orid==%s' % orid ])
-
-logging.info( ', '.join(steps) )
-
-with datascope.freeing(db.process( steps )) as dbview:
-    logging.debug( 'Found (%s) events with id=[%s]' % (dbview.record_count,orid) )
-
-    if not dbview.record_count:
-        logging.error( 'No records found for id=[%s]' % orid )
-    elif dbview.record_count > 1:
-        logging.error( 'Found (%s) events/orids with id=[%s]' % (dbview.record_count,orid) )
-    else:
-        dbview.record = 0
-        orid = dbview.getv('orid')[0]
-        evid = dbview.getv('evid')[0]
-        event_time = dbview.getv('time')[0]
-        logging.info('Found 1 record with evid=[%s] orid=[%s]' % (evid,orid) )
 
 
 """
