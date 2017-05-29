@@ -529,13 +529,16 @@ int level;
 	fclose(file);
    }
 
-gp_getpar_err(subname,mess,a1,a2,a3,a4)
+//gp_getpar_err(subname,mess,a1,a2,a3,a4)
+gp_getpar_err(subname,mess,a1)
 char *subname, *mess;
-int a1, a2, a3, a4;
+//int a1, a2, a3, a4;
+int a1;
    {
 	fprintf(stderr,"\n***** ERROR in %s[%s] *****\n\t",
 		(PROGNAME == NULL ? "(unknown)" : PROGNAME),subname);
-	fprintf(stderr,mess,a1,a2,a3,a4);
+	//fprintf(stderr,mess,a1,a2,a3,a4);
+	fprintf(stderr,mess,a1);
 	fprintf(stderr,"\n");
 	exit(GETPAR_ERROR);
    }

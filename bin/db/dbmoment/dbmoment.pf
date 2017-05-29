@@ -14,7 +14,7 @@ antelope        &env(ANTELOPE)
 # with the -l flag. Keep the logs of
 # the last x number of runs of the
 # dbmoment code.
-log_filename    dbmoment.log
+log_folder      dbmoment_logs
 log_max_count   10
 
 tmp_folder      .dbmoment
@@ -205,4 +205,4 @@ acknowledgement &Literal{
     Antelope's implementation of code by "Juan Reyes"<jreyes1108@gmail.com>
 }
 
-pf_revision_time 1486598400
+pf_revision_time 1495411200

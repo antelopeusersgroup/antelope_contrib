@@ -37,7 +37,7 @@ class MomentTensor():
     def set_folder(self, folder):
         self.tmp_folder = folder
 
-    def invert(self, sta_cache):
+    def invert(self, sta_cache, ignore_error=False):
         """
         To run the original code from Dreger's we need to
         prepare a file like this...
@@ -64,8 +64,10 @@ class MomentTensor():
         green = ''
         data = ''
         total = 0
+        valid = False
 
         for sta in self.sta_cache:
+            if not self.sta_cache[sta]: continue
             self.station_cache["%s" % total] = sta
             total += 1
 
@@ -105,6 +107,7 @@ class MomentTensor():
 
         self.logging.debug('new file %s' % destination)
 
+        self.logging.debug(output)
 
         #try:
         #    os.chdir(self.tmp_folder)
@@ -132,7 +135,8 @@ class MomentTensor():
 
         cmd = 'tdmt_invc'
 
-        for line in run(cmd, self.tmp_folder):
+        for line in run(cmd, self.tmp_folder, ignore_error):
+            valid = True
             self.logging.debug(line)
             match_variance = re.match("^Station\((.+)\)=(\S+) +(\S+)$",line)
             if match_variance:
@@ -143,6 +147,9 @@ class MomentTensor():
                 self.logging.debug('station variance reduction %s' % \
                                     self.results['variance'][sta])
 
+
+        if not valid:
+            return False
 
         outputfile = open( "%s/mt_inv_redi.out" % self.tmp_folder )
         self._parse_output(outputfile.read())

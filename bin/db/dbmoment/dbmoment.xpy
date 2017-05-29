@@ -35,15 +35,15 @@ import glob
 import stat
 import json
 import inspect
-import logging
-import logging.handlers
+import logging as log_object
+import logging.handlers as handlers
 
 from tempfile import mkstemp
 from distutils import spawn
 from datetime import datetime
-from time import gmtime, time
 from optparse import OptionParser
 from collections import defaultdict
+from time import gmtime, time, sleep
 import subprocess
 
 """
@@ -74,10 +74,11 @@ try:
     from pylab import array, zeros, ones, sin, cos, delete
     from pylab import insert, concatenate, pi
     from pylab import fft, fftfreq, irfft
+    from pylab import concatenate
 except Exception,e:
     try:
         from numpy import array, zeros, ones, sin, cos, delete
-        from numpy import insert, concatenate, pi
+        from numpy import insert, concatenate, pi, interp
         from numpy.fft import fft
         from numpy.fft import fftfreq
         from numpy.fft import irfft
@@ -86,7 +87,7 @@ except Exception,e:
 
 # Matplotlib
 try:
-    from matplotlib  import pyplot
+    from matplotlib  import pyplot, colors
 except Exception,e:
     sys.exit("Import Error: [%s] Do you have PYLAB installed correctly?" % e)
 
@@ -96,12 +97,20 @@ try:
 except Exception,e:
     beachball = False
 
-#try:
-#    from dbmoment.functions import open_verify_pf
-#except Exception,e:
-#    sys.exit("Import Error: [%s] Problem with mt_fucntions load." % e)
+try:
+    from dbmoment.logging_helper import *
+except Exception,e:
+    sys.exit('Problems loading logging lib. %s' % e)
 
+try:
+    from dbmoment.timeout_function import *
+except Exception,e:
+    sys.exit("Import Error: [%s] Problem with mt_fucntions load." % e)
 
+try:
+    from dbmoment.pf_helper import safe_pf_get, open_verify_pf, get_model_pf
+except Exception,e:
+    sys.exit("Import Error: [%s] Problem with mt_fucntions load." % e)
 
 
 """
@@ -125,10 +134,6 @@ parser.add_option("-v", "--verbose", action="store_true",
 # Debug output
 parser.add_option("-d", "--debug", action="store_true",
         dest="debug", default=False, help="debug output")
-
-# Log to file if needed
-parser.add_option("-l", "--logfile", action="store_true",
-        dest="logfile", default=False, help="Save logs to a file.")
 
 # Plot each data group for a site (real and synth) and wait.
 parser.add_option("-x", action="store_true", dest="debug_each",
@@ -192,25 +197,33 @@ if len(args) != 2:
     sys.exit( usage );
 
 
+# Parse arguments from command-line
+database = args[0]
+evid = args[1]
+orid = args[1]
+
+database_name = os.path.basename(database)
+
 
 '''
 Read parameters from the ParameterFile.
 Defaults to the dbmoment.pf name.
 '''
-if not options.pf: options.pf = 'dbmoment'
+if not options.pf:
+    options.pf = 'dbmoment'
+
 options.pf = stock.pffiles(options.pf)[-1]
 
 '''
 Need to verify that we have a modern version of the parameter file.
-Older versions will break the code or will produce erroneous results.
 
 Function pfrequire will return any of these:
 PF_MTIME_OK, PF_MTIME_NOT_FOUND, PF_MTIME_OLD, PF_SYNTAX_ERROR, or PF_NOT_FOUND
 
 Set limit to parameter file. Only versions after 2017-02-09
 '''
-#pf_object = open_verify_pf( options.pf, 1486598400 )
-PF_STATUS = stock.pfrequire(options.pf, 1486598400)
+# Limit this to PF files after 2017-05-22
+PF_STATUS = stock.pfrequire(options.pf, 1495411200)
 if PF_STATUS == stock.PF_MTIME_NOT_FOUND:
     sys.exit( 'No MTTIME in PF file. Need a new version of the %s file!!!' % options.pf )
 elif PF_STATUS == stock.PF_MTIME_OLD:
@@ -220,29 +233,48 @@ elif PF_STATUS == stock.PF_SYNTAX_ERROR:
 elif PF_STATUS == stock.PF_NOT_FOUND:
     sys.exit( 'No file  %s found!!!' % options.pf )
 
+
 try:
     pf_object = stock.pfread( options.pf )
 except Exception,e:
     sys.exit( 'Problem looking for %s => %s' % ( options.pf, e ) )
 
-#pf_object = stock.pfread(options.pf)
+
+tmp_folder = os.path.relpath(safe_pf_get(pf_object, 'tmp_folder','.dbmoment'))
+clean_tmp = stock.yesno(str(safe_pf_get(pf_object, 'clean_tmp', True)))
+execs = safe_pf_get(pf_object, 'find_executables', [])
+
+log_folder = os.path.relpath(safe_pf_get(pf_object, 'log_folder','.'))
+
+# Using an ORID variable but at this point it could be an EVID. Just
+# considering this a simple ID.
+log_filename = '%s/dbmoment_%s_%s.log' % (log_folder, database_name, orid)
+log_max_count = int(safe_pf_get(pf_object, 'log_max_count',10))
+
+model_path = safe_pf_get(pf_object, 'model_path')
+model_file = safe_pf_get(pf_object, 'model_file')
+
+model_pf = get_model_pf( model_file, model_path, options.model)
+
+model_name = safe_pf_get(model_pf, 'name')
 
 
-# Need to have all 3 variables defined before imports!!!
-if options.logfile:
-    # If we want a logfile
-    LOG_FILENAME = pf_object['log_filename']
-    LOG_MAX_COUNT = pf_object['log_max_count']
-else:
-    LOG_FILENAME = False
+try:
+    if not os.path.isdir(log_folder):
+        os.makedirs(log_folder)
+except Exception,e:
+    sys.exit("Problems while creating folder [%s] %s" % (log_folder,e))
+
+
+# FOR DEVELOPMENT ONLY. NEED LIBRARY AND FLAG TO BE ACTIVE
+if beachball and not options.beachball:
+    beachball = False
+
 
 # All modules should use the same logging function. We have
 # a nice method defined in the logging_helper lib that helps
 # link the logging on all of the modules.
-try:
-    from dbmoment.logging_helper import getLogger
-except Exception,e:
-    sys.exit('Problems loading logging lib. %s' % e)
+# Need to restart the module so we can log to file
 
 # Set log level
 loglevel = 'WARNING'
@@ -251,27 +283,13 @@ if options.debug:
 elif options.verbose:
     loglevel = 'INFO'
 
-# FOR DEVELOPMENT ONLY. NEED LIBRARY AND FLAG TO BE ACTIVE
-if beachball and not options.beachball:
-    beachball = False
-
-# The main process runs on the "mt" class and the
-# "functions" import is needed by almost ALL modules.
-try:
-    from dbmoment.functions import *
-    from dbmoment.mt import *
-except Exception,e:
-    sys.exit("Import Error: [%s] Problem with mt_fucntions load." % e)
-
 # New logger object and set loglevel
-logging = getLogger(loglevel=loglevel)
+logging = getLogger(loglevel=loglevel, parent=True,
+        log_filename=log_filename, log_max_count=log_max_count)
 
 
-# Parse arguments from command-line
-database = args[0]
-evid = args[1]
-orid = args[1]
 
+logging.notify( "\n" )
 logging.notify( "%s\n" % ' '.join( sys.argv ) )
 logging.info( "database [%s]" % database )
 logging.info( "id [%s]" % orid )
@@ -279,22 +297,23 @@ logging.info( "Parameter file to use [%s]" % options.pf )
 logging.info('loglevel=%s' % loglevel)
 
 
-tmp_folder = os.path.relpath(safe_pf_get(pf_object, 'tmp_folder','.dbmoment'))
-clean_tmp = stock.yesno(str(safe_pf_get(pf_object, 'clean_tmp', True)))
-execs = safe_pf_get(pf_object, 'find_executables', [])
 
-model_path = safe_pf_get(pf_object, 'model_path')
-model_file = safe_pf_get(pf_object, 'model_file')
-
-
-model_pf = get_model_pf( model_file, model_path, options.model)
-model_name = safe_pf_get(model_pf, 'name')
-
+# Report on velocity model selected for this run.
 if not model_name:
     logging.warning('There was a problem while reading model file.')
     logging.error('Cannot get value for [name] in model PF file.')
 
 logging.info('Using model %s' % model_name )
+
+
+
+# Import here so they all share the same logging object
+# and configuration for passing messages.
+try:
+    from dbmoment.functions import *
+    from dbmoment.mt import *
+except Exception,e:
+    sys.exit("Import Error: [%s] Problem with mt_fucntions load." % e)
 
 
 
@@ -350,6 +369,7 @@ with datascope.freeing(db.process( steps )) as dbview:
         dbview.record = 0
         orid = dbview.getv('orid')[0]
         evid = dbview.getv('evid')[0]
+        event_time = dbview.getv('time')[0]
         logging.info('Found 1 record with evid=[%s] orid=[%s]' % (evid,orid) )
 
 
@@ -495,5 +515,10 @@ CLEANUP
 if clean_tmp: cleanup(tmp_folder)
 
 
+# Try to return MT quality value in the
+# exit code of the program
+if results and 'Quality' in results:
+    sys.exit( results['Quality'] )
+else:
+    sys.exit( 99 )
 
-sys.exit()

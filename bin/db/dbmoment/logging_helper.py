@@ -40,59 +40,47 @@
 #   logging.debug(obj)
 #   logging.debug('test')
 
-from __main__ import *      # Get all the libraries from parent
+def getLogger(name=None, loglevel=False, parent=False, log_filename=None, log_max_count=10):
 
-
-def getLogger(name='', loglevel=False):
+    import os, sys, inspect
+    import logging as log_object
+    import logging.handlers as handlers
 
     # Define some name for this instance.
     main = os.path.basename( sys.argv[0] )
     inspectmain = os.path.basename( inspect.stack()[1][1] )
 
-    # If none provided then use the name of the file
-    # with script calling the function.
     if not name:
+        # If none provided then use the name of the file
+        # with script calling the function.
         name = inspectmain
+
 
     # If there is some main (parent) function using the
     # getLogger then prepend the name of main script.
     if not main == inspectmain:
         name = '%s.%s' % (main,name)
-        return logging.getLogger(name)
+        return log_object.getLogger(name)
 
-    newlogger = logging.getLogger(name)
-    newlogger.propagate = False
+
+    newlogger = log_object.getLogger(name)
 
     if not len(newlogger.handlers):
         # We need new logger
 
-        # Maybe we want to log to a file
-        if LOG_FILENAME:
 
+        newlogger.propagate = False
 
-            if int(LOG_MAX_COUNT):
-                count = int(LOG_MAX_COUNT)
-            else:
-                count = 5
-            handler = logging.handlers.RotatingFileHandler( LOG_FILENAME, backupCount=count)
-
-            # Check if log exists and should therefore be rolled
-            if os.path.isfile(LOG_FILENAME): handler.doRollover()
-
+        if loglevel:
+            newlogger.setLevel( log_object.getLevelName( loglevel ) )
         else:
-            handler = logging.StreamHandler()
+            newlogger.setLevel( log_object.getLevelName( 'WARNING' ) )
 
-        formatter = logging.Formatter( '%(asctime)s %(name)s[%(levelname)s]: %(message)s')
-        handler.setFormatter(formatter)
-        newlogger.addHandler(handler)
+        formatter = log_object.Formatter( '%(asctime)s %(name)s[%(levelname)s]: %(message)s')
+
 
         # Adding new logging level
-        logging.addLevelName(35, "NOTIFY")
-
-        if not loglevel:
-            newlogger.setLevel( logging.getLogger(main).getEffectiveLevel() )
-        else:
-            newlogger.setLevel( logging.getLevelName( loglevel ) )
+        log_object.addLevelName(35, "NOTIFY")
 
 
         def niceprint(msg):
@@ -106,8 +94,12 @@ def getLogger(name='', loglevel=False):
             self.log(50, niceprint(message), *args, **kws)
 
         def newerror(self, message, *args, **kws):
-            self.log(40, niceprint(message), *args, **kws)
-            sys.exit( 2 )
+            self.log(40, niceprint(message))
+
+            if len(args):
+                sys.exit( args[0] )
+
+            sys.exit( 33 )
 
         def newnotify(self, message, *args, **kws):
             self.log(35, niceprint(message), *args, **kws)
@@ -125,12 +117,33 @@ def getLogger(name='', loglevel=False):
             self.log(50, niceprint(message), *args, **kws)
             sys.exit( 3 )
 
-        logging.Logger.critical = newcritical
-        logging.Logger.error = newerror
-        logging.Logger.notify = newnotify
-        logging.Logger.info = newinfo
-        logging.Logger.debug = newdebug
-        logging.Logger.kill = newkill
+        log_object.Logger.critical = newcritical
+        log_object.Logger.error = newerror
+        log_object.Logger.notify = newnotify
+        log_object.Logger.info = newinfo
+        log_object.Logger.debug = newdebug
+        log_object.Logger.kill = newkill
+
+        # Print to screen
+        stream_handler = log_object.StreamHandler()
+        stream_handler.setFormatter(formatter)
+
+        # Maybe we want to log to a file
+        if log_filename:
+
+            if int(log_max_count):
+                count = int(log_max_count)
+            else:
+                count = 5
+            file_handler = handlers.RotatingFileHandler( log_filename, backupCount=count)
+
+            # Check if log exists and should therefore be rolled
+            if os.path.isfile(log_filename): file_handler.doRollover()
+
+            file_handler.setFormatter(formatter)
+
+        if log_filename: newlogger.addHandler(file_handler)
+        newlogger.addHandler(stream_handler)
 
 
     return newlogger

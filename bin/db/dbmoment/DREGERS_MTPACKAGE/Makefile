@@ -11,6 +11,10 @@ SUBDIR=/contrib
 
 include $(ANTELOPEMAKE)
 
+CFLAGS+=-Wno-return-type -Wno-implicit-int -Wno-implicit
+CFLAGS+=-Wno-format -Wno-unused-variable -Wno-int-conversion
+CFLAGS+=-Wno-implicit-function-declaration
+
 DIRS= GETPAR C_CODE
 
 %.o: %.c

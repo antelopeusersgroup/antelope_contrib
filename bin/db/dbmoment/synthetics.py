@@ -300,6 +300,11 @@ class Synthetics():
 
             self.logging.debug('trloadchan(%s,%s)'% (time,endtime))
             tr = dbview.trload_cssgrp(time,endtime)
+
+            # Demean the trace
+            tr.trfilter('BW 0 0 2 4')
+            tr.trfilter('DEMEAN')
+
             tr.trapply_calib()
 
             if self.debug_plot:
@@ -320,6 +325,13 @@ class Synthetics():
                     plot_tr_object( tr, 'filtered', style='y', fig=fig)
 
             #tr = decimate_trace( tr, 1 )
+            #
+            # DECIMATE
+            #
+            #if int(samprate) > 1:
+            #decimate_string = 'DECIMATE BY %i' % samprate
+            #self.logging.debug( decimate_string )
+            #tr.trfilter ( decimate_string )
 
             #if self.debug_plot:
             #    plot_tr_object( tr, 'decimate', style='g', jump=samprate, fig=fig)

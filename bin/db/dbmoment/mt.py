@@ -217,8 +217,7 @@ class DbMoment(Station):
             self.logging.info("Event depth [%s] within our limits." % (self.my_event.depth))
         else:
             self.logging.error("Event depth [%s] out of limits.[%s,%s]" % \
-                    (self.my_event.depth,self.depth_min,self.depth_max))
-
+                    (self.my_event.depth,self.depth_min,self.depth_max), 5)
 
         # Extract configuration for this event from the ParameterFile.
         temp_config = self.config[ int(self.my_event.magnitude) ]
@@ -238,7 +237,7 @@ class DbMoment(Station):
 
         # Verify time-window size
         if self.time_window > 200:
-            self.logging.error( 'Need to keep time_window under 200. Set to %s' % self.time_window )
+            self.logging.error( 'Need to keep time_window under 200. Set to %s' % self.time_window , 6 )
 
 
 
@@ -266,7 +265,7 @@ class DbMoment(Station):
             #    self.logging.error( 'No defined filter for magnitude . [%s].' % self.my_event.magnitude )
 
         if not self.my_event.filter:
-            self.logging.error( 'No defined filter for magnitude: [%s]' % self.my_event.magnitude )
+            self.logging.error( 'No defined filter for magnitude: [%s]' % self.my_event.magnitude , 7)
         else:
             self.logging.info( 'Using filter: [%s]' % self.my_event.filter )
 
@@ -287,29 +286,34 @@ class DbMoment(Station):
         for sta in total_stations:
 
             self.logging.debug('Test individual station [%s]' % sta)
-            results = self.add_station( sta )
+            test_site = self.add_station( sta )
             test = {}
 
-            if results:
+            if test_site:
                 # Need to put the data into disk
                 #   ****** FILES ARE SAVED TO DISK ON THESE 2 LINES. ********
-                self.logging.debug('Real traces saved to %s' % results.to_file('real') )
-                self.logging.debug('Synthetic traces saved to %s' % results.to_file('synth') )
+                self.logging.debug('Real traces saved to %s' % test_site.to_file('real') )
+                self.logging.debug('Synthetic traces saved to %s' % test_site.to_file('synth') )
 
                 # We have the information for this station. Let's try the fit alone.
-                test[sta] = results
-                single_fit = self.my_inv.invert( test )
+                test[sta] = test_site
+                single_fit = self.my_inv.invert( test , ignore_error=True)
 
                 self.logging.debug(single_fit)
+
+                # Inversion return empty object
+                if not single_fit:
+                    test_site.clean()
+                    continue
 
 
                 # Test for min-correlation
                 if not self._good_fit(single_fit['variance'][sta], self.min_variance):
-                    self.logging.warning('DISCARD FOR BAD CORRELATION: %s zcor:%s variance:%s' %
-                            (sta, single_fit['zcor'][sta], single_fit['variance'][sta]) )
+                    self.logging.warning('DISCARD: %s VarianceReduction:%s' %
+                            (sta, single_fit['variance'][sta]) )
 
                     # Call clean() so we remove the temp files from disk
-                    results.clean()
+                    test_site.clean()
                     continue
 
                 # Test if magnitude is in range
@@ -319,26 +323,26 @@ class DbMoment(Station):
                             (sta, single_fit['Mw'], self.my_event.magnitude , self.individual_mw_threshold) )
 
                     # Call clean() so we remove the temp files from disk
-                    results.clean()
+                    test_site.clean()
                     continue
 
                 # Track the zcor here so we can forced the value on the group inversion
                 if sta in self.zcor:
-                    results.zcor = self.zcor[sta]
+                    test_site.zcor = self.zcor[sta]
                 else:
-                    results.zcor = single_fit['zcor'][sta]
+                    test_site.zcor = single_fit['zcor'][sta]
 
-                self.logging.debug('Set %s to %s' % ( sta, results.zcor))
+                self.logging.debug('Set %s to %s' % ( sta, test_site.zcor))
 
 
-                results.variance = single_fit['variance'][sta]
-                results.mw = single_fit['Mw']
+                test_site.variance = single_fit['variance'][sta]
+                test_site.mw = single_fit['Mw']
 
                 # add to list of stations that we want to use
-                good_stations[sta] = results
+                good_stations[sta] = test_site
 
-                self.logging.notify('Usign %s zcor:%s variance:%s' %
-                        (sta, single_fit['zcor'][sta], single_fit['variance'][sta]) )
+                self.logging.notify('Usign %s VarianceReduction:%s' %
+                        (sta, single_fit['variance'][sta]) )
 
 
         # Let's redefine total_stations with the sorted list of "good" stations
@@ -349,57 +353,146 @@ class DbMoment(Station):
 
         self.logging.notify( 'Valid stations for inversion: %s ' % total_stations )
 
+        # Verify that we have min number of stations
+        if len(total_stations) < self.sta_min:
+            self.logging.error('NOT enough stations [%s] for this event. Need [%s]' % \
+                    (len(self.stations), self.sta_min), 8)
+
         while True:
 
             self.logging.debug('Loop for adding stations')
 
-            if len(total_stations) and len(self.stations) < self.sta_max:
-                # Bring new station from archive
-                sta = total_stations.pop(0)
-                #self.logging.info('Add new station to list [%s]' % sta)
-                self.logging.notify('Inversion: adding %s zcor:%s variance:%s' %
-                        (sta, good_stations[sta].zcor, good_stations[sta].variance) )
-
-                self.stations[sta] = good_stations[sta]
-
-                continue
-
-            # Verify that we have min number of stations
-            if len(self.stations) < self.sta_min:
-                self.logging.error('NOT enough stations [%s] for this event. Need [%s]' % \
-                        (len(self.stations), self.sta_min))
-
-
-            # Run inversion
-            self.logging.debug('determine_mt_solution()')
-            self.results = self.my_inv.invert(self.stations)
-
-            self.logging.debug(self.results)
-
-            ## If recursive not set then stop here
-            if not self.recursive: break
-
-            # Verify that we have min number of stations
-            if len(self.stations) <= self.sta_min: break
-
-
             ## Set to True in case nothing gets removed
             stop = True
 
-            variance_list = sorted(self.results['variance'], key=lambda x: float(self.results['variance'][x]) )
+            # Keep adding sites until max or we run out
+            while len(total_stations) and len(self.stations) < self.sta_max:
+                # Bring new station from archive
+                sta = total_stations.pop(0)
 
-            worst = variance_list[0]
-            self.logging.info( 'Worst performer was %s with %s variance' % (worst, self.results['variance'][worst]) )
+                self.logging.notify('Include station %s in inversion' % sta )
 
+                self.stations[sta] = good_stations[sta]
+
+                # New station added, tell loop to continue
+                stop = False
+
+            ## If we have no new sites then stop
+            #if stop: break
+
+
+            self.logging.debug('determine_mt_solution(simple)')
+            self.results = self.my_inv.invert(self.stations)
+            self.logging.info('INVERSION: Quality:[%s] VR:[%s]' % \
+                    ( self.results['Quality'], self.results['VarRed']) )
+
+
+            ## If recursive not set then stop here
+            if not self.recursive:
+                self.logging.debug('Not running recursive. Stop.')
+                break
+
+            # Run inversion
+            if len(self.stations) <= self.sta_min:
+                self.logging.debug('Minimum number of stations [%s]. Stop.' % len(self.stations) )
+                break
+
+
+            # jackknife variance calculation
+            best_vr = None
+            avoid_site = None
+            keep_results = None
+            worst_vr = None
+            keep_site = None
+            avoid_results = None
+            station_list  = self.stations.keys()
+
+            self.logging.debug('RecursiveTest: original station list: %s)' % station_list )
+            for s in station_list:
+
+                self.logging.debug('RecursiveTest: TEST ON REJECTING: %s)' % s )
+
+                # Make copy without our test site
+                temp_stations = {}
+                for temp in station_list:
+                    if temp != s:
+                        temp_stations[temp] = good_stations[temp]
+
+                self.logging.debug('RecursiveTest: test list: %s)' % temp_stations.keys() )
+
+                self.logging.debug('determine_mt_solution(RecursiveTest:%s)' % s)
+                results = self.my_inv.invert(temp_stations, ignore_error=True)
+
+                if not results:
+                    worst_vr = 0.0
+                    avoid_site = s
+                    self.logging.info('RecursiveTest [%s] Q:[-] VR:[-]' % s )
+                    continue
+
+                self.logging.info('RecursiveTest [%s] Q:[%s] VR:[%s]' % ( s, results['Quality'], results['VarRed'] ) )
+
+                if not worst_vr or float(results['VarRed']) < worst_vr:
+                    worst_vr = float(results['VarRed'])
+                    keep_site = s
+                    avoid_results = results
+
+                if not best_vr or float(results['VarRed']) > best_vr:
+                    best_vr = float(results['VarRed'])
+                    avoid_site = s
+                    keep_results = results
+
+                self.logging.info('TEMP: Best contributor  [%s] ' % keep_site )
+                self.logging.info('TEMP: Worst contributor [%s] ' % avoid_site)
+
+
+            self.logging.info('Best Contributor  [%s] ' % keep_site )
+            self.logging.info('Worst Contributor [%s] ' % avoid_site)
+
+            self.logging.info('RecursiveTest Best option is avoiding [%s] for Q:[%s] VR:[%s]' % \
+                    ( avoid_site, keep_results['Quality'], keep_results['VarRed'] ) )
+
+
+            # IF WE CAN INCREASE QUALITY SIGNIFICANTLY THEN DO IT!!!!
+            # using _good_fit() to filter possible errors in values
+            if self._good_fit(keep_results['Quality']) and \
+                int(keep_results['Quality']) > int(self.results['Quality']):
+
+                self.logging.info('Remove %s to improve quality %s=>%s' % \
+                        (avoid_site, self.results['Quality'], keep_results['Quality']) )
+
+                self.results = keep_results
+                self.stations[avoid_site].clean()
+                del( self.stations[ avoid_site ] )
+                continue
+
+
+            # VERIFY IF THE VR IS BETTER THAN 1.25 TIMES THE ORIGINAL!!!!
+            if self._good_fit(keep_results['VarRed'], self.min_variance) and \
+                float(keep_results['VarRed']) > float(self.results['VarRed']) * 1.25:
+
+                self.logging.info('Remove %s to improve VR %s=>%s' % \
+                        (avoid_site, self.results['VarRed'], keep_results['VarRed']) )
+
+                self.results = keep_results
+                self.stations[avoid_site].clean()
+                del( self.stations[ avoid_site ] )
+                continue
+
+            # VERIFY INDIVIDUAL SITES IN THIS POSSIBLE SOLUTION
+            worst = sorted(self.results['variance'], key=lambda x: float(self.results['variance'][x]) )[0]
             if not self._good_fit(self.results['variance'][ worst ], self.min_variance):
-                self.logging.warning('Remove %s for bad correlation of %s' % (worst, self.results['variance'][ worst ]) )
+
+                self.logging.info('Remove %s for bad VR:%s' % (worst, self.results['variance'][ worst ]) )
+
+                self.results = keep_results
                 self.stations[worst].clean()
                 del self.stations[worst]
-                stop = False
+                continue
+
 
             if stop: break
 
-        # Verify that we have min quality
+        # Verify that we have minimum quality
         if int(self.results['Quality']) < int(self.min_quality):
             self.logging.warning('Quality[%s] Minimum required [%s]' % \
                     (self.results['Quality'], self.min_quality))
@@ -409,12 +502,11 @@ class DbMoment(Station):
         # Done with the inversion. Now set values for plotting results
         for sta in self.stations.keys():
             self.logging.debug('convert_synth( %s )' % sta)
-            #self.stations[sta].convert_synth(self.results)
             self.stations[sta].convert_synth_original(self.results)
 
         if self.verbose: self.logging.notify(self.results)
 
-        filename = plot_results( orid, self.stations, self.results,
+        filename = plot_results( self.database, orid, self.stations, self.results,
                             self.my_event, folder=self.img_folder,
                             acknowledgement=self.acknowledgement )
 
@@ -423,15 +515,15 @@ class DbMoment(Station):
 
         return self.results
 
-    def _good_fit(self, variance, min_variance=0.0):
+    def _good_fit(self, test, min_val=0.0):
         # Need to run several tests on the correlation value
 
-        if variance != variance: return False
-        if float(variance) == float('Inf'): return False
-        if float(variance) == float('-Inf'): return False
+        if test != test: return False
+        if float(test) == float('Inf'): return False
+        if float(test) == float('-Inf'): return False
 
-        if float(variance) > 150.0: return False
-        if float(variance) < float(min_variance): return False
+        if float(test) > 150.0: return False
+        if float(test) < float(min_val): return False
 
         return True
 
@@ -480,11 +572,14 @@ class DbMoment(Station):
         extract data starting at the event time.
         '''
         delay = 0.0
-        #delay = int( ptime - time )
         #delay = int( stime - time )
+        #delay = ( stime - ptime ) * 2.0
+        #delay = int( ptime - time )
 
-        gf_delay = 0.0
-        #gf_delay = float( ptime - time )
+
+        gf_delay = delay
+        #gf_delay = float( ptime - time ) * 0.25
+        #gf_delay = int(float( ptime - time ) * 0.25 )
         #gf_delay = float( stime - time )
 
 
@@ -510,7 +605,7 @@ class DbMoment(Station):
         # Verify that we have good information for this site
         if not synth:
             self.logging.error('Problems during get_synth(%s,%s) for %s' % \
-                    (distance, self.my_event.depth, sta) )
+                    (distance, self.my_event.depth, sta) , 9)
             return results
 
 

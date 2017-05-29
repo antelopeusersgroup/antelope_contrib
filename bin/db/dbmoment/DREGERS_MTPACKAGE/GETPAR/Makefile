@@ -3,8 +3,8 @@ LIB = libget.a
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
-#CFLAGS=-Wno-implicit -Wno-return-type -c -O -DENVIRONMENT
-CFLAGS=-c -DENVIRONMENT
+#CFLAGS=-c -DENVIRONMENT
+CFLAGS+=-Wno-implicit -Wno-return-type -Wno-format -Wno-unused-variable -Wno-int-conversion
 
 SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)

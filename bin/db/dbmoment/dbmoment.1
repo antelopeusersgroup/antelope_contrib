@@ -289,6 +289,42 @@ but the benefits justify the changes. If you ran versions of the code earlier
 than 1/2016 then you might need to remove the synthetic databases and allow the
 software to produce new versions of it.
 
+.SH EXIT CODES
+Sometimes we want to run a several events in batch mode and report on the
+results without reviewing each log file. The exit codes will provide a way
+to track the outcome of each attempt and group each event for final reporting
+on database. The events will produce MT solution with quality values ranging
+between 0 and 4. The first mode on exit codes is just the value of the quality
+of the produced solution. After this we just list several common problems.
+If other common failure modes are identified then we should update the code
+and this list. Just passing the value of the exit code to the logging.error(log,value)
+function will print your "log" to the screen, terminate the code, and set the
+eixt code to your value.
+
+.IP "\fB0 - 4\fP"
+Code completed and MT calculated.
+
+.IP \fB5\fP
+Event DEPTH limitation or related issue.
+
+.IP \fB6\fP
+Time window in configuration file out of range.
+
+.IP \fB7\fP
+Problem with filter for data.
+
+.IP \fB8\fP
+No stations selected after subset.
+
+.IP \fB9\fP
+Problem with synthetic traces.
+
+.IP \fB99\fP
+End of code but no value for event quality listed.
+
+.IP \fB33\fP
+Error in code. No specific exit code provided.
+
 .SH SEE ALSO
 dbmoment_run_example(1)
 antelope_python(3y)

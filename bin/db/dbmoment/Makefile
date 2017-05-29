@@ -13,6 +13,8 @@ DATA = __init__.py \
 	data.py \
 	synthetics.py \
 	functions.py \
+	timeout_function.py \
+	pf_helper.py \
 	inversion.py
 
 CLEAN = *.pyc
@@ -24,6 +26,10 @@ EXAMPLE = EXAMPLE_1 \
 		dbmoment.pf
 
 SUBDIR=/contrib
+
+
+CFLAGS:=$(filter-out -mmacosx-version-min,$(CFLAGS))
+
 include $(ANTELOPEMAKE)
 
 DIRS = DREGERS_MTPACKAGE MODELS

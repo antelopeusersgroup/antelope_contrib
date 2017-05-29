@@ -8,11 +8,72 @@
 
 from __main__ import *      # Get all the libraries from parent
 
+def valid_number( test ):
+
+    if test != test: return False
+    if float(test) == float('Inf'): return False
+    if float(test) == float('-Inf'): return False
+
+    return True
+
+def add_padding(tr):
+
+    logging.debug('Add padding to trace object ' )
+
+    #trcopy = tr.trcopy()
+    #trcopy.trfilter('BW 20 4 0 0')
+
+    # Need to double our traces
+    for rec in tr.iter_record():
+
+
+        # PADD WITH REVERSED DATA
+        #data = array( rec.trdata() )
+        #reversed_data = data[::-1]
+        #rec.trputdata( concatenate([reversed_data , data]) )
+
+
+        # PADD WITH FAKE DATA
+        #data = array( rec.trdata() )
+        #padd = ones( len(data) )
+        #padd = zeros( len(data) )
+        #padd = zeros( 200 )
+        #padd *= data[0]
+        padd = zeros( 5000 )
+        rec.trputdata( concatenate([padd , rec.trdata()]) )
+
+
+        # PADD WITH FILTERED DATA
+        #trcopy.record = rec.record
+        #rec.trputdata( concatenate([trcopy.trdata() , rec.trdata()]) )
+
+
+    #trcopy.free()
+
+    return tr
+
+
+#def remove_padding(tr,samples):
+#
+#    logging.debug('Remove padding on trace object ' )
+#
+#    # remove the padding
+#    for rec in tr.iter_record():
+#
+#        #data = array( rec.trdata() )
+#        #rec.trputdata( data[-int(len(data)/2):] )
+#        rec.trputdata( rec.trdata()[-samples:] )
+#
+#    return tr
+
+
 def myround(x, base=5):
+    #from __main__ import logging
     logging.debug('Round %s to base %s' % (x, base) )
     return int(int(base) * round(float(x)/int(base)))
 
-def run(cmd,directory='.'):
+def run(cmd,directory='.',ignore_error=False):
+    #from __main__ import logging
     logging.debug("run()  -  Running: %s" % cmd)
     p = subprocess.Popen([cmd], stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE,
@@ -26,8 +87,12 @@ def run(cmd,directory='.'):
         for line in iter(stderr.split('\n')):
             logging.debug('stderr:\t%s'  % line)
 
-    if p.returncode != 0:
+    if p.returncode != 0 and not ignore_error:
         logging.error('Exitcode (%s) on [%s]' % (p.returncode,cmd))
+
+    if p.returncode != 0 and ignore_error:
+        logging.warning('Exitcode (%s) on [%s]' % (p.returncode,cmd))
+        return []
 
     if stdout:
         return iter(stdout.split('\n'))
@@ -36,6 +101,7 @@ def run(cmd,directory='.'):
     return iter()
 
 def fix_amplitud(tr, value):
+    #from __main__ import logging
     logging.debug('Fix amplitud by %s' % (value) )
 
     # Need to double our traces
@@ -64,7 +130,16 @@ def plot_tr_object(tr, name='signal', fig=False, style='r', delay=0, jump=1, dis
 
     this = 1
     for rec in tr.iter_record():
-        data = rec.trdata()
+        #data = rec.trdata()
+        data = []
+        tempdata = rec.trdata()
+        padd = 0
+        for i in range (0, len(tempdata)-1):
+            if tempdata[i] > 1.e20:
+                padd += 1
+                continue
+            data.append( tempdata[i] )
+
 
         if debug:
             # Test rotations with this synth data. Just a spike
@@ -74,7 +149,7 @@ def plot_tr_object(tr, name='signal', fig=False, style='r', delay=0, jump=1, dis
             tr.trputdata( ones_data )
 
         add_trace_to_plot( data, style=style, label='%s-%s' % (name, rec.getv('chan')[0]),
-                count=tr.record_count, item=this, delay=delay, jump=jump)
+                count=tr.record_count, item=this, delay=delay+padd, jump=jump)
 
         # start and end marks
         #pyplot.axvline( (start - got_time ) * samprate, color='y')
@@ -86,6 +161,7 @@ def plot_tr_object(tr, name='signal', fig=False, style='r', delay=0, jump=1, dis
 
 
 def apply_response(tr, filename, samprate):
+    #from __main__ import logging
     logging.debug('Aplly response %s' % (filename) )
 
     if not filename or not os.path.isfile( filename ):
@@ -137,6 +213,7 @@ def decimate_trace( tr, newsps ):
     Function to correctly apply some decimation filters
 
     """
+    #from __main__ import logging
 
     logging.debug('Now try to decimate the data')
 
@@ -200,6 +277,7 @@ def fix_exec(content):
 
 
 def cleanup_db(db,match):
+    #from __main__ import logging
     logging.debug( 'dbTABLE_PRESENT => %s' % db.query(datascope.dbTABLE_PRESENT) )
     logging.debug( 'dbTABLE_IS_WRITABLE => %s' % db.query(datascope.dbTABLE_IS_WRITABLE) )
 
@@ -236,6 +314,8 @@ class Records():
     """
 
     def __init__(self,sps=0,segtype=None,response=None):
+
+        #from __main__ import logging
         self.chans = {}
         self.samplerate = sps
         self.file = None
@@ -290,11 +370,10 @@ class Records():
                 return 0
         return len( self.chans[channame] )
 
-    def getmin(self,chan=False):
-        if not chan:
+    def getmin(self,channame=False):
+        if not channame:
             channame = self.list()
-        else:
-            channame = [chan]
+
         vmin = False
         for c in channame:
             v = min(self.chans[c])
@@ -306,11 +385,10 @@ class Records():
 
         return vmin
 
-    def getmax(self,chan=False):
-        if not chan:
+    def getmax(self,channame=False):
+
+        if not channame:
             channame = self.list()
-        else:
-            channame = [chan]
 
         vmax = False
 
@@ -379,6 +457,7 @@ class Station(Records):
     """
 
     def __init__(self,sta,tmp_folder):
+        #from __main__ import logging
         self.sta = sta
         self.tmp_folder = tmp_folder
         self.real = Records()
@@ -653,6 +732,8 @@ def find_executables( execs ):
     Dreger's original code.
     '''
 
+    #from __main__ import logging
+
     if not len(execs): return
 
     global executables
@@ -670,10 +751,10 @@ def find_executables( execs ):
 
         logging.debug("(%s) => [%s]" % (ex, newex) )
 
-def plot_results( id, stations, results, event, folder='./',
+def plot_results( database, id, stations, results, event, folder='./',
                        acknowledgement='dbmoment'):
 
-    from __main__ import logging
+    #from __main__ import logging
 
     total = 1
 
@@ -742,6 +823,15 @@ def plot_results( id, stations, results, event, folder='./',
 
     # Only run if library ObsPy is present on system.
     if beachball:
+
+        quality_color = {
+                1: "#FF0000",
+                2: "#FFD700",
+                3: "#008000",
+                4: "#4169E1",
+                }
+        bb_color = quality_color[ int( results['Quality']) ]
+
         # Third panel for beachball
         ax = fig.add_subplot(total_stations,3,total, frameon=False)
         ax.xaxis.set_visible(False)
@@ -751,28 +841,34 @@ def plot_results( id, stations, results, event, folder='./',
         ax.annotate( 'ObsPy used for beachball image', (0.5, 0), xycoords="axes fraction", va="top", ha="left",
                      fontsize=7, bbox=dict(edgecolor='none',boxstyle="round, pad=2", fc="w"))
 
-        # TEST FOR COMPARING 3 and 6 components methods
-        #mt = [ float(results['Mxx']), float(results['Myy']), float(results['Mzz']),
-        #    float(results['Mxy']), float(results['Mxz']), float(results['Myz']) ]
-        #mt2 = [ results['Strike'][0], results['Dip'][0], results['Rake'][0], ]
-        #bb = beachball(mt, mopad_basis='NED', xy=(-50, -50),width=80)
-        #bb2 = beachball(mt2, xy=(50,50), width=80)
-        #ax.add_collection( bb )
-        #ax.add_collection( bb2 )
-
         mt = [ float(results['Mxx']), float(results['Myy']), float(results['Mzz']),
             float(results['Mxy']), float(results['Mxz']), float(results['Myz']) ]
-        bb = beachball(mt, mopad_basis='NED')
+        bb = beachball(mt, mopad_basis='NED', width=165, linewidth=0.6, facecolor=bb_color)
+        bb.set_zorder(0)
         ax.add_collection( bb )
-        ax.set_xlim((-110, 110))
-        ax.set_ylim((-110, 110))
+        ax.set_xlim((-125, 125))
+        ax.set_ylim((-125, 125))
         ax.set_aspect("equal")
+
+        stanumber = 0
+        for sta in sorted(stations.keys(), key=lambda x: float(stations[x].realdistance) ):
+            distance = int( float(stations[sta].realdistance) )
+            azimuth = float(stations[sta].azimuth)
+            color =  colors.cnames.items()[stanumber][0]
+            size = interp(distance,[0,200],[15,5])
+
+            pyplot.arrow(0, 0, 100*cos(azimuth), 100*sin(azimuth), shape='full', lw=0,
+                    length_includes_head=True, head_width=size, color=color)
+
+            stanumber += 1
 
     total += 1
 
+    stanumber = -1
     #for sta in sorted(stations.keys()):
     for sta in sorted(stations.keys(), key=lambda x: float(stations[x].realdistance) ):
 
+        stanumber += 1
         logging.debug('Plot traces for results on %s' % sta )
         if not stations[sta].real:
             logging.error('Empty Records for data on %s' % sta )
@@ -790,7 +886,6 @@ def plot_results( id, stations, results, event, folder='./',
         variance = round( results['variance'][sta], 1)
 
         # Scale all traces the same way
-        #axs = stations[sta].max_min_all()
         axs = (0, points_plot, min_plot, max_plot)
 
 
@@ -800,6 +895,13 @@ def plot_results( id, stations, results, event, folder='./',
             #real_line, = pyplot.plot(data, label='data' )
             real_line, = pyplot.plot(stations[sta].real.get(chan), label='data' )
             synth_line, = pyplot.plot(stations[sta].synth_zrt.get(chan), linestyle='--', label='synth')
+
+            if beachball:
+                box_color =  colors.cnames.items()[stanumber][0]
+                ax.spines['bottom'].set_color(box_color)
+                ax.spines['top'].set_color(box_color)
+                ax.spines['right'].set_color(box_color)
+                ax.spines['left'].set_color(box_color)
 
             pyplot.legend(loc=5, fontsize=8)
 
@@ -816,8 +918,12 @@ def plot_results( id, stations, results, event, folder='./',
                   horizontalalignment='center', fontsize=13,
                   verticalalignment='center', transform = ax.transAxes)
 
+            max_amp = stations[sta].real.getmax( chan )
+            min_amp = stations[sta].real.getmin( chan )
+            abs_amp = max_amp - min_amp
+
             # Bottom of plot
-            text = "zcor:%s   variance_reduction:%s%%" % (zcor, variance)
+            text = "Amp: %0.1e cm  variance_reduction:%s%%" % (abs_amp, variance)
             pyplot.text (0.5, 0.1,text, horizontalalignment='center', fontsize=11,
                   verticalalignment='center', transform = ax.transAxes)
 
@@ -857,104 +963,13 @@ def plot_results( id, stations, results, event, folder='./',
     except Exception,e:
         logging.error("Problems while creating folder [%s] %s" % (folder,e))
 
-    filename = "%s/dbmoment_%s_%s_%s.png" % ( folder,id,event.model,event.strdate.replace(' ','_').replace('/','-') )
+    database_name = os.path.basename(database)
+    filename = "%s/dbmoment_%s_%s_%s.png" % ( folder, database_name, id, event.model )
     logging.notify( 'Save plot with results to temp folder: %s' %  filename)
     #pylab.savefig(filename,bbox_inches='tight', facecolor=gcf.get_facecolor(), edgecolor='none',pad_inches=0.5, dpi=100)
     pyplot.savefig(filename,bbox_inches='tight', edgecolor='none',pad_inches=0.5, dpi=100)
 
     return filename
-
-
-def open_verify_pf(pf,mttime=False):
-    '''
-    Verify that we can get the file and check
-    the value of PF_MTTIME if needed.
-    Returns pf_object
-    '''
-
-    logging.debug( 'Look for parameter file: %s' % pf )
-
-    if mttime:
-        logging.debug( 'Verify that %s is newer than %s' % (pf,mttime) )
-
-        PF_STATUS = stock.pfrequire(pf, mttime)
-        if PF_STATUS == stock.PF_MTIME_NOT_FOUND:
-            logging.warning( 'Problems looking for %s. PF_MTTIME_NOT_FOUND.' % pf )
-            logging.error( 'No MTTIME in PF file. Need a new version of the %s file!!!' % pf )
-        elif PF_STATUS == stock.PF_MTIME_OLD:
-            logging.warning( 'Problems looking for %s. PF_MTTIME_OLD.' % pf )
-            logging.error( 'Need a new version of the %s file!!!' % pf )
-        elif PF_STATUS == stock.PF_SYNTAX_ERROR:
-            logging.warning( 'Problems looking for %s. PF_SYNTAX_ERROR.' % pf )
-            logging.error( 'Need a working version of the %s file!!!' % pf )
-        elif PF_STATUS == stock.PF_NOT_FOUND:
-            logging.warning( 'Problems looking for %s. PF_NOT_FOUND.' % pf )
-            logging.error( 'No file  %s found!!!' % pf )
-
-        logging.debug( '%s => PF_MTIME_OK' % pf )
-
-    try:
-        return stock.pfread( pf )
-    except Exception,e:
-        logging.error( 'Problem looking for %s => %s' % ( pf, e ) )
-
-
-def get_model_pf( mfile, path=[], forced=None):
-    '''
-    EARTH VELOCITY MODEL FILE:
-
-    Need to verify if we have the listed velocity model.
-    The file has a PF format but is not placed on the
-    regular folder with the rest of the parameter files
-    from contrib. That requires a full search on several
-    paths that we get from a parameter in the dbmoment.pf
-    file.
-    '''
-    pf = False
-
-    # Maybe we have an entry in command-line
-    if forced:
-        try:
-            logging.info('Look for model: %s' % os.path.abspath(forced) )
-            pf = stock.pfin(os.path.abspath(forced))
-        except:
-            # Maybe we should look for it on the model_path array
-            mfile = forced
-
-    # If not on command-line then get value from parameter file
-    if not pf:
-        for d in path:
-            try:
-                logging.info('Look for model: %s' % os.path.join(d, mfile) )
-                pf = stock.pfin(os.path.join(d, mfile) )
-            except:
-                pass
-            else:
-                break # Stop if we find one
-
-    if not pf:
-        logging.error('Missing [%s] in [%s]' % ( mfile, ', '.join(path) ) )
-
-    return pf
-
-
-
-def safe_pf_get(pf,field,defaultval=False):
-    '''
-    Safe method to extract values from parameter file
-    with a default value option.
-    '''
-    value = defaultval
-    if pf.has_key(field):
-        try:
-            value = pf.get(field,defaultval)
-        except Exception,e:
-            logging.warning('Problems safe_pf_get(%s,%s)' % (field,e))
-            pass
-
-    logging.debug( "pf.get(%s,%s) => %s" % (field,defaultval,value) )
-
-    return value
 
 
 def clean_trace(data, samplerate, trace_start, trace_end, need_start=False, need_end=False):
@@ -963,6 +978,7 @@ def clean_trace(data, samplerate, trace_start, trace_end, need_start=False, need
     Return clean list of touples.
     '''
 
+    #from __main__ import logging
 
     new_data = []
     period = 1/samplerate
@@ -988,6 +1004,7 @@ def verify_trace_time(start, end, time, endtime):
     '''
     Verify that we have the requested data
     '''
+    #from __main__ import logging
     logging.debug( "Requested time: [%s,%s]" % (stock.strtime(start),stock.strtime(end)) )
     logging.debug( "In trace object: [%s,%s]" % (stock.strtime(time),stock.strtime(endtime)) )
 
@@ -1011,6 +1028,7 @@ def dynamic_loader(module):
     '''
     Load some libs defined on the pf file.
     '''
+    #from __main__ import logging
     logging.debug( "load dbmoment.%s" % module )
     try:
         return __import__("dbmoment.%s" % module, globals(), locals(), [module], -1)
@@ -1023,6 +1041,8 @@ def cleanup(folder):
     in the tmp directory. Some are known but others are
     random names.
     """
+
+    #from __main__ import logging
 
     try:
         if not os.path.isdir(folder): os.makedirs(folder)
@@ -1066,6 +1086,7 @@ def makeHelm(traces, append='', outputfile='', perline=7, total=14, decimal=5, f
     """
     Routine to write Helmberger Format Seismograms
     """
+    #from __main__ import logging
     logging.debug('makeHelm')
 
     filename = {}
@@ -1145,6 +1166,7 @@ def readHelm(inputfile):
         return traces
 
     """
+    #from __main__ import logging
     logging.debug('readHelm: %s' % inputfile)
     results = {}
 

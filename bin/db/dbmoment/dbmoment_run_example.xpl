@@ -70,7 +70,7 @@ EOL
 
 
 # CLEAN DIRECTORY
-foreach ( "$path/.dbmoment", "$path/synthetics_db") {
+foreach ( "$path/.dbmoment", "$path/dbmoment_logs", "$path/dbmoment_images", "$path/synthetics_db") {
     if ( -e $_ ) {
         print "\nREMOVE TEMP FOLDER: [$_]\n";
         rmtree $_;
@@ -82,7 +82,8 @@ foreach ( "$path/.dbmoment", "$path/synthetics_db") {
 foreach ( 1, 2) {
     print "\nSTART EXAMPLE $_\n";
     print "\ndbmoment -v EXAMPLE_$_/example_$_ 1\n";
-    system( "dbmoment -v EXAMPLE_$_/example_$_ 1" );
+    $return_value = system( "dbmoment -v EXAMPLE_$_/example_$_ 1" );
+
     print "\nDONE WITH EXAMPLE $_\n";
 }
 
