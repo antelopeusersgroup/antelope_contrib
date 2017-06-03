@@ -17,9 +17,10 @@ using namespace SEISPP;
 typedef map<string,double> StaMap;   // tuple of station name and arrival time
 void usage()
 {
-    cerr << "dbxcor_import db [-filter -binary -v --help -pf pffile]" <<endl
+    cerr << "dbxcor_import db [-s subset -filter -binary -v --help -pf pffile]" <<endl
         << "Constructs a serialized 3C ensemble from Antelope database db"<<endl
         << "serialized data written to stdout"<<endl
+        << "The -s flag can be used to apply subset condition to the working database view"<<endl
         << "use -filter to apply the same filter used to compute beam (stored in xcorbeam)"<<endl
         << "Use -binary to write output in binary format"<<endl
         << "--help returns this usage message and exits"<<endl
@@ -174,6 +175,8 @@ ThreeComponentSeismogram stack3c(ThreeComponentEnsemble& d,StaMap& weights,
     if(n<=0) throw SeisppError(base_error + "ensemble is empty");
     if(!d.member[0].live) throw SeisppError(base_error
       + "member of input ensemble is marked dead");
+    /* Make sure all members are in cardinal direction.*/
+    for(i=0;i<n;++i) d.member[i].rotate_to_standard();
     double t0,dt;
     t0=d.member[0].t0;
     dt=d.member[0].dt;
@@ -233,6 +236,8 @@ int main(int argc, char **argv)
   string pffile("dbxcor_import");
   bool binary_data(false);
   bool filter_data(false);
+  bool apply_subset(false);
+  string subset_string;
   for(i=2;i<argc;++i)
   {
     string sarg(argv[i]);
@@ -241,6 +246,12 @@ int main(int argc, char **argv)
       ++i;
       if(i>=argc)usage();
       pffile=string(argv[i]);
+    }
+    else if(sarg=="-s")
+    {
+      ++i;
+      if(i>=argc)usage();
+      subset_string=string(argv[i]);
     }
     else if(sarg=="-binary")
       binary_data=true;
@@ -284,14 +295,15 @@ int main(int argc, char **argv)
     dbh.natural_join("evlink");
     dbh.natural_join("event");
     dbh.natural_join("origin");
-    //DEBUG
-    cerr << "View size after join of origin="<<dbh.number_tuples()<<endl;
+    if(apply_subset) dbh.subset(subset_string);
+    if(SEISPP_verbose)
+      cerr << "View size after join of origin="<<dbh.number_tuples()<<endl;
     list<string> grpkeys;
     grpkeys.push_back("pwfid");
     dbh.sort(grpkeys);
     dbh.group(grpkeys);
-    //DEBUG
-    cerr << "View group operation="<<dbh.number_tuples()<<endl;
+    if(SEISPP_verbose)
+      cerr << "View group operation="<<dbh.number_tuples()<<endl;
     DatascopeHandle dbhwf(dbh); //points to wfdisc, but used as arg for read
     dbhwf.lookup("wfdisc");
     string robust_beam_sta=control.get_string("robust_beam_sta");
