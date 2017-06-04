@@ -21,11 +21,21 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "rotate [--help --binary -pf pffile] < infile > outfile"
+    cerr << "rotate [-accumulate --help --binary -pf pffile] < infile > outfile"
         <<endl
-        << "infile is one the concatenation of one or more ThreeComponentEnsemble objects"
+        << "General purpose three-component rotation processor"
         <<endl
+        << "-accumulate transforms data without checking current orientation"
+        << endl <<"(Default forces data to cardinal directions before applying transformation)"
+        <<endl
+
         << "Use -pf to specify alternate parameter file to default rotate.pf"
+        <<endl
+        << "(Options are controlled by this file)"<<endl
+        << "use -binary if input and output are binary format (default text)"
+        <<endl
+        << "--help will print this usage message"<<endl
+        << "infile and outfile are a single ThreeComponentEnsemble boost serialization file"
         <<endl;
     exit(-1);
 }
@@ -84,6 +94,7 @@ int main(int argc, char **argv)
   int i;
   string pffile("rotate");
   bool binary_data(false);
+  bool accum_mode(false);
   for(i=1;i<argc;++i)
   {
     string sarg(argv[i]);
@@ -95,6 +106,8 @@ int main(int argc, char **argv)
     }
     else if(sarg=="-binary")
       binary_data=true;
+    else if(sarg=="-accumulate")
+      accum_mode=true;
     else if(sarg=="--help")
       usage();
     else if(sarg=="-v")
@@ -145,6 +158,11 @@ int main(int argc, char **argv)
         }
         for(dptr=d.member.begin(),k=0;dptr!=d.member.end();++dptr,++k)
         {
+          if(!accum_mode)
+          {
+            if(!dptr->components_are_cardinal)
+              dptr->rotate_to_standard();
+          }
           double az,delta;
           if(rc.constant_transformation)
           {
