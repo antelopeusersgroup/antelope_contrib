@@ -1,0 +1,23 @@
+dbprocess_commands &Tbl{
+  verbose
+  dbopen wfprocess
+  dbjoin evlink
+  dbjoin sclink
+  dbjoin event
+  dbjoin origin
+  dbjoin site
+}
+attributes_to_load &Tbl{
+evid evid event int
+orid orid origin int
+source_latitude lat origin real
+source_longitude lon origin real
+source_depth depth origin real
+origin_time time origin real
+receiver_latitude lat site real
+receiver_longitude lon site real
+receiver_elev elev site real
+}
+match_keys &Tbl{
+pwfid pwfid wfprocess int
+}
