@@ -1,3 +1,16 @@
+#!/opt/antelope/python2.7.8/bin/python
+
+import os
+import sys
+
+import signal
+
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+sys.path.append(os.environ['ANTELOPE'] + "/data/python")
+
+sys.path.append(os.environ['ANTELOPE'] + "/contrib/data/python")
+
 import os
 import sys, traceback
 import time
@@ -86,7 +99,7 @@ def fetchdmcthread(dbin,number_threads,rin,pf):
                 current_year=-1
                 for gri in range(sr,er):
                     dbg.record=gri
-                    values=dbg.getv('snet','sta','sta','arrival.time')
+                    values=dbg.getv('snet','sta','fsta','arrival.time')
                     net=values[0]
                     # in antelope this can have names like net_sta
                     css_sta=values[1]
