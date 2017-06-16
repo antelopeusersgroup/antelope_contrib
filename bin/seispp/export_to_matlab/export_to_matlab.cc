@@ -61,6 +61,15 @@ vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
   int n=d.member.size();
   int m=(tmax-tmin)/dt;
   cout << "Output matrices will be of size "<<m<<"X"<<n<<endl;
+  /* We use this fixed wall as a sanity check */
+  const int Mmax(100000000);
+  if(m>Mmax)
+  {
+    cerr << "Computed number of samples,"<<m<<",  is very large."<<endl
+      << "Aborting to avoid a likely malloc error."<<endl
+      << "You are probably and ensmble with absolute times set as t0 instead of some relative time standard"<<endl;
+    exit(-1);
+  }
   vector<dmatrix> work;
   for(i=0;i<3;++i) work.push_back(dmatrix(m,n));
   for(i=0;i<3;++i) work[i].zero();
