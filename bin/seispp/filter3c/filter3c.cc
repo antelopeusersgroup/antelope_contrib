@@ -26,6 +26,7 @@ int main(int argc, char **argv)
 {
     int i;
     const int narg_required(1);
+    if(argc<2) usage();
     string filter_spec(argv[1]);
     if(filter_spec=="--help") usage();
     bool binary_data(false);
