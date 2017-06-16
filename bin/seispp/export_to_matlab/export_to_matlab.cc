@@ -52,7 +52,7 @@ vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
         cerr << "export_to_matlab:  Mixmatched sample rates in Three C ensemble"<<endl
           << "This program requires fixed sample rate"<<endl
           << "Member "<<i<<" has dt="<<dptr->dt<<" put previous members had dt="
-          << dt<<endl<<"Not output will be generated"<<endl;
+          << dt<<endl<<"No output will be generated"<<endl;
         exit(-1);
       }
     }
