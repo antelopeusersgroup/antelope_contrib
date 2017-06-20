@@ -48,6 +48,7 @@ int main(int argc, char **argv)
     if(argc<2) usage();
     string outdir(".");
     string basename(argv[1]);
+    if(basename=="--help") usage();
     bool binary_data(false);
     bool dismember(false);
     for(i=2;i<argc;++i)
@@ -71,6 +72,8 @@ int main(int argc, char **argv)
             binary_data=true;
         else if(sarg=="-dismember")
             dismember=true;
+        else if(sarg=="--help")
+            usage();
         else
             usage();
     }
