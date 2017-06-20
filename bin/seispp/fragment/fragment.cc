@@ -21,7 +21,7 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "fragment basename [-i infile -dir outdir -binary -dismember -v]"
+    cerr << "fragment basename [-i infile -dir outdir -binary -dismember -v --help]"
         <<endl
         << "seispp filter fragments file with multiple ensembles into individual files"
         <<endl
