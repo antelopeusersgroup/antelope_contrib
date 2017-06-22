@@ -81,7 +81,6 @@ int main(int argc, char **argv)
     bool binary_data(false);
     for(i=1;i<argc;++i)
     {
-      cerr <<"Top of arg loop i="<<i<<endl;
         string sarg(argv[i]);
         if(sarg=="-i")
         {
@@ -93,16 +92,13 @@ int main(int argc, char **argv)
               if(sarg=="-binary") 
               {
                 binary_data=true;
-                cerr << "Executing break in -i block"<<endl;
                 break;
               }
               if(sarg=="-s")
               {
                 --i;
-                cerr << "Found -s flag - breaking out"<<endl;
                 break;
               }
-              cerr << "Parsed sarg="<<sarg<<" for i="<<i<<endl;
               ikeys.push_back(sarg);
             }
         }
@@ -116,16 +112,13 @@ int main(int argc, char **argv)
               if(sarg=="-binary") 
               {
                 binary_data=true;
-                cerr << "Executing break in -s block"<<endl;
                 break;
               }
               if(sarg=="-i")
               {
                 --i;
-                cerr << "Found -s flag - breaking out"<<endl;
                 break;
               }
-              cerr << "Parsed sarg="<<sarg<<" for i="<<i<<endl;
               skeys.push_back(sarg);
             }
         }
@@ -134,11 +127,6 @@ int main(int argc, char **argv)
         else
           usage();
     }
-    //DEBUG
-    cerr << "binary_data="<<binary_data<<endl;
-    cerr << "Number of string keys="<<skeys.size()
-      <<endl<<"Number of integer keys="<<ikeys.size()<<endl;
-    if(binary_data)exit(-1);
     try{
         list<string> svaltest;
         list<int> ivaltest;
