@@ -11,7 +11,7 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "peak_amplitude [-binary]< infile > outfile"
+    cerr << "peak_scaling [-help -binary] < infile > outfile"
         <<endl
         << "Reads serialized 3c ensemble file and scales each "
         << "seismogram by peak 3C amplitude"<<endl;
