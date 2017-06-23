@@ -23,9 +23,7 @@ void usage()
         <<endl
         << "        (default dumps all with operator <<"<<endl
         << " -t - specify the type of object expected"<<endl
-        << "      (Currently accept:  ThreeComponentSeismogram (default), ThreeComponentEnsemble, "<<endl
-        << "and PMTimeSeries)"
-        <<endl
+        << "      (Currently accept:  ThreeComponentSeismogram (default) and ThreeComponentEnsemble"<<endl
         << " -binary - assume in and out data are binary (default is ascii text)"
         <<endl;
     exit(-1);
@@ -60,7 +58,7 @@ vector<MetadataComponent> parse_csv_format_file(string fname)
         ss >> mdttest;
         if( (mdttest=="double") || (mdttest=="MDreal") || (mdttest=="real") || (mdttest=="float") )
             mc.mdt=MDreal;
-        else if( (mdttest=="int") || (mdttest=="MDint") || (mdttest=="log") )
+        else if( (mdttest=="int") || (mdttest=="MDint") || (mdttest=="long") )
             mc.mdt=MDint;
         else if(mdttest=="boolean")
             mc.mdt=MDboolean;
