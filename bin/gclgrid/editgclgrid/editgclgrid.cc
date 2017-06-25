@@ -9,7 +9,10 @@ using namespace std;
 using namespace SEISPP;
 void usage(string prog)
 {
-	cerr << "usage:  "<< prog << " db [-pf pfname]" <<endl;
+  cerr << "usage:   editgclgrid db [-pf pfname]" <<endl
+      << "decimate and/or carve out smaller block of a gclgrid object stored in db"
+      <<endl;
+  exit(-1);
 }
 GCLgrid *makenewgrid(GCLgrid& parent,
 	int x1skip, int x2skip, 
@@ -223,7 +226,7 @@ int main(int argc, char **argv)
 			GCLvectorfield newfield(*newgrid2d,grid.nv);
 			for(i=x1skip,ii=0;(i<grid.n1)&&(ii<nx1out);i+=x1dec,++ii)
 				for(j=x2skip,jj=0;(j<grid.n2)&&(jj<nx2out);j+=x2dec,++jj)
-					for(l=0;l<grid.nv;++i)
+					for(l=0;l<grid.nv;++l)
 					{
 						newfield.val[ii][jj][l]=grid.val[i][j][l];
 					}
@@ -285,7 +288,7 @@ int main(int argc, char **argv)
 				for(j=x2skip,jj=0;(j<grid.n2)&&(jj<nx2out);j+=x2dec,++jj)
 					for(k=x3skip,kk=0;(k<grid.n3)&&(kk<nx3out);
                                                             k+=x3dec,++kk)
-						for(l=0;l<grid.nv;++i)
+						for(l=0;l<grid.nv;++l)
 						{
 							newfield.val[ii][jj][kk][l]=grid.val[i][j][k][l];
 						}
