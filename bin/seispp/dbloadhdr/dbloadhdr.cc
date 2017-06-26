@@ -290,6 +290,7 @@ int main(int argc, char **argv)
     int i;
     if(argc<2) usage();
     string dbname(argv[1]);
+    if(dbname=="--help") usage();
     string pffile("dbloadhdr");
     bool binary_mode(false);
     string otype("ThreeComponentSeismogram");
