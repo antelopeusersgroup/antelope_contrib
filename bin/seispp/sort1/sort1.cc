@@ -108,6 +108,7 @@ int main(int argc, char **argv)
     const int narg_required(1);
     if(argc<2) usage();
     string key(argv[1]);
+    if(key=="--help") usage();
     bool key_is_int(false);
     bool binary_data(false);
     for(i=narg_required+1;i<argc;++i)
