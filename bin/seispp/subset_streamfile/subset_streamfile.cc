@@ -87,7 +87,7 @@ private:
 };
 void usage()
 {
-    cerr << "subset_streamfile key:type ( -eq val | -range minval maxval | -min minval -max maxval )"<<endl
+    cerr << "subset_streamfile key:type ( -eq val | -range minval maxval | -min minval -max maxval ) [-objt object_type --help -binary]"<<endl
         <<endl
         << " seispp unix filter to subset a data set read from stdin and write result to out"
         <<endl
@@ -309,6 +309,7 @@ int main(int argc, char **argv)
     int i;
     const int narg_required(1);
     if(argc<2) usage();
+    if(string(argv[1])=="--help") usage();
     bool binary_data(false);
     bool equal_test(false);
     bool minonly(false);
@@ -322,7 +323,7 @@ int main(int argc, char **argv)
     string seq,smin,smax;
     // Ugly opaque pointers used to reduce arg list complexity
     void *veq,*vmin,*vmax;
-    ObjectsSupported object_type;
+    ObjectsSupported object_type(TCS);
 
     for(i=narg_required+1;i<argc;++i)
     {
