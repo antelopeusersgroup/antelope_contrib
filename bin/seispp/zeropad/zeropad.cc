@@ -60,12 +60,7 @@ void usage()
 bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
-    /* Common variables for a program common appear here, but
-       C/C++ now allow later declarations that usually make
-       cleaner code.   We need this counter for the arg list below*/
     int i;
-    /* As the name implies set this to the number of required
-       args */
     const int narg_required(0);
     double padlength(0.1);
     double taperlength(0.01);
@@ -116,16 +111,24 @@ int main(int argc, char **argv)
            (new StreamObjectWriter<ThreeComponentEnsemble>);
       }
       ThreeComponentEnsemble d;
+      int nens(0);
       while(!ia->eof())
       {
         d=ia->read();
         vector<ThreeComponentSeismogram>::iterator dptr;
-        for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
-        {
+        try{
+          for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
+          {
             ThreeComponentSeismogram dpadded=pad_3cseis(*dptr,padlength,taperlength);
             *dptr=dpadded;
+          }
+          oa->write(d);
+        }catch(SeisppError& derr)
+        {
+          cerr << "Error processing ensemble number "<<nens<<endl;
+          derr.log_error();
         }
-        oa->write(d);
+        ++nens;
       }
     }catch(SeisppError& serr)
     {
