@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>linearmoveout</title>
+  </head>
+  <body>
+    <h1>linearmoveout</h1>
+    <h3>Usage:</h3>
+    <p>linearmoveout [-vr v_reduce -t0 timeshift --help -binary] &lt;
+      infile &gt; outfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    Applies a linear moveout correction with a specified velocity and
+    time shift.&nbsp; The time shift for each seismogram is computed by
+    extracting the real-valued attribute with the (frozen) name <i>offset</i>.&nbsp;
+    The computed time shift is t0+v_reduce*offset where t0 and v_reduce
+    are optional arguments with defaults (see below).&nbsp; Units are
+    not specified but it is assumed time has units of seconds.&nbsp;
+    Hence, the distance units can be anything convenient (you can use
+    furlongs per second if you want as long as the offset attribute has
+    units of furlongs).&nbsp; <br>
+    <br>
+    Only TimeSeriesEnemble objects are currently supported as input and
+    output. <br>
+    <h3>Options:</h3>
+    <h3> </h3>
+    <i>-vr<br>
+    </i>Specify the reducing velocity (moveout velocity) for the linear
+    time shift.&nbsp;&nbsp; Default is 6000.0.<br>
+    <br>
+    <i>-t0<br>
+    </i>Specify the offset time shift to use for the
+    correction.&nbsp;&nbsp; Assumed in units of seconds.&nbsp; Default
+    is 0.0.<br>
+    <br>
+    <i>--help<br>
+    </i>Print the usage line.<br>
+    <br>
+    <i>--binary<br>
+    </i>Use binary format for input and output.&nbsp;&nbsp; Default is
+    text data.<br>
+    <br>
+    <br>
+  </body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>db2seispp</title>
+  </head>
+  <body>
+    <h1>db2seispp</h1>
+    <h3>Usage:</h3>
+    <p>db2seispp db [-pf pffile --help -binary -v] &gt; outfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    The program loads segmented waveform data from a css3.0 database and
+    writes a serialized output file of ThreeComponentSeismogram objects
+    to stdout.&nbsp;&nbsp; The current implementation is designed to
+    operate cleanly only on event data created by the extract_events
+    program.&nbsp; See man extract_events for documentation on that
+    program.&nbsp;&nbsp; The program can only handle extract_events data
+    with the save_as_3c_objects set true in extract_events.pf when that
+    program is run.&nbsp; The reason is that this program ALWAYS only
+    extracts rows of a working view with datatype of "3c" stored in the
+    wfprocess (extension) table.&nbsp;&nbsp; The output seismograms
+    produced by this program are created with the time field as epoch
+    times.&nbsp;&nbsp; Alignment by arrival times or predicted travel
+    times requires auxiliary processing.&nbsp;&nbsp; <br>
+    <br>
+    Attributes loaded form the database for each seismogram are
+    controlled by the parameter file (see below).&nbsp;&nbsp; The names
+    loaded are always limited by the css3.0 namespace.&nbsp;&nbsp; (e.g.
+    station latitude must be site.lat to be loaded properly).&nbsp; Use
+    <a href="dbloadhdr.html">dbloadhdr</a> to add additional attributes
+    or change the key used to access a particular attribute. <br>
+    <br>
+    <h3>Options:</h3>
+    <p><i>-pf pffile<br>
+      </i>Read Pf data from pffile instead of the default db2seispp.pf.<br>
+    </p>
+    <h3> </h3>
+    <i>-binary<br>
+    </i>Write the output in binary.&nbsp; Default is text serialized
+    file.<br>
+    <br>
+    <i>-v<br>
+    </i>Be more verbose.&nbsp; Note all log information goes to stderr
+    so it is best to use this option only for debugging problems.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.&nbsp; <br>
+    <br>
+    <h3>Parameter file:</h3>
+    <p>The behavior of this program is controlled largely by the
+      parameter file.&nbsp; The pf is structured as two &amp;Tbl lists:<br>
+    </p>
+    <ol>
+      <li><i>dbprocess_commands </i>is a series of instructions to the
+        Datascope dbprocess procedure (see man
+        dbprocess(3)).&nbsp;&nbsp; This set of commands builds the
+        working view used for matching to load the right attributes with
+        each seismogram.&nbsp; Most users will not need to alter the
+        default.&nbsp;&nbsp; If you do alter the default, the "verbose"
+        command is highly recommended unless you are 100% confident in
+        the integrity of your database and what you are doing.</li>
+      <li><i>attributes_to_load </i>defines the list of database
+        attributes to be extracted and loaded with the data.</li>
+    </ol>
+    The <i>attributes_to_load </i>Tbl should contain a set of series
+    of lines that define the database attribute names to be
+    loaded.&nbsp; Each line must have the format:<i><br>
+    </i>
+    <blockquote><i>dbattribute_name&nbsp; type<br>
+      </i></blockquote>
+    Most <i>dbattribute_name </i>tags should be the Datascope fully
+    qualified attribute name.&nbsp;&nbsp; e.g. site.lat should be used
+    for the receiver latitude.&nbsp; Alias are defined in the CSS3.0
+    AttributeMap object defined by the parameter file
+    seispp_attribute_maps.pf, but these should be used with
+    caution.&nbsp;&nbsp; As noted earlier a better alternative for
+    keyword changes is to use the <a
+href="file:///Users/pavlis/Box%20Sync/html/seispp/programs/dbloadhdr.html">dbloadhdr</a>
+    program.&nbsp; <br>
+    <br>
+    The <i>type</i> field has some flexibility for input defined in the
+    following table:<br>
+    <table width="50%" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td valign="top"><i>Attribute Data Type</i><br>
+          </td>
+          <td valign="top"><i>Acceptable values for type field</i><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">integer<br>
+          </td>
+          <td valign="top">int, INT, integer<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">real<br>
+          </td>
+          <td valign="top">real, REAL<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">string<br>
+          </td>
+          <td valign="top">string, STRING<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+  </body>
+</html>

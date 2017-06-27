@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>extract_component</title>
+  </head>
+  <body>
+    <h1>extract_component</h1>
+    <h3>Usage:</h3>
+    <p>extract_component n [--help -binary] &lt; infile &gt; outfile<br>
+      <br>
+    </p>
+    <h3>Algorithm:</h3>
+    Extract a single component from a file of ThreeComponentEnsemble
+    objects to produce a series of TimeSeriesEnsemble objects with only
+    the requested component.&nbsp; One argument, n in the usage line
+    above, is required.&nbsp;&nbsp; n must be 0, 1, or 2 and is used to
+    selected the desired component from the 3C seismograms.&nbsp;&nbsp;
+    Note the C order so 0 selects the x1 component, 1 the x2 component,
+    and 2 the x3 component.&nbsp;&nbsp; <br>
+    <br>
+    <h3>Options:</h3>
+    <h3> </h3>
+    -<i>scalar </i>- Assume input is TimeSeriesEnsemble objects so
+    output will be a series of TimeSeries objects.&nbsp; Default is
+    ThreeComponentEnsemble and ThreeComponentSeismograms respectively.<br>
+    <i>-binary </i>- assume binary format for input and output (default
+    is text format)<br>
+    <br>
+  </body>
+</html>
