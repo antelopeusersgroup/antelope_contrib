@@ -16,13 +16,15 @@ using namespace SEISPP;  //This is essential to use SEISPP library
    command line parsing problems. */
 void usage()
 {
-    cerr << "gather -i key1 key2 ... -s key1 key2 ... "
+    cerr << "gather -i key1 key2 ... -s key1 key2 ... [-binary] < in > out"
         <<endl
         << "Build gathers using list of integer and string keys"<<endl
         << "Follow -i with list of integer keys that define a match"<<endl
         << "Follow -s with a list of string keys that define a match"<<endl
-        << "Gather is a group by requiring exactly matching all key values"<<endl
-        << "group keys are posted to ensemble metadata"<<endl;
+        << "Gather grouping is defined by exactly matching all key values"<<endl
+        << "group keys are posted to ensemble metadata"<<endl
+        << "Use -binary flag to switch to binary data input and output"
+        <<endl;
     exit(-1);
 }
 bool keys_match(ThreeComponentSeismogram& d,list<string>& sk, list<string>& ik,
@@ -82,40 +84,48 @@ int main(int argc, char **argv)
         string sarg(argv[i]);
         if(sarg=="-i")
         {
-            ++i;
-            if(i>=argc)break;
-            do
+            while(i<(argc-1))
             {
-              sarg=argv[i];
-              ikeys.push_back(sarg);
               ++i;
-            }while(i<argc && (sarg!="-s"));
-            if(sarg=="-s")
-            {
-              --i;
-              continue;
+              if(i>=argc)usage();
+              sarg=string(argv[i]);
+              if(sarg=="-binary") 
+              {
+                binary_data=true;
+                break;
+              }
+              if(sarg=="-s")
+              {
+                --i;
+                break;
+              }
+              ikeys.push_back(sarg);
             }
         }
         else if(sarg=="-s")
         {
-          ++i;
-          if(i>=argc)break;
-          do
-          {
-            sarg=argv[i];
-            skeys.push_back(sarg);
-            ++i;
-          }while(i<argc && (sarg!="-i"));
-          if(sarg=="-i")
-          {
-            --i;
-            continue;
-          }
+            while(i<(argc-1))
+            {
+              ++i;
+              if(i>=argc)usage();
+              sarg=string(argv[i]);
+              if(sarg=="-binary") 
+              {
+                binary_data=true;
+                break;
+              }
+              if(sarg=="-i")
+              {
+                --i;
+                break;
+              }
+              skeys.push_back(sarg);
+            }
         }
         else if(sarg=="-binary")
-            binary_data=true;
+          binary_data=true;
         else
-            usage();
+          usage();
     }
     try{
         list<string> svaltest;
@@ -182,6 +192,7 @@ int main(int argc, char **argv)
                 dout.member.push_back(d);
               }
             }
+            ++nseis;
         }
         cerr << "Gather processed "<<nseis<<" 3c seismograms"<<endl
                 << "Assembled "<<ngather<<" ensembles"<<endl;

@@ -11,7 +11,7 @@ using namespace std;
 using namespace SEISPP; 
 void usage()
 {
-    cerr << "cut tmin tmax  < in > out [-v --help -binary]"
+    cerr << "tcecut tmin tmax  < in > out [-v --help -binary]"
         <<endl
         << "Window the data in time between tmin and tmax"<<endl
         << "Will exit with an error message if interval tmin:tmax is outside bounds of data"
@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     tmax=atof(argv[2]);
     if(tmin>tmax)
     {
-        cerr << "Illegal time window:  tmin>tmax"<<endl;
+        cerr << "tcecut: Illegal time window:  tmin>tmax"<<endl;
         usage();
     }
     TimeWindow twin(tmin,tmax);
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
             usage();
     }
     try{
-        if(SEISPP_verbose) cerr << "cut:  windowing data between "
+        if(SEISPP_verbose) cerr << "tcecut:  windowing data between "
             << tmin<<" and "<<tmax<<" seconds"<<endl;
         shared_ptr<StreamObjectReader<ThreeComponentEnsemble>> inp;
         if(binary_data)
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
                     dcut.member.push_back(d3ccut);
                 }catch(SeisppError& serr)
                 {
-                    cerr << "cut: problem with member "<<i<<" of ensemble "
+                    cerr << "tcecut: problem with member "<<i<<" of ensemble "
                         <<n<<endl<<"Error message thrown follows"<<endl;
                     serr.log_error();
                 }
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
             out->write(dcut);
             ++n;
         }
-        if(SEISPP_verbose) cerr << "cu:  Total number of ensembles processed ="<<n<<endl;
+        if(SEISPP_verbose) cerr << "tcecut:  Total number of ensembles processed ="<<n<<endl;
     }catch(SeisppError& serr)
     {
         serr.log_error();

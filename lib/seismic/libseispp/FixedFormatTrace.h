@@ -532,8 +532,8 @@ template <class T>void FixedFormatTrace::load(vector<T> dvec)
 		liptr=new long[ns];
 		for(i=0;i<ns;++i) 
 			liptr[i]=static_cast<long>(dvec[i]);
-		memcpy(static_cast<void *>(d),static_cast<const void *>(iptr),datasize);
-		delete [] iptr;
+		memcpy(static_cast<void *>(d),static_cast<const void *>(liptr),datasize);
+		delete [] liptr;
 		break;
 	case REAL32:
 		fptr=new float[ns];

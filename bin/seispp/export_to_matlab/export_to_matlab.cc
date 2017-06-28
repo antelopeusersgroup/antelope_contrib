@@ -14,12 +14,14 @@ using namespace SEISPP;
 
 void usage()
 {
-    cerr << "export_to_matlab [-pf pffile] < in  "
+    cerr << "export_to_matlab [-x1 x1f -x2 x2f -x3 x3f -pf pffile] < in  "
         <<endl
-        << "Exports serialized seispp 3C ensemble to 3 matlab matrices"<<endl
-        << "(Accepts only text format input)"<<endl
-        << "Default files are T.dat, R.dat, and L.dat"<<endl
-        << "Use alternate pf pffile to change naming"<<endl;
+        << "Exports serialized seispp 3C ensemble to 3 matlab matrices in 3 files"<<endl
+        << "Use -x1, -x2, or -x3 to set file names for components 1, 2, 3"<<endl
+        << "Default files are x1=T.dat, x2=R.dat, and x3=L.dat"<<endl
+        << "Default names can also be changed by editing default pf file "
+        << "export_to_matlab.pf"<<endl
+        << "(Accepts only text format input)"<<endl;
     exit(-1);
 }
 vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
@@ -50,7 +52,7 @@ vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
         cerr << "export_to_matlab:  Mixmatched sample rates in Three C ensemble"<<endl
           << "This program requires fixed sample rate"<<endl
           << "Member "<<i<<" has dt="<<dptr->dt<<" put previous members had dt="
-          << dt<<endl<<"Not output will be generated"<<endl;
+          << dt<<endl<<"No output will be generated"<<endl;
         exit(-1);
       }
     }
@@ -59,6 +61,15 @@ vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
   int n=d.member.size();
   int m=(tmax-tmin)/dt;
   cout << "Output matrices will be of size "<<m<<"X"<<n<<endl;
+  /* We use this fixed wall as a sanity check */
+  const int Mmax(100000000);
+  if(m>Mmax)
+  {
+    cerr << "Computed number of samples,"<<m<<",  is very large."<<endl
+      << "Aborting to avoid a likely malloc error."<<endl
+      << "You are probably and ensmble with absolute times set as t0 instead of some relative time standard"<<endl;
+    exit(-1);
+  }
   vector<dmatrix> work;
   for(i=0;i<3;++i) work.push_back(dmatrix(m,n));
   for(i=0;i<3;++i) work[i].zero();
@@ -90,10 +101,11 @@ int main(int argc, char **argv)
 {
 
     int i;
-    const int narg_required(0);
     char *pffile=strdup("export_to_matlab");
 
-    for(i=narg_required+1;i<argc;++i)
+    /* We have to pass through the arg list twice - the first pass 
+       is just to set alterntive pf if requested */
+    for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
         if(sarg=="-pf")
@@ -102,8 +114,6 @@ int main(int argc, char **argv)
             if(i>=argc)usage();
             pffile=argv[i];
         }
-        else
-            usage();
     }
     try{
         Pf *pf;
@@ -116,6 +126,36 @@ int main(int argc, char **argv)
         string x1file=control.get_string("component1_filename");
         string x2file=control.get_string("component2_filename");
         string x3file=control.get_string("component3_filename");
+        for(i=1;i<argc;++i)
+        {
+          string sarg(argv[i]);
+          if(sarg=="-pf")
+          {
+            /* in this pass we just skip and can assume the arg following
+               -pf was there */
+            ++i;
+          }
+          else if(sarg=="-x1")
+          {
+            ++i;
+            if(i>=argc)usage();
+            x1file=string(argv[i]);
+          }
+          else if(sarg=="-x2")
+          {
+            ++i;
+            if(i>=argc)usage();
+            x2file=string(argv[i]);
+          }
+          else if(sarg=="-x3")
+          {
+            ++i;
+            if(i>=argc)usage();
+            x3file=string(argv[i]);
+          }
+          else
+            usage();
+        }
         StreamObjectReader<ThreeComponentEnsemble> ia;
         ThreeComponentEnsemble d;
         d=ia.read();

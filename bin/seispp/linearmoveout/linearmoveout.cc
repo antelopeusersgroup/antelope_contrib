@@ -23,17 +23,12 @@
    is derived from continuous data that is a user error but it is 
    unavoidable with shot data.   
 
-   This is my first attempt at a seispp processing unix style
-   filter with boost serialization.   If this works I expect to 
-   use the skeleton of this code to construct a template for 
-   a "module" meshing with that concept.
-
 Author:  Gary L Pavlis
 Written:  Nov 29, 2015
 */
 void usage()
 {
-    cerr << "linearmoveout [-vr v_reduce -t0 timeshift --help] < infile > outfile"
+    cerr << "linearmoveout [-vr v_reduce -t0 timeshift --help -binary] < infile > outfile"
         <<endl
         << " -vr sets reducing velocity (default 6000)"<<endl
         << " -t0 applies a time shift to all seismograms (default 0)"<<endl;;

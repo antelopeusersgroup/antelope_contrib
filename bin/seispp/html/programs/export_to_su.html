@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>export_to_su</title>
+  </head>
+  <body>
+    <h1>export_to_su</h1>
+    <h3>Usage:</h3>
+    <p>export_to_su outfile [-pf pffile] &lt; seispp_input<br>
+    </p>
+    <h3>Algorithm:</h3>
+    This is a (fairly limited) program to export serialized seispp data
+    to a format readable by the seismic unix package.&nbsp;&nbsp; The
+    input must be a TimeSeriesEnsemble object with constant start times
+    for all seismograms in the ensembles and a constant number of
+    samples for each seismogram.&nbsp; This is a hard constraint by the
+    SU format, which is a variant of SEGY, and is thus assumed to be
+    valid.&nbsp;&nbsp; Irregular start times will be silently
+    ignored.&nbsp;&nbsp; Irregular number of samples will cause the
+    program to abort.&nbsp;&nbsp; <br>
+    <br>
+    Data are written to the file defined by the (required) outfile
+    argument in SU format.&nbsp; What attributes are transferred from
+    the generic headers of the TimeSeries objects to the headers of the
+    SU traces is controlled by the parameter file. <br>
+    <br>
+    <h3>Options:</h3>
+    <h3> </h3>
+    Use -pf to read from parameter file pffile instead of the default
+    export_to_su.pf.<br>
+    <br>
+    <h3>Parameter file</h3>
+    <br>
+    The parameter file has two Tbl lists that control what is written to
+    SU headers.&nbsp;&nbsp; <br>
+    <ol>
+      <li>The <i>output_metadata_list</i> tag defines a list of names
+        to extract from the TimeSeries object Metadata (generic header).
+        &nbsp; The names must match Metadata tags found in each input
+        seismogram or the program will fail.</li>
+      <li>&nbsp;How the Metadata attributes are translated to the SU
+        namespace is defined by the <i>metadata_cross_reference</i> Tbl
+        list.&nbsp;&nbsp; Each line in this Tbl has this format:</li>
+    </ol>
+    <blockquote>
+      <blockquote>internal_name SU_name type<br>
+      </blockquote>
+      where "internal_name" is the Metadata tag while "SU_name" is the
+      name defined in the standard SU namespace (accessed for example by
+      the sukeyword command).&nbsp; "type" should be one of real,
+      integer, or boolean.&nbsp; Note string is not allowed since SEGY
+      headers are purely numeric.&nbsp;&nbsp; <br>
+      <blockquote> </blockquote>
+    </blockquote>
+  </body>
+</html>

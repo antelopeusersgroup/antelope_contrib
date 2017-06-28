@@ -73,12 +73,12 @@ int main(int argc, char **argv)
 					mdl,am2);
 		cout << *mddb;
 	}
-	catch (MetadataError mess)
+	catch (MetadataError& mess)
 	{
 		mess.log_error();
 		exit(-1);
 	}
-	catch (SeisppError sess)
+	catch (SeisppError& sess)
 	{
 		sess.log_error();
 	}

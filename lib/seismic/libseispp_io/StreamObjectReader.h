@@ -85,7 +85,7 @@ template <typename T>
     /* This little test is probably an unnecessary overhead, but the cost is
     tiny */
     if(!input_is_stdio)
-      if(n_previously_read>=(nobjects-1)) throw SeisppError(base_error
+      if(n_previously_read>=nobjects) throw SeisppError(base_error
         + "Trying to read past end of file - code should test for this condition with at_eof method");
     string tag;
     char tagbuf[BINARY_TAG_SIZE+1];
@@ -178,14 +178,14 @@ template <typename T>
     switch(format)
     {
       case 'b':
-        ifs.seekg(ifs.end-BinaryIOStreamEOFOffset);
+        ifs.seekg(-(BinaryIOStreamEOFOffset+1),ios_base::end);
         ifs.read(tagbuf,BINARY_TAG_SIZE);
         magic_test=string(tagbuf);
         ifs.read((char*)(&(this->nobjects)),sizeof(long));
         break;
       case 't':
       default:
-        ifs.seekg(ifs.end-TextIOStreamEOFOffset);
+        ifs.seekg(-(TextIOStreamEOFOffset+1),ios_base::end);
         ifs >> magic_test;
         ifs >> nobjects;
     };
@@ -203,6 +203,7 @@ template <typename T>
         bin_ar=NULL;
         txt_ar=new boost::archive::text_iarchive(ifs);
     };
+    more_data_available=true;
   }catch(...){throw;};
 }
 template <typename T>
@@ -257,7 +258,13 @@ template <typename T>
       + "input is tied to stdin - rewind is not possible for stdin");
   }
   else
-    ifs.seekg(0,ios_base::beg);
+  {
+    /* An oddity of ifstream is this is required to clear EOF flag
+     * which will be set when the constructor reads the last section 
+     * of the file.*/
+    ifs.clear();
+    ifs.seekg(ios::beg);
+  }
 }
 
 }
