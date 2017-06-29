@@ -5,7 +5,7 @@ logs2dlevent \- parse logs files for particular phrases and add to a db table
 
 .SH SYNOPSIS
 .nf
-logs2dlevent [-p pf] [-d 'time' ] [-n ndays] [-v] [-l match_logname] logdir db
+logs2dlevent [-p pf] [-d 'time' ] [-n ndays] [-v] [-l match_logname] [-r reject_logs] logdir db
 .fi
 
 .SH DESCRIPTION
@@ -30,6 +30,11 @@ set -n to 7.  The default is 1 day.
 Regular expression to reduce the number of files/directories to search. The default 
 is to search only files with "log" in the name.  You may wish to use an expression that
 would filter out logs such as the \fItargetname\fP/log packets produced by \fBq3302orb\fP.
+.IP "-r reject_lognames"
+Regular expression to reduce the number of files/directories to search. Files matching
+this expression are skipped/removed from processing.  The default is to remove any 
+\fIsyslog\fP and \fIelog\fP files produced by marmots as this script cannot parse
+them correctly.  
 .IP "-v"
 Verbose output.
 .IP "-V"
