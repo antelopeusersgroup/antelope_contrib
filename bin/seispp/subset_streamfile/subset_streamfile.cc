@@ -124,7 +124,7 @@ std::pair<string,MDtype> split_arg1(const char *arg)
     usage();
   }
   pair<string,MDtype> result;
-  result.first=sarg.substr(0,pos-1);
+  result.first=sarg.substr(0,pos);
   string strfield=sarg.substr(pos+1,sarg.length()-1);
   if(strfield=="int" || strfield=="INT" || strfield=="long")
     result.second=MDint;
@@ -457,7 +457,7 @@ int main(int argc, char **argv)
             usage();
     }
     /* Some sanity checks */
-    if(!(test_range && minonly && maxonly && equal_test))
+    if(!(test_range || minonly || maxonly || equal_test))
     {
       cerr << "no subset test defined"<<endl;
       usage();
@@ -477,6 +477,7 @@ int main(int argc, char **argv)
               << " max="<<imax<<endl;
             usage();
           }
+          break;
         case MDreal:
             if(rmin>=rmax)
             {
@@ -484,6 +485,7 @@ int main(int argc, char **argv)
                 << " max="<<rmax<<endl;
               usage();
             }
+            break;
         case MDstring:
             if(smin>=smax)
             {
@@ -491,6 +493,7 @@ int main(int argc, char **argv)
                   << " max="<<smax<<endl;
               usage();
             }
+            break;
         default:
             /* This block should actually never be executed */
             cerr << "unknown key time"<<endl;
