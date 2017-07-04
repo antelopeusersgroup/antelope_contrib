@@ -57,11 +57,11 @@ template <typename T> bool range_tester<T>::inside(T testval)
 {
   if(use_min)
   {
-    if(testval<=minval)return false;
+    if(testval<minval)return false;
   }
   if(use_max)
   {
-    if(testval>=maxval) return false;
+    if(testval>maxval) return false;
   }
   return true;
 }
@@ -177,6 +177,8 @@ template <typename Tdata, typename Tkey>
         ++nout;
       }
     }
+    delete inp;
+    delete outp;
     return nout;
   }catch(...)
   {
