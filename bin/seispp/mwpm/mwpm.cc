@@ -1,3 +1,5 @@
+/* This set of includes will fail using g++ for reasons I haven't figured out */
+/*
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
@@ -6,6 +8,16 @@
 #include "seispp.h"
 #include "ThreeComponentSeismogram.h"
 #include "PMTimeSeries.h"
+#include "PfStyleMetadata.h"
+#include "StreamObjectReader.h"
+#include "StreamObjectWriter.h"
+*/
+/* Includes in this order work with g++.   */
+#include <string>
+#include <iostream>
+#include "PMTimeSeries.h"
+#include "seispp.h"
+#include "ThreeComponentSeismogram.h"
 #include "PfStyleMetadata.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
