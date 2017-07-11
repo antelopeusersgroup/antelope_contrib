@@ -1,5 +1,5 @@
 BIN=db2seispp
-
+PF=db2seispp.pf
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
 ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp 
