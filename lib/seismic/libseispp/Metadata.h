@@ -336,7 +336,14 @@ called PfStyleMetadata.
         \exception - will throw a MetadataGetError (child of SeisppError) for
            type mismatch or in an overflow or underflow condition.
            */
-      template <typename T> T get(const char *key) throw(MetadataGetError);
+      template <typename T> T get(const char *key) throw(MetadataGetError)
+      {
+        try{
+          T val;
+          val=get<T>(string(key));
+          return val;
+        }catch(...){throw;};
+      }
 /*!
 // Place a real number into the Metadata object.
 //
