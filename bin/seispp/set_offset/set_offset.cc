@@ -91,6 +91,8 @@ template <class T> pair<int,int> set_offset(bool binary_data, bool use_cartesian
           sy=d.get_double(slat);
           rx=d.get_double(rlon);
           ry=d.get_double(rlat);
+          rx=rad(rx); ry=rad(ry);
+          sx=rad(sx); sy=rad(sy);
           dist(ry,rx,sy,sx,&offset,&az);
           d.put(geo_offset,deg(offset));
           d.put(baz,deg(az));
