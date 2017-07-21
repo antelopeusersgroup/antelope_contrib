@@ -8,24 +8,29 @@
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
 using namespace std;   
-using namespace SEISPP; 
+using namespace SEISPP;
 void usage()
 {
-    cerr << "template < in > out [--help -binary]"
+    cerr << "template < in > out [-v --help -binary]"
         <<endl
         << "Example, do nothing filter using seismic unix style pipeline"<<endl
         << "Reads serialized ThreeComponentEnsemble objects from stdin"<<endl
         << "and writes a copy to stdout"<<endl
+        << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -binary - switch to binary input and output (default is text)"
         <<endl;
     exit(-1);
 }
-bool SEISPP::SEISPP_verbose(true);
+bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
     int i;
     const int narg_required(0);
+    if(argc>1)
+      if(string(argv[1])=="--help") usage();`
+    double example_real(0.0);
+    bool example_boolean(false);
     bool binary_data(false);
 
     for(i=narg_required+1;i<argc;++i)
@@ -35,10 +40,22 @@ int main(int argc, char **argv)
         {
             usage();
         }
+        else if(sarg=="-x")
+        {
+            ++i;
+            if(i>=argc)usage();
+            example_real=atof(argv[i]);
+        }
+        else if(sarg=="-flag")
+        {
+            example_boolean=true;
+        }
         else if(sarg=="-binary")
         {
             binary_data=true;
         }
+        else if(sarg=="-v")
+          SEISPP_verbose=true;
         else
             usage();
     }

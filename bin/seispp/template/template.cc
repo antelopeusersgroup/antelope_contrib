@@ -55,11 +55,12 @@ using namespace SEISPP;  //This is essential to use SEISPP library
    command line parsing problems. Modify as appropriate.*/
 void usage()
 {
-    cerr << "template < in > out [--help -binary]"
+    cerr << "template < in > out [-v --help -binary]"
         <<endl
         << "Example, do nothing filter using seismic unix style pipeline"<<endl
         << "Reads serialized ThreeComponentEnsemble objects from stdin"<<endl
         << "and writes a copy to stdout"<<endl
+        << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -binary - switch to binary input and output (default is text)"
         <<endl;
@@ -68,7 +69,7 @@ void usage()
 /* This obnoxious external variable is a necessary evil to deal with 
    error logging in the SEISPP library. Your code will probably not link 
    without it.*/ 
-bool SEISPP::SEISPP_verbose(true);
+bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
     /* Common variables for a program common appear here, but 
@@ -78,6 +79,10 @@ int main(int argc, char **argv)
     /* As the name implies set this to the number of required 
        args */
     const int narg_required(0);
+    /* This is needed to allow prog --help to work correctly
+       if if there are no args */
+    if(argc>1)
+      if(string(argv[1])=="--help") usage();`
     /* Here you should crack required args.  For example:
        string dbname(argv[1]);
        */
@@ -118,6 +123,8 @@ int main(int argc, char **argv)
         {
             binary_data=true;
         }
+        else if(sarg=="-v")
+          SEISPP_verbose=true;
         else
             usage();
     }
