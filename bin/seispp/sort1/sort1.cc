@@ -11,10 +11,10 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "sort1 key [-i -binary --help] < in > out"
+    cerr << "sort1 key [-i||-r -binary --help] < in > out"
         <<endl
         << "  key is the metadata sort key to use"<<endl
-        << "  -i to treat key as int (default is string)"<<endl
+        << "  -i to treat key as int or -r as real number (default is string)"<<endl
         << "WARNING:  this is a pure memory sort so do not use on large files"
         <<endl;
     exit(-1);
@@ -39,68 +39,53 @@ shared_ptr<SeisVector> load_data
     return dptr;
   }catch(...){throw;};
 }
-SortedDataList int_metadata_sort(SeisVector& d,string key)
-{
-  multimap<int,SeisIterator> xref;
-  vector<ThreeComponentSeismogram>::iterator dptr;
-  int i;
-  for(dptr=d.begin(),i=0;dptr!=d.end();++dptr,++i)
-  {
-    try{
-      int ival;
-      ival=dptr->get_int(key);
-      xref.insert(pair<int,SeisIterator>(ival,dptr));
-    }catch(SeisppError& serr)
-    {
-      cerr << "Missing required integer metadata for key="<<key<<endl
-        << "Error encountered on the "<<i<<"th seismogram of input file"<<endl
-        << "This is the corresponding message from the SeisppError object"<<endl;
-      serr.log_error();
-      cerr << "This is a fatal error - cannot sort unless every seismogram has"
-          << " the key "<<" defined"<<endl;
-    }
 
-  }
-  /* this section could and should be made into a template and used
-  for both of these procedures */
-  SortedDataList result;
-  multimap<int,SeisIterator>::iterator mptr;
-  for(mptr=xref.begin();mptr!=xref.end();++mptr)
-  {
-      result.push_back(mptr->second);
-  }
-  return result;
-}
-SortedDataList string_metadata_sort(SeisVector& d,string key)
+/*
+template <class T> SortedDataList SortedListFromXref(multimap<T,SeisIterator>& xref)
 {
-  SortedDataList result;
-  multimap<string,SeisIterator> xref;
-  vector<ThreeComponentSeismogram>::iterator dptr;
-  int i;
-  for(dptr=d.begin(),i=0;dptr!=d.end();++dptr,++i)
-  {
-    try{
-      string sval;
-      sval=dptr->get_string(key);
-      xref.insert(pair<string,SeisIterator>(sval,dptr));
-    }catch(SeisppError& serr)
+    SortedDataList result;
+    typename multimap<T,SeisIterator>::iterator mptr;
+    for(mptr=xref.begin();mptr!=xref.end();++mptr)
     {
-      cerr << "Missing required string metadata for key="<<key<<endl
-        << "Error encountered on the "<<i<<"th seismogram of input file"<<endl
-        << "This is the corresponding message from the SeisppError object"<<endl;
-      serr.log_error();
-      cerr << "This is a fatal error - cannot sort unless every seismogram has"
-          << " the key "<<" defined"<<endl;
+        result.push_back(mptr->second);
     }
-  }
-  multimap<string,SeisIterator>::iterator mptr;
-  for(mptr=xref.begin();mptr!=xref.end();++mptr)
-  {
-      result.push_back(mptr->second);
-  }
-  return result;
+    return result;
+}
+*/
+template <class T> SortedDataList metadata_sort(SeisVector& d,string key)
+{
+    SortedDataList result;
+    multimap<T,SeisIterator> xref;
+    vector<ThreeComponentSeismogram>::iterator dptr;
+    int i;
+    for(dptr=d.begin(),i=0;dptr!=d.end();++dptr,++i)
+    {
+      try{
+        T val;
+        val=dptr->get<T>(key);
+        xref.insert(pair<T,SeisIterator>(val,dptr));
+      }catch(SeisppError& serr)
+      {
+          cerr << "Missing required key for sorting with tag="<<key<<endl
+           << "Error encountered on the "<<i<<"th seismogram of input file"<<endl
+           << "This is the corresponding message from the SeisppError object"<<endl;
+          serr.log_error();
+        cerr << "This is a fatal error - cannot sort unless every seismogram has"
+          << " the sort key defined"<<endl;
+        exit(-1);
+      }
+    }
+    typename multimap<T,SeisIterator>::iterator mptr;
+    for(mptr=xref.begin();mptr!=xref.end();++mptr)
+    {
+        result.push_back(mptr->second);
+    }
+    return result;
 }
 
+
+
+enum AllowedKeyTypes{Real,Int,String};
 bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
@@ -109,13 +94,15 @@ int main(int argc, char **argv)
     if(argc<2) usage();
     string key(argv[1]);
     if(key=="--help") usage();
-    bool key_is_int(false);
+    AllowedKeyTypes ktype(String);
     bool binary_data(false);
     for(i=narg_required+1;i<argc;++i)
     {
         string sarg(argv[i]);
         if(sarg=="-i")
-            key_is_int=true;
+            ktype=Int;
+        else if(sarg=="-r")
+            ktype=Real;
         else if(sarg=="-binary")
             binary_data=true;
         else if(sarg=="--help")
@@ -157,10 +144,18 @@ int main(int argc, char **argv)
         /* Each of the two procedures below return this list is the
         sequence of iterators used to build the output */
         SortedDataList outlist;
-        if(key_is_int)
-          outlist=int_metadata_sort(*d,key);
-        else
-          outlist=string_metadata_sort(*d,key);
+        switch(ktype)
+        {
+            case Int:
+                outlist=metadata_sort<int>(*d,key);
+                break;
+            case Real:
+                outlist=metadata_sort<double>(*d,key);
+                break;
+            case String:
+            default:
+                outlist=metadata_sort<string>(*d,key);
+        };
         /* Write the results - this perhaps should be a procedure, but
         was not sure how the list of iterators would work across a
         call*/
