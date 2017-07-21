@@ -4,10 +4,10 @@
 #include <iostream>
 #include <memory>
 #include "coords.h"
-#include "seispp.h"
-#include "Metadata.h"
-#include "ensemble.h"
 #include "PMTimeSeries.h"
+#include "seispp.h"
+#include "ThreeComponentSeismogram.h"
+#include "ensemble.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
 using namespace std;
