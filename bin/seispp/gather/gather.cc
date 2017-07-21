@@ -194,6 +194,12 @@ int main(int argc, char **argv)
             }
             ++nseis;
         }
+        /* Save the last ensemble */
+        if(dout.member.size() > 0) 
+        {
+            oa->write(dout);
+            ++ngather;
+        }
         cerr << "Gather processed "<<nseis<<" 3c seismograms"<<endl
                 << "Assembled "<<ngather<<" ensembles"<<endl;
     }catch(SeisppError& serr)
