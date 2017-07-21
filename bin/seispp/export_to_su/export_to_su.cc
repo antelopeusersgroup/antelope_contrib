@@ -57,7 +57,7 @@ int main(int argc, char **argv)
         list<string> orderkeys,endslist;
         orderkeys.clear();   endslist.clear();
         /* This incantation defines the su writer */
-        GenericFileHandle outhandle(outfile,string("SEGYflaot"), outxref,
+        GenericFileHandle outhandle(outfile,string("SEGYfloat"), outxref,
             orderkeys,endslist,tmdlist,false,string("nsamp"),string("dt"),
             1000.0,true);
         StreamObjectReader<TimeSeriesEnsemble> ia;
