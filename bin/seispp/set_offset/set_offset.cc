@@ -17,6 +17,7 @@ void usage()
     cerr << "set_offset < in > out [-v --help -binary]"
         <<endl
         << "sets some standard measures of source-receiver offset"<<endl
+        << "Also sets receiver to source back azimuth"<<endl
         << " -km - use Cartesian distance in km to set offset from rx,ry,sx, and sy"<<endl
         << " (Default is distance in degrees computed form site.lat, site.long, origin.lat, and origin.lon)"
         <<endl
@@ -54,6 +55,7 @@ const string source_x("sx");
 const string source_y("sy");
 const string cartesian_offset("offset");
 const string geo_offset("delta");
+const string baz("baz");   // back azimuth - same for all
 /* This will return count of total objects processes as first and total
 that failed with errors as second.*/
 template <class T> pair<int,int> set_offset(bool binary_data, bool use_cartesian)
@@ -80,6 +82,8 @@ template <class T> pair<int,int> set_offset(bool binary_data, bool use_cartesian
           ry=d.get_double(receiver_y);
           offset=sqrt((sx-rx)*(sx-rx) + (sy-ry)*(sy-ry));
           d.put(cartesian_offset,offset);
+          az=atan2(sy-ry,sx-rx);
+          d.put(baz,deg(az));
         }
         else
         {
@@ -88,7 +92,8 @@ template <class T> pair<int,int> set_offset(bool binary_data, bool use_cartesian
           rx=d.get_double(rlon);
           ry=d.get_double(rlat);
           dist(ry,rx,sy,sx,&offset,&az);
-          d.put(geo_offset,offset);
+          d.put(geo_offset,deg(offset));
+          d.put(baz,deg(az));
         }
       }catch(...)
       {
