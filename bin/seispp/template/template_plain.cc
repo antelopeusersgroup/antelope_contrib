@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     int i;
     const int narg_required(0);
     if(argc>1)
-      if(string(argv[1])=="--help") usage();`
+      if(string(argv[1])=="--help") usage();
     double example_real(0.0);
     bool example_boolean(false);
     bool binary_data(false);

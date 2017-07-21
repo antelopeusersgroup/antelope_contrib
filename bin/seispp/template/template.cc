@@ -82,7 +82,7 @@ int main(int argc, char **argv)
     /* This is needed to allow prog --help to work correctly
        if if there are no args */
     if(argc>1)
-      if(string(argv[1])=="--help") usage();`
+      if(string(argv[1])=="--help") usage();
     /* Here you should crack required args.  For example:
        string dbname(argv[1]);
        */
