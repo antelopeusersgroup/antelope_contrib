@@ -234,7 +234,7 @@ int main(int argc, char **argv)
             {
               evlat=dptr->get_double(rc.evlatkey);
               evlon=dptr->get_double(rc.evlonkey);
-              evdep=d.get_double(rc.evdepthkey);
+              evdep=dptr->get_double(rc.evdepthkey);
             }
             dist(rad(slat),rad(slon),rad(evlat),rad(evlon),&delta,&az);
             /* Azimuth, az, is backazimuth but all the rotation methods
