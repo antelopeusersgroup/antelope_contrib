@@ -1,4 +1,5 @@
 BIN=set_metadata
+PF=set_metadata.pf
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
