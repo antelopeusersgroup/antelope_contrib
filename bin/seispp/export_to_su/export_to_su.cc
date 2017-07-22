@@ -27,8 +27,10 @@ int main(int argc, char **argv)
 
     int i;
     const int narg_required(1);
+    if(argc<(narg_required+1)) usage();
     string pffile("export_to_su");
     string outfile(argv[1]);
+    if(outfile=="--help") usage();
 
     for(i=narg_required+1;i<argc;++i)
     {
