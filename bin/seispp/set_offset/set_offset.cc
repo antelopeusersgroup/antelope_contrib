@@ -19,7 +19,9 @@ void usage()
         << "sets some standard measures of source-receiver offset"<<endl
         << "Also sets receiver to source back azimuth"<<endl
         << " -km - use Cartesian distance in km to set offset from rx,ry,sx, and sy"<<endl
-        << " (Default is distance in degrees computed form site.lat, site.long, origin.lat, and origin.lon)"
+        << " (Default is distance in degrees computed form site.lat, site.long, origin.lat, and origin.lon."
+        <<endl
+        << " Note an int offset in m is computed for geographic case to mesh with seismic unix"
         <<endl
         << " -t - object type"<<endl
         << " (allowed option=TimeSeries, ThreeComponentSeismogram (default), and ParticleMotionTimeSeries)"<<endl
@@ -56,6 +58,7 @@ const string source_y("sy");
 const string cartesian_offset("offset");
 const string geo_offset("delta");
 const string baz("baz");   // back azimuth - same for all
+const string geo_meter_distance("offset");
 /* This will return count of total objects processes as first and total
 that failed with errors as second.*/
 template <class T> pair<int,int> set_offset(bool binary_data, bool use_cartesian)
@@ -94,7 +97,9 @@ template <class T> pair<int,int> set_offset(bool binary_data, bool use_cartesian
           rx=rad(rx); ry=rad(ry);
           sx=rad(sx); sy=rad(sy);
           dist(ry,rx,sy,sx,&offset,&az);
-          d.put(geo_offset,deg(offset));
+          offset=deg(offset);
+          d.put(geo_offset,offset);
+          d.put(geo_meter_distance,deg2km(offset));
           d.put(baz,deg(az));
         }
       }catch(...)
