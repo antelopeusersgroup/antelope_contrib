@@ -99,7 +99,7 @@ template <class T> pair<int,int> set_offset(bool binary_data, bool use_cartesian
           dist(ry,rx,sy,sx,&offset,&az);
           offset=deg(offset);
           d.put(geo_offset,offset);
-          d.put(geo_meter_distance,deg2km(offset));
+          d.put(geo_meter_distance,static_cast<int>(1000.0*deg2km(offset)));
           d.put(baz,deg(az));
         }
       }catch(...)
