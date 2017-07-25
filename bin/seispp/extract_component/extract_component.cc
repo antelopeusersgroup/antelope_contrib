@@ -24,8 +24,7 @@ int main(int argc, char **argv)
 {
 
     int i;
-    const int narg_required(1);
-    if(argc!=narg_required) usage();
+    if(argc!=2) usage();
     int outchan=atoi(argv[1]);
     if( (outchan<0) || (outchan>2) )
     {

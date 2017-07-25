@@ -58,7 +58,8 @@ const string source_y("sy");
 const string cartesian_offset("offset");
 const string geo_offset("delta");
 const string baz("baz");   // back azimuth - same for all
-const string geo_meter_distance("offset");
+const string geo_meter_distance("offset_meter");
+const string geo_km_distance("offset_km");
 /* This will return count of total objects processes as first and total
 that failed with errors as second.*/
 template <class T> pair<int,int> set_offset(bool binary_data, bool use_cartesian)
@@ -100,6 +101,7 @@ template <class T> pair<int,int> set_offset(bool binary_data, bool use_cartesian
           offset=deg(offset);
           d.put(geo_offset,offset);
           d.put(geo_meter_distance,static_cast<int>(1000.0*deg2km(offset)));
+          d.put(geo_km_distance,static_cast<int>(deg2km(offset)));
           d.put(baz,deg(az));
         }
       }catch(...)

@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     int i,j;
     const int narg_required(0);
     bool binary_data(false);
-    string pffile("mwpmi.pf");
+    string pffile("mwpm.pf");
 
     for(i=narg_required+1;i<argc;++i)
     {

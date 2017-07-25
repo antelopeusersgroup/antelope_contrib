@@ -61,7 +61,7 @@ int main(int argc, char **argv)
         /* This incantation defines the su writer */
         GenericFileHandle outhandle(outfile,string("SEGYfloat"), outxref,
             orderkeys,endslist,tmdlist,false,string("nsamp"),string("dt"),
-            1000.0,true);
+            1000000.0,true);
         StreamObjectReader<TimeSeriesEnsemble> ia;
         TimeSeriesEnsemble d;
         d=ia.read();

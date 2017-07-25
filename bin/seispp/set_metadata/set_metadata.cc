@@ -120,6 +120,8 @@ string MDTable::set(Metadata& d,int i0, int j0)
 
 int MDTable::set(Metadata& d,int i0)
 {
+    /* Return immediately if the table is empty */
+    if(strval.size()<=0) return 0;
     const string range_error("MDTable::set method:  index out of range\n");
     if(i0<0) throw SeisppError(range_error + "tuple index requested was negative");
     if(i0>=strval.size()) throw SeisppError(range_error

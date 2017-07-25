@@ -23,7 +23,8 @@ void usage()
         <<endl
         << "        (default dumps all with operator <<"<<endl
         << " -t - specify the type of object expected"<<endl
-        << "      (Currently accept:  ThreeComponentSeismogram (default) and ThreeComponentEnsemble"<<endl
+        << "      (Currently accept:  ThreeComponentSeismogram (default), ThreeComponentEnsemble"<<endl
+        << "      TimeSeries, TimeSeriesEnsemble, and PMTimeSeries)"<<endl
         << " -binary - assume in and out data are binary (default is ascii text)"
         <<endl
         << " -showfile - prints file name in first column (allowed only with -i option)"
@@ -141,6 +142,10 @@ AllowedObjects get_object_type(string otype)
         return TCE;
     else if(otype=="PMTimeSeries")
         return PMTS;
+    else if(otype=="TimeSeries")
+        return TS;
+    else if(otype=="TimeSeriesEnsemble")
+        return TSE;
     else
     {
         cerr << "Do not know how to handle object type="<<otype
