@@ -11,7 +11,7 @@ Original disclaimer statement on Dreger's documentation:
 
 Original acknowledgement statement:
 
-    Moment tensor computed using the tdmt-invc package developed by
-    Douglas Dreger of the Berkeley Seismological Laboratory, and Green’s
-    functions were computed using the FKRPROG software developed by
-    Chandan Saikia with URS.
+    Moment tensors were computed using the mtpackagev3.0 package developed
+    by Douglas Dreger and Sean Ford of the Berkeley Seismological Laboratory,
+    and Green’s functions were computed using the FKRPROG software developed
+    by Chandan Saikia.

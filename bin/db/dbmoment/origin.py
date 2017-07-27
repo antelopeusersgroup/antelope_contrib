@@ -24,8 +24,6 @@ class Origin():
 
     def __init__(self,db):
 
-        self.logging = getLogger('Origin')
-
         self.orid = None
         self.depth = None
         self.distance_step = 5
@@ -40,15 +38,10 @@ class Origin():
         self.arrivals = {}
         self.magnitude = None
         self.magtype = None
+        self.stations = {}
         self.stations_with_arrivals = {}
-        self.logging.debug( 'Init Origin Class: db=%s' % self.database )
-
-        # Get db ready
-        try:
-            self.db = datascope.dbopen( self.database, "r+" )
-        except Exception,e:
-            self.logging.error('Problems opening database: %s %s' % (self.database,e) )
-
+        elog.debug( 'Init Origin Class: db=%s' % self.database )
+        self.db = None
 
     def __iter__(self):
         self.station_list = sorted( self.stations.keys() )
@@ -72,17 +65,31 @@ class Origin():
         """
         if sta in self.stations:
             return int(self.stations[sta]['realdistance'])
-        else:
-            self.logging.error( 'realdistance(%s) => not a valid station' % sta )
+
+        elog.warning( 'realdistance(%s) => not a valid station' % sta )
+        return False
+
+    def location(self, sta):
+        """
+        Return the location of a particular station.
+        """
+
+        if sta in self.stations:
+            return self.stations[sta]['lat'], self.stations[sta]['lon']
+
+        elog.warning( 'location(%s) => not a valid station' % sta )
+        return False
 
     def distance(self, sta):
         """
         Return the distance for a particular station.
         """
+
         if sta in self.stations:
-            return int(self.stations[sta]['distance'])
-        else:
-            self.logging.error( 'distance(%s) => not a valid station' % sta )
+            return myround(self.stations[sta]['realdistance'], self.distance_step)
+
+        elog.warning( 'distance(%s) => not a valid station' % sta )
+        return False
 
     def seaz(self, sta):
         """
@@ -91,7 +98,7 @@ class Origin():
         if sta in self.stations:
             return self.stations[sta]['seaz']
         else:
-            self.logging.error( 'seaz(%s) => not a valid station' % sta )
+            elog.error( 'seaz(%s) => not a valid station' % sta )
 
     def esaz(self, sta):
         """
@@ -100,7 +107,7 @@ class Origin():
         if sta in self.stations:
             return self.stations[sta]['esaz']
         else:
-            self.logging.error( 'esaz(%s) => not a valid station' % sta )
+            elog.error( 'esaz(%s) => not a valid station' % sta )
 
     def get_origin(self, orid, select='.*', reject=False):
         """
@@ -108,36 +115,52 @@ class Origin():
         Save the orid parameters in memory.
         """
 
-        self.logging.debug('Get orid %s from %s' % (orid,self.database) )
+        elog.debug('Get orid %s from %s' % (orid,self.database) )
 
         self.orid = orid
 
         self.select = select
         self.reject = reject
 
+        # Get db ready
+        if self.db:
+            try:
+                self.db.free()
+            except Exception,e:
+                elog.warning('Problems cleaning database: %s %s' % (self.database,e) )
+
+        if not self.database:
+            elog.error('Missing database for Origin query.')
+
+        try:
+            self.db = datascope.dbopen( self.database, "r+" )
+        except Exception,e:
+            elog.error('Problems opening database: %s %s' % (self.database,e) )
+
+
         steps = ['dbopen origin']
         steps.extend(['dbsubset orid==%s' % self.orid ])
 
-        self.logging.debug( 'Database query for origin info:' )
-        self.logging.debug( ', '.join(steps) )
+        elog.debug( 'Database query for origin info:' )
+        elog.debug( ', '.join(steps) )
 
         with datascope.freeing(self.db.process( steps )) as dbview:
-            self.logging.debug( 'Found [%s] origins with orid [%s]' % (dbview.record_count,self.orid) )
+            elog.debug( 'Found [%s] origins with orid [%s]' % (dbview.record_count,self.orid) )
 
             if not dbview.record_count:
                 # This failed. Lets see what we have in the db
-                self.logging.error( 'No origins after subset for orid [%s]' % self.orid )
+                elog.error( 'No origins after subset for orid [%s]' % self.orid )
 
             #we should only have 1 here
             for temp in dbview.iter_record():
 
-                self.logging.debug( 'Extracting info for origin from db' )
+                elog.debug( 'Extracting info for origin from db' )
                 (orid,time,lat,lon,depth,ml,mb,ms) = \
                         temp.getv('orid','time','lat','lon','depth','ml','mb','ms')
 
-                self.logging.debug( "orid=%s" % orid )
+                elog.debug( "orid=%s" % orid )
 
-                self.logging.debug( "Raw depth:%s" % depth )
+                elog.debug( "Raw depth:%s" % depth )
 
                 try:
                     if depth > 1:
@@ -147,9 +170,9 @@ class Origin():
                 except:
                     depth = 1
 
-                self.logging.debug( "Final depth:%s" % depth )
+                elog.debug( "Final depth:%s" % depth )
 
-                self.logging.debug( "time:%s (%s,%s)" % (time,lat,lon) )
+                elog.debug( "time:%s (%s,%s)" % (time,lat,lon) )
                 self.orid = orid
                 self.depth = depth
                 self.strtime = stock.strtime(time)
@@ -169,25 +192,16 @@ class Origin():
                 else:
                     self._get_netmag()
 
-        """
-        Nothing good will come from running this with an unknown magnitude. This
-        is a requirement for the processing.
-        """
-        if not self.magnitude:
-            self.logging.error( "NO MAGNITUDE FOUND FOR orid:%s" % self.orid )
-        else:
-            self.logging.info( 'Magnitude: %s %s' % ( self.magnitude, self.magtype ) )
-
         self._get_arrivals()
         self._get_stations()
-        self.logging.debug('self.depth: %s' % self.depth)
+        elog.debug('self.depth: %s' % self.depth)
 
     def _get_netmag(self):
         """
         Open netmag table and get all rows for the orid.
         """
 
-        self.logging.debug('Get netmag for orid %s' % self.orid )
+        elog.debug('Get netmag for orid %s' % self.orid )
 
         magnitude = None
         magtype = None
@@ -196,16 +210,16 @@ class Origin():
         steps.extend(['dbsort lddate'])
 
 
-        self.logging.debug( 'Database query for magnitudes:' )
-        self.logging.debug( ', '.join(steps) )
+        elog.debug( 'Database query for magnitudes:' )
+        elog.debug( ', '.join(steps) )
 
         with datascope.freeing(self.db.process( steps )) as dbview:
             for temp in dbview.iter_record():
-                self.logging.debug( 'Extracting info from netmag table' )
+                elog.debug( 'Extracting info from netmag table' )
                 (magtype,magnitude,auth,lddate) = \
                     temp.getv('magtype','magnitude','auth','lddate')
 
-                self.logging.debug( "Found magnitude %s %s %s %s" % (magnitude,magtype,auth,lddate ) )
+                elog.debug( "Found magnitude %s %s %s %s" % (magnitude,magtype,auth,lddate ) )
 
         self.magnitude = magnitude
         self.magtype = magtype
@@ -217,7 +231,7 @@ class Origin():
         Save the origin parameters in memory.
         """
 
-        self.logging.debug('Get arrivals for orid %s' % self.orid )
+        elog.debug('Get arrivals for orid %s' % self.orid )
 
         # Look for arrivals for this origin
         self.arrivals = {}
@@ -233,30 +247,33 @@ class Origin():
         if self.reject:
             steps.extend( ['dbsubset sta !~ /%s/' % self.reject ])
 
-        self.logging.debug( 'Database query for arrivals:' )
-        self.logging.debug( ', '.join(steps) )
+        elog.debug( 'Database query for arrivals:' )
+        elog.debug( ', '.join(steps) )
 
-        with datascope.freeing(self.db.process( steps )) as dbview:
-            for temp in dbview.iter_record():
-                self.logging.debug( 'Extracting info for arrivals from db' )
-                (sta,chan,arid,time,lat,lon,iphase,phase,snr,auth,delta,esaz) = \
-                    temp.getv('sta','chan','arid','time','lat','lon',
-                            'iphase','phase','snr','auth','delta','esaz')
+        #with datascope.freeing(self.db.process( steps )) as dbview:
+        dbview = self.db.process( steps )
+        for temp in dbview.iter_record():
+            elog.debug( 'Extracting info for arrivals from db' )
+            (sta,chan,arid,time,lat,lon,iphase,phase,snr,auth,delta,esaz) = \
+                temp.getv('sta','chan','arid','time','lat','lon',
+                        'iphase','phase','snr','auth','delta','esaz')
 
 
-                self.logging.debug( "New arrival [%s]" % arid )
-                self.arrivals[arid] = {
-                            'sta': sta,
-                            'chan': chan,
-                            'time': time,
-                            'phase': phase,
-                            'iphase': iphase,
-                            'snr': snr,
-                            'auth': auth
-                            }
-                self.logging.debug( self.arrivals[arid] )
+            elog.debug( "New arrival [%s]" % arid )
+            self.arrivals[arid] = {
+                        'sta': sta,
+                        'chan': chan,
+                        'time': time,
+                        'phase': phase,
+                        'iphase': iphase,
+                        'snr': snr,
+                        'auth': auth
+                        }
+            elog.debug( self.arrivals[arid] )
 
-                self.stations_with_arrivals[sta] = 1
+            self.stations_with_arrivals[sta] = 1
+
+        dbview.free()
 
     def ptime(self, sta):
         """
@@ -286,13 +303,6 @@ class Origin():
         if not sta in self.stations: return False
         return self.stations[sta]['delta']
 
-    def distance(self, sta):
-        """
-        Get distance for a particular station
-        """
-        if not sta in self.stations: return False
-        return int( self.stations[sta]['distance'] )
-
     def _get_stations(self):
         """
         Open site table and get all stations for this origin.
@@ -315,12 +325,12 @@ class Origin():
             steps.extend( ['dbsubset sta !~ /%s/' % self.reject ])
 
 
-        self.logging.debug( 'Database query for stations:' )
-        self.logging.debug( ', '.join(steps) )
+        elog.debug( 'Database query for stations:' )
+        elog.debug( ', '.join(steps) )
 
         with datascope.freeing(self.db.process( steps )) as dbview:
             for temp in dbview.iter_record():
-                self.logging.debug( 'Extracting sites for origin from db' )
+                elog.debug( 'Extracting sites for origin from db' )
                 (sta,lat,lon) = temp.getv('sta','lat','lon')
 
                 seaz = "%0.1f" % temp.ex_eval('azimuth(%s,%s,%s,%s)' % \
@@ -332,10 +342,6 @@ class Origin():
                                                 (self.lat,self.lon,lat,lon) )
 
                 realdistance = temp.ex_eval('deg2km(%s)' % delta)
-
-                # round to nearest distance step. from velocity model
-                distance = myround(realdistance, self.distance_step)
-                if not distance: distance = self.distance_step
 
                 pdelay = int(temp.ex_eval('pphasetime(%s,%s)' % (delta,self.depth)))
                 if pdelay > 0:
@@ -358,12 +364,11 @@ class Origin():
                 else:
                     arrival_present = False
 
-                self.logging.debug( "New station [%s]" % sta )
+                elog.debug( "New station [%s]" % sta )
                 self.stations[sta] = {
                             'lat': lat,
                             'lon': lon,
                             'delta': delta,
-                            'distance': distance,
                             'realdistance': realdistance,
                             'sdelay': sdelay,
                             'stime': stime,
@@ -373,6 +378,6 @@ class Origin():
                             'seaz': seaz,
                             'esaz': esaz
                             }
-                self.logging.debug( self.stations[sta] )
+                elog.debug( self.stations[sta] )
 
 if __name__ == "__main__": raise ImportError( "\n\n\tAntelope's dbmoment module. Not to run directly!!!! **\n" )
