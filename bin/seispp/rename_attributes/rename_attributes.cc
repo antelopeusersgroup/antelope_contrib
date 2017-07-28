@@ -180,7 +180,7 @@ int MetadataEditor::edit(Metadata& d)
             ++count;
         }catch(SeisppError& serr)
         {
-            cerr << "MetadataEditor:;edit method:  edit failed.  Message posted follows:"
+            cerr << "MetadataEditor::edit method:  edit failed.  Message posted follows:"
                 <<endl;
             serr.log_error();
             cerr << "Output may cause downstream problems"<<endl;
