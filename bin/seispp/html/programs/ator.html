@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>ator</title>
+  </head>
+  <body>
+    <h1>ator</h1>
+    <h3>Usage:</h3>
+    <p>ator &lt; in &gt; out [-key key -t objt --help -binary -v]<br>
+    </p>
+    <h3>Algorithm:</h3>
+    A novel feature of the seispp library is a consistent handling of
+    absolute and relative time.&nbsp; By absolute time I implicitly mean
+    UTC specified as epoch time.&nbsp; The concept, however, is more
+    generic.&nbsp; Any time standard that allows data obtained from
+    multiple sources to be trusted as following the same standard are
+    "absolute".&nbsp; Said another way, absolute time is a clock
+    standard.&nbsp; Relative time, in contrast, is not a clock time but
+    a time relative to some (unspecified) 0 time.&nbsp;&nbsp; The
+    definitive example is active source data where 0 is shot
+    time.&nbsp;&nbsp; In the seispp library, however, another useful
+    standard I use a lot is an "arrival time reference" where 0 is the
+    predicted or measured time of a "seismic phase" with respect to an
+    event hypocenter.&nbsp; The purpose of this program is to convert
+    seismograms from absolute to a relative time base.&nbsp; <br>
+    <br>
+    The time used to define zero is controlled by a time extracted from
+    the Metadata (header) of each and every seismogram.&nbsp; The
+    default key is "arrival.time".&nbsp; Ensembles (gathers) must be
+    passed through <a href="./dismember.html">dismember</a> before
+    calling this program or processing will fail because the algorithm
+    uses assumes an input stream of single seismogram objects.&nbsp; <br>
+    <br>
+    <h3>Options:</h3>
+    <i>-key key<br>
+    </i>Use key as parameter defining the epoch time of time 0.&nbsp;
+    Default key is arrival.time.&nbsp;&nbsp; Example of alternative
+    names that might come from an antelope db are origin.time or
+    wfdisc.time.&nbsp; Any name can be used, however, so something
+    simpler like t0 could be used provided all seismograms contain that
+    attribute with that key.<br>
+    <br>
+    <i>-t objt<br>
+    </i>Use alternative object type <i>objt</i> instead of default
+    (ThreeComponentSeismogram).&nbsp; Accepted names are TimeSeries and
+    PMTimeSeries.<br>
+    <h3> </h3>
+    <i>-binary<br>
+    </i>Write the output in binary.&nbsp; Default is text serialized
+    file.<br>
+    <br>
+    <i>-v<br>
+    </i>Be more verbose.&nbsp; Note all log information goes to stderr
+    so it is best to use this option only for debugging problems.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.&nbsp; <br>
+    <br>
+    <h3>Parameter file:</h3>
+    Many seispp programs have a parameter file option.&nbsp; In this
+    section describe the parameter file structure. <br>
+  </body>
+</html>
