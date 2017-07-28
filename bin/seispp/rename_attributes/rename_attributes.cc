@@ -141,10 +141,12 @@ MetadataEditor& MetadataEditor::operator=(const MetadataEditor& parent)
     {
         editlist=parent.editlist;
     }
+    return (*this);
 }
 int MetadataEditor::edit(Metadata& d)
 {
     list<EditDefinition>::iterator eptr;
+    int count(0);
     for(eptr=editlist.begin();eptr!=editlist.end();++eptr)
     {
         long ival;
@@ -175,6 +177,7 @@ int MetadataEditor::edit(Metadata& d)
                     d.put(eptr->newname,sval);
                     if(eptr->delete_old) d.remove(eptr->oldname);
             };
+            ++count;
         }catch(SeisppError& serr)
         {
             cerr << "MetadataEditor:;edit method:  edit failed.  Message posted follows:"
@@ -183,6 +186,7 @@ int MetadataEditor::edit(Metadata& d)
             cerr << "Output may cause downstream problems"<<endl;
         }
     }
+    return count;
 }
 
 

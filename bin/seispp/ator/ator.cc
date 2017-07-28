@@ -68,7 +68,7 @@ template <typename T> int ator(string key,bool binary_data)
       }
       ++dcount;
     }
-
+    return dcount;
   }catch(...){throw;};
 }
 bool SEISPP::SEISPP_verbose(false);
