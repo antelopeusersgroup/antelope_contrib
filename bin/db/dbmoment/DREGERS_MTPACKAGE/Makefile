@@ -1,6 +1,6 @@
-FF = gfortran
-FC = g77
-
+#FF = gfortran
+#FC = g77
+#
 LIBS = $(PLTLIB) -lm
 
 BIN = fromHelm \
@@ -8,9 +8,7 @@ BIN = fromHelm \
 	window \
 	fortran_fkrprog \
 	wvint9 \
-	putmt \
-	tdmt_inv \
-	mtmanip
+	tdmt_inv
 
 SUBDIR=/contrib
 
@@ -31,9 +29,6 @@ mkHelm: getpar.c
 window: getpar.c
 	$(CC) $(CFLAGS) -o $@ window.c getpar.c
 
-putmt: getpar.c
-	$(CC) $(CFLAGS) -g -o $@ putmt.c readhelm.c getpar.c -lm
-
 fortran_fkrprog:
 	$(FC) $(FFLAGS) -o $@ fortran_fkrprog.f
 
@@ -51,17 +46,8 @@ FOBJSUB = $(FSRCSUB:%.f=%.o)
 tdmt_inv: $(FOBJSUB) $(OBJS2)
 	$(FC) $(FFLAGS) -o $@ $(OBJS2) $(FOBJSUB) $(LIBS)
 
-fmap: $(FOBJSUB) fmap_new.o
-	$(FC) $(FFLAGS) -o $@ fmap_new.o $(FOBJSUB)
-
-mtmanip:  mtmanip_new.o $(FOBJSUB)
-	$(FC) $(FFLAGS) -o $@  mtmanip_new.o $(FOBJSUB)
-
 .c.o:
 	$(CC) $< -c $(CFLAGS)
 
 .f.o:
 	$(FC) $< -c $(FFLAGS)
-
-#clean:
-#>---\rm *.o tdmt_inv mtmanip fmap putmech_iso tdmt_invc

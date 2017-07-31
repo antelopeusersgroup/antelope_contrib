@@ -540,10 +540,10 @@ for model in options.model:
 
 
     # Test returned object
-    if results and 'Quality' in results:
+    if results and 'Quality' in results and results['Quality']:
 
         # Save to temporary cache
-        elog.info( nice_print_results( results) )
+        elog.debug( nice_print_results( results) )
         tmp_results[ model_name ] = results
 
         # Save PRELIMINARY image if needed.
@@ -585,6 +585,9 @@ for r in tmp_results:
 
 # Final valid result for inversion
 elog.notify( nice_print_results( results) )
+
+if not results:
+    elog.die('No valid results with the specified parameters.')
 
 
 if not options.noimage:

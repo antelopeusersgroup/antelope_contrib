@@ -82,7 +82,10 @@ def open_table(db, tablename=None):
 
 def nice_print_results( results ,split=False, prelim='' ):
 
-    if 'Quality' in results:
+    text = '*** NULL RESULTS *** '
+    text2 = '*** NULL RESULTS ***'
+
+    if  results and 'Quality' in results:
         # First panel
         text =  "%s %s\n" % ( results['estatus'],prelim )
         text += "\n"
@@ -605,13 +608,11 @@ class Station(Records):
 
     def to_file(self,trace='rea'):
         if trace == 'real':
-            #self.real_file = makeHelm(self.real, 0, self.real_samples,
             self.real_file = makeHelm(self.real,
                     append='%s-real' % self.sta, folder=self.tmp_folder)
             self.real_file_name = os.path.basename(self.real_file)
             return self.real_file
         else:
-            #self.synth_file = makeHelm(self.synth, 0, self.synth_samples,
             self.synth_file = makeHelm(self.synth,
                     append='%s-synth' % self.sta, folder=self.tmp_folder)
             self.synth.file = self.synth_file
@@ -658,60 +659,68 @@ class Station(Records):
 
         return (0,samps,vmin,vmax)
 
+    def convert_synth(self, results):
 
-    def convert_synth_original(self, results):
+        elog.debug(' apply results to greens for plotting ' )
 
-        # apply results to greens for plotting
-
+        # Find time shift
         try:
             self.zcor = float(results['zcor'][self.sta])
         except:
             self.zcor = 0
 
-        chans =  {'rad':'R','ver':'Z','tan':'T'}
+        strike = results['Strike'][0]
+        rake = results['Rake'][0]
+        dip = results['Dip'][0]
+        moment = float( results['Mo'] )
+        isomoment = float( results['isomoment'] )
 
-        for m in ['rad','ver','tan']:
-            for f in ['synth.data.','new.','']:
-                try:
-                    os.unlink('%s/%s%s' % (self.tmp_folder,f,m))
-                except:
-                    pass
 
-        # Get the data into sac format
-        cmd = "putmech_iso in=%s out=synth.data azimuth=%s " % (self.synth_file,int(float(self.azimuth)) )
-        cmd += "strike=%s " % results['Strike'][0]
-        cmd += "rake=%s " % results['Rake'][0]
-        cmd += "dip=%s " % results['Dip'][0]
 
-        cmd += " moment=%s" % results['Mo']
-        cmd += " isomoment=%s" % results['Mo']
-        elog.debug( cmd )
-        run(fix_exec(cmd),self.tmp_folder)
+        strike = float(self.azimuth) - strike
+        strike *= pi/180.0
+        rake *= pi/180.0
+        dip *= pi/180.0
 
-        for f in ['rad','ver','tan']:
-            cmd = 'sac2bin in=synth.data.%s out=%s' % (f,f)
-            elog.debug( cmd )
-            run(fix_exec(cmd),self.tmp_folder)
 
-            cmd = 'mkHelm ntr=1 nt=%s dt=1.0 format="(6e12.5)" < %s > new.%s' % (self.synth_samples,f,f)
-            elog.debug( cmd )
-            run(fix_exec(cmd),self.tmp_folder)
+        moment /= 1.0e+20
+        isomoment /= 1.0e+20
 
-            data = readHelm( '%s/new.%s' % (self.tmp_folder,f) )
 
-            elog.debug( 'zcor is %s' % self.zcor)
+        A0=sin(2.0*strike)*cos(rake)*sin(dip) + 0.5*cos(2.0*strike)*sin(rake)*sin(2.0*dip)
+        A1=cos(strike)*cos(rake)*cos(dip) - sin(strike)*sin(rake)*cos(2.0*dip)
+        A2=0.5*sin(rake)*sin(2.0*dip)
+        A3=cos(2.0*strike)*cos(rake)*sin(dip) - 0.5*sin(2.0*strike)*sin(rake)*sin(2.0*dip)
+        A4=sin(strike)*cos(rake)*cos(dip) + cos(strike)*sin(rake)*cos(2.0*dip)
+        A4 *= -1.0
 
-            if self.zcor < 0.0:
-                elog.debug( 'remove %s points' % self.zcor)
-                data = delete(data, self.zcor, 0)
-            elif self.zcor > 0.0:
-                elog.debug( 'add %s points' % self.zcor)
-                data = insert(data, 0, ones(int(self.zcor)) * data[0], 0)
+        elog.debug( "A1=%f A2=%f A3=%f A4=%f A5=%f" % (A0,A1,A2,A3,A4) )
 
-            self.synth_zrt.set(chans[f], data )
 
-        self.flip('real')
-        self.flip('synth')
+        # synth_channels = ['TSS','TDS','XSS','XDS','XDD','ZSS','ZDS','ZDD','REX','ZEX']
+        #                     0     1     2     3     4     5     6     7     8     9
+
+        tss = self.synth.get( 'TSS' )
+        tds = self.synth.get( 'TDS' )
+        xss = self.synth.get( 'XSS' )
+        xds = self.synth.get( 'XDS' )
+        xdd = self.synth.get( 'XDD' )
+        zss = self.synth.get( 'ZSS' )
+        zds = self.synth.get( 'ZDS' )
+        zdd = self.synth.get( 'ZDD' )
+        rex = self.synth.get( 'REX' )
+        zex = self.synth.get( 'ZEX' )
+
+
+        tan = moment * (A3 * tss + A4 * tds)
+        self.synth_zrt.set('T', tan )
+
+        rad = moment * (A0 * xss + A1 * xds + A2 * xdd) + isomoment * rex
+        self.synth_zrt.set('R', rad )
+
+        ver = -1.0 * moment * (A0 * zss + A1 * zds + A2 * zdd) + isomoment * zex
+        self.synth_zrt.set('Z', ver )
+
 
 
     def plot(self,trace='real'):
@@ -777,6 +786,13 @@ def plot_results( results, bb_colors={},
 
     event = results['event']
     stations = results['stations']
+
+
+    # Done with the inversion. Now set values for plotting results
+    for sta in stations.keys():
+        elog.debug('convert_synth( %s )' % sta)
+        #stations[sta].convert_synth_original( results )
+        stations[sta].convert_synth( results )
 
     total = 1
 
@@ -860,30 +876,14 @@ def plot_results( results, bb_colors={},
     # Look for closest station for us to calculate a scale factor for our
     # MT beachball on the station map.
     closest = sorted(stations.keys(), key=lambda x: float(stations[x].distance) )[0]
-    event_scale = stations[ closest ].distance
+    #event_scale = interp(stations[ closest ].distance,[0,500],[8,15])
+    event_scale = 20
     size = interp(len(stations),[0,15],[10,4])
     stanumber = 0
 
-    # Only run if library ObsPy is present on system.
-    if False:
-
-        mt = [ float(results['Mxx']), float(results['Myy']), float(results['Mzz']),
-            float(results['Mxy']), float(results['Mxz']), float(results['Myz']) ]
-
-        elog.debug( 'Closest station and bb-map scale factor : [%s=>%s]' % (closest,event_scale*0.01 ))
-
-        bb = beachball(mt, xy=(results['event'].lon, results['event'].lat),
-                mopad_basis='NED', width=event_scale*0.05,
-                linewidth=0.005*event_scale,
-                edgecolor='k', facecolor=event_color)
-
-        bb.set_zorder(0)
-
-        ax.add_collection( bb )
-    else:
-        # If we don't have OBSPY then we can add a marker for the event
-        pyplot.plot( results['event'].lon, results['event'].lat,
-                '*', ms=event_scale*0.2, color=event_color, zorder=0)
+    # If we don't have OBSPY then we can add a marker for the event
+    pyplot.plot( results['event'].lon, results['event'].lat,
+            '*', ms=event_scale, color=event_color, zorder=0)
 
     for sta in sorted(stations.keys(), key=lambda x: float(stations[x].realdistance) ):
 
@@ -950,8 +950,14 @@ def plot_results( results, bb_colors={},
         for chan in ['T', 'R', 'Z']:
             ax = fig.add_subplot(total_stations,3,total)
             #real_line, = pyplot.plot(data, label='data' )
-            real_line, = pyplot.plot(stations[sta].real.get(chan), label='data' )
-            synth_line, = pyplot.plot(stations[sta].synth_zrt.get(chan), linestyle='--', label='synth')
+            if zcor > 0:
+                real_line, = pyplot.plot(stations[sta].real.get(chan)[zcor:], label='data' )
+                synth_line, = pyplot.plot(stations[sta].synth_zrt.get(chan)[:-zcor],
+                        linestyle='--', label='synth')
+            else:
+                real_line, = pyplot.plot(stations[sta].real.get(chan)[:-zcor], label='data' )
+                synth_line, = pyplot.plot(stations[sta].synth_zrt.get(chan)[zcor:],
+                        linestyle='--', label='synth')
 
             if beachball:
                 box_color =  colors.cnames.items()[stanumber][0]
@@ -1152,16 +1158,13 @@ def fix_format_data(point, decimals, total):
     new = "%0.*e" % (decimals,point)
     return new.rjust(total)
 
-#def makeHelm(traces, index_min, index_max, append='', outputfile='', perline=7, total=14, decimal=5, folder='.dbmoment'):
 def makeHelm(traces, append='', outputfile='', perline=7, total=14, decimal=5, folder='.dbmoment'):
     """
     Routine to write Helmberger Format Seismograms
     """
-    #from __main__ import elog
     elog.debug('makeHelm')
 
     filename = {}
-    #global tmp_folder
 
     if not outputfile:
         (f, outputfile) = mkstemp(suffix='.Helm_data', prefix='dbmoment_%s_' % append,

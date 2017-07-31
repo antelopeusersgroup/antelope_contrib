@@ -318,13 +318,9 @@ class DbMoment(Station):
         if int(self.results['Quality']) < int(self.min_quality):
             elog.warning('Quality[%s] Minimum required [%s]' % \
                     (self.results['Quality'], self.min_quality))
+            elog.warning('NO RESULTS PRODUCED WITH VALID PARAMETERS.')
             return {}
 
-
-        # Done with the inversion. Now set values for plotting results
-        for sta in self.stations.keys():
-            elog.debug('convert_synth( %s )' % sta)
-            self.stations[sta].convert_synth_original(self.results)
 
         self.results['event'] = self.my_event
         self.results['stations'] = self.stations
