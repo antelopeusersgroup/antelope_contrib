@@ -1,6 +1,3 @@
-#FC = gfortran
-#FC = g77
-#
 LIBS = $(PLTLIB) -lm
 
 BIN = fromHelm \
@@ -13,6 +10,10 @@ BIN = fromHelm \
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE)
+
+#FC = gfortran
+#FC = g77
+CC = gcc
 
 CFLAGS+=-Wno-return-type -Wno-implicit-int -Wno-implicit
 CFLAGS+=-Wno-format -Wno-unused-variable -Wno-int-conversion
