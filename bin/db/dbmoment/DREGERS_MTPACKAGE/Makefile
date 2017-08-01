@@ -1,4 +1,4 @@
-#FF = gfortran
+#FC = gfortran
 #FC = g77
 #
 LIBS = $(PLTLIB) -lm

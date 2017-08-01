@@ -1,4 +1,4 @@
-BIN = dbmoment
+BIN = prep_distro dbmoment
 
 PF = dbmoment.pf
 
@@ -14,8 +14,6 @@ DATA = __init__.py \
 	functions.py \
 	inversion.py
 
-CLEAN = *.pyc
-
 EXAMPLEDIR = dbmoment
 
 EXAMPLE = EXAMPLE_1 \
@@ -24,7 +22,11 @@ EXAMPLE = EXAMPLE_1 \
 
 SUBDIR=/contrib
 
-
 include $(ANTELOPEMAKE)
 
 DIRS = DREGERS_MTPACKAGE MODELS EXAMPLE_CODE
+
+prep_distro:
+	@echo "Clean DBMOMENT directory structure."
+	$(RM) -rf DREGERS_MTPACKAGE/C_CODE
+	$(RM) -rf DREGERS_MTPACKAGE/GETPAR
