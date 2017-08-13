@@ -161,13 +161,15 @@ int MDTable::set(Metadata& d,int i0)
 }
 void usage()
 {
-    cerr << "set_metadata [-binary --help -pf pffile] < infile > outfile"
+    cerr << "set_metadata [-text --help -pf pffile] < infile > outfile"
         <<endl
         << "Input and output are serialized ThreeComponentEnsemble objects"
         <<endl
         << "sets ensemble and/or member metadata using a pf format"<<endl
         << "Assumes members of ensemble are 3C seismogram objects"
-        <<endl;
+        <<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
+        << " -pf - use alternate pf file to default of set_metadata.pf"<<endl;
     exit(-1);
 }
 bool SEISPP::SEISPP_verbose(true);
@@ -176,7 +178,7 @@ int main(int argc, char **argv)
     int i;
     const int narg_required(0);
     string pffile("set_metadata.pf");
-    bool binary_data(false);
+    bool binary_data(true);
     for(i=narg_required+1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -186,8 +188,8 @@ int main(int argc, char **argv)
             if(i>=argc)usage();
             pffile=string(argv[i]);
         }
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else if(sarg=="--help")
             usage();
         else

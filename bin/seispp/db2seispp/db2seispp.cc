@@ -16,14 +16,15 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "db2seispp db [-pf pffile --help -binary -v] > outfile"
+    cerr << "db2seispp db [-pf pffile --help -text -v] > outfile"
         <<endl
         << "Converts a database of segmented waveforms produced "
         << "by extract_events to a serial file of ThreeComponentSeismogram objects"<<endl
         << " -pf - use alternative parameter file instead of default db2seispp"
         << endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"<<endl
+        << " -text - switch to text input and output (default is binary)"
+        <<endl
         << " -v - be more verbose"
         <<endl;
     exit(-1);
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
     string dbname(argv[1]);
     if(dbname=="--help") usage();
     string pffile("db2seispp");
-    bool binary_mode(false);
+    bool binary_mode(true);
     string otype("ThreeComponentSeismogram");
     bool write_logfile(false);
     string logfile("");
@@ -54,9 +55,9 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_mode=true;
+            binary_mode=false;
         }
         else if(sarg=="-pf")
         {

@@ -21,7 +21,7 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "fragment basename [-i infile -dir outdir -dismember -binary -v --help]"
+    cerr << "fragment basename [-i infile -dir outdir -dismember -text -v --help]"
         <<endl
         << "seispp filter fragments file with multiple ensembles into individual files"
         <<endl
@@ -33,8 +33,7 @@ void usage()
         << "-dismember - ungroup ensembles to build output files as unbundled collection of 3c seismograms"
         <<endl
         << "(Default is one ensemble per output file)"<<endl
-        << "-binary - assume input and outputs should be binary format"
-        << "(Default is text)"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
         << "-v verbose output (mostly logs each ensembles gather metadata"
         <<endl
         << "Note:   Only works at present with ThreeComponentEnsemble objects"
@@ -50,7 +49,7 @@ int main(int argc, char **argv)
     string outdir(".");
     string basename(argv[1]);
     if(basename=="--help") usage();
-    bool binary_data(false);
+    bool binary_data(true);
     bool dismember(false);
     for(i=2;i<argc;++i)
     {
@@ -71,8 +70,8 @@ int main(int argc, char **argv)
             dismember=true;
         else if(sarg=="-v")
             Verbose=true;
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else if(sarg=="--help")
             usage();
         else

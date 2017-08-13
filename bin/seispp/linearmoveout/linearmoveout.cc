@@ -28,7 +28,7 @@ Written:  Nov 29, 2015
 */
 void usage()
 {
-    cerr << "linearmoveout [-vr v_reduce -t0 timeshift --help -binary] < infile > outfile"
+    cerr << "linearmoveout [-vr v_reduce -t0 timeshift --help -text] < infile > outfile"
         <<endl
         << " -vr sets reducing velocity (default 6000)"<<endl
         << " -t0 applies a time shift to all seismograms (default 0)"<<endl;;
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 {
     double vreduce(6000.0);   // unit so m/s for this default
     double t0(0.0);
-    bool binary_data(false);
+    bool binary_data(true);
     int i;
     for(i=1;i<argc;++i)
     {
@@ -58,8 +58,8 @@ int main(int argc, char **argv)
         }
         else if(sarg=="--help")
             usage();
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else
             usage();
     }

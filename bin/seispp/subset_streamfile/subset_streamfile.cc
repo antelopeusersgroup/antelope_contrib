@@ -87,7 +87,7 @@ private:
 };
 void usage()
 {
-    cerr << "subset_streamfile key:type ( -eq val | -range minval maxval | -min minval -max maxval ) [-objt object_type --help -binary]"<<endl
+    cerr << "subset_streamfile key:type ( -eq val | -range minval maxval | -min minval -max maxval ) [-objt object_type --help -text]"<<endl
         <<endl
         << " seispp unix filter to subset a data set read from stdin and write result to out"
         <<endl
@@ -107,8 +107,7 @@ void usage()
         << " Use -min or -max to specify one sided range tests"
         <<endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"
-        <<endl;
+        << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
 std::pair<string,MDtype> split_arg1(const char *arg)
@@ -312,7 +311,7 @@ int main(int argc, char **argv)
     const int narg_required(1);
     if(argc<2) usage();
     if(string(argv[1])=="--help") usage();
-    bool binary_data(false);
+    bool binary_data(true);
     bool equal_test(false);
     bool minonly(false);
     bool maxonly(false);
@@ -451,9 +450,9 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else
             usage();

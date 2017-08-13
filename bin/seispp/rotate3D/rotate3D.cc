@@ -13,7 +13,7 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "rotate [-phi x -theta y -accumulate -binary --help] < infile > outfile"
+    cerr << "rotate [-phi x -theta y -accumulate -text --help] < infile > outfile"
         <<endl
         << "Default rotates coordinates to LRT defined by computed normal vector between source and receiver"<<endl
         << "(computed from metadaa rx,ry,relev, sx,sy,and selev - local coordinates)"<<endl
@@ -21,7 +21,7 @@ void usage()
         << "(phi and theta are spherical coordinate angles in degrees)"<<endl
         << "-accumulate transforms data without checking current orientation"
         <<endl <<"(Default forces data to cardinal directions before applying transformation)"
-        << "use -binary if input and output are binary format (default text)"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
         << "--help will print this usage message"<<endl
         << "infile and outfile are a ThreeComponentEnsemble boost serialization files"
         <<endl;
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 {
     bool compute_from_coordinates(true);
     double phi(-99999.9),theta(-99999.9);
-    bool binary_data(false);
+    bool binary_data(true);
     bool accum_mode(false);
     int i;
     for(i=1;i<argc;++i)
@@ -54,8 +54,8 @@ int main(int argc, char **argv)
         }
         else if(sarg=="-accumulate")
             accum_mode=true;
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else
             usage();
     }

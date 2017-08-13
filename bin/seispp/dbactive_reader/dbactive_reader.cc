@@ -17,7 +17,7 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "dbactive_reader db [-g goodtimes -c coords -binary -pf pffile] < shottimes"
+    cerr << "dbactive_reader db [-g goodtimes -c coords -text -pf pffile] < shottimes"
         <<endl
         << "Constructs ensembles in a manner similar to db2segy for 3C data"<<endl
        << "stdout is boost serialized ThreeComponentSeismogram objects"<<endl
@@ -26,7 +26,8 @@ void usage()
        << " shottimes - is file identical to input for for db2segy with shot coordinates"<<endl
        << " -g - optional file of marked times when array stations have usable data"<<endl
        << " -c - construct HFArray object from file coords instead of db (default) " <<endl
-       << " -binary - write output as a binary file (default is a text format)" <<endl
+       << " -text - switch to text input and output (default is binary)"
+       <<endl
        << " -pf - use alternate parameter file name pf"<<endl;
     exit(-1);
 }
@@ -177,7 +178,7 @@ int main(int argc, char **argv)
     string goodtimesfile;
     string coordfile("NotUsed");
     string logfile("dbactive_reader.log");
-    bool binary_data(false);
+    bool binary_data(true);
 
     for(i=narg_required;i<argc;++i)
     {
@@ -195,8 +196,8 @@ int main(int argc, char **argv)
           if(i>=argc)usage();
           coordfile=string(argv[i]);
         }
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else if(sarg=="-pf")
         {
           ++i;

@@ -13,7 +13,7 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "rename_attributes < in > out [-t object_type -v --help -binary -pf pffile]"
+    cerr << "rename_attributes < in > out [-t object_type -v --help -text -pf pffile]"
         <<endl
         << "Changes the name (or copies) of one more attributes with generic headers"<<endl
         << "Editing is controlled by parameter file definition (see master)"<<endl
@@ -21,7 +21,7 @@ void usage()
         << " (Allowed options=ThreeComponentEnsemble, ThreeComponentSeismogram(default), TimeSeries, and TimeSeriesEnsemble)"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
         << " -pf - use alternative paramter file pffile instead of default rename_attributes.pf"
         <<endl;
     exit(-1);
@@ -244,7 +244,7 @@ int main(int argc, char **argv)
       if(string(argv[1])=="--help") usage();
     double example_real(0.0);
     bool example_boolean(false);
-    bool binary_data(false);
+    bool binary_data(true);
     string otype("ThreeComponentSeismogram");
     string pffile("rename_attributes");
 
@@ -265,9 +265,9 @@ int main(int argc, char **argv)
         {
             example_boolean=true;
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else if(sarg=="-v")
           SEISPP_verbose=true;

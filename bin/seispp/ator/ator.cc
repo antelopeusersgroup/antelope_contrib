@@ -11,7 +11,7 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "ator < in > out [-key key -t objt --help -binary -v]"
+    cerr << "ator < in > out [-key key -t objt --help -text -v]"
         <<endl
         << "Switches input data from absolute to a relative time standard"<<endl
         << "Use -key to change attribute used to define time shift (default arrival.time)"
@@ -19,7 +19,7 @@ void usage()
         << "Use -objt to change expected object type"<<endl
         << "(default ThreeComponentSeismogram.  Alteratives are TimeSeries and PMTimeSeries)"<<endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"
+        << " -text - switch to text input and output (default is binary)"
         << " -v - be more verbose"<<endl
         <<endl;
     exit(-1);
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
     AllowedObjects objt(TCS);
     if(argc<=1) usage();
     if(string(argv[1])=="--help") usage();
-    bool binary_data(false);
+    bool binary_data(true);
     string key("arrival.time");
 
     for(i=1;i<argc;++i)
@@ -88,9 +88,9 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else if(sarg=="-v")
         {

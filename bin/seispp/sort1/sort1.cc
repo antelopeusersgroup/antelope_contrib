@@ -11,12 +11,13 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "sort1 key [-i||-r -binary --help] < in > out"
+    cerr << "sort1 key [-i||-r -text --help] < in > out"
         <<endl
         << "  key is the metadata sort key to use"<<endl
         << "  -i to treat key as int or -r as real number (default is string)"<<endl
         << "WARNING:  this is a pure memory sort so do not use on large files"
-        <<endl;
+        <<endl
+        << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
 /* We need this typedef here to reduce ugly iterator syntax.  */
@@ -95,7 +96,7 @@ int main(int argc, char **argv)
     string key(argv[1]);
     if(key=="--help") usage();
     AllowedKeyTypes ktype(String);
-    bool binary_data(false);
+    bool binary_data(true);
     for(i=narg_required+1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -103,8 +104,8 @@ int main(int argc, char **argv)
             ktype=Int;
         else if(sarg=="-r")
             ktype=Real;
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else if(sarg=="--help")
             usage();
         else

@@ -11,13 +11,14 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "sphdiv [-decay power -binary --help] < infile >outfile"
+    cerr << "sphdiv [-decay power -text --help] < infile >outfile"
         <<endl
         << "Applies spherical divergence correction to three component"<<endl
         << "data stored in a boost test archive file."<<endl
         << "Amplitudes scaled by metadata offset variable to power."<<endl
         << "There is no normalization so beware"<<endl
-        << "Default power is 2.0"<<endl;
+        << " -decay - set power factor for correction (Default is 2.0)"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
 bool SEISPP::SEISPP_verbose(true);
@@ -26,7 +27,7 @@ int main(int argc, char **argv)
     int i;
     const int narg_required(0);
     double decay_power(2.0);
-    bool binary_data(false);
+    bool binary_data(true);
     for(i=narg_required+1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -36,8 +37,8 @@ int main(int argc, char **argv)
             if(i>=argc)usage();
             decay_power=atof(argv[i]);
         }
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else if(sarg=="--help")
             usage();
         else

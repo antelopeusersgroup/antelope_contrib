@@ -50,11 +50,12 @@ ThreeComponentSeismogram pad_3cseis(ThreeComponentSeismogram& d,double plen,doub
 
 void usage()
 {
-    cerr << "zeropad [-pad dt -taper dt -binary --help] < in > out"
+    cerr << "zeropad [-pad dt -taper dt -text --help] < in > out"
         <<endl
         << "Zeropad all elements of a 3C ensemble"<<endl
         << " -pad sets zero pad time to dt (default 0.1)"<<endl
-        << " -taper sets taper length to dt (default 0.01)"<<endl;
+        << " -taper sets taper length to dt (default 0.01)"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
 bool SEISPP::SEISPP_verbose(true);
@@ -64,7 +65,7 @@ int main(int argc, char **argv)
     const int narg_required(0);
     double padlength(0.1);
     double taperlength(0.01);
-    bool binary_data(false);
+    bool binary_data(true);
     for(i=narg_required+1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -80,8 +81,8 @@ int main(int argc, char **argv)
             if(i>=argc)usage();
             taperlength=atof(argv[i]);
         }
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else if(sarg=="--help")
             usage();
         else

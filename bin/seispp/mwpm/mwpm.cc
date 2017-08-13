@@ -25,12 +25,12 @@ using namespace std;
 using namespace SEISPP; 
 void usage()
 {
-    cerr << "mwpm < in > out [-pf pffile --help -binary]"
+    cerr << "mwpm < in > out [-pf pffile --help -text]"
         <<endl
         << "Processes input data set of ThreeComponentSeismogram objects"<<endl
         << "Output is data set of PMTimeSeries objects"<<endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"
+        << " -text - switch to text input and output (default is binary)"
         <<endl;
     exit(-1);
 }
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 {
     int i,j;
     const int narg_required(0);
-    bool binary_data(false);
+    bool binary_data(true);
     string pffile("mwpm.pf");
 
     for(i=narg_required+1;i<argc;++i)
@@ -49,9 +49,9 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else if(sarg=="-pf")
         {

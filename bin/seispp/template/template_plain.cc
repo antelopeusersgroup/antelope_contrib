@@ -11,15 +11,14 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "template < in > out [-v --help -binary]"
+    cerr << "template < in > out [-v --help -text]"
         <<endl
         << "Example, do nothing filter using seismic unix style pipeline"<<endl
         << "Reads serialized ThreeComponentEnsemble objects from stdin"<<endl
         << "and writes a copy to stdout"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"
-        <<endl;
+        << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
 bool SEISPP::SEISPP_verbose(false);
@@ -31,7 +30,7 @@ int main(int argc, char **argv)
       if(string(argv[1])=="--help") usage();
     double example_real(0.0);
     bool example_boolean(false);
-    bool binary_data(false);
+    bool binary_data(true);
 
     for(i=narg_required+1;i<argc;++i)
     {
@@ -50,9 +49,9 @@ int main(int argc, char **argv)
         {
             example_boolean=true;
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else if(sarg=="-v")
           SEISPP_verbose=true;

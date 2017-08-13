@@ -14,7 +14,7 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "set_offset < in > out [-v --help -binary]"
+    cerr << "set_offset < in > out [-km -t objt -v --help -text]"
         <<endl
         << "sets some standard measures of source-receiver offset"<<endl
         << "Also sets receiver to source back azimuth"<<endl
@@ -27,8 +27,7 @@ void usage()
         << " (allowed option=TimeSeries, ThreeComponentSeismogram (default), and ParticleMotionTimeSeries)"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"
-        <<endl;
+        << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
 enum AllowedObjects {TCS, TCE, PMTS, TS, TSE};
@@ -123,7 +122,7 @@ int main(int argc, char **argv)
     if(argc>1)
       if(string(argv[1])=="--help") usage();
     bool use_cartesian(false);
-    bool binary_data(false);
+    bool binary_data(true);
     string otype("ThreeComponentSeismogram");
     for(i=1;i<argc;++i)
     {
@@ -136,9 +135,9 @@ int main(int argc, char **argv)
         {
             use_cartesian=true;
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else if(sarg=="-t")
         {

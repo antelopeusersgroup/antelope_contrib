@@ -11,10 +11,11 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "peak_scaling [-help -binary] < infile > outfile"
+    cerr << "peak_scaling [-help -text] < infile > outfile"
         <<endl
         << "Reads serialized 3c ensemble file and scales each "
-        << "seismogram by peak 3C amplitude"<<endl;
+        << "seismogram by peak 3C amplitude"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
 
@@ -25,12 +26,12 @@ bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
     int iarg;
-    bool binary_data(false);
+    bool binary_data(true);
     for(iarg=1;iarg<argc;++iarg)
     {
       string sarg(argv[iarg]);
-      if(sarg=="-binary")
-        binary_data=true;
+      if(sarg=="-text")
+        binary_data=false;
       else if(sarg=="--help")
         usage();
       else

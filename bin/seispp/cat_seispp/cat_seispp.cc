@@ -13,11 +13,11 @@ using namespace std;
 using namespace SEISPP; 
 void usage()
 {
-    cerr << "cat file1 file2 ... filen [-binary --help]"
+    cerr << "cat file1 file2 ... filen [-text --help]"
         <<endl
         << "Concatenate a set of seispp files into a single larger file"<<endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"
+        << " -text - switch to text input and output (default is binary)"
         << "(Note:  will exit with an error if the count of files is only one)"
         <<endl;
     exit(-1);
@@ -68,7 +68,7 @@ bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
     int i;
-    bool binary_data(false);
+    bool binary_data(true);
     list<string> FileList;
     AllowedObjects otype;
     if(argc<=2) usage();
@@ -80,9 +80,9 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else if(sarg=="-t")
         {
