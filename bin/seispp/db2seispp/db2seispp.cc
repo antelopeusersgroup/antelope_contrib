@@ -120,6 +120,9 @@ int main(int argc, char **argv)
       {
         try{
           ThreeComponentSeismogram d(dbh,attributes_to_copy,am);
+          /* Seems necessary to hard code setting this dt attribute.
+           * The above constructor does not appear to do that. */
+          d.put("dt",d.dt);
           out->write(d);
           ++nseis;
         }catch(SeisppError& serr)
