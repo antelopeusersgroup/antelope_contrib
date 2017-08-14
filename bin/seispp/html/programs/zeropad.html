@@ -7,7 +7,7 @@
   <body>
     <h1>zeropad</h1>
     <h3>Usage:</h3>
-    <p>zeropad [-pad dt -taper dt -binary --help] &lt; in &gt; out<br>
+    <p>zeropad [-pad dt -taper dt -text --help] &lt; in &gt; out<br>
     </p>
     <h3>Algorithm:</h3>
     Zero pads the front end of a file of TimeSeriesEnsemble objects
@@ -30,9 +30,8 @@
     </i>Change the linear taper length to <i>dt </i>seconds.&nbsp;
     Default is 0.01 s (effectively no taper for most broadband data).<br>
     <br>
-    <i>-binary<br>
-    </i>Write the output in binary.&nbsp; Default is text serialized
-    file.<br>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
     <br>
     --<i>help<br>
     </i>Echo the usage line.&nbsp; <br>

@@ -9,7 +9,7 @@
     </h1>
     <h3>Usage:</h3>
     <p>subset_streamfile key:type ( -eq val | -range minval maxval |
-      -min minval -max maxval ) [-objt object_type --help -binary] &lt;
+      -min minval -max maxval ) [-objt object_type --help -text] &lt;
       infile &gt; outfile<br>
     </p>
     <h3>Algorithm:</h3>
@@ -75,10 +75,8 @@
       that for ensembles the test is applied to the ensemble metadata
       not the single seismogram metadata.&nbsp; <br>
     </p>
-    <h3> </h3>
-    <i>-binary<br>
-    </i>Write the output in binary.&nbsp; Default is text serialized
-    file.<br>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
     <br>
     --<i>help<br>
     </i>Echo the usage line.&nbsp; <br>
