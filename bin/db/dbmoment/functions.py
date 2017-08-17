@@ -317,7 +317,11 @@ def apply_response(tr, filename, samprate):
     #from __main__ import elog
     elog.debug('Aplly response %s' % (filename) )
 
-    if not filename or not os.path.isfile( filename ):
+    if not filename :
+        elog.log( 'No response file provided' )
+        return tr
+
+    if not os.path.isfile( filename ):
         elog.warning('Problems loading response file: [%s]' % (filename))
         return tr
 
@@ -358,8 +362,6 @@ def apply_response(tr, filename, samprate):
         rec.trputdata( data )
 
     response._free_response ( respaddr )
-
-    return tr
 
 def fix_exec(content):
 

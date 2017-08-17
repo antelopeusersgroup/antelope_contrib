@@ -1,4 +1,4 @@
-BIN = prep_distro dbmoment
+BIN = dbmoment
 
 PF = dbmoment.pf
 
@@ -30,3 +30,6 @@ prep_distro:
 	@echo "Clean DBMOMENT directory structure."
 	$(RM) -rf DREGERS_MTPACKAGE/C_CODE
 	$(RM) -rf DREGERS_MTPACKAGE/GETPAR
+
+dbmoment: prep_distro
+	produce -v dbmoment

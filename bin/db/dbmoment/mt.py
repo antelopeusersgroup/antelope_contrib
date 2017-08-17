@@ -352,8 +352,6 @@ class DbMoment(Station):
         Also verify which is the best filter for the site.
         '''
 
-        results  = None
-
         # Skip this station if we want arrivals only
         if self.arrivals_only and not self.my_event.has_arrival(sta):
             elog.warning('%s No arrivals on database. Skip station.' % sta)
@@ -368,15 +366,10 @@ class DbMoment(Station):
         time = self.my_event.time
         depth = self.my_event.depth
 
-        delay = 0.0
-        gf_delay = delay
-
-
         # Get the waveforms for this station
         elog.debug( 'Get Waveforms for %s' % sta )
-        real = self.my_data.get_waveforms( sta, self.chan_to_use, time, delay=delay, esaz=esaz,
+        real = self.my_data.get_waveforms( sta, self.chan_to_use, time, esaz=esaz,
                             seaz=seaz, tw=self.timewindow, filters=self.filter,
-                            bw_filter=self.my_event.filter,
                             debug_plot=self.debug_real)
 
         # Verify that we have good information for this site
@@ -384,22 +377,19 @@ class DbMoment(Station):
             elog.warning('Problems during get_waveforms() for %s' % sta )
             return None
 
-        synth = {}
-        for fltr in self.filter:
-            # Get synthetics for this station
-            elog.debug( '%s Get SYNTH at %s km and %s filter' % \
-                    (sta, distance, fltr) )
-            synth[ fltr ] = self.my_synth.get_synth(depth=depth,
-                    distance=distance, delay=gf_delay, tw=self.timewindow,
-                    filter=fltr, response=real[fltr].response,
+
+        elog.debug( '%s Get SYNTH at %s km' % \
+                (sta, distance) )
+        synth = self.my_synth.get_synth(depth=depth,
+                    distance=distance, tw=self.timewindow,
+                    filters=self.filter, response=real[ self.filter[-1] ].response,
                     debug_plot=self.debug_synth)
 
-
-            # Verify that we have good synthetics for this site
-            if not fltr in synth or not synth[ fltr ]:
-                elog.warning('%s Problems during get_synth(depth=%s,distance=%s)' % \
-                        (sta, depth, distance) )
-                return None
+        # Verify that we have good synthetics for this site
+        if not synth:
+            elog.warning('%s Problems during get_synth(depth=%s,distance=%s)' % \
+                    (sta, depth, distance) )
+            return None
 
 
 
@@ -429,8 +419,8 @@ class DbMoment(Station):
             file_for_real = results.to_file('real')
             file_for_synth = results.to_file('synth')
 
-            elog.debug('TEMP: Real traces saved to %s' % file_for_real )
-            elog.debug('TEMP: Synthetic traces saved to %s' % file_for_synth )
+            elog.debug('\tTEMP: Real traces saved to %s' % file_for_real )
+            elog.debug('\tTEMP: Synthetic traces saved to %s' % file_for_synth )
 
 
             # We have the information for this station. Let's try the fit alone.
@@ -439,7 +429,7 @@ class DbMoment(Station):
                 variance_results[ fltr ] = temp['variance'][sta]
                 zcor_results[ fltr ] = temp['zcor'][sta]
 
-                elog.debug( 'TEMP: VR:%s ZCOR:%s Filter:[%s]' % \
+                elog.info( '\tTEMP: VR:%s ZCOR:%s Filter:[%s]' % \
                         (variance_results[ fltr ], zcor_results[ fltr ], fltr) )
             except Exception,e:
                 elog.warning('%s %s' % (Exception,e) )

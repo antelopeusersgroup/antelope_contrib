@@ -54,7 +54,7 @@ class Synthetics():
         except Exception,e:
             elog.error('Problems opening wfdisc: %s %s' % (self.database,e) )
 
-    def get_synth(self, depth, distance, delay=0, tw=-1, response='', filter=None, debug_plot=False):
+    def get_synth(self, depth, distance, tw=-1, response='', filters=None, debug_plot=False):
         """
         Main function to retrieve ( and produce if missing ) the requested elements.
 
@@ -65,17 +65,16 @@ class Synthetics():
 
         self.depth = int(depth)
         self.distance = "{:03d}".format(distance)
-        self.delay = delay
         self.tw = tw
-        self.filter = filter
+        self.filters = filters
         self.response = response
 
         self.debug_plot = debug_plot
 
         if not distance: elog.error('Problems with distance. %s' % distance )
 
-        elog.debug("get_synth(%s,%s,tw=%s,filter=%s)" % \
-                (self.depth,self.distance,self.tw,filter))
+        elog.debug("get_synth(%s,%s,tw=%s)" % \
+                (self.depth,self.distance,self.tw))
 
         self._read_model()
 
@@ -284,7 +283,7 @@ class Synthetics():
         to a different component of the fundamental Green's Functions and will include objects for metadata.
         """
 
-        results = False
+        results = {}
 
         elog.debug("get_from_db()")
 
@@ -306,75 +305,109 @@ class Synthetics():
             samprate = dbview.getv('samprate')[0]
             time = dbview.getv('time')[0]
             #endtime = dbview.getv('endtime')[0]
-            endtime = time + ( self.tw * 3 ) + self.delay
+            endtime = time + ( self.tw * 2 )
 
-            elog.debug('trloadchan(%s,%s)'% (time,endtime))
-            tr = dbview.trload_cssgrp(time,endtime)
+            try:
+                elog.debug('trloadchan(%s,%s)'% (time,endtime))
+                tr = dbview.trload_cssgrp(time,endtime)
+                tr.trsplice()
+            except Exception, e:
+                elog.error('Could not read synthetics for %s:%s [%s]' % (self.depth,self.distance, e))
+                return False
 
-            # Demean the trace
-            tr.trfilter('BW 0 0 2 4')
-            tr.trfilter('DEMEAN')
 
-            tr.trapply_calib()
+            # Need to track original
+            original = {}
+            for t in tr.iter_record():
+                original[ t.getv('chan')[0] ] = t.trdata()
 
-            if self.debug_plot:
-                fig = plot_tr_object( tr, 'raw', style='r')
+            #
+            # Loop over every possible filter
+            #
+            for f in self.filters:
 
-            tr = apply_response( tr, self.response, samprate)
-
-            if self.debug_plot:
-                plot_tr_object( tr, 'add-response', style='b', fig=fig)
-
-            if self.filter:
-                elog.debug('Filter synth with [%s]' % self.filter)
-                try:
-                    tr.trfilter( self.filter )
-                except Exception,e:
-                    elog.error('Problems with the filter %s => %s' % (self.filter,e))
-                if self.debug_plot:
-                    plot_tr_object( tr, 'filtered', style='y', fig=fig)
-
-            results = Records(1)
-
-            this = 1
-            for record in tr.iter_record():
-                (depth,chan,nsamp,time,endtime) = \
-                        record.getv('sta','chan','nsamp','time','endtime')
-
-                elog.debug('getv()=> (%s,%s,%s,%s,%s)' % \
-                        (depth,chan,nsamp,time,endtime))
-
-                # Extract the element name from the channel text (distance)
-                try:
-                    m = re.match(".*_(...)",chan)
-                    element = m.group(1)
-                except Exception,e:
-                    elog.error('Problems in regex [.*_(...)] on [%s] %s: %s' % (chan,Exception,e))
-
-                if not element:
-                    elog.error('Cannot find component name in wfdisc entry: %s_%s' % (self.depth,self.distance))
-
-                data = record.trdata()[int(self.delay*samprate):int(self.tw*samprate)]
-                newdata = []
-                for x in range(0,len(data),int(samprate)):
-                    newdata.append( data[x] )
-                data = newdata
-
-                if not data:
-                    elog.error('Cannot find data for component [%s] in %s_%s' % (m.group(1),depth,dsitance))
-
-                # Placing inside Records object
-                results.trace( element, data)
-                #results.set_samplerate(newsamprate)
+                # Return this version to the original data
+                for t in tr.iter_record():
+                    t.trputdata( original[ t.getv('chan')[0] ] )
 
                 if self.debug_plot:
-                    add_trace_to_plot( results.get( element ), '.k', 'final-%s' % record.getv('chan')[0],
-                            tr.record_count, this, delay=self.delay, jump=samprate )
-                    this += 1
+                    fig = plot_tr_object( tr, 'raw', style='r')
 
-            if self.debug_plot: pyplot.show()
+                #tr = apply_response( tr, self.response, samprate)
+                apply_response( tr, self.response, samprate)
+
+                if self.debug_plot:
+                    plot_tr_object( tr, 'add-response', style='b', fig=fig)
+
+                # Demean the trace
+                tr.trfilter('BW 0 0 2 4')
+                tr.trfilter('DEMEAN')
+
+                tr.trapply_calib()
+
+
+                elog.debug('Filter synth with [%s]' % f)
+                tr.trfilter( f )
+
+                if self.debug_plot:
+                    plot_tr_object( tr, f, style='y', fig=fig)
+
+                results[ f ] = Records(1)
+
+                this = 1
+                for record in tr.iter_record():
+                    (depth,chan,nsamp,time,endtime) = \
+                            record.getv('sta','chan','nsamp','time','endtime')
+
+                    elog.debug('getv()=> (%s,%s,%s,%s,%s)' % \
+                            (depth,chan,nsamp,time,endtime))
+
+                    # Extract the element name from the channel text (distance)
+                    try:
+                        m = re.match(".*_(\w{3})",chan)
+                        element = m.group(1)
+                    except Exception,e:
+                        elog.error('Problems in regex [.*_(\w{3})] on [%s] %s: %s' % (chan,Exception,e))
+
+                    if not element:
+                        elog.error('Cannot find component name in wfdisc entry: %s_%s' % (self.depth,self.distance))
+
+
+                    # SIMPLE decimation method.
+                    # We are way above the min freq for this to be a problem.
+                    data = []
+                    elog.debug( 'Extract data' )
+                    temp_data = record.trdata()
+                    elog.debug( 'Simple decimation' )
+                    for x in range(0,len(temp_data),int(samprate)):
+                        data.append( temp_data[x] )
+                    data = data[:self.tw]
+
+
+                    # Verify if we have NULL values in array
+                    data = [ x for x in data if x < 1.e20 ]
+
+
+                    elog.debug( '%s: %s samples' % (m.group(1),len(data)) )
+
+                    if not data:
+                        elog.error('Cannot find data for component [%s] in %s_%s' % \
+                                (m.group(1),self.depth,self.distance))
+
+                    # Placing inside Records object
+                    results[ f ].trace( element, data)
+                    #results[ f ].set_samplerate(newsamprate)
+
+                    if self.debug_plot:
+                        add_trace_to_plot( results[ f ].get( element ), '.k', 'final-%s' % element,
+                                tr.record_count, this, jump=samprate )
+                        this += 1
+
 
             tr.trfree()
+
+        if self.debug_plot:
+            pyplot.show()
 
 
         return results

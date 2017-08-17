@@ -76,7 +76,7 @@ elog.init()
 # Convert objects to string format
 def niceprint(msg):
     if not msg:
-        return ' *(no text)* '
+        return ''
 
     if isinstance(msg, str):
         return msg
@@ -94,7 +94,7 @@ def elog_to_file(msg):
 
     if log_fh:
         if isinstance(msg, basestring):
-            log_fh.write( msg )
+            log_fh.write( "%s\n" % msg )
         else:
             log_fh.write( "%s\n" % niceprint( msg ) )
 

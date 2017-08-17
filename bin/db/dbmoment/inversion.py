@@ -106,7 +106,7 @@ class MomentTensor():
 
         elog.debug('new file %s' % destination)
 
-        elog.debug(output)
+        #elog.debug(output)
 
         try:
             os.remove( "%s/mt_inv.out" % self.tmp_folder )
@@ -156,15 +156,14 @@ class MomentTensor():
 
         """
         elog.debug('Raw inversion output:')
-        elog.debug( '\n' + string )
+        #elog.debug( '\n' + string )
 
         elog.debug('Parse output:')
+
         for line in string.split('\n'):
 
             line = line.strip()
-            elog.debug(line )
-
-        for line in string.split('\n'):
+            #elog.debug(line )
 
             match_zcor = re.match("^Station\((.+)\):.*Zcor=(.+)$",line)
             #match_variance = re.match("^Station\((.+)\)=(\d+) +(\d+)$",line)

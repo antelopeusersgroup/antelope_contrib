@@ -25,8 +25,8 @@ class Waveforms():
         global seismic_channels
         self.seismic_channels = seismic_channels
 
-    def get_waveforms(self, sta, chans, start_time, esaz=0, seaz=0, delay=0, tw=200,
-                    bw_filter=None, filters=None, debug_plot=False):
+    def get_waveforms(self, sta, chans, start_time, esaz=0, seaz=0, tw=200,
+                    filters=None, debug_plot=False):
 
         elog.debug('Start data extraction for %s' % sta )
         results = False
@@ -35,7 +35,7 @@ class Waveforms():
             chans = [chans]
 
         start = start_time - tw
-        end = start_time + tw + delay
+        end = start_time + tw
 
         elog.debug('Get %s data from %s' % (sta,self.database) )
         elog.debug('start: %s end:%s' % (start,end) )
@@ -109,7 +109,7 @@ class Waveforms():
                 continue
 
             results = self._extract_waveforms(dbsubset, sta, c, start, end, esaz,
-                    seaz, delay, tw, bw_filter, filters, debug_plot)
+                    seaz, tw, filters, debug_plot)
 
             if results:
                 elog.debug('Got data.')
@@ -126,8 +126,8 @@ class Waveforms():
 
 
 
-    def _extract_waveforms(self, dbview, sta, chans, start, end, esaz, seaz, delay, tw,
-                    bw_filter, filters, debug_plot):
+    def _extract_waveforms(self, dbview, sta, chans, start, end, esaz, seaz, tw,
+                    filters, debug_plot):
 
         temp_results = {}
 
@@ -217,16 +217,11 @@ class Waveforms():
                     (segtype, sta) )
             return False
 
-
         # Clean up the traces a bit. Remove high frequency energy
         tr.trfilter('BW 0 0 2 4')
 
         # Demean the trace
         tr.trfilter('DEMEAN')
-
-        if debug_plot:
-            fig = plot_tr_object( tr, 'displacement', style='b')
-            #plot_tr_object( tr, 'displacement', style='b', fig=fig)
 
 
         #
@@ -269,15 +264,12 @@ class Waveforms():
             elog.warning('Problem after rotation  or gaps detected in [%s] records' % (tr.record_count))
             return False
 
-        if debug_plot:
-            plot_tr_object( tr, 'rotaded', style='r', fig=fig)
-
-
 
         # Need to track original
         original = {}
         for t in tr.iter_record():
-            original[ t.getv('chan') ] = t.trdata()
+            original[ t.getv('chan')[0] ] = t.trdata()
+
 
         #
         # Loop over every possible filter
@@ -286,11 +278,13 @@ class Waveforms():
 
             # Return this version to the original data
             for t in tr.iter_record():
-                t.trputdata( original[ t.getv('chan') ] )
+                t.trputdata( original[ t.getv('chan')[0] ] )
 
-            #
-            # FILTERING
-            #
+
+            if debug_plot:
+                fig = plot_tr_object( tr, 'rotaded-Disp', style='r')
+                #plot_tr_object( tr, 'displacement', style='b', fig=fig)
+
 
             elog.debug('Filter data from %s with %s' % (sta, f))
             try:
@@ -326,13 +320,13 @@ class Waveforms():
                 if int(samprate) > 1:
 
                     if (endtime - time) < (end - start) * 0.95:
-                        elog.debug('Short trace. Avoid DECIMATE BY filter')
+                        elog.debug('Short trace. Avoid [DECIMATE BY] filter')
                         elog.debug('%s secs vs %s secs' % \
                                 ( (endtime - time), (end - start)) )
                         # SIMPLE decimation method.
                         # We are way above the min freq for this to be a problem.
                         data = []
-                        #data = trace.trdata()[int(delay*samprate):int(tw*samprate)]
+                        #data = trace.trdata()[int(samprate):int(tw*samprate)]
                         elog.debug( 'Extract data' )
                         temp_data = t.trdata()
                         elog.debug( 'Simple decimation' )
@@ -354,16 +348,11 @@ class Waveforms():
                 # Subset the trace to select only the last segment
                 data = data[-tw:]
 
+                # Verify if we have NULL values in array
+                data = [ x for x in data if x < 1.e20 ]
+
                 if not data:
                     elog.warning('No data after extraction.')
-                    return False
-
-
-                # Verify if we have NULL values in array
-                nulls = [ x for x in data if x >= 1.e20 ]
-
-                if nulls:
-                    elog.warning('NULLS in final trace object.')
                     return False
 
 
@@ -385,6 +374,8 @@ class Waveforms():
 
                 elog.debug('Appending data to Record on %s %s' % (tsta, tchan))
                 temp_results[ f ].set_data( tchan, data)
+
+        tr.free()
 
 
         if debug_plot:
