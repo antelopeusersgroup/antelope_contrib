@@ -26,10 +26,9 @@ include $(ANTELOPEMAKE)
 
 DIRS = DREGERS_MTPACKAGE MODELS EXAMPLE_CODE
 
-prep_distro:
+clean_mtpackage:
 	@echo "Clean DBMOMENT directory structure."
 	$(RM) -rf DREGERS_MTPACKAGE/C_CODE
 	$(RM) -rf DREGERS_MTPACKAGE/GETPAR
 
-dbmoment: prep_distro
-	produce -v dbmoment
+clean :: clean_mtpackage
