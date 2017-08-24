@@ -136,7 +136,7 @@ class DbMoment(Station):
 
         for sta in total_stations:
 
-            elog.debug('Test individual station [%s]' % sta)
+            elog.info('Test station [%s]' % sta)
 
             distance = self.my_event.distance(sta)
 
@@ -426,16 +426,20 @@ class DbMoment(Station):
             # We have the information for this station. Let's try the fit alone.
             try:
                 temp = self.my_inv.invert( {sta:results} )
-                variance_results[ fltr ] = temp['variance'][sta]
-                zcor_results[ fltr ] = temp['zcor'][sta]
-
-                elog.info( '\tTEMP: VR:%s ZCOR:%s Filter:[%s]' % \
-                        (variance_results[ fltr ], zcor_results[ fltr ], fltr) )
+                results.clean()
             except Exception,e:
                 elog.warning('%s %s' % (Exception,e) )
                 elog.error('Invertion on {0} failed!'.format(sta) )
 
-            results.clean()
+            if not temp:
+                continue
+
+            variance_results[ fltr ] = temp['variance'][sta]
+            zcor_results[ fltr ] = temp['zcor'][sta]
+
+            elog.info( '\tTEMP: VR:%s ZCOR:%s Filter:[%s]' % \
+                    (variance_results[ fltr ], zcor_results[ fltr ], fltr) )
+
 
         elog.debug( variance_results )
         elog.debug( zcor_results )

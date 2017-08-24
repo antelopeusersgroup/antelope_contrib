@@ -52,3 +52,15 @@ tdmt_inv: $(FOBJSUB) $(OBJS2)
 
 .f.o:
 	$(FC) $< -c $(FFLAGS)
+
+
+clean_mtpackage:
+	@echo "Clean DBMOMENT directory structure."
+	$(RM) -r C_CODE
+	$(RM) -r GETPAR
+	$(RM) tdmt_invc
+	$(RM) putmt
+	$(RM) trigd.mod
+	$(RM) sac2bin
+
+clean :: clean_mtpackage

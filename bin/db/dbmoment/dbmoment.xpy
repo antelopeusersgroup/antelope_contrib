@@ -453,7 +453,7 @@ else:
 dbview.free()
 event_table.free()
 
-elog.info("Process orid [ %s ]" % orid )
+elog.info("Process evid:[ %s ] orid:[ %s ]" % (evid,orid) )
 
 
 '''

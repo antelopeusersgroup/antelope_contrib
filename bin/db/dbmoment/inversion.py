@@ -127,7 +127,12 @@ class MomentTensor():
             'Dip':[]
         }
 
-        for line in run('tdmt_inv', self.tmp_folder):
+        temp_results = run('tdmt_inv', directory=self.tmp_folder, ignore_error=True )
+
+        if not temp_results:
+            return False
+
+        for line in temp_results:
             valid = True
             elog.debug(line)
             match_variance = re.match("^Station\((.+)\)=(\S+) +(\S+)$",line)

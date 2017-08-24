@@ -40,8 +40,10 @@ class Origin():
         self.magtype = None
         self.stations = {}
         self.stations_with_arrivals = {}
-        elog.debug( 'Init Origin Class: db=%s' % self.database )
         self.db = None
+
+        elog.debug( 'Init Origin Class: db=%s' % self.database )
+
 
     def __iter__(self):
         self.station_list = sorted( self.stations.keys() )

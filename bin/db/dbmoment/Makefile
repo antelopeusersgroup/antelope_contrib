@@ -25,10 +25,3 @@ SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS = DREGERS_MTPACKAGE MODELS EXAMPLE_CODE
-
-clean_mtpackage:
-	@echo "Clean DBMOMENT directory structure."
-	$(RM) -rf DREGERS_MTPACKAGE/C_CODE
-	$(RM) -rf DREGERS_MTPACKAGE/GETPAR
-
-clean :: clean_mtpackage

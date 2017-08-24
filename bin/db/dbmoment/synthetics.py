@@ -218,7 +218,7 @@ class Synthetics():
             elog.error('Problem during "fortran_fkrprog < %s/TEMP_MODEL" command' % self.tmp_folder)
 
         script = 'run_fkrsort'
-        script = self._new_script( script, self.tmp_folder, self._fkrsort_script(self.DT) )
+        script = self._new_script( script, self.tmp_folder, self._new_fkrsort_script(self.DT) )
 
         cmd = './run_fkrsort temp_data %s %s %s' % (self.distances[0], self.depth,len(self.distances))
         run(fix_exec(cmd),self.tmp_folder)
@@ -653,7 +653,7 @@ class Synthetics():
 
 
 
-    def _fkrsort_script(self,samplerate):
+    def _new_fkrsort_script(self,samplerate):
         elog.debug('New fkrsort script samplerate=[%s]' % samplerate)
 
         text = "#! /bin/csh -f\n"

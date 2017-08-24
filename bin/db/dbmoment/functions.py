@@ -224,7 +224,7 @@ def myround(x, base=5):
     elog.debug('Round %s to base %s' % (x, base) )
     return int(int(base) * round(float(x)/int(base)))
 
-def run(cmd,directory='.',max_try=5):
+def run(cmd,directory='.',max_try=5,ignore_error=False):
     attempt = 1
 
     while( attempt < max_try ):
@@ -250,6 +250,9 @@ def run(cmd,directory='.',max_try=5):
             return iter(stdout.split('\n'))
         if stderr:
             return iter(stderr.split('\n'))
+
+    if ignore_error:
+        return False
 
     elog.error('Cannot successfully run [%s]' % cmd)
 

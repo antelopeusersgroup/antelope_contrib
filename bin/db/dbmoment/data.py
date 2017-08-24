@@ -21,6 +21,7 @@ class Waveforms():
         self.allowed_segtype = allowed_segtype
         elog.debug( 'Init Waveforms Class: db=%s' % self.database )
 
+
         # From main dbmoment.xpy script. Also used in functions.py
         global seismic_channels
         self.seismic_channels = seismic_channels
