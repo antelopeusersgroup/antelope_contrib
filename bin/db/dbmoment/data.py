@@ -320,17 +320,22 @@ class Waveforms():
 
                 if int(samprate) > 1:
 
-                    if (endtime - time) < (end - start) * 0.95:
-                        elog.debug('Short trace. Avoid [DECIMATE BY] filter')
-                        elog.debug('%s secs vs %s secs' % \
-                                ( (endtime - time), (end - start)) )
+                    #if (endtime - time) < (end - start) * 0.95:
+                    # Need to avoid the DECIMATE BY filter for now. I'm
+                    # getting too many issues with it.
+
+                    if True:
+                        # Always do this...
+                        #elog.debug('Short trace. Avoid [DECIMATE BY] filter')
+                        #elog.debug('%s secs vs %s secs' % \
+                        #        ( (endtime - time), (end - start)) )
                         # SIMPLE decimation method.
                         # We are way above the min freq for this to be a problem.
-                        data = []
-                        #data = trace.trdata()[int(samprate):int(tw*samprate)]
                         elog.debug( 'Extract data' )
                         temp_data = t.trdata()
+
                         elog.debug( 'Simple decimation' )
+                        data = []
                         for x in range(0,len(temp_data),int(samprate)):
                             data.append( temp_data[x] )
 
@@ -341,10 +346,16 @@ class Waveforms():
                         elog.debug( 'Extract data' )
                         data = t.trdata()
 
-                else:
+                elif int(samprate) == 1:
 
                     elog.debug( 'Extract data' )
                     data = t.trdata()
+
+                else:
+
+                    elog.warning( 'Samplerate of channel is lower than 1sps' )
+                    return False
+
 
                 # Subset the trace to select only the last segment
                 data = data[-tw:]
