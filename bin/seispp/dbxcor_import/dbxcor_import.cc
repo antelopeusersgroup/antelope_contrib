@@ -339,18 +339,13 @@ int main(int argc, char **argv)
       long evid,orid;
       evid=get_value<long>("evid",dbh);
       orid=get_value<long>("orid",dbh);
+      d.put("evid",evid);
+      d.put("orid",orid);
       StaMap arrivals=LoadStaMap(dbh,"xcorarrival.time");
       StaMap weights=LoadStaMap(dbh,"stackwgt");
       double avgtime=average_times(arrivals);
       TimeWindow abs_read_window(avgtime+read_window.start,avgtime+read_window.end);
       ThreeComponentEnsemble rawgather(dbh,abs_read_window,scm);
-      /* load hypocenter data and orid evid*/
-      rawgather.put("evid",evid);
-      rawgather.put("orid",orid);
-      rawgather.put("origin.lat",deg(h.lat));
-      rawgather.put("origin.lon",deg(h.lon));
-      rawgather.put("origin.depth",h.z);
-      rawgather.put("origin.time",h.time);
       if(filter_data)
       {
           try{
