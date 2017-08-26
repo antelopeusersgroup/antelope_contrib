@@ -59,12 +59,32 @@ public:
     double mb,ms,ml;
     long mbid,msid,mlid;
     Dbptr dbthis;  /* Holds Dbptr from which this was generated */
+    HypocenterCSS30();
     HypocenterCSS30(Dbptr db,Hypocenter& h);
     HypocenterCSS30(const HypocenterCSS30& parent);
+    /* partial copy useful only in this code */
+    HypocenterCSS30(const Hypocenter& parent,long evid, long orid);
     HypocenterCSS30& operator=(const HypocenterCSS30& parent);
     long dbsave(Dbptr db);
 };
 
+HypocenterCSS30::HypocenterCSS30() : Hypocenter()
+{
+    evid=0;
+    jdate=0;
+    nass=0;
+    ndef=0;
+    ndp=0;
+    grn=0;
+    srn=0;
+    commid=0;
+    mb=0.0;
+    ms=0.0;
+    ml=0.0;
+    msid=0; mlid=0; mbid=0;
+    /* Intentional leave the char variables empty*/
+
+}
 HypocenterCSS30::HypocenterCSS30(Dbptr db,Hypocenter& h) : Hypocenter(h)
 {
     long iret;
@@ -116,6 +136,12 @@ HypocenterCSS30::HypocenterCSS30(const HypocenterCSS30& parent)
     strcpy(algorithm,parent.algorithm);
     strcpy(auth,parent.auth);
     dbthis=parent.dbthis;
+}
+HypocenterCSS30::HypocenterCSS30(const Hypocenter& parent,long evid, long orid) 
+    : Hypocenter(parent)
+{
+    this->evid=evid;
+    this->orid=orid;
 }
 HypocenterCSS30& HypocenterCSS30::operator=(const HypocenterCSS30& parent)
 {
@@ -204,6 +230,23 @@ double space_time_difference(Hypocenter& h1, Hypocenter& h2)
 	dt*=velocity;
 	sqrdist += dz*dz + dt*dt;
 	return(sqrt(sqrdist));
+}
+HypocenterCSS30 find_closest_hypo(list<HypocenterCSS30>& eventlist,
+        Hypocenter oldhypo)
+{
+  try{
+    list<HypocenterCSS30>::iterator eptr;
+    eptr=eventlist.begin();
+    HypocenterCSS30 hmin(*eptr);
+    double drmin=space_time_difference(*eptr,oldhypo);
+    for(eptr=eventlist.begin();eptr!=eventlist.end();++eptr)
+    {
+      double dr=space_time_difference(*eptr,oldhypo);
+      if(dr<drmin)
+        hmin=(*eptr);
+    }
+    return hmin;
+  }catch(...){throw;};
 }
 
 
@@ -308,6 +351,8 @@ int main(int argc, char **argv)
         string otimekey=control.get_string("origin_time_key");
         /* load the tolerance from pf it was not defined by the arg list*/
         if(need_tolerance) tolerance=control.get_double("space_time_tolerance");
+        double recover_atime_tolerance=control.get_double("recovery_arrival_time_tolerance");
+        string atimekey=control.get_string("arrival_time_key");
         /* We now load the entire catalog defined in db.   This is a large
            memory algorithm and a very dumb algorithm for a large catalog
            because of the linear search used to match hypocenters.   
@@ -315,8 +360,8 @@ int main(int argc, char **argv)
            need to pass the potentially large object back as a pointer*/
         DatascopeHandle dbh(dbname,true);
         dbh.lookup("event");
-        dbh.subset(string("orid==prefor"));
         dbh.natural_join("origin");
+        dbh.subset(string("orid==prefor"));
         list<HypocenterCSS30> eventlist;
         long nrows=dbh.number_tuples();
         if(SEISPP_verbose) 
@@ -331,6 +376,7 @@ int main(int argc, char **argv)
         }
         ThreeComponentEnsemble d;
         int ensemble_number(0);
+        HypocenterCSS30 new_hypo;
         if(SEISPP_verbose)
           cerr << "Old hypocenter data (lat,lon,depth,otime) - new hypocenter"
             <<endl;
@@ -359,8 +405,64 @@ int main(int argc, char **argv)
               /* This will throw an exception if no match is found for dhypo.
                  That was done assuming that should not happen in the 
                  context of the intent of this program */
-              HypocenterCSS30 new_hypo(find_new_hypo(eventlist,
-                    dhypo,tolerance));
+              HypocenterCSS30 trial_hypo(find_closest_hypo(eventlist,
+                    dhypo));
+              if(space_time_difference(trial_hypo,dhypo)>tolerance)
+              {
+                double sumsqr(0.0);
+                double atime,res;
+                int nused(0);
+                /* When source and receiver are too far apart use
+                 * the more compute intensive travel time recipe*/
+                try{
+                  for(i=0;i<d.member.size();++i)
+                  {
+                    double rlat,rlon;  // do not both with elev
+                    atime=d.member[i].get_double(atimekey);
+                    /* for now freeze the names */
+                    rlat=d.member[i].get_double("site.lat");
+                    rlon=d.member[i].get_double("site.lon");
+                    res=trial_hypo.ptime(rad(rlat),rad(rlon),0.0)-atime;
+                    sumsqr+=(res*res);
+                    ++nused;
+                  }
+                  double resrms=sqrt(sumsqr/d.member.size());
+                  if(resrms<recover_atime_tolerance)
+                      new_hypo=trial_hypo;
+                  else
+                  {
+                      new_hypo=HypocenterCSS30(dhypo,d.get<long>("evid"),
+                              d.get<long>("orid"));
+                  }
+                }catch(MetadataGetError& mger)
+                {
+                    cerr << "Warning(dbrevise_source_data):  "
+                        << "In recovery loop computing arrival residuals"
+                        <<endl
+                        << "Problems fetching required metadata.  "
+                        <<"Error message thrown was the following:"<<endl;
+                        mger.log_error();
+                        cerr<<"Retaining original source coordinates"<<endl;
+                    /* We have to be more cautious about getting evid and
+                     * orid here as one way to get here is if the copy
+                     * operation above for new_hypo failed previously trying
+                     * to get these */
+                    long oldevid,oldorid;
+                    try{
+                        oldevid=d.get<long>("evid");
+                        oldorid=d.get<long>("orid");
+                    }catch(MetadataGetError& mderr)
+                    {
+                        cerr << "Error fetching evid and/or orid from ensemble"
+                            << endl<<"Setting both to null 0 value"<<endl;
+                        oldevid=0;
+                        oldorid=0;
+                    }
+                    new_hypo=HypocenterCSS30(dhypo,oldevid,oldorid);
+                }
+              }
+              else
+                  new_hypo=trial_hypo;
               d.put(latkey,deg(new_hypo.lat));
               d.put(lonkey,deg(new_hypo.lon));
               d.put(depthkey,new_hypo.z);

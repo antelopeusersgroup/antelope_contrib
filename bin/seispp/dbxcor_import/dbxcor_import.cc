@@ -344,6 +344,13 @@ int main(int argc, char **argv)
       double avgtime=average_times(arrivals);
       TimeWindow abs_read_window(avgtime+read_window.start,avgtime+read_window.end);
       ThreeComponentEnsemble rawgather(dbh,abs_read_window,scm);
+      /* load hypocenter data and orid evid*/
+      rawgather.put("evid",evid);
+      rawgather.put("orid",orid);
+      rawgather.put("origin.lat",deg(h.lat));
+      rawgather.put("origin.lon",deg(h.lon));
+      rawgather.put("origin.depth",h.z);
+      rawgather.put("origin.time",h.time);
       if(filter_data)
       {
           try{
