@@ -3,8 +3,8 @@
 #include <string>
 #include <iostream>
 #include <memory>
-#include "seispp.h"
 #include "PMTimeSeries.h"
+#include "seispp.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
 using namespace std;   
