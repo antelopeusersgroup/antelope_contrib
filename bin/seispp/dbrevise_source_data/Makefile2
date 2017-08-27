@@ -1,5 +1,5 @@
 BIN=dbrevise_source_data
-PF=dbreview_source_data.pf
+PF=dbrevise_source_data.pf
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static

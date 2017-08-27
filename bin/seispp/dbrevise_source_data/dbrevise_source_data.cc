@@ -243,7 +243,10 @@ HypocenterCSS30 find_closest_hypo(list<HypocenterCSS30>& eventlist,
     {
       double dr=space_time_difference(*eptr,oldhypo);
       if(dr<drmin)
+      {
         hmin=(*eptr);
+        drmin=dr;
+      }
     }
     return hmin;
   }catch(...){throw;};
@@ -379,7 +382,7 @@ int main(int argc, char **argv)
         HypocenterCSS30 new_hypo;
         if(SEISPP_verbose)
           cerr << "Old hypocenter data (lat,lon,depth,otime) - new hypocenter"
-            <<endl;
+            <<"(lat,lon,depth,otime,evid,orid)"<<endl;
         while(inp->good())
         {
             d=inp->read();
@@ -407,8 +410,13 @@ int main(int argc, char **argv)
                  context of the intent of this program */
               HypocenterCSS30 trial_hypo(find_closest_hypo(eventlist,
                     dhypo));
-              if(space_time_difference(trial_hypo,dhypo)>tolerance)
+              double dr=space_time_difference(trial_hypo,dhypo);
+              if(dr>tolerance)
               {
+                if(SEISPP_verbose)
+                    cerr << "Large change in closest found event from previous="
+                        <<dr<<endl<<"Trying to recover by checking residuals"
+                        <<endl;
                 double sumsqr(0.0);
                 double atime,res;
                 int nused(0);
@@ -422,17 +430,29 @@ int main(int argc, char **argv)
                     /* for now freeze the names */
                     rlat=d.member[i].get_double("site.lat");
                     rlon=d.member[i].get_double("site.lon");
-                    res=trial_hypo.ptime(rad(rlat),rad(rlon),0.0)-atime;
+                    res=trial_hypo.ptime(rad(rlat),rad(rlon),0.0);
+                    res += trial_hypo.time;
+                    res -= atime;
                     sumsqr+=(res*res);
                     ++nused;
                   }
                   double resrms=sqrt(sumsqr/d.member.size());
                   if(resrms<recover_atime_tolerance)
+                  {
                       new_hypo=trial_hypo;
+                      if(SEISPP_verbose)
+                          cerr << "rms residual from closest event="
+                              <<resrms<<endl
+                              <<"Assumed correct - will use this hypocenter"<<endl;
+                  }
                   else
                   {
                       new_hypo=HypocenterCSS30(dhypo,d.get<long>("evid"),
                               d.get<long>("orid"));
+                      cerr << "dbrevise_source_data:  closest event found"
+                          << " in db has a large rms residual="<<resrms<<endl
+                          << "Retaining original source coordinates for this event"
+                          <<endl;
                   }
                 }catch(MetadataGetError& mger)
                 {
@@ -479,7 +499,8 @@ int main(int argc, char **argv)
                 cerr << deg(new_hypo.lat)<<" "
                   << deg(new_hypo.lon)<<" "
                   << new_hypo.z<<" "
-                  << strtime(new_hypo.time)<<endl;
+                  << strtime(new_hypo.time)<<" "
+                  << new_hypo.evid<<" "<<new_hypo.orid<<endl;
               }
             }catch(SeisppError& serr)
             {
