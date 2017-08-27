@@ -4,10 +4,11 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "PMTimeSeries.h"
 #include "seispp.h"
+#include "ensemble.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
-#include "ensemble.h"
 //#include "PMTimeSeries.h"
 using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
@@ -268,10 +269,9 @@ int main(int argc, char **argv)
                         showfile,showcount);
                 break;
             case PMTS:
-                cerr << "PMTimeSeries not yet supported"
-                    <<"Cannot run"<<endl;
-                exit(-1);
-                //fofflist=build_index<PMTimeSeries>(infile);
+                listhdr_generic<PMTimeSeries>(infile,
+                        binary_data,use_stdin,csv_output,csv_format_info,
+                        showfile,showcount);
                 break;
             default:
                 cerr << "Coding problem - dtype variable does not match enum"
