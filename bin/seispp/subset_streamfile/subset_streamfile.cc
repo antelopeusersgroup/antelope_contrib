@@ -432,7 +432,7 @@ int main(int argc, char **argv)
           sarg=string(argv[i]);
           if(sarg=="ThreeComponentSeismogram")
             object_type=TCS;
-          else if(sarg=="ThreeComponentEnemble")
+          else if(sarg=="ThreeComponentEnsemble")
             object_type=TCE;
           else if(sarg=="TimeSeries")
             object_type=TS;
