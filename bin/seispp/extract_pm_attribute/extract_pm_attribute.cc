@@ -64,7 +64,7 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        else if(sarg=="-o")
+        else if(sarg=="-a")
         {
             ++i;
             if(i>=argc)usage();
