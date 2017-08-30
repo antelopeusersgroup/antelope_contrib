@@ -262,7 +262,6 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 		clear_register(1);   
 		free(sta_expr);
 		free(chan_expr);
-                trdestroy(&dbsc);
 		throw SeisppError(base_error_message
 			+string("grdb_sc_loadcss procedure failed\n"));
 	}
