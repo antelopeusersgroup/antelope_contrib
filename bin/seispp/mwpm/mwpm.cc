@@ -95,7 +95,8 @@ int main(int argc, char **argv)
         if(SEISPP_verbose)
         {
           cerr << "mwpm - processing seismogram with "<<mwt.number_frequencies()
-            << " and "<<mwt.number_wavelet_pairs()<<" basis function pairs"
+            <<" frequencies and "
+            <<mwt.number_wavelet_pairs()<<" basis function pairs"
             <<endl;
         }
         ThreeComponentSeismogram d;
@@ -103,7 +104,30 @@ int main(int argc, char **argv)
         while(inp->good())
         {
             d=inp->read();
+            /* The multiwavelet transform has no way currently to handle
+             * data in relative time.   This is a kludge fix to handle 
+             * this situation.   */
+            bool restore_data_to_relative=false;
+            if(d.tref == relative) 
+            {
+                restore_data_to_relative=true;
+                d.rtoa();
+            }
             MWTBundle dmwt(d,mwt);
+            //DEBUG
+            /*
+            for(j=0;j<dmwt.number_wavelets();++j)
+            {
+                cerr << "t0,dt,ns - each component of mwtransform trace"<<endl;
+                for(int ic=0;ic<3;++ic)
+                {
+                    MWTwaveform mwtmp=dmwt(0,j,ic);
+                    cerr << strtime(mwtmp.t0)<<" "
+                        << mwtmp.dt<<" "
+                        << mwtmp.ns<<endl;
+                }
+            }
+            */
             /* A bundle has data for multiple frequency bands in the general
              multiwavelet transform.  We generate one PMTimeSeries for
              each band.  The band tag is presently frozen, but perhaps
@@ -116,6 +140,12 @@ int main(int argc, char **argv)
               else
                 pmts=PMTimeSeries(dmwt,j);
               pmts.put("band",j);
+              if(restore_data_to_relative) pmts.ator(pmts.t0);
+              //DEBUG
+              /*
+              cerr << "PMTimeSeries basic time series attribtues: "
+                  << pmts.dt<<" "<<pmts.ns<<" "<<pmts.t0<<endl;
+                  */
               out->write(pmts);
             }
             ++n;
