@@ -96,8 +96,8 @@ template <class Tvec>
 		double atime;  //  arrival time.  
 		if(d->live)
 		{
-                    //DEBUG - test hypothesis 
                     string statmp=d->get_string("sta");
+                    /* This may not be necessary but near zero cost*/
                     d->put("arrival.sta",statmp);
 		// First see if there is an arrival for this
 		// station.  If not, skip it. 
@@ -251,7 +251,7 @@ void PostEvid(ThreeComponentEnsemble *d,int evid)
 	for(dptr=d->member.begin();dptr!=d->member.end();++dptr)
         {
 		dptr->put("evid",evid);
-                //DEBUG - test 
+                /* This may not be necessary, but safer for near zero cost*/
                 dptr->put("event.evid",evid);
         }
 }
@@ -754,9 +754,6 @@ int main(int argc, char **argv)
 		if(use_arrival)
                 {
 		    dbcatalog=StandardCatalogView(dborigin);
-                    //DEBUG
-                    cerr << "Number of rows in view produced by StandardCatalogView is "
-                        << dbcatalog.number_tuples()<<endl;
                 }
                 else
                     dbcatalog=dborigin;
@@ -808,8 +805,8 @@ int main(int argc, char **argv)
 				evid=dborigin.get_int("evid");
 			else
 				evid=dborigin.get_int("orid");
-                        //DEBUG
-                        cerr << "Working on data for evid="<<evid<<endl
+                        if(SEISPP_verbose)
+                          cerr << "Working on data for evid="<<evid<<endl
                             << "origin time="<<strtime(otime)<<endl;
 			Hypocenter hypo(lat,lon,depth,otime,
 				method,model);
