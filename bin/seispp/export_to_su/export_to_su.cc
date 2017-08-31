@@ -12,10 +12,13 @@ using namespace SEISPP;
 
 void usage()
 {
-    cerr << "export_to_su outfile [-pf pffile] < seispp_input"
+    cerr << "export_to_su outfile [-text -pf pffile] < seispp_input"
         <<endl
-        << "Convert a text format serialized TimeSeriesEnsemble object to a seismic unix file" <<endl
+        << "Convert a serialized file of TimeSeries objects to a seismic unix file" <<endl
+        << "(Use dismember to convert an enemble for input into this program"
+        <<endl
         << "outfile is a file name for seismic unix output"<<endl
+        << "-text - assume input is text format (default is binary)"<<endl
         << "-pf - uses alternative pf file from default export_to_su.pf"<<endl;
     exit(-1);
 }
@@ -31,6 +34,7 @@ int main(int argc, char **argv)
     string pffile("export_to_su");
     string outfile(argv[1]);
     if(outfile=="--help") usage();
+    bool binary_data(true);
 
     for(i=narg_required+1;i<argc;++i)
     {
@@ -41,6 +45,8 @@ int main(int argc, char **argv)
             if(i>=argc)usage();
             pffile=string(argv[i]);
         }
+        else if(sarg=="-text")
+            binary_data=false;
         else
             usage();
     }
@@ -62,20 +68,21 @@ int main(int argc, char **argv)
         GenericFileHandle outhandle(outfile,string("SEGYfloat"), outxref,
             orderkeys,endslist,tmdlist,false,string("nsamp"),string("dt"),
             1000000.0,true);
-        StreamObjectReader<TimeSeriesEnsemble> ia;
-        TimeSeriesEnsemble d;
-        d=ia.read();
-        if(SEISPP_verbose)
+        shared_ptr<StreamObjectReader<TimeSeries>> iaptr;
+        if(binary_data)
+            iaptr=shared_ptr<StreamObjectReader<TimeSeries>>
+                (new StreamObjectReader<TimeSeries>('b'));
+        else
+            iaptr=shared_ptr<StreamObjectReader<TimeSeries>>
+                (new StreamObjectReader<TimeSeries>('t'));
+        TimeSeries d;
+        int nseis(0);
+        while(iaptr->good())
         {
-          cerr << "export_to_su read ensemble with "<<d.member.size()<<" seismograms"<<endl
-            << "Writing seismic unix format data to file="<<outfile<<endl;
-        }
-        vector<TimeSeries>::iterator dptr;
-        for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
-        {
-          /* This strange header value for su seems necessary */
-          dptr->put("duse",1);
-          outhandle.put(*dptr);
+            d=iaptr->read();
+            /* This strange header value for su seems necessary */
+            d.put("duse",1);
+            outhandle.put(d);
         }
     }catch(SeisppError& serr)
     {
