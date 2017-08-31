@@ -188,6 +188,10 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 	tpattern=newtbl(static_cast<long>(nkeys));
 	for(int i=0;i<nkeys;++i)
 	{
+            /* Save - an older version of this code used only the attribute 
+             * name and not the table.  This worked for single tables, but 
+             * broke with views having multiple instances of an attribute
+             * name in multiple tables joined in the view.
 		settbl(kpattern,static_cast<long>(i),
 			static_cast<void *>(
 			const_cast<char *>(matchkeys[i]
@@ -196,6 +200,16 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 			static_cast<void *>(
 			const_cast<char *>(matchkeys[i]
 				.db_attribute_name.c_str())));
+                                */
+                string fullname;
+                fullname=matchkeys[i].db_table_name + "."
+                    + matchkeys[i].db_attribute_name;
+                char *keystr;
+                keystr=strdup(fullname.c_str());
+		settbl(kpattern,static_cast<long>(i),
+			static_cast<void *>(keystr));
+		settbl(tpattern,static_cast<long>(i),
+			static_cast<void *>(keystr));
 	}
 }
 // This duplicates antelope's duptbl, but I can't make the 
