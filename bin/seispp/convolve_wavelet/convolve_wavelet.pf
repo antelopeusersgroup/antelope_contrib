@@ -1,10 +1,10 @@
 # must be ricker, gaussian, or general
 wavelet_type ricker
 # These are used by both ricker and gaussian
-ns 100
+number_samples 100
 dt 0.01
 # used only by ricker
-nu 0.1
+nu 4.0
 # used only by gaussian
 sigma 0.03
 # This is referenced only when wavelet_type is general
