@@ -123,10 +123,13 @@ ThreeComponentEnsemble create_pattern_from_pf(PfStyleMetadata& control)
         }
       }
       d.put("nsamp",ns);
-      d.put("t0",t0);
+      d.put("time",t0);
       d.put("dt",dt);
+      d.put("samprate",1.0/dt);
       d.put(member_count_key.c_str(),i);
-      result.member.push_back(d);
+      /* Constructor used above creates the pattern so we 
+       * copy this new d into slot i*/
+      result.member[i]=d;
     }
     return result;
   }catch(...){throw;};
