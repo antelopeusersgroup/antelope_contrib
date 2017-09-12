@@ -102,10 +102,10 @@ class Waveforms():
                 dbsubset.free()
                 continue
 
-            if dbsubset.record_count != 3:
+            if dbsubset.record_count < 3:
                 # This failed.
-                elog.warning( 'Need ONLY 3 traces after subset for chan == [%s]. Now %s' % \
-                        (c, dbview.record_count) )
+                elog.warning( 'Need at least 3 traces after subset for chan == [%s]. Now %s' % \
+                        (c, dbsubset.record_count) )
                 dbsubset.free()
                 continue
 
