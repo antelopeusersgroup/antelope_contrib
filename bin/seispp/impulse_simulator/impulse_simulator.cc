@@ -3,11 +3,18 @@
 #include <string>
 #include <iostream>
 #include <memory>
+/* these are needed to generate normally distributed random numbers */
+#include <ctime>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/variate_generator.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/math/distributions/normal.hpp>
 #include "seispp.h"
 #include "ensemble.h"
 #include "PfStyleMetadata.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
+
 using namespace std;
 using namespace SEISPP;
 void usage()
@@ -109,7 +116,7 @@ ThreeComponentEnsemble create_pattern_from_pf(PfStyleMetadata& control)
       d.dt=dt;
       d.components_are_cardinal=true;
       d.components_are_orthogonal=true;
-      d.tref=relative;
+      d.tref=absolute;
       d.live=true;
       int k,j;
       for(k=0;k<3;++k)
@@ -127,12 +134,48 @@ ThreeComponentEnsemble create_pattern_from_pf(PfStyleMetadata& control)
       d.put("dt",dt);
       d.put("samprate",1.0/dt);
       d.put(member_count_key.c_str(),i);
+      /* This oddity is necessary to set an internal boolean 
+       * */
+      d.ator(0.0);
+      /* We arbitrarily set sta as a means to define a gather
+       * downstream if desired*/
+      d.put("sta","impulse_simulation");
       /* Constructor used above creates the pattern so we 
        * copy this new d into slot i*/
       result.member[i]=d;
     }
     return result;
   }catch(...){throw;};
+}
+/* Copied form http://en.wikibooks.org/wiki/C++_Programming/Libraries/Boost */
+using namespace boost;
+double SampleNormal(double mean, double sigma)
+{
+    /* Generate a random number from the current time */
+    //static mt19937 rng(static_cast<unsigned> (std::time(0)));
+    uint64_t seed;
+    seed=static_cast<uint64_t>(std::time(NULL));
+    static boost::random::mt19937 rng(seed);
+    /* This defines a normal distribution to generate numbers */
+    boost::random::normal_distribution<double> norm_dist(mean,sigma);
+    // bind random number generator to distribution to forma function object
+    variate_generator<boost::random::mt19937&, boost::random::normal_distribution<double> >
+        normal_sampler(rng, norm_dist);
+    return(normal_sampler());
+}
+void add_gaussian_noise(ThreeComponentEnsemble& d,double sigma)
+{
+    int i,j,k;
+    for(i=0;i<d.member.size();++i)
+    {
+        for(j=0;j<d.member[i].u.columns();++j)
+        {
+            for(k=0;k<3;++k)
+            {
+                d.member[i].u(k,j) += SampleNormal(0.0,sigma);
+            }
+        }
+    }
 }
 bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
@@ -174,17 +217,20 @@ int main(int argc, char **argv)
     }
     try{
         PfStyleMetadata control=pfread(pffile);
-        shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>> out;
+        std::shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>> out;
         if(binary_data)
         {
-          out=shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
+          out=std::shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
              (new StreamObjectWriter<ThreeComponentEnsemble>('b'));
         }
         else
         {
-          out=shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
+          out=std::shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
              (new StreamObjectWriter<ThreeComponentEnsemble>);
         }
+        bool add_noise=control.get_bool("add_noise");
+        double sigma(0.0);
+        if(add_noise) sigma=control.get<double>("gaussian_noise_sigma");
         ThreeComponentEnsemble d;
         if(use_pattern_file)
         {
@@ -214,6 +260,7 @@ int main(int argc, char **argv)
               << " with endtime="<<d.member[i].endtime()<<endl;
           }
         }
+        if(add_noise) add_gaussian_noise(d,sigma);
         out->write(d);
     }catch(SeisppError& serr)
     {
