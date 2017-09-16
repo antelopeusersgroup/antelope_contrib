@@ -2,7 +2,7 @@
 #define _BASICTIMESERIES_H_
 #include <ostream>
 #include <set>
-//#include <boost/serialization/set.hpp>
+#include <boost/serialization/set.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include "TimeWindow.h"
@@ -255,11 +255,7 @@ private:
         ar & ns;
         ar & t0shift_is_valid;
         ar & t0shift;
-/* for latest Xcode and clang, this will not serialize.  Since I've not 
-uniformly handled gaps for now anyway will remove this until a reason 
-is found that it breaks.
         ar & gaps;
-*/
     };
 };
 /*! Convert a TimeWindow to a SampleRange object.
