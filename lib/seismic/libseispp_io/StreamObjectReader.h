@@ -178,16 +178,25 @@ template <typename T>
     switch(format)
     {
       case 't':
-        ifs.seekg(-(TextIOStreamEOFOffset+1),ios_base::end);
+        ifs.seekg(-(TextIOStreamEOFOffset),ios_base::end);
         ifs >> magic_test;
         ifs >> nobjects;
+        if(ifs.fail())
+        {
+            throw SeisppError(base_error
+              + "Read failed loading global file data (Text mode)");
+        }
         break;
       case 'b':
       default:
-        ifs.seekg(-(BinaryIOStreamEOFOffset+1),ios_base::end);
+        ifs.seekg(-(BinaryIOStreamEOFOffset),ios_base::end);
         ifs.read(tagbuf,BINARY_TAG_SIZE);
+        cerr << "read tagbuf="<<tagbuf<<endl;
         magic_test=string(tagbuf);
         ifs.read((char*)(&(this->nobjects)),sizeof(long));
+        if(ifs.fail())
+            throw SeisppError(base_error
+                + "Read failed loading global file data (binary mode)");
     };
     if(magic_test!=eof_tag) throw SeisppError(base_error + "File "
         + fname + " does not appear to be a valid seispp boost serialization file");
