@@ -3,8 +3,8 @@
 #include <string>
 #include <iostream>
 #include <memory>
-#include "seispp.h"
 #include "PMTimeSeries.h"
+#include "seispp.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
 using namespace std;
@@ -82,6 +82,13 @@ void set_data_gaps(PMTimeSeries& d, double snr_floor, TimeWindow nw, int minsamp
         {
           /* land here when we enter a low snr section */
           gw.start=d.time(i);
+          /* We have to handle the (common) case of low snr at 
+           * sample is.   Reason is that earlier code forces a 
+           * gap in the noise window. To keep a low signal 
+           * section immediately after the noise window (the 
+           * usual situation) we fudge the start time by 1/2 
+           * sample interval */
+          if(i==is) gw.start+= (d.dt/2.0);
           in_low_snr_section=true;
         }
       }
@@ -106,6 +113,12 @@ void set_data_gaps(PMTimeSeries& d, double snr_floor, TimeWindow nw, int minsamp
         Do nothing in that case as it means we are in a good data section
         and just skipping to look or the next low snr section */
       }
+    }
+    /* Handle low snr at the end of the data section */
+    if(in_low_snr_section)
+    {
+      gw.end=d.endtime()+1.0;   // Intentionall pad if a gap is at end
+      d.add_gap(gw);
     }
   }catch(...){throw;};
 }

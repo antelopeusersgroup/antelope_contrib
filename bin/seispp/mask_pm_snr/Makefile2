@@ -3,7 +3,7 @@ PF=mask_pm_snr.pf
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lseispp -lgclgrid -lmwtpp -lmultiwavelet $(DBLIBS) $(TRLIBS) -lgenloc -lperf -lboost_serialization -lseispp 
+ldlibs=-lseispp -lmwtpp -lmultiwavelet $(DBLIBS) $(TRLIBS) -lgclgrid -lgenloc -lperf -lboost_serialization -lseispp -lperf
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE) 
