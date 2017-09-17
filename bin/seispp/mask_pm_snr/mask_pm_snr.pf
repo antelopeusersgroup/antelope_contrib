@@ -1,0 +1,7 @@
+noise_window_start_time -5.0
+noise_window_end_time -1.0
+force_mask_time_before_noise_window true
+snr_floor 3.0
+snr_key snr
+# Any section with a low snr with fewer samples than this will no be marked
+minimum_samples_per_gap 4
