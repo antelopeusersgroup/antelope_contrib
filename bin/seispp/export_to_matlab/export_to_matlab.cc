@@ -24,6 +24,8 @@ void usage()
         << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
+/* Data with marked gaps are set to this value */
+const double GapValue(-9.9999999999E99);
 dmatrix convert_to_matrix(TimeSeriesEnsemble& d)
 {
   try{
@@ -55,7 +57,7 @@ dmatrix convert_to_matrix(TimeSeriesEnsemble& d)
       }
     }
     int n=d.member.size();
-    int m= (int)((tmax-tmin)/dt);
+    int m= (int)((tmax-tmin)/dt)+1;
     if(SEISPP_verbose)
     {
       cerr << "export_to_matlab:  time range of output="<<tmin<<" to "<<tmax<<endl;
@@ -66,25 +68,42 @@ dmatrix convert_to_matrix(TimeSeriesEnsemble& d)
     const int Mmax(100000000);
     if(m>Mmax)
     {
-      cerr << "export_to_matlab:  Computed number of samples,"<<m<<",  is very large."<<endl
+      cerr<< "export_to_matlab:  Computed number of samples,"<<m<<",  is very large."<<endl
           << "Aborting to avoid a likely malloc error."<<endl
-          << "You are probably and ensmble with absolute times set as t0 instead of some relative time standard"<<endl;
+          << "You are probably trying to to convert an  ensmble with absolute times set as t0"<<endl
+          << "If so, run data through ator before running this program"<<endl;
       exit(-1);
     }
     dmatrix work(m,n);
-    work.zero();
+    /* We initialize the matrix to GapValue.  That allows an easy 
+     * definition of gaps at start and end. */
+    for(i=0;i<m;++i)
+      for(j=0;j<n;++j)
+          work(i,j)=GapValue;
+    bool needs_gap_checking;
     for(j=0,dptr=d.member.begin();dptr!=d.member.end();++j,++dptr)
     {
+      if(dptr->has_gap())
+        needs_gap_checking=true;
+      else
+        needs_gap_checking=false;
       double t;
       for(t=tmin;t<tmax;t+=dt)
       {
         int kd,km;
         kd=dptr->sample_number(t);
-        if( (kd>=0) && (kd<dptr->ns) )
+        if(dptr->is_gap(t))
+        {
+          work(kd,j)=GapValue;
+        }
+        else if( (kd>=0) && (kd<dptr->ns) )
         {
           if(kd<m)
             work(kd,j)=dptr->s[kd];
         }
+        /*else is intensionally not present.  work was
+         * initialized to GapValue - else condition is 
+         * index outside the range of this seismogram.*/
       }
     }
     return work;
