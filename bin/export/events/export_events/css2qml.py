@@ -6,6 +6,8 @@ This module defines a class, css2qml, which can be used to convert CSS3.0
 from __future__ import (
     absolute_import, division, print_function, unicode_literals)
 
+from past.builtins import basestring
+
 import os
 import re
 import logging
@@ -959,6 +961,10 @@ class Css2Qml(object):
 
         return amplitude, unit, period
 
+    def _filter_id(self, filter_description):
+        '''Consistent format for cross-referencing picks.'''
+        return self._id('filter', filter_description)
+
     def _convert_amplitude(self, record):
         '''
         Convert CSS3.0 stamag & arrival & wfmeas view record to QuakeML
@@ -1573,13 +1579,13 @@ class Css2Qml(object):
                 serial = str(serial)
             serial = serial.replace('/', '_').replace(' ', '_').lower()
 
-        rid = '%s:%s.%s/%s/%s' % (self.uri_prefix, self.agency_id.lower(),
-                                  self.agency_uri, name, serial)
+        rid = '%s:%s/%s/%s' % (self.uri_prefix, self.agency_uri, name, serial)
 
         if alt_id:
             rid += '/%s' % alt_id
 
         return rid
+
 
 if __name__ == '__main__':
     raise ImportError("\n\n\tAntelope's qml module. Do not run directly! **\n")
