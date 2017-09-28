@@ -76,7 +76,7 @@ class DatabaseReader(object):
         self.fplane_auth_select = fplane_auth_select
         self.fplane_auth_reject = fplane_auth_reject
 
-        self.database = database  # descriptor
+        self.database = os.path.expanduser(database)  # descriptor
         if not os.path.exists(self.database):
             self.logger.error('Database descriptor does not exist: ' +
                               database)
