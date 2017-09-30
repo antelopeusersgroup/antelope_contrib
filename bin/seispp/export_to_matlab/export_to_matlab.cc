@@ -92,14 +92,14 @@ dmatrix convert_to_matrix(TimeSeriesEnsemble& d)
       {
         int kd,km;
         kd=dptr->sample_number(t);
+        if( (kd<0) || (kd>=(dptr->ns)) ) continue;
         if(dptr->is_gap(t))
         {
           work(kd,j)=GapValue;
         }
-        else if( (kd>=0) && (kd<dptr->ns) )
+        else
         {
-          if(kd<m)
-            work(kd,j)=dptr->s[kd];
+          work(kd,j)=dptr->s[kd];
         }
         /*else is intensionally not present.  work was
          * initialized to GapValue - else condition is 
