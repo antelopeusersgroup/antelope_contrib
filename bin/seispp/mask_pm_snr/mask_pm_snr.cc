@@ -11,7 +11,7 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "mask_pm_snr < in > out [-v --help -text -pffile]"
+    cerr << "mask_pm_snr [-v --help -text -pffile] < in > out"
         <<endl
         << "Sets low snr sections of a PMTimeSeries data as marked gap."<<endl
         << "This be useful to mask unreliable data sections"<<endl
@@ -29,6 +29,14 @@ double median_noise(PMTimeSeries& d,TimeWindow nw)
     int is,ie;   // start and end sample numbers of this window
     is=d.sample_number(nw.start);
     ie=d.sample_number(nw.end);
+    if(ie<0)
+    {
+        cerr << "Warning:  noise window range is before data start time"<<endl
+          << "Requested noise time window end time="<<nw.end<<endl
+          << "Processing PMTimeSeries object with endtime="<<d.endtime()<<endl
+          << "Setting noise estimate to -1.0 and attempting to continue"<<endl;
+        return(-1.0);
+    }
     if(is<0)
     {
       cerr << "Warning:  reset noise window start time to "<<d.time(0)<<endl;
