@@ -11,7 +11,7 @@ save_delta false
 save_baz false
 delta_key delta
 baz_key baz
-save_slowness false
+save_slowness true
 slowness_ux_key ux
 slowness_uy_key uy
 TTmethod tttaup

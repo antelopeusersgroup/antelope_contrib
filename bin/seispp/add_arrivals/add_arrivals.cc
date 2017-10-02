@@ -90,30 +90,31 @@ template <class DataType> int add_arrivals(Metadata control,bool binary_data)
             /* This dynamic_cast seems necessary because all the objects involved use
                  * multiple inheritance that makes this ambiguous without this explicit 
                  * cast*/
-            Metadata d(dynamic_cast<Metadata&>(dfull));;
+            Metadata *md=dynamic_cast<Metadata*>(&dfull);;
             /* will not make it a fatal error if a seismogram is missing
              * required metadata, but will print a warning and blunder on.*/
             try{
-                lat=d.get<double>(source_latitude_key);
-                lon=d.get<double>(source_longitude_key);
-                depth=d.get<double>(source_depth_key);
-                otime=d.get<double>(source_origin_time_key);
+                lat=md->get<double>(source_latitude_key);
+                lon=md->get<double>(source_longitude_key);
+                depth=md->get<double>(source_depth_key);
+                otime=md->get<double>(source_origin_time_key);
                 Hypocenter h(rad(lat),rad(lon),depth,otime,TTmethod,TTmodel);
-                lat=d.get<double>(receiver_latitude_key);
-                lon=d.get<double>(receiver_longitude_key);
+                lat=md->get<double>(receiver_latitude_key);
+                lon=md->get<double>(receiver_longitude_key);
                 lat=rad(lat);  lon=rad(lon);  // hypo wants these in radians
-                elev=d.get<double>(receiver_elevation_key);
+                elev=md->get<double>(receiver_elevation_key);
                 atime=h.phasetime(lat,lon,elev,phase);
-                d.put(phase_key,atime);
+                atime += otime;  // phasetime returns travel time, not arrival time
+                md->put(phase_key,atime);
                 if(save_delta)
                 {
                     delta=h.distance(lat,lon);
-                    d.put(delta_key,deg(delta));
+                    md->put(delta_key,deg(delta));
                 }
                 if(save_baz)
                 {
                     baz=h.seaz(lat,lon);
-                    d.put(baz_key,deg(baz));
+                    md->put(baz_key,deg(baz));
                 }
                 if(save_slowness)
                 {
@@ -122,8 +123,8 @@ template <class DataType> int add_arrivals(Metadata control,bool binary_data)
                      * slowness vector is of secondary interest. */
                     try{
                         slow=h.phaseslow(lon,lat,elev,phase);
-                        d.put(slowness_ux_key,slow.ux);
-                        d.put(slowness_uy_key,slow.uy);
+                        md->put(slowness_ux_key,slow.ux);
+                        md->put(slowness_uy_key,slow.uy);
                     }catch(SeisppError& serr)
                     {
                         cerr << "add_arrivals:  slowness vector calculation failed."
@@ -139,7 +140,7 @@ template <class DataType> int add_arrivals(Metadata control,bool binary_data)
                   << "Message posted:"<<endl;
                 mde.log_error();
                 cerr<<"Actual content of this seismogram header:"<<endl;
-                cerr << d<<endl;
+                cerr << *md<<endl;
                 cerr<<"Copying data without required arrival time attribute"
                   <<endl;  
             }
