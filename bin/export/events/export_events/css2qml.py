@@ -1117,7 +1117,7 @@ class Css2Qml(object):
             ('waveformID', self._waveform_id(record, 'arrival')),
             ])
         _optional_update(qml_dict, 'methodID', self._method_id(module))
-        qml_dict['backazimuth'] = _value_dict(record['assoc.esaz'])
+        qml_dict['backazimuth'] = _value_dict(record['arrival.azimuth'])
         _optional_update(qml_dict['time'], 'uncertainty',
                          record['arrival.deltim'])
         _optional_update(qml_dict, 'onset',
