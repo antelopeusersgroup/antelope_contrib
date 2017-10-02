@@ -108,10 +108,12 @@ int main(int argc, char **argv)
              * data in relative time.   This is a kludge fix to handle 
              * this situation.   */
             bool restore_data_to_relative=false;
+            double t0shift; // need this below to restore to absolute if needed
             if(d.tref == relative) 
             {
                 restore_data_to_relative=true;
-                d.rtoa();
+                t0shift=d.time_reference();
+                d.rtoa(t0shift);
             }
             MWTBundle dmwt(d,mwt);
             //DEBUG
@@ -140,7 +142,10 @@ int main(int argc, char **argv)
               else
                 pmts=PMTimeSeries(dmwt,j);
               pmts.put("band",j);
-              if(restore_data_to_relative) pmts.ator(pmts.t0);
+              if(restore_data_to_relative) 
+              {
+                  pmts.ator(t0shift);
+              }
               //DEBUG
               /*
               cerr << "PMTimeSeries basic time series attribtues: "

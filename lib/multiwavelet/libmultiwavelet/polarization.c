@@ -116,9 +116,12 @@ void pmvector_copy(int n, Particle_Motion_Ellipse *x, int incx,
 		y[iy] = x[ix];
 	}
 }
-#define PM_MINSCALE_MAJOR 0.2  /* This needs to be pretty large compared to 
-				good data because if the errors get much
-				larger than this the results are trash anyway */
+/* This should probably be an argument with a default.   Earlier versions
+ * had this as 0.2, but found it created a lot of low degrees of freedom
+ * problems when applied to lots of data.  0.5 means scale of amplitudes
+ * should be less than half o the total amplitude.   Lower values seem 
+ * common for pure noise.   0.5 may be too large. */
+#define PM_MINSCALE_MAJOR 0.5 
 #define PM_MINSCALE_MINOR 1.0 /* Minor axis can easily be totally random.  
 				Nearly always happens for pure linear pm.
 				This essentially turns off robust weighting */
