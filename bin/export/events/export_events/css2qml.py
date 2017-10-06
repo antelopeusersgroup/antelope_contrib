@@ -937,7 +937,7 @@ class Css2Qml(object):
         else:
             amplitude = record['arrival.amp']
             if amplitude is not None:
-                amplitude *= 1e9
+                amplitude *= 1e-9
                 unit = 'm'
             else:
                 unit = None
