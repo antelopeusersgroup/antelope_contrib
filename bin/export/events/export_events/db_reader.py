@@ -453,12 +453,12 @@ class DatabaseReader(object):
 
             steps = ['dbopen netmag']
             steps += ['dbsubset orid==%d' % orid]
-            steps = ['dbjoin stamag magid']
+            steps += ['dbjoin -o stamag magid']
             steps += ['dbsubset auth=~/%s/' % auth
                       for auth in self.netmag_auth_select]
             steps += ['dbsubset auth!~/%s/' % auth
                       for auth in self.netmag_auth_reject]
-            steps += ['dbjoin arrival']
+            steps += ['dbjoin -o arrival']
             steps += self._seed_channel_steps()
             if self.table_present['wfmeas']:
                 steps += ['dbjoin -o wfmeas']
