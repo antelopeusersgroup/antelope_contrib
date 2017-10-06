@@ -451,8 +451,9 @@ class DatabaseReader(object):
         for orid in self.origins.keys():
             self.logger.debug('Constructing stamag view for orid [%d]' % orid)
 
-            steps = ['dbopen stamag']
+            steps = ['dbopen netmag']
             steps += ['dbsubset orid==%d' % orid]
+            steps = ['dbjoin stamag magid']
             steps += ['dbsubset auth=~/%s/' % auth
                       for auth in self.netmag_auth_select]
             steps += ['dbsubset auth!~/%s/' % auth
