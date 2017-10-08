@@ -117,12 +117,15 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
 }
 ostream& operator<<(ostream& os,PMAverageData& d)
 {
+    /* Note we convert all angle terms to degrees as 
+     * angles are always stored internally in radians, but 
+     * humans mostly can't relate to radians */
   os << d.majornrm << ","<< d.dmajornrm<<","
-    << d.majoraz << ","<< d.dmajoraz<<","
-    << d.majorinc << ","<< d.dmajorinc<<","
+    << deg(d.majoraz) << ","<< deg(d.dmajoraz)<<","
+    << deg(d.majorinc) << ","<< deg(d.dmajorinc)<<","
     << d.minornrm << ","<< d.dminornrm<<","
-    << d.minoraz << ","<< d.dminoraz<<","
-    << d.minorinc << ","<< d.dminorinc<<","
+    << deg(d.minoraz) << ","<< deg(d.dminoraz)<<","
+    << deg(d.minorinc) << ","<< deg(d.dminorinc)<<","
     << d.rectilinearity<<","<< d.drect;
     return os;
 }

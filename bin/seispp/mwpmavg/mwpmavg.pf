@@ -1,0 +1,7 @@
+phase P
+phase_time_key Ptime
+# Note start time be early when the data were processed to set gaps for low snr
+average_window_start -0.5
+average_window_end 1.5
+name_key tag
+name_key_type string

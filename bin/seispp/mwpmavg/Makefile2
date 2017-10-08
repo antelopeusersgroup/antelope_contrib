@@ -1,4 +1,5 @@
 BIN=mwpmavg
+PF=mwpmavg.pf
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
