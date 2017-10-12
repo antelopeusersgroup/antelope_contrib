@@ -1,0 +1,406 @@
+originator     Frank Vernon, UCSD
+last_modified  2014-09-22
+
+description	Quanterra 330 Linear Phase Composite - no sensor
+dfile q330_ANF_lc_anf
+
+# a deployed q330 with no sensors attached
+soh_only	1
+
+
+category	ANF
+configuration	Q330 Linear Phase Composite - no sensor
+
+info	&Literal{
+This is the ANF standard station configuration for a Q330 datalogger
+with no sensor attached; this configuration includes the special channels from a baler.
+}
+
+streams		200sps 100sps 50sps 40sps 20sps 10sps 1sps 0.1sps 0.01sps
+
+# definitions of streams
+200sps	200 a/d200 FLinear-200
+100sps	100 a/d100 FLinear-100
+50sps	 50 a/d50  FLinear-50
+40sps	 40 a/d40  FLinear-40
+20sps	 20 a/d20  FLinear-20
+10sps	 10 a/d10  FLinear-10
+1sps	  1 a/d1   FLinear-1 
+0.1sps	0.1 a/d1   FLinear-1 VLP389 
+0.01sps 0.01 a/d1  FLinear-1 VLP389 ULP379
+
+gains  419430    # in units of counts/volt
+
+
+# Stages
+a/d200	&Arr{
+samprate	200
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d100	&Arr{
+samprate	100
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d50	&Arr{
+samprate	50
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d40	&Arr{
+samprate	40
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d20	&Arr{
+samprate	20
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d10	&Arr{
+samprate	10
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d1	&Arr{
+samprate	1
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+FLinear-200	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLinear-200)
+samprate	200
+}
+
+FLinear-100	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLinear-100)
+samprate	100
+}
+
+FLinear-50	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLinear-50)
+samprate	50
+}
+
+FLinear-40	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLinear-40)
+samprate	40
+}
+
+FLinear-20	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLinear-20)
+samprate	20
+}
+
+FLinear-10	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLinear-10)
+samprate	10
+}
+
+FLinear-1	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLinear-1)
+samprate	1
+}
+
+VLP389	&Arr{
+gtype		FIR_decimator
+decifac		10
+response	&datafile(responses/VLP389)
+}
+
+ULP379	&Arr{
+gtype		FIR_decimator
+decifac		10
+response	&datafile(responses/ULP379)
+}
+
+
+
+#soh		LCE LCQ VCO VEA VEC VEP VKI VMU VMV VMW VPB OCF LOG ACE
+soh		LCE LCQ VCO VEA VEC VEP VKI VM0 VM1 VM2 VM3 VM4 VM5 VM6 VPB OCF LOG ACE
+
+LOG	&Arr{
+stages		log
+iunits  	
+ounits		
+samprate 	-1
+ctype		o
+}
+
+log &Arr{
+gtype		Q330 LOG 
+iunits		
+ounits		
+sn		datalogger
+}
+
+OCF	&Arr{
+stages		ocf
+iunits  	
+ounits		
+samprate 	-1
+ctype		o
+}
+
+ocf &Arr{
+gtype		Q330 OCF
+iunits		
+ounits		
+sn		datalogger
+}
+
+ACE	&Arr{
+stages	ace
+iunits  	
+ounits		
+samprate 	-1
+ctype		o
+}
+
+ace &Arr{
+gtype		Q330 ACE
+iunits		
+ounits		
+sn		datalogger
+}
+
+LCE	&Arr{
+stages 		phase 
+iunits  	s
+ounits		counts
+samprate 	1
+}
+ 
+LCQ	&Arr{
+stages 		clk_qual 
+iunits  	percent
+ounits		counts
+samprate 	1
+rsptype	p
+} 
+
+VCO      &Arr{
+stages 		vco 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+ 
+VEA       &Arr{
+stages 		mamp 
+iunits  	A
+ounits		counts
+samprate 	.1
+rsptype		i
+}
+
+VEC       &Arr{
+stages 		mamp 
+iunits  	A
+ounits		counts
+samprate 	.1
+rsptype		i
+}
+
+VEP       &Arr{
+stages		mvolt
+iunits		V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VKI       &Arr{
+stages 		temp 
+iunits  	Celsius
+ounits		counts
+samprate 	.1
+rsptype		t
+}
+
+VMU       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VMV       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VMW       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VM0       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VM1       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VM2       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VM3       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VM4       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VM5       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VM6       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VPB      &Arr{
+stages 		buf_use 
+iunits  	percent
+ounits		counts
+samprate 	.1
+rsptype		p
+}
+
+phase &Arr{
+gtype		clock phase
+gnom		1000000
+iunits		s
+ounits		counts
+sn		datalogger
+}
+
+clk_qual &Arr{
+gtype		clock quality
+iunits		percent
+ounits		counts
+sn		datalogger
+}
+
+vco &Arr{
+gtype		VCO control voltage
+gnom		6.66667
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+mamp &Arr{
+gtype		current meter
+gnom		1000
+iunits		A
+ounits		counts
+sn		datalogger
+}
+
+mvolt &Arr{
+gtype		volt meter
+gnom		6.66667
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+temp &Arr{
+gtype		thermometer
+iunits		Celsius
+ounits		counts
+sn		datalogger
+}
+
+mp &Arr{
+gtype		mass position
+gnom		10
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+buf_use &Arr{
+gtype		Q330 buffer usage
+gnom		10
+iunits		percent
+ounits		counts
+sn		datalogger
+}
