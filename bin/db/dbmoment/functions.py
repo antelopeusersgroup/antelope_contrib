@@ -8,6 +8,158 @@
 
 from __main__ import *      # Get all the libraries from parent
 
+def open_db(db):
+    '''
+    Open a database (or database pointer)
+
+    Remember to free the return pointer later!!!
+    '''
+
+    elog.debug( 'Open db' )
+
+    # Verify if we have a string or a pointer DB object
+    if isinstance( db, datascope.Dbptr ):
+        elog.debug( 'got db pointer( %s )' % db )
+        dbview = db
+        dbview.table = datascope.dbALL
+        dbview.record = datascope.dbALL
+        dbview.field = datascope.dbALL
+    else:
+        elog.debug( 'dbopen( %s )' % db )
+        try:
+            dbview = datascope.dbopen( db, "r+" )
+        except Exception,e:
+            elog.error('Problems opening database: %s %s %s' % \
+                    (db,Exception, e) )
+
+    try:
+        # Verify this database
+        elog.debug( 'dbDBPATH => %s' % \
+                dbview.query(datascope.dbDBPATH))
+        elog.debug( 'dbDATABASE_NAME => %s' % \
+                dbview.query(datascope.dbDATABASE_NAME))
+        elog.debug( 'dbDATABASE_IS_WRITABLE => %s' % \
+                dbview.query(datascope.dbDATABASE_IS_WRITABLE))
+    except Exception,e:
+        elog.error('Problem with database [%s]: %s [%s]' % ( db, Exception,e) )
+
+    return dbview
+
+
+def open_table(db, tablename=None):
+    '''
+    Open a database (or database pointer) and verify a table
+
+    Remember to free the return pointer later!!!
+    '''
+
+    elog.debug( 'Open db/table [%s]' % tablename )
+
+    dbview = open_db(db)
+
+    if not tablename:
+        return dbview
+
+    elog.debug( 'Verify table [%s]' % tablename )
+
+    tableview = dbview.lookup(table=tablename)
+
+    # Verify if we have the table
+    elog.debug( 'dbTABLE_PRESENT => %s' % \
+            tableview.query(datascope.dbTABLE_PRESENT))
+
+
+    # Check if we have something to continue
+    if not tableview.query(datascope.dbTABLE_PRESENT):
+        elog.warning( 'Missing table [%s] in db view.' % tablename )
+
+    if not tableview.record_count:
+        elog.warning( 'EMPTY table %s' % tablename )
+
+    # Return valid view if table is present
+    return tableview
+
+
+def nice_print_results( results ,split=False, prelim='' ):
+
+    text = '*** NULL RESULTS *** '
+    text2 = '*** NULL RESULTS ***'
+
+    if  results and 'Quality' in results:
+        # First panel
+        text =  "%s %s\n" % ( results['estatus'],prelim )
+        text += "\n"
+        #text += "Location: ( {:0.2f}, {:0.2f} ) ".format( event.lat, event.lon)
+        #text += " {0} km\n".format( event.depth )
+        #text += "\n"
+        #text += "Model:     {0}\n".format( event.model )
+        text += "VarRed:    {:0.1f} %\n".format( float(results['VarRed']) )
+        text += "Mo:        {0}\n".format( results['Mo'] )
+        text += "S:%s  R:%s  D:%s\n" % \
+                ( results['Strike'], results['Rake'], results['Dip'] )
+        # Second panel
+        text2  = "Pdc:       {0:0.1f}%\n".format( float( (results['Pdc'] * 100) ) )
+        text2 += "Pclvd:     {0:0.1f}%\n".format( float( (results['Pclvd'] * 100) ) )
+        text2 += "VAR:       {0:0.1e} \n".format( float( results['Variance'] ) )
+        text2 += "Var/Pdc:   {0:0.1e} \n".format( float( results['Var/Pdc'] ) )
+        text2 += "Mxx:%0.3f  Myy:%0.3f\n" % \
+                (float(results['Mxx']), float(results['Myy']))
+        text2 += "Mxy:%0.3f  Mxz:%0.3f\n" % \
+                (float(results['Mxy']), float(results['Mxz']))
+        text2 += "Myz:%0.3f  Mzz:%0.3f\n" % \
+                (float(results['Myz']), float(results['Mzz']))
+
+    else:
+        elog.warning( 'Cannot find useful information in results.' )
+        elog.warning( results )
+
+    if split:
+        return text, text2
+    else:
+        return text + text2
+
+def roll_logfile( log_filename, log_max_count ):
+    elog.info( 'Using log: {0}'.format( log_filename ) )
+
+    # Clean log folder
+    logfiles = glob.glob('%s%s' % ( log_filename, "*" ) )
+    elog.info( 'Previous files: {0}'.format( logfiles ) )
+    for f in sorted(logfiles, reverse=True):
+        elog.info( 'Verify log: {0}'.format( f ) )
+        m = re.match( "^(%s)(\.)?(\d)*$" % log_filename, f )
+        try:
+            name = m.group(1)
+        except:
+            elog.info( 'No filenames with this format:{0}'.format( log_filename ) )
+            continue
+
+        try:
+            version = int( m.group(3) )
+        except:
+            version = 0
+
+        elog.info( 'File:{0} Version:{1}'.format( name, version ) )
+
+        if version >= int(log_max_count):
+            elog.info( 'Remove old log: {0}'.format( f ) )
+            os.remove(f)
+        else:
+            newname = "%s.%s.tmp" % (m.group(1), version + 1 )
+            elog.info( 'Move %s to %s ' % ( f, newname) )
+            os.rename( f, newname )
+    # Set final names
+    logfiles = glob.glob('%s*.tmp' % ( log_filename ) )
+    for f in sorted(logfiles, reverse=True):
+        elog.info( 'Verify log: {0}'.format( f ) )
+        m = re.match( "^(%s\.\d*)(\.tmp)$" % log_filename, f )
+        try:
+            elog.info( 'Move %s to %s ' % ( f, m.group(1)) )
+            os.rename( f, m.group(1) )
+        except Exception,e:
+            elog.info( 'ERROR: rename tmp to final({0}): {1}'.format( f, e ) )
+
+
+
 def valid_number( test ):
 
     if test != test: return False
@@ -18,7 +170,7 @@ def valid_number( test ):
 
 def add_padding(tr):
 
-    logging.debug('Add padding to trace object ' )
+    elog.debug('Add padding to trace object ' )
 
     #trcopy = tr.trcopy()
     #trcopy.trfilter('BW 20 4 0 0')
@@ -55,7 +207,7 @@ def add_padding(tr):
 
 #def remove_padding(tr,samples):
 #
-#    logging.debug('Remove padding on trace object ' )
+#    elog.debug('Remove padding on trace object ' )
 #
 #    # remove the padding
 #    for rec in tr.iter_record():
@@ -68,41 +220,45 @@ def add_padding(tr):
 
 
 def myround(x, base=5):
-    #from __main__ import logging
-    logging.debug('Round %s to base %s' % (x, base) )
+    #from __main__ import elog
+    elog.debug('Round %s to base %s' % (x, base) )
     return int(int(base) * round(float(x)/int(base)))
 
-def run(cmd,directory='.',ignore_error=False):
-    #from __main__ import logging
-    logging.debug("run()  -  Running: %s" % cmd)
-    p = subprocess.Popen([cmd], stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE,
-                         cwd=directory, shell=True)
-    stdout, stderr = p.communicate()
+def run(cmd,directory='.',max_try=5,ignore_error=False):
+    attempt = 1
 
-    if stdout:
-        for line in iter(stdout.split('\n')):
-            logging.debug('stdout:\t%s'  % line)
-    if stderr:
-        for line in iter(stderr.split('\n')):
-            logging.debug('stderr:\t%s'  % line)
+    while( attempt < max_try ):
+        attempt += 1
+        elog.debug("run()  -  Running: %s" % cmd)
+        p = subprocess.Popen([cmd], stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            cwd=directory, shell=True)
+        stdout, stderr = p.communicate()
 
-    if p.returncode != 0 and not ignore_error:
-        logging.error('Exitcode (%s) on [%s]' % (p.returncode,cmd))
+        if stdout:
+            for line in iter(stdout.split('\n')):
+                elog.debug('stdout:\t%s'  % line)
+        if stderr:
+            for line in iter(stderr.split('\n')):
+                elog.debug('stderr:\t%s'  % line)
 
-    if p.returncode != 0 and ignore_error:
-        logging.warning('Exitcode (%s) on [%s]' % (p.returncode,cmd))
-        return []
+        if p.returncode != 0 :
+            elog.notify('Exitcode (%s) on [%s]' % (p.returncode,cmd))
+            continue
 
-    if stdout:
-        return iter(stdout.split('\n'))
-    if stderr:
-        return iter(stderr.split('\n'))
-    return iter()
+        if stdout:
+            return iter(stdout.split('\n'))
+        if stderr:
+            return iter(stderr.split('\n'))
+
+    if ignore_error:
+        return False
+
+    elog.error('Cannot successfully run [%s]' % cmd)
 
 def fix_amplitud(tr, value):
-    #from __main__ import logging
-    logging.debug('Fix amplitud by %s' % (value) )
+    #from __main__ import elog
+    elog.debug('Fix amplitud by %s' % (value) )
 
     # Need to double our traces
     for rec in tr.iter_record():
@@ -161,32 +317,36 @@ def plot_tr_object(tr, name='signal', fig=False, style='r', delay=0, jump=1, dis
 
 
 def apply_response(tr, filename, samprate):
-    #from __main__ import logging
-    logging.debug('Aplly response %s' % (filename) )
+    #from __main__ import elog
+    elog.debug('Aplly response %s' % (filename) )
 
-    if not filename or not os.path.isfile( filename ):
-        logging.warning('Problems loading response file: [%s]' % (filename))
+    if not filename :
+        elog.log( 'No response file provided' )
+        return tr
+
+    if not os.path.isfile( filename ):
+        elog.warning('Problems loading response file: [%s]' % (filename))
         return tr
 
     try:
         respaddr = response._get_response(filename)
-        logging.debug('respaddr')
-        logging.debug(respaddr)
+        elog.debug('respaddr')
+        elog.debug(respaddr)
         if not respaddr: raise RuntimeError
     except Exception,e:
-        logging.error('Problems loading response file: %s => %s' % (filename, e))
+        elog.error('Problems loading response file: %s => %s' % (filename, e))
 
     for rec in tr.iter_record():
         data = array( rec.trdata() )
-        logging.debug( 'Total samples: %s ' % len(data) )
+        elog.debug( 'Total samples: %s ' % len(data) )
 
         npts = len(data)
 
-        logging.debug('compute the one-dimensional discrete Fourier Transform')
+        elog.debug('compute the one-dimensional discrete Fourier Transform')
         fft_values = fft(data)[0:int(npts/2)+1]
 
         # Return the Discrete Fourier Transform sample frequencies
-        logging.debug('compute the Fourier Transform sample frequencies')
+        elog.debug('compute the Fourier Transform sample frequencies')
         freq = fftfreq(len(data), d=1.0/samprate)[range(0,npts/2+1)]
 
         # the last element is negative, because of the symmetry, but should
@@ -201,70 +361,10 @@ def apply_response(tr, filename, samprate):
 
         data = irfft( convolved * fft_values )
 
-        logging.debug( 'Total samples: %s ' % len(data) )
+        elog.debug( 'Total samples: %s ' % len(data) )
         rec.trputdata( data )
 
     response._free_response ( respaddr )
-
-    return tr
-
-def decimate_trace( tr, newsps ):
-    """
-    Function to correctly apply some decimation filters
-
-    """
-    #from __main__ import logging
-
-    logging.debug('Now try to decimate the data')
-
-
-    # Find samplerate
-    tr.record = 0
-    oldsps = tr.getv('samprate')[0]
-
-    total = tr.record_count
-
-    # no need. return
-    if oldsps == newsps: return tr
-
-    # Need to double our traces
-    for rec in range(tr.record_count):
-        tr.record = rec
-        data = tr.trdata()
-        zeros_data = zeros( len(data) )
-        ones_data = ones( len(data) )
-        ones_data *= data[0]
-        tr.trputdata( concatenate([zeros_data , data]) )
-
-    # Bring pointer back
-    tr.record = datascope.dbALL
-
-    try:
-        tr.trfilter('DECIMATE BY %i' % oldsps)
-    except Exception,e:
-        logging.error('decimate %s: %s' % (Exception,e))
-
-    # Need to cut back the traces
-    for rec in range(tr.record_count):
-        tr.record = rec
-        #data = tr.trdata()
-        #start = int(len(data)/2)
-        #start = len(data)/2
-        #end =  -1
-        #tr.trputdata( data[start:end] )
-        #tr.trputdata( tr.trdata() )
-        #tr.trputdata( data[len(ones):-1] )
-
-
-    tr.record = 0
-    samprate = tr.getv('samprate')[0]
-    logging.debug('Old sps: %s New sps: %s' % (oldsps, samprate))
-    if ( samprate != newsps): logging.error('Problems decimating from %s to %s' % ( sps, newsps ) )
-
-    tr.record = datascope.dbALL
-
-    return tr
-
 
 def fix_exec(content):
 
@@ -277,9 +377,9 @@ def fix_exec(content):
 
 
 def cleanup_db(db,match):
-    #from __main__ import logging
-    logging.debug( 'dbTABLE_PRESENT => %s' % db.query(datascope.dbTABLE_PRESENT) )
-    logging.debug( 'dbTABLE_IS_WRITABLE => %s' % db.query(datascope.dbTABLE_IS_WRITABLE) )
+    #from __main__ import elog
+    elog.debug( 'dbTABLE_PRESENT => %s' % db.query(datascope.dbTABLE_PRESENT) )
+    elog.debug( 'dbTABLE_IS_WRITABLE => %s' % db.query(datascope.dbTABLE_IS_WRITABLE) )
 
     if db.query(datascope.dbTABLE_PRESENT):
         while db.record_count:
@@ -290,22 +390,11 @@ def cleanup_db(db,match):
                 record = -1
 
             if record < 0: break
-            logging.debug('Found previous record %s for %s' % (record, match))
+            elog.debug('Found previous record %s for %s' % (record, match))
             db.record = record
             db.mark()
-            logging.debug('%s marked' % record)
+            elog.debug('%s marked' % record)
 
-
-class fkrprogException(Exception):
-    """
-    Local class to raise Exceptions
-    """
-    def __init__(self, msg):
-        self.msg = msg
-    def __repr__(self):
-        return "fkrprogException: %s" % self.msg
-    def __str__(self):
-        return repr(self)
 
 
 class Records():
@@ -315,7 +404,7 @@ class Records():
 
     def __init__(self,sps=0,segtype=None,response=None):
 
-        #from __main__ import logging
+        #from __main__ import elog
         self.chans = {}
         self.samplerate = sps
         self.file = None
@@ -324,7 +413,7 @@ class Records():
 
     def __iter__(self):
         self.chan_list = sorted( self.chans.keys() )
-        logging.debug( 'Chans in Record: %s' % self.chan_list )
+        elog.debug( 'Chans in Record: %s' % self.chan_list )
         return self
 
     def next(self):
@@ -337,12 +426,12 @@ class Records():
 
     def list(self):
         self.chan_list = sorted( self.chans.keys() )
-        #logging.debug( 'Chans in Record: %s' % self.chan_list )
+        #elog.debug( 'Chans in Record: %s' % self.chan_list )
         return self.chan_list
 
     def flip(self):
         for chan in self.chans.keys():
-            logging.debug('Flip channel %s' % chan )
+            elog.debug('Flip channel %s' % chan )
             self.chans[chan] = self.chans[chan] * -1
 
     def get(self,channame):
@@ -403,21 +492,21 @@ class Records():
         return vmax
 
     def apply_calib(self, calib, chan):
-        logging.debug('Aplly calibration of [%s] to channel %s' % (calib,chan) )
-        logging.debug( self.chans[chan] )
+        elog.debug('Aplly calibration of [%s] to channel %s' % (calib,chan) )
+        elog.debug( self.chans[chan] )
 
         self.chans[chan] *= calib
-        logging.debug( self.chans[chan] )
+        elog.debug( self.chans[chan] )
 
 
     def get_data(self,chan):
-        #logging.debug('Get %s from trace' % chan)
+        #elog.debug('Get %s from trace' % chan)
         if chan and chan in self.chans:
             return self.chans[chan]
         return self.chans
 
     def window(self,start=0,end=-1):
-        #logging.debug('Get %s from trace' % chan)
+        #elog.debug('Get %s from trace' % chan)
         for c in self.list():
             self.chans[c] = self.chans[c][start:end]
 
@@ -457,7 +546,7 @@ class Station(Records):
     """
 
     def __init__(self,sta,tmp_folder):
-        #from __main__ import logging
+        #from __main__ import elog
         self.sta = sta
         self.tmp_folder = tmp_folder
         self.real = Records()
@@ -480,9 +569,10 @@ class Station(Records):
         self.azimuth  = False
         self.zcor  = 0
         self.sdelay  = 0
+        self.vr = None
 
     def clean(self):
-        logging.debug( 'clean object for : %s' % self.sta )
+        elog.debug( 'clean object for : %s' % self.sta )
         self._remove_file( self.real_file )
         self._remove_file( self.synth_file )
 
@@ -492,7 +582,7 @@ class Station(Records):
             try:
                 os.remove( filename )
             except:
-                logging.warning( 'cannot remove file: %s' % filename )
+                elog.warning( 'cannot remove file: %s' % filename )
 
 
     def real_trace(self,channame=False):
@@ -523,13 +613,11 @@ class Station(Records):
 
     def to_file(self,trace='rea'):
         if trace == 'real':
-            #self.real_file = makeHelm(self.real, 0, self.real_samples,
             self.real_file = makeHelm(self.real,
                     append='%s-real' % self.sta, folder=self.tmp_folder)
             self.real_file_name = os.path.basename(self.real_file)
             return self.real_file
         else:
-            #self.synth_file = makeHelm(self.synth, 0, self.synth_samples,
             self.synth_file = makeHelm(self.synth,
                     append='%s-synth' % self.sta, folder=self.tmp_folder)
             self.synth.file = self.synth_file
@@ -569,134 +657,80 @@ class Station(Records):
             vmin = self.real.getmin()
             samps = self.real_samples
         else:
-            logging.debug( 'synt: %s' % self.synth_samples )
+            elog.debug( 'synt: %s' % self.synth_samples )
             vmax = self.synth.getmax()
             vmin = self.synth.getmin()
             samps = self.synth_samples
 
         return (0,samps,vmin,vmax)
 
+    def convert_synth(self, results):
 
-    def convert_synth_original(self, results):
+        elog.debug(' apply results to greens for plotting ' )
 
-        # apply results to greens for plotting
-
+        # Find time shift
         try:
             self.zcor = float(results['zcor'][self.sta])
         except:
             self.zcor = 0
 
-        chans =  {'rad':'R','ver':'Z','tan':'T'}
-
-        for m in ['rad','ver','tan']:
-            for f in ['synth.data.','new.','']:
-                try:
-                    os.unlink('%s/%s%s' % (self.tmp_folder,f,m))
-                except:
-                    pass
-
-        # Get the data into sac format
-        cmd = "putmt in=%s out=synth.data azimuth=%s " % (self.synth_file,int(float(self.azimuth)) )
-        cmd += " mxx=%s" % results['Mxx']
-        cmd += " mxy=%s" % results['Mxy']
-        cmd += " mxz=%s" % results['Mxz']
-        cmd += " myy=%s" % results['Myy']
-        cmd += " myz=%s" % results['Myz']
-        cmd += " mzz=%s" % results['Mzz']
-        cmd += " moment=%s" % results['Mo']
-        logging.debug( cmd )
-        run(fix_exec(cmd),self.tmp_folder)
-
-        for f in ['rad','ver','tan']:
-            cmd = 'sac2bin in=synth.data.%s out=%s' % (f,f)
-            logging.debug( cmd )
-            run(fix_exec(cmd),self.tmp_folder)
-
-            cmd = 'mkHelm ntr=1 nt=%s dt=1.0 format="(6e12.5)" < %s > new.%s' % (self.synth_samples,f,f)
-            logging.debug( cmd )
-            run(fix_exec(cmd),self.tmp_folder)
-
-            data = readHelm( '%s/new.%s' % (self.tmp_folder,f) )
-
-            logging.debug( 'zcor is %s' % self.zcor)
-
-            if self.zcor < 0.0:
-                logging.debug( 'remove %s points' % self.zcor)
-                data = delete(data, self.zcor, 0)
-            elif self.zcor > 0.0:
-                logging.debug( 'add %s points' % self.zcor)
-                data = insert(data, 0, ones(int(self.zcor)) * data[0], 0)
-
-            self.synth_zrt.set(chans[f], data )
-
-        self.flip('real')
-        #self.flip('synth')
+        strike = results['Strike'][0]
+        rake = results['Rake'][0]
+        dip = results['Dip'][0]
+        moment = float( results['Mo'] )
+        isomoment = float( results['isomoment'] )
 
 
-    #def convert_synth(self, results):
+
+        strike = float(self.azimuth) - strike
+        strike *= pi/180.0
+        rake *= pi/180.0
+        dip *= pi/180.0
 
 
-    #    self.zcor = float(results['zcor'][self.sta])
-    #    az = array( float(self.azimuth) )
-    #    self.synth_zrt = Records()
+        moment /= 1.0e+20
+        isomoment /= 1.0e+20
 
-    #    TSS = array( self.synth.get('TSS') )
-    #    TDS = array( self.synth.get('TDS') )
-    #    XSS = array( self.synth.get('XSS') )
-    #    XDS = array( self.synth.get('XDS') )
-    #    XDD = array( self.synth.get('XDD') )
-    #    ZSS = -1 * array( self.synth.get('ZSS') )
-    #    ZDS = -1 * array( self.synth.get('ZDS') )
-    #    ZDD = -1 * array( self.synth.get('ZDD') )
 
-    #    XX = array(float(results['Mxx']))
-    #    YY = array(float(results['Myy']))
-    #    ZZ = array(float(results['Mzz']))
-    #    XY = array(float(results['Mxy']))
-    #    XZ = array(float(results['Mxz']))
-    #    YZ = array(float(results['Myz']))
+        A0=sin(2.0*strike)*cos(rake)*sin(dip) + 0.5*cos(2.0*strike)*sin(rake)*sin(2.0*dip)
+        A1=cos(strike)*cos(rake)*cos(dip) - sin(strike)*sin(rake)*cos(2.0*dip)
+        A2=0.5*sin(rake)*sin(2.0*dip)
+        A3=cos(2.0*strike)*cos(rake)*sin(dip) - 0.5*sin(2.0*strike)*sin(rake)*sin(2.0*dip)
+        A4=sin(strike)*cos(rake)*cos(dip) + cos(strike)*sin(rake)*cos(2.0*dip)
+        A4 *= -1.0
 
-    #    Z = XX*( (ZSS/2 - cos(2*az)) * ZDD/3 )
-    #    Z += YY*( -1 * (ZSS/2 * cos(2*az)) - ZDD/6 )
-    #    Z += ZZ*( ZDD/3 )
-    #    Z += XY* ZSS * sin(2*az)
-    #    Z += XZ* ZDS * cos(az)
-    #    Z += YZ* ZDS * sin(az)
-    #    self.synth_zrt.set('Z',Z)
+        elog.debug( "A1=%f A2=%f A3=%f A4=%f A5=%f" % (A0,A1,A2,A3,A4) )
 
-    #    R = XX*( (XSS/2 * cos(2*az)) - XDD/6 )
-    #    R += YY*( -1 * (XSS/2 * cos(2*az)) - XDD/6 )
-    #    R += ZZ*( XDD/3 )
-    #    R += XY* XSS * sin(2*az)
-    #    R += XZ* XDS * cos(az)
-    #    R += YZ* XDS * sin(az)
-    #    self.synth_zrt.set('R',R)
 
-    #    T = XX * TSS / 2 * sin(2*az)
-    #    T -= YY / 2 * TSS * sin(2*az)
-    #    T -= XY * TSS * cos(2*az)
-    #    T -= XZ* TDS * sin(az)
-    #    T += YZ* TDS * cos(az)
-    #    self.synth_zrt.set('T',T)
+        # synth_channels = ['TSS','TDS','XSS','XDS','XDD','ZSS','ZDS','ZDD','REX','ZEX']
+        #                     0     1     2     3     4     5     6     7     8     9
 
-    #    if self.zcor < 0.0:
-    #        T = delete(T, self.zcor, 0)
-    #        R = delete(R, self.zcor, 0)
-    #        Z = delete(Z, self.zcor, 0)
-    #    elif self.zcor > 0.0:
-    #        T = insert(T, 0, ones(self.zcor) * T[0], 0)
-    #        R = insert(R, 0, ones(self.zcor) * T[0], 0)
-    #        Z = insert(Z, 0, ones(self.zcor) * T[0], 0)
+        tss = self.synth.get( 'TSS' )
+        tds = self.synth.get( 'TDS' )
+        xss = self.synth.get( 'XSS' )
+        xds = self.synth.get( 'XDS' )
+        xdd = self.synth.get( 'XDD' )
+        zss = self.synth.get( 'ZSS' )
+        zds = self.synth.get( 'ZDS' )
+        zdd = self.synth.get( 'ZDD' )
+        rex = self.synth.get( 'REX' )
+        zex = self.synth.get( 'ZEX' )
 
-    #    self.synth_zrt.set('T', T )
-    #    self.synth_zrt.set('R', R )
-    #    self.synth_zrt.set('Z', Z )
 
-    #    self.flip('synth')
+        tan = moment * (A3 * tss + A4 * tds)
+        self.synth_zrt.set('T', tan )
+
+        rad = moment * (A0 * xss + A1 * xds + A2 * xdd) + isomoment * rex
+        self.synth_zrt.set('R', rad )
+
+        ver = -1.0 * moment * (A0 * zss + A1 * zds + A2 * zdd) + isomoment * zex
+        self.synth_zrt.set('Z', ver )
+
+
 
     def plot(self,trace='real'):
         # open a plot of the data
-        logging.debug('Plot traces for %s' % self.sta )
+        elog.debug('Plot traces for %s' % self.sta )
 
         if trace is 'real':
             records = self.real
@@ -704,7 +738,7 @@ class Station(Records):
             records = self.synth
 
         if not records:
-            logging.error('Empty Records for %s data on %s' % (trace,self.sta) )
+            elog.error('Empty Records for %s data on %s' % (trace,self.sta) )
 
         axs = self.max_min(trace)
 
@@ -712,7 +746,7 @@ class Station(Records):
         pyplot.figure()
         channels = records.list()
         for chan, data in records:
-            logging.debug( 'add %s_%s to plot' % (self.sta,chan) )
+            elog.debug( 'add %s_%s to plot' % (self.sta,chan) )
             pyplot.subplot(len(channels),1,total)
             pyplot.plot(data)
             pyplot.legend(["%s_%s" % (self.sta,chan)])
@@ -732,38 +766,53 @@ def find_executables( execs ):
     Dreger's original code.
     '''
 
-    #from __main__ import logging
+    #from __main__ import elog
 
     if not len(execs): return
 
     global executables
 
     for ex in execs:
-        logging.debug("Find executable for (%s)" % ex)
+        elog.debug("Find executable for (%s)" % ex)
 
         newex = spawn.find_executable(ex)
 
         if not newex:
-            logging.error("Cannot locate executable for [%s] in $PATH = \n%s" % \
+            elog.error("Cannot locate executable for [%s] in $PATH = \n%s" % \
                     (ex,os.environ["PATH"].split(os.pathsep)) )
 
         executables[ex] = os.path.abspath( newex )
 
-        logging.debug("(%s) => [%s]" % (ex, newex) )
+        elog.debug("(%s) => [%s]" % (ex, newex) )
 
-def plot_results( database, id, stations, results, event, folder='./',
-                       acknowledgement='dbmoment'):
+def plot_results( results, bb_colors={},
+        folder='./', acknowledgement='dbmoment',
+        beachball=False, prelim=''):
 
-    #from __main__ import logging
+    event = results['event']
+    stations = results['stations']
+
+
+    # Done with the inversion. Now set values for plotting results
+    for sta in stations.keys():
+        elog.debug('convert_synth( %s )' % sta)
+        #stations[sta].convert_synth_original( results )
+        stations[sta].convert_synth( results )
 
     total = 1
 
+    try:
+        event_color = "#%s" % bb_colors[ str(results['Quality']) ]
+    except:
+        event_color = 'k'
 
-    #N = len(stations.keys())
+    elog.debug('Beachball/Event color: %s => [%s]' % (results['Quality'],event_color) )
+
+
+
     total_stations = len(stations.keys()) + 2
     gcf = pyplot.gcf()
-    #fig = pyplot.figure(figsize=( 20, (3*N) ))
-    fig = pyplot.figure(figsize=( 20, 3 * total_stations ))
+    fig = pyplot.figure(figsize=( 20, 2 * total_stations ))
 
     max_all = []
     min_all = []
@@ -782,17 +831,13 @@ def plot_results( database, id, stations, results, event, folder='./',
 
 
 
-    # First panel
-    text = "%s \n" % event.strtime
-    text += "\n"
-    text += "ID: %s   %s\n" % (id, results['estatus'] )
-    text += "\n"
-    text += "Location: \n"
-    text += "   Lat:    %s \n" % event.lat
-    text += "   Lon:    %s \n" % event.lon
-    text += "   Depth:  %s km\n" % event.depth
-    text += "Filter:    %s \n" % event.filter
-    text += "Model:     %s" % event.model
+    text, text2  = nice_print_results( results ,split=True, prelim=prelim)
+
+    text += "\n( {:0.1f}, {:0.1f} ) ".format( event.lat, event.lon)
+    text += "{0} km depth\n".format( event.depth )
+    text += "ID:{0}    ".format( event.orid )
+    text += "Model:{0}".format( event.model )
+
     ax = fig.add_subplot(total_stations,3,total, frameon=False)
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
@@ -801,79 +846,87 @@ def plot_results( database, id, stations, results, event, folder='./',
                  fontsize=12, bbox=dict(edgecolor='none',boxstyle="round, pad=2", fc="w"))
     total += 1
 
-    # Second panel
-    text = "Mw:       %s \n" % results['Mw']
-    text += "Strike:%s Rake:%s Dip:%s\n" % \
-            ( results['Strike'], results['Rake'], results['Dip'] )
-    text += "Pdc:      %0d %%\n" % (results['Pdc'] * 100)
-    text += "Pclvd:    %0d %%\n" % (results['Pclvd'] * 100)
-    text += "VAR:   %s \n" % results['Variance']
-    text += "VarRed:     %s \n" % results['VarRed']
-    text += "Var/Pdc:    %s \n" % results['Var/Pdc']
-    text += "Mo:         %s \n" % results['Mo']
-    text += "Mxx:%0.3f  Mxy:%0.3f  Mxz:%0.3f\n" % (float(results['Mxx']), float(results['Mxy']), float(results['Mxz']))
-    text += "Myy:%0.3f  Myz:%0.3f  Mzz:%0.3f\n" % (float(results['Myy']), float(results['Myz']), float(results['Mzz']))
     ax = fig.add_subplot(total_stations,3,total, frameon=False)
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
     ax.patch.set_alpha(0.0)
-    ax.annotate( text, (0, 1), xycoords="axes fraction", va="top", ha="left",
+    ax.annotate( text2, (0, 1), xycoords="axes fraction", va="top", ha="left",
                  fontsize=12, bbox=dict(edgecolor='none',boxstyle="round, pad=2", fc="w"))
-    total += 1
 
     # Only run if library ObsPy is present on system.
     if beachball:
 
-        quality_color = {
-                1: "#FF0000",
-                2: "#FFD700",
-                3: "#008000",
-                4: "#4169E1",
-                }
-        bb_color = quality_color[ int( results['Quality']) ]
-
-        # Third panel for beachball
-        ax = fig.add_subplot(total_stations,3,total, frameon=False)
-        ax.xaxis.set_visible(False)
-        ax.yaxis.set_visible(False)
-        ax.patch.set_alpha(0.0)
-
-        ax.annotate( 'ObsPy used for beachball image', (0.5, 0), xycoords="axes fraction", va="top", ha="left",
-                     fontsize=7, bbox=dict(edgecolor='none',boxstyle="round, pad=2", fc="w"))
-
         mt = [ float(results['Mxx']), float(results['Myy']), float(results['Mzz']),
             float(results['Mxy']), float(results['Mxz']), float(results['Myz']) ]
-        bb = beachball(mt, mopad_basis='NED', width=165, linewidth=0.6, facecolor=bb_color)
-        bb.set_zorder(0)
+
+        bb = beachball(mt, mopad_basis='NED', xy=(0,0), width=30, linewidth=1,
+                edgecolor='k', facecolor=event_color)
+
+        #bb.set_zorder(0)
+
         ax.add_collection( bb )
-        ax.set_xlim((-125, 125))
-        ax.set_ylim((-125, 125))
-        ax.set_aspect("equal")
+        #ax.set_aspect("equal")
+        ax.set_xlim((-100, 30))
+        ax.set_ylim((-20, 20))
 
-        stanumber = 0
-        for sta in sorted(stations.keys(), key=lambda x: float(stations[x].realdistance) ):
-            distance = int( float(stations[sta].realdistance) )
-            azimuth = float(stations[sta].azimuth)
-            color =  colors.cnames.items()[stanumber][0]
-            size = interp(distance,[0,200],[15,5])
 
-            pyplot.arrow(0, 0, 100*cos(azimuth), 100*sin(azimuth), shape='full', lw=0,
-                    length_includes_head=True, head_width=size, color=color)
+    total += 1
 
-            stanumber += 1
+    # Third panel for beachball
+    ax = fig.add_subplot(total_stations,3,total, frameon=True)
+    ax.patch.set_alpha(0.0)
+    #ax.set_aspect("equal")
+
+    # Calculate size of MT form Event to Station distance
+    # Look for closest station for us to calculate a scale factor for our
+    # MT beachball on the station map.
+    closest = sorted(stations.keys(), key=lambda x: float(stations[x].distance) )[0]
+    #event_scale = interp(stations[ closest ].distance,[0,500],[8,15])
+    event_scale = 20
+    size = interp(len(stations),[0,15],[10,4])
+    stanumber = 0
+
+    # If we don't have OBSPY then we can add a marker for the event
+    pyplot.plot( results['event'].lon, results['event'].lat,
+            '*', ms=event_scale, color=event_color, zorder=0)
+
+    for sta in sorted(stations.keys(), key=lambda x: float(stations[x].realdistance) ):
+
+        lat,lon = results['event'].location(sta)
+        elog.debug( '%s (%s,%s)' % (sta, lat, lon) )
+
+        color =  colors.cnames.items()[stanumber][0]
+
+        pyplot.plot( lon, lat, '^', ms=size, color=color)
+
+        if lon > results['event'].lon:
+            horizontal = 'left'
+        else:
+            horizontal = 'right'
+
+        ax.annotate(sta, xy=(lon, lat),
+                ha=horizontal, va='bottom', size=10)
+
+
+        stanumber += 1
+
+    ax.set_ymargin(0.25);
+    ax.set_xmargin(0.25);
+    ax.autoscale_view()
+    pyplot.yticks(ax.get_yticks()[::3],size=7)
+    pyplot.xticks(ax.get_xticks()[::3],size=7)
 
     total += 1
 
     stanumber = -1
-    #for sta in sorted(stations.keys()):
     for sta in sorted(stations.keys(), key=lambda x: float(stations[x].realdistance) ):
 
         stanumber += 1
-        logging.debug('Plot traces for results on %s' % sta )
+        elog.debug('Plot traces for results on %s' % sta )
         if not stations[sta].real:
-            logging.error('Empty Records for data on %s' % sta )
+            elog.error('Empty Records for data on %s' % sta )
         if not stations[sta].synth_zrt:
-            logging.error('Empty Records for converted ZRT on %s' % sta)
+            elog.error('Empty Records for converted ZRT on %s' % sta)
 
         distance = int( float(stations[sta].realdistance) )
         azimuth = int( float(stations[sta].azimuth) )
@@ -885,6 +938,15 @@ def plot_results( database, id, stations, results, event, folder='./',
             zcor = '-'
         variance = round( results['variance'][sta], 1)
 
+        try:
+            f = stations[sta].filter.split()
+            if len(f) == 5:
+                filter_used = '%s-%s Hz' % (f[1],f[3])
+            else:
+                filter_used = stations[sta].filter
+        except:
+            filter_used = 'unknown filter'
+
         # Scale all traces the same way
         axs = (0, points_plot, min_plot, max_plot)
 
@@ -893,8 +955,14 @@ def plot_results( database, id, stations, results, event, folder='./',
         for chan in ['T', 'R', 'Z']:
             ax = fig.add_subplot(total_stations,3,total)
             #real_line, = pyplot.plot(data, label='data' )
-            real_line, = pyplot.plot(stations[sta].real.get(chan), label='data' )
-            synth_line, = pyplot.plot(stations[sta].synth_zrt.get(chan), linestyle='--', label='synth')
+            if zcor > 0:
+                real_line, = pyplot.plot(stations[sta].real.get(chan)[zcor:], label='data' )
+                synth_line, = pyplot.plot(stations[sta].synth_zrt.get(chan)[:-zcor],
+                        linestyle='--', label='synth')
+            else:
+                real_line, = pyplot.plot(stations[sta].real.get(chan)[:-zcor], label='data' )
+                synth_line, = pyplot.plot(stations[sta].synth_zrt.get(chan)[zcor:],
+                        linestyle='--', label='synth')
 
             if beachball:
                 box_color =  colors.cnames.items()[stanumber][0]
@@ -914,7 +982,8 @@ def plot_results( database, id, stations, results, event, folder='./',
             ax.yaxis.set_major_formatter(pyplot.FormatStrFormatter('%.1e'))
 
             # Top of plot
-            pyplot.text (0.5, 0.9, r'$\mathbf{%s}\ -\ \mathbf{%s}\ \ %s_{km}\ \ %s ^o$' % (sta,chan,distance,azimuth),
+            pyplot.text (0.5, 0.9, r'$\mathbf{%s}\ -\ \mathbf{%s}\ \ %s_{km}\ \ %s ^o$ %s' % \
+                    (sta,chan,distance,azimuth,filter_used),
                   horizontalalignment='center', fontsize=13,
                   verticalalignment='center', transform = ax.transAxes)
 
@@ -923,7 +992,7 @@ def plot_results( database, id, stations, results, event, folder='./',
             abs_amp = max_amp - min_amp
 
             # Bottom of plot
-            text = "Amp: %0.1e cm  variance_reduction:%s%%" % (abs_amp, variance)
+            text = "MaxAmp: %0.1e (cm)   zcor:%s   VR:%s" % (abs_amp, zcor, int(variance))
             pyplot.text (0.5, 0.1,text, horizontalalignment='center', fontsize=11,
                   verticalalignment='center', transform = ax.transAxes)
 
@@ -931,11 +1000,11 @@ def plot_results( database, id, stations, results, event, folder='./',
             pyplot.draw()
             total += 1
 
-    title = "%s Mw    " % results['Mw']
-    title += "%s   " % event.strtime
+    title = "%s %s Mw    " % ( prelim, results['Mw'] )
+    title += results['event'].strtime
     pyplot.suptitle(title, fontsize=18, ha='center')
 
-    text = "%s \n" % event.strtime
+    text = "%s \n" % results['event'].strtime
 
     # Acknowledgement panel
     ax = fig.add_subplot(total_stations,3,total, frameon=False)
@@ -961,12 +1030,25 @@ def plot_results( database, id, stations, results, event, folder='./',
     try:
         if not os.path.isdir(folder): os.makedirs(folder)
     except Exception,e:
-        logging.error("Problems while creating folder [%s] %s" % (folder,e))
+        elog.error("Problems while creating folder [%s] %s" % (folder,e))
 
-    database_name = os.path.basename(database)
-    filename = "%s/dbmoment_%s_%s_%s.png" % ( folder, database_name, id, event.model )
-    logging.notify( 'Save plot with results to temp folder: %s' %  filename)
-    #pylab.savefig(filename,bbox_inches='tight', facecolor=gcf.get_facecolor(), edgecolor='none',pad_inches=0.5, dpi=100)
+    # Name of file for image
+    database_name = os.path.basename(event.database)
+    if prelim:
+        filename = "%s/dbmoment_%s_%s_%s-PRELIMINARY-RESULT.png" % ( folder, database_name, event.orid,
+                event.model )
+    else:
+        filename = "%s/dbmoment_%s_%s_%s.png" % ( folder, database_name, event.orid,
+                event.model )
+
+    if os.path.isfile( filename ):
+        elog.notify( 'Remove previous version of the image file: %s' %  filename)
+        try:
+            os.remove( filename )
+        except Exception,e:
+            elog.error( 'Cannot remove previous version of image [%s]' % filename )
+
+    elog.notify( 'Save plot with results to temp folder: %s' %  filename)
     pyplot.savefig(filename,bbox_inches='tight', edgecolor='none',pad_inches=0.5, dpi=100)
 
     return filename
@@ -978,7 +1060,7 @@ def clean_trace(data, samplerate, trace_start, trace_end, need_start=False, need
     Return clean list of touples.
     '''
 
-    #from __main__ import logging
+    #from __main__ import elog
 
     new_data = []
     period = 1/samplerate
@@ -986,17 +1068,17 @@ def clean_trace(data, samplerate, trace_start, trace_end, need_start=False, need
     if not need_start: need_start = trace_start
     if not need_end: need_end = trace_end
 
-    logging.debug( "clean_trace samplerate:[%s]" % (samplerate) )
-    logging.debug( "clean_trace points:[%s]" % (len(data)) )
-    logging.debug( "actual[%s,%s]" % (trace_start, trace_end) )
-    logging.debug( "needed[%s,%s]" % (need_start, need_end) )
+    elog.debug( "clean_trace samplerate:[%s]" % (samplerate) )
+    elog.debug( "clean_trace points:[%s]" % (len(data)) )
+    elog.debug( "actual[%s,%s]" % (trace_start, trace_end) )
+    elog.debug( "needed[%s,%s]" % (need_start, need_end) )
 
     for d in data:
         if trace_start >= need_start and trace_start <= need_end:
             new_data.append(d)
         trace_start += period
 
-    logging.debug('New trace is: %s' % len(new_data) )
+    elog.debug('New trace is: %s' % len(new_data) )
 
     return new_data
 
@@ -1004,22 +1086,22 @@ def verify_trace_time(start, end, time, endtime):
     '''
     Verify that we have the requested data
     '''
-    #from __main__ import logging
-    logging.debug( "Requested time: [%s,%s]" % (stock.strtime(start),stock.strtime(end)) )
-    logging.debug( "In trace object: [%s,%s]" % (stock.strtime(time),stock.strtime(endtime)) )
+    #from __main__ import elog
+    elog.debug( "Requested time: [%s,%s]" % (stock.strtime(start),stock.strtime(end)) )
+    elog.debug( "In trace object: [%s,%s]" % (stock.strtime(time),stock.strtime(endtime)) )
 
     tw = end - start
 
     if endtime - time < tw:
-        logging.warning('Got %s secs but expected [%s].' % ( (endtime-time), tw) )
+        elog.warning('Got %s secs but expected [%s].' % ( (endtime-time), tw) )
         return False
 
     if start < time:
-        logging.warning('Trace starts [%s] seconds late.' % ( time - start ) )
+        elog.warning('Trace starts [%s] seconds late.' % ( time - start ) )
         return False
 
     if endtime < end:
-        logging.warning('Trace ends [%s] seconds early.' % ( end - endtime ) )
+        elog.warning('Trace ends [%s] seconds early.' % ( end - endtime ) )
         return False
 
     return True
@@ -1028,12 +1110,12 @@ def dynamic_loader(module):
     '''
     Load some libs defined on the pf file.
     '''
-    #from __main__ import logging
-    logging.debug( "load dbmoment.%s" % module )
+    #from __main__ import elog
+    elog.debug( "load dbmoment.%s" % module )
     try:
         return __import__("dbmoment.%s" % module, globals(), locals(), [module], -1)
     except Exception,e:
-        logging.error("Import Error: [%s] => [%s]" % (module,e) )
+        elog.error("Import Error: [%s] => [%s]" % (module,e) )
 
 def cleanup(folder):
     """
@@ -1042,12 +1124,12 @@ def cleanup(folder):
     random names.
     """
 
-    #from __main__ import logging
+    #from __main__ import elog
 
     try:
         if not os.path.isdir(folder): os.makedirs(folder)
     except Exception,e:
-        logging.error("Problems while creating folder [%s] %s" % (folder,e))
+        elog.error("Problems while creating folder [%s] %s" % (folder,e))
 
     filelist  = [
         'dbmoment*.Helm_data',
@@ -1067,10 +1149,10 @@ def cleanup(folder):
     for f in filelist:
         try:
             temp_file = "%s/%s" % (folder,f)
-            logging.debug( 'unlink( %s )' % temp_file )
+            elog.debug( 'unlink( %s )' % temp_file )
             map( os.unlink, glob.glob( temp_file ) )
         except Exception, e:
-            logging.error('Cannot remove temp file %s [%s]' % (temp_file,e) )
+            elog.error('Cannot remove temp file %s [%s]' % (temp_file,e) )
 
 def new_Helm_header(samples,samplerate):
     temp = '     %0.4e     %0.4e      0  0  0.00\n' % (0,0)
@@ -1081,16 +1163,13 @@ def fix_format_data(point, decimals, total):
     new = "%0.*e" % (decimals,point)
     return new.rjust(total)
 
-#def makeHelm(traces, index_min, index_max, append='', outputfile='', perline=7, total=14, decimal=5, folder='.dbmoment'):
 def makeHelm(traces, append='', outputfile='', perline=7, total=14, decimal=5, folder='.dbmoment'):
     """
     Routine to write Helmberger Format Seismograms
     """
-    #from __main__ import logging
-    logging.debug('makeHelm')
+    elog.debug('makeHelm')
 
     filename = {}
-    #global tmp_folder
 
     if not outputfile:
         (f, outputfile) = mkstemp(suffix='.Helm_data', prefix='dbmoment_%s_' % append,
@@ -1100,9 +1179,9 @@ def makeHelm(traces, append='', outputfile='', perline=7, total=14, decimal=5, f
         try:
             f = open(outputfile, 'w')
         except Exception,e:
-            self.logging.error('Cannot open new file %s %s'% (outputfile,e))
+            self.elog.error('Cannot open new file %s %s'% (outputfile,e))
 
-    logging.debug('New data file %s' % outputfile )
+    elog.debug('New data file %s' % outputfile )
 
 
     if len(traces.list()) == 3:
@@ -1119,17 +1198,17 @@ def makeHelm(traces, append='', outputfile='', perline=7, total=14, decimal=5, f
     text += "%8d\n" % ( len(traces.list()) )
     text += "(%de%d.%d)\n" % (perline, total, decimal)
 
-    logging.debug('coded channels %s' % channels )
+    elog.debug('coded channels %s' % channels )
 
-    logging.debug('in object %s' % traces.list() )
+    elog.debug('in object %s' % traces.list() )
 
     for chan in channels:
-        logging.debug('appending %s to %s' % (chan, outputfile) )
-        #logging.debug('data[ %s:%s ]' % (index_min, index_max) )
+        elog.debug('appending %s to %s' % (chan, outputfile) )
+        #elog.debug('data[ %s:%s ]' % (index_min, index_max) )
 
         data = traces.get(chan)
         #data = data[0:60]
-        logging.debug('data[ %s ]' % ( len(data) ) )
+        elog.debug('data[ %s ]' % ( len(data) ) )
         #data = data[index_min:index_max]
         samples = len(data)
 
@@ -1153,7 +1232,7 @@ def makeHelm(traces, append='', outputfile='', perline=7, total=14, decimal=5, f
         f.write(text)
         f.close()
     except Exception,e:
-        logging.error('Cannot write to new file %s %s'% (outputfile,e))
+        elog.error('Cannot write to new file %s %s'% (outputfile,e))
 
     return outputfile
 
@@ -1166,8 +1245,8 @@ def readHelm(inputfile):
         return traces
 
     """
-    #from __main__ import logging
-    logging.debug('readHelm: %s' % inputfile)
+    #from __main__ import elog
+    elog.debug('readHelm: %s' % inputfile)
     results = {}
 
 
@@ -1176,9 +1255,9 @@ def readHelm(inputfile):
     # Number of channels
     try:
         total_chans = int( fo.readline().strip() )
-        logging.debug( "Total channels [%s]" % total_chans )
+        elog.debug( "Total channels [%s]" % total_chans )
     except:
-        logging.error("NOT VALID FILE [%s]" % inputfile)
+        elog.error("NOT VALID FILE [%s]" % inputfile)
 
     if total_chans == 1:
         channels = 'X'
@@ -1194,44 +1273,44 @@ def readHelm(inputfile):
     # Data Format
     try:
         data_format = fo.readline().strip()
-        logging.debug('file format: %s' % data_format )
+        elog.debug('file format: %s' % data_format )
         temp = re.match("\((\d+)e(\d+)\.(\d+)\)",data_format)
         perline = int(temp.group(1))
         spaces = int(temp.group(2))
-        logging.debug('perline: %s  spaces: %s' % (perline, spaces) )
+        elog.debug('perline: %s  spaces: %s' % (perline, spaces) )
 
 
     except:
-        logging.error( "NOT VALID FILE [%s]" % inputfile )
+        elog.error( "NOT VALID FILE [%s]" % inputfile )
 
     for chan in range(total_chans):
         channame = channels[chan]
-        logging.debug( "chan %s" % channame )
+        elog.debug( "chan %s" % channame )
         try:
             header1 = fo.readline().strip().split()
             header2 = fo.readline().strip().split()
             total_points = int( header2[0] )
             samplerate =  1/float( header2[1] )
         except:
-            logging.error( "NOT VALID FILE [%s]" % inputfile )
+            elog.error( "NOT VALID FILE [%s]" % inputfile )
 
         if not total_points or not samplerate:
-            logging.error( "NOT VALID FILE [%s]" % inputfile )
+            elog.error( "NOT VALID FILE [%s]" % inputfile )
 
         cache = []
-        logging.debug( "Total points [%s]" % total_points )
-        logging.debug( "Sampelrate [%s]" % samplerate )
+        elog.debug( "Total points [%s]" % total_points )
+        elog.debug( "Sampelrate [%s]" % samplerate )
 
         while (total_points > 0):
             row = fo.readline().strip('\n')
-            #logging.info('row: %s' % row)
-            #logging.info('missing: %s' % total_points)
-            if not row: logging.error( 'Problems readHelm(%s)' % inputfile )
+            #elog.info('row: %s' % row)
+            #elog.info('missing: %s' % total_points)
+            if not row: elog.error( 'Problems readHelm(%s)' % inputfile )
 
             while ( len(row) > 0 ):
                 point = float(row[0:spaces])
                 row = row[spaces:]
-                #logging.info('%s' % point)
+                #elog.info('%s' % point)
                 cache.append( point )
                 total_points -= 1
 
@@ -1250,6 +1329,96 @@ def readHelm(inputfile):
         results.trace( channame, cache )
 
     return results
+
+
+def open_verify_pf(pf,mttime=False):
+    '''
+    Verify that we can get the file and check
+    the value of PF_MTTIME if needed.
+    Returns pf_object
+    '''
+
+    elog.debug( 'Look for parameter file: %s' % pf )
+
+    if mttime:
+        elog.debug( 'Verify that %s is newer than %s' % (pf,mttime) )
+
+        PF_STATUS = stock.pfrequire(pf, mttime)
+        if PF_STATUS == stock.PF_MTIME_NOT_FOUND:
+            elog.complain( 'Problems looking for %s. PF_MTTIME_NOT_FOUND.' % pf )
+            elog.die( 'No MTTIME in PF file. Need a new version of the %s file!!!' % pf )
+        elif PF_STATUS == stock.PF_MTIME_OLD:
+            elog.complain( 'Problems looking for %s. PF_MTTIME_OLD.' % pf )
+            elog.die( 'Need a new version of the %s file!!!' % pf )
+        elif PF_STATUS == stock.PF_SYNTAX_ERROR:
+            elog.complain( 'Problems looking for %s. PF_SYNTAX_ERROR.' % pf )
+            elog.die( 'Need a working version of the %s file!!!' % pf )
+        elif PF_STATUS == stock.PF_NOT_FOUND:
+            elog.complain( 'Problems looking for %s. PF_NOT_FOUND.' % pf )
+            elog.die( 'No file  %s found!!!' % pf )
+
+        elog.debug( '%s => PF_MTIME_OK' % pf )
+
+    try:
+        return stock.pfread( pf )
+    except Exception,e:
+        elog.die( 'Problem looking for %s => %s' % ( pf, e ) )
+
+
+def get_model_pf( mfile, path=[]):
+    '''
+    EARTH VELOCITY MODEL FILE:
+
+    Need to verify if we have the listed velocity model.
+    The file has a PF format but is not placed on the
+    regular folder with the rest of the parameter files
+    from contrib. That requires a full search on several
+    paths that we get from a parameter in the dbmoment.pf
+    file.
+    '''
+    pf = False
+
+    elog.debug('Get model: %s in %s' % (mfile, path) )
+
+    for d in path:
+        try:
+            elog.debug('Look for model: %s' % os.path.join(d, mfile) )
+            pf = stock.pfin(os.path.join(d, mfile) )
+            break
+        except:
+            pass
+        else:
+            break # Stop if we find one
+
+    if not pf:
+        elog.die('Missing [%s] in [%s]' % ( mfile, ', '.join(path) ) )
+
+    return pf
+
+
+
+def safe_pf_get(pf,field,defaultval=False):
+    '''
+    Safe method to extract values from parameter file
+    with a default value option.
+    '''
+
+    value = defaultval
+    if pf.has_key(field):
+        try:
+            value = pf.get(field,defaultval)
+        except Exception,e:
+            elog.die('Problems safe_pf_get(%s,%s)' % (field,e))
+            pass
+
+    if isinstance( value, (list, tuple)):
+        value = [x for x in value if x]
+
+    elog.debug( "pf.get(%s,%s) => %s" % (field,defaultval,value) )
+
+    return value
+
+
 
 
 if __name__ == "__main__": raise ImportError( "\n\n\tAntelope's dbmoment module. Not to run directly!!!! **\n" )

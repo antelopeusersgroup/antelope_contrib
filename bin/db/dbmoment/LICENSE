@@ -31,7 +31,6 @@ there is a FREE USE LICENSE (1).  Limited to the following source code:
     data(py)
     inversion(py)
     run_dbmoment_example(xpl)
-    logging_helper(py)
     synthetics(py)
 
 
@@ -51,8 +50,8 @@ there is a FREE USE LICENSE (1).  Limited to the following source code:
 Original TDMT_INV code by Douglas Dreger (Berkeley Seismological Lab.).
 Original Green's function computed with code by Chandan Saikia (URS).
 Original acknowledgement statement:
-    Moment tensor computed using the tdmt-invc package developed by
-    Douglas Dreger of the Berkeley Seismological Laboratory, and Green’s
-    functions were computed using the FKRPROG software developed by
-    Chandan Saikia with URS.
+    Moment tensor computed using the mtpackagev3.0 package developed by
+    Douglas Dreger and Sean Ford  of the Berkeley Seismological
+    Laboratory, and Green’s functions were computed using the
+    FKRPROG software developed by Chandan Saikia.
 

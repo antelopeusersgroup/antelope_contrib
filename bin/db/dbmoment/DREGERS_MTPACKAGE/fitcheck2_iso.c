@@ -1,4 +1,8 @@
-#include"tdmt_invb.h"
+/*Copyright (c) Douglas Dreger
+Berkeley Seismological Laboratory
+University of California, Berkeley */
+#include"tdmtinv_iso.h"
+#include <math.h>
 
 fitcheck(ss,gg,W,M,Mo,nsta,degree,var,vred)
  struct MOMENT M;
@@ -7,7 +11,7 @@ fitcheck(ss,gg,W,M,Mo,nsta,degree,var,vred)
  int nsta,degree;
  float *W, Mo, *var, *vred;
    {
-   int i,j,Zd,Zg,Np,cnt;
+   int i,j,Z,Zd,Zg,Np,cnt;
    float Dpower, Dtot, Etmp, E, Etot,VAR,DVAR, WSUM, Az, Mscl;
 
    Mscl = Mo/1.0e+20;
@@ -22,7 +26,23 @@ fitcheck(ss,gg,W,M,Mo,nsta,degree,var,vred)
       Zg=gg[i].zz;
       Np=ss[i].nn;
       Az=ss[i].azi;
-      for(j=0; j < Np; j++)
+
+      // Make sure that we cut the arrays to the
+      // Z shift needed.
+      // Zg in this case is always 0
+      Z = 0;
+      if ( abs(Zd) > 0 ) {
+          Z = abs(Zd);
+          Zd = Z;
+          Zg = 0;
+      }
+      if ( Zd < 0 ) {
+          Z = abs(Zd);
+          Zd = 0;
+          Zg = Z;
+      }
+
+      for(j=0; j < Np-Z; j++)
 	 {
 	 Etmp = ss[i].t[Zd+j] - (M.mxx*0.5*gg[i].u1[j+Zg]*sin(2*Az)
 			       - M.myy*0.5*gg[i].u1[j+Zg]*sin(2*Az)
@@ -30,16 +50,16 @@ fitcheck(ss,gg,W,M,Mo,nsta,degree,var,vred)
 			       - M.mxz*gg[i].u2[j+Zg]*sin(Az)
 			       + M.myz*gg[i].u2[j+Zg]*cos(Az));
 	 E += Etmp*Etmp;
-         Etmp = ss[i].r[Zd+j] - (M.mxx*0.5*gg[i].u5[j+Zg] - M.mxx*0.5*gg[i].u3[j+Zg]*cos(2*Az) + M.mxx*0.3333*gg[i].u9[j+Zg]
-			       + M.myy*0.5*gg[i].u5[j+Zg] + M.myy*0.5*gg[i].u3[j+Zg]*cos(2*Az) + M.myy*0.3333*gg[i].u9[j+Zg]
-                	       + M.mzz*0.3333*gg[i].u9[j+Zg]
+         Etmp = ss[i].r[Zd+j] - (M.mxx*0.166667*gg[i].u5[j+Zg] - M.mxx*0.5*gg[i].u3[j+Zg]*cos(2*Az) + M.mxx*0.3333*gg[i].u9[j+Zg]
+			       + M.myy*0.166667*gg[i].u5[j+Zg] + M.myy*0.5*gg[i].u3[j+Zg]*cos(2*Az) + M.myy*0.3333*gg[i].u9[j+Zg]
+                	       + M.mzz*0.3333*gg[i].u9[j+Zg] - M.mzz*0.33333*gg[i].u5[j+Zg]
 			       - M.mxy*gg[i].u3[j+Zg]*sin(2*Az)
 			       + M.mxz*gg[i].u4[j+Zg]*cos(Az)
 			       + M.myz*gg[i].u4[j+Zg]*sin(Az));
 	 E += Etmp*Etmp;
-         Etmp = ss[i].z[Zd+j] - (M.mxx*0.5*gg[i].u8[j+Zg] - M.mxx*0.5*gg[i].u6[j+Zg]*cos(2*Az) +M.mxx*0.3333*gg[i].u10[j+Zg]
-			       + M.myy*0.5*gg[i].u8[j+Zg] + M.myy*0.5*gg[i].u6[j+Zg]*cos(2*Az) +M.myy*0.3333*gg[i].u10[j+Zg]
-		 	       + M.mzz*0.3333*gg[i].u10[j+Zg]
+         Etmp = ss[i].z[Zd+j] - (M.mxx*0.166667*gg[i].u8[j+Zg] - M.mxx*0.5*gg[i].u6[j+Zg]*cos(2*Az) +M.mxx*0.3333*gg[i].u10[j+Zg]
+			       + M.myy*0.166667*gg[i].u8[j+Zg] + M.myy*0.5*gg[i].u6[j+Zg]*cos(2*Az) +M.myy*0.3333*gg[i].u10[j+Zg]
+		 	       + M.mzz*0.3333*gg[i].u10[j+Zg] - M.mzz*0.33333*gg[i].u8[j+Zg] 
 			       - M.mxy*gg[i].u6[j+Zg]*sin(2*Az)
 			       + M.mxz*gg[i].u7[j+Zg]*cos(Az)
 			       + M.myz*gg[i].u7[j+Zg]*sin(Az));

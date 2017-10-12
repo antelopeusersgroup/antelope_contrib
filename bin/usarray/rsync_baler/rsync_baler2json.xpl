@@ -105,10 +105,10 @@ our(%pf) ;
     #
     # Report and/or JSON file export
     #
-    build_json( get_stations_from_url( $url )  );
-    #my %list =  get_stations_from_url( $url );
+    #build_json( get_stations_from_url( $url )  );
+    my %list =  get_stations_from_url( $url );
     #print Dumper(%list) ;
-    #build_json( %list );
+    build_json( %list );
 
     #
     # Calc total time for script
@@ -309,7 +309,7 @@ sub build_json {
     my (@dbr_grouped);
     my ($average,$median);
     my ($bandwidth_low,$bandwidth_high,$start_of_report);
-    my ($total_30,$total_7,$last_30,$last_7);
+    my ($total_30,$total_7,$downloaded_30,$downloaded_7, $time_7, $time_30);
     my ($md5_missing,$md5_error,$last_file,$last_time);
 
 
@@ -336,10 +336,12 @@ sub build_json {
         $last_file = 0;
         $md5_error = 0;
         $md5_missing = 0;
-        $last_7 = str2epoch("-7days");
-        $last_30 = str2epoch("-30days");
+        $time_7 = str2epoch("-7days");
+        $time_30 = str2epoch("-30days");
         $total_7 = 0;
         $total_30 = 0;
+        $downloaded_7 = 0;
+        $downloaded_30 = 0;
 
         $local_path = prepare_path($temp_sta);
 
@@ -347,9 +349,10 @@ sub build_json {
         # Get station info
         #
         $text .= "\n\t\"path\": \"$local_path\"";
-        $text .= ",\n\t\"ip\": \"". $stations->{$temp_sta}->{ip} ."\"";
-        $text .= ",\n\t\"vnet\": \"". $stations->{$temp_sta}->{net} ."\"";
-        $text .= ",\n\t\"active\": \"". $stations->{$temp_sta}->{status} ."\"";
+        $text .= ",\n\t\"ip\": \"". $stations{$temp_sta}{ip} ."\"";
+        $text .= ",\n\t\"port\": \"". $stations{$temp_sta}{port} ."\"";
+        $text .= ",\n\t\"vnet\": \"". $stations{$temp_sta}{net} ."\"";
+        $text .= ",\n\t\"active\": \"". $stations{$temp_sta}{status} ."\"";
 
         #
         # Verify Database
@@ -384,7 +387,7 @@ sub build_json {
         $f = dbfind(@dbr_grouped, 'status =~ /flagged/', -1);
         $e = dbfind(@dbr_grouped, 'status =~ /error-download/', -1);
         $d = dbfind(@dbr_grouped, 'status =~ /downloaded/', -1);
-        #$s = dbfind(@dbr_grouped, 'status =~ /(skipped|avoid)/', -1);
+        $s = dbfind(@dbr_grouped, 'status =~ /(skipped|avoid)/', -1);
 
 
 
@@ -397,7 +400,11 @@ sub build_json {
             #elog_notify("flagged dbr_temp: @dbr_temp");
             for ( $t = $dbr_temp[3] ; $t < $dbr_temp[2] ; $t++ ) {
                 $dbr_temp[3] = $t;
-                push @flagged, dbgetv (@dbr_temp, 'dfile');
+                ($file,$time) = dbgetv (@dbr_temp, qw/dfile time/);
+                push @flagged, $file;
+
+                $total_7 += 1 if file2epoch( $file ) > $time_7;
+                $total_30 += 1 if file2epoch( $file ) > $time_30;
             }
         }
 
@@ -431,8 +438,11 @@ sub build_json {
                 $md5_error += 1 if  $md5 =~ /.*error.*/;
                 $md5_missing += 1 if  $md5 =~ /.*missing.*/;
 
-                $total_7 += $bytes if $time > $last_7 and $endtime < now();
-                $total_30 += $bytes if $time > $last_30 and $endtime < now();
+                $total_7 += 1 if file2epoch( $file ) > $time_7;
+                $downloaded_7 += 1 if file2epoch( $file ) > $time_7;
+
+                $total_30 += 1 if file2epoch( $file ) > $time_30;
+                $downloaded_30 += 1 if file2epoch( $file ) > $time_30;
 
 
             }
@@ -458,14 +468,18 @@ sub build_json {
         #
         # Get list of skipped files
         #
-        #if ( $s >= 0 ) {
-        #    @dbr_grouped[3] = $s;
-        #    @dbr_temp= split(" ",dbgetv(@dbr_grouped,"bundle"));
-        #    for ( $t = $dbr_temp[3] ; $t < $dbr_temp[2] ; $t++ ) {
-        #        $dbr_temp[3] = $t;
-        #        push @skipped, dbgetv (@dbr_temp, 'dfile');
-        #    }
-        #}
+        if ( $s >= 0 ) {
+            @dbr_grouped[3] = $s;
+            @dbr_temp= split(" ",dbgetv(@dbr_grouped,"bundle"));
+            for ( $t = $dbr_temp[3] ; $t < $dbr_temp[2] ; $t++ ) {
+                $dbr_temp[3] = $t;
+                ( $file, $time) = dbgetv (@dbr_temp, qw/dfile time/);
+                push @skipped, $file;
+
+                $total_7 += 1 if file2epoch( $file ) > $time_7;
+                $total_30 += 1 if file2epoch( $file ) > $time_30;
+            }
+        }
         #if ( scalar @skipped ) {
 
         #    @skipped =  grep { $_ = "\"$_\"" } @skipped;
@@ -476,7 +490,9 @@ sub build_json {
         #    $text .= ",\n\t\"skipped_files\": 0";
         #}
 
-        #elog_notify("Station $temp_sta skipped files:[@skipped]") if $opt_v;
+        $text .= ",\n\t\"skipped_files\": " . scalar @skipped ;
+
+        elog_notify("Station $temp_sta skipped files:[@skipped]") if $opt_v;
 
 
         if ( $last_file  and $last_time ) {
@@ -532,15 +548,19 @@ sub build_json {
         }
 
 
-        # for Kbytes
-        $total_7 = sprintf("%0.2f", $total_7/1024);
-        $total_30 = sprintf("%0.2f", $total_30/1024);
-        # for Mbytes
-        $total_7 = sprintf("%0.2f", $total_7/1024);
-        $total_30 = sprintf("%0.2f", $total_30/1024);
+        ## for Kbytes
+        #$total_7 = sprintf("%0.2f", $total_7/1024);
+        #$total_30 = sprintf("%0.2f", $total_30/1024);
+        ## for Mbytes
+        #$total_7 = sprintf("%0.2f", $total_7/1024);
+        #$total_30 = sprintf("%0.2f", $total_30/1024);
 
-        $text .= ",\n\t\"30Mbytes\": " . ($total_30);
-        $text .= ",\n\t\"7Mbytes\": " . ($total_7);
+        #$text .= ",\n\t\"30Mbytes\": " . ($total_30);
+        #$text .= ",\n\t\"7Mbytes\": " . ($total_7);
+        $text .= ",\n\t\"total_30\": \"$total_30\"" ;
+        $text .= ",\n\t\"total_7\": \"$total_7\"" ;
+        $text .= ",\n\t\"downloaded_30\": \"$downloaded_30\"" ;
+        $text .= ",\n\t\"downloaded_7\": \"$downloaded_7\"" ;
 
         $text   .= "\n\t},\n";
 
@@ -567,91 +587,6 @@ sub export {
     else {
         elog_notify($text);
     }
-}
-
-sub build_time_regex {
-    my $sta      = shift;
-    my @dates    = shift;
-    my $folder   = shift || '';
-    my ($temp_year,$temp_month,$end_year,$end_month);
-    my ($flag,$regex,$line,$t,$f,$start,$end,$tuple);
-    my (%list,%temp);
-    my (@n,%queries);
-
-    $flag = $folder ? '*' : '.*';
-
-    if ($folder =~ /.*reserve.*/) {
-        $queries{ "*${sta}_4-*" } = ();
-    }
-    else {
-
-        #
-        # Build regex for all valid months
-        #
-        foreach ( @dates ) {
-
-            foreach $tuple ( @$_ ) {
-                $start = @{$tuple}[0];
-                $end   = @{$tuple}[1];
-
-                #
-                # Fix dates
-                #
-                $start = now() unless ( $start or ! is_epoch_string($start) );
-                $end   = now() unless ( $end   or ! is_epoch_string($end) );
-                $start = now() if $start > now();
-                $end   = now() if $end > now();
-                $end   = now() if $end < $start;
-
-
-                elog_notify("Create regex for:".strtime($start)."=>".strtime($end)) if $opt_v;
-
-                $temp_year  = int( epoch2str( $start, "%Y") );
-                $temp_month = int( epoch2str( $start, "%m") );
-                $end_year  = int( epoch2str( $end, "%Y") );
-                $end_month = int( epoch2str( $end, "%m") );
-
-                #
-                # Build queries
-                #
-                do {
-                    #
-                    # Build regex
-                    #
-                    $regex = str2epoch("$temp_month/1/$temp_year");
-                    $regex = "${flag}${sta}_4-" . epoch2str( $regex, "%Y%m") . "${flag}";
-
-                    $queries{ "$regex" } = ();
-
-                    if ( $temp_month == 12 ) {
-                        $temp_month = 1;
-                        $temp_year++;
-                    }
-                    else {
-                        $temp_month++;
-                    }
-                    if ( $temp_year == $end_year && $temp_month == $end_month) {
-                        #
-                        # We don't want to miss the last element...
-                        # don't have time to do a better do-loop.
-                        #
-                        $regex = str2epoch("$temp_month/1/$temp_year");
-                        $regex = "${flag}${sta}_4-".epoch2str($regex,"%Y%m")."${flag}";
-
-                        $queries{ "$regex" } = ();
-                    }
-
-                } while ( str2epoch("$temp_month/1/$temp_year") < str2epoch("$end_month/1/$end_year") );
-
-            }
-        }
-
-    }
-
-    foreach (sort keys %queries) { elog_notify("Regex=$_") if $opt_v};
-
-    return sort keys %queries;
-
 }
 
 sub open_db {
@@ -687,42 +622,18 @@ sub open_db {
 
 }
 
-sub read_local {
-    my $sta = shift;
-    my %list;
-    my $file;
-    my $f;
+sub file2epoch {
+    my $filename = shift;
 
-    elog_notify("Reading local directory") if $opt_v;
+    $filename =~ m/^\S*-(\d{4})(\d{2})(\d{2})(\d{6})$/ ;
+    elog_notify( "$filename date is $2/$3/$1" ) if $opt_v;
 
-    my $path = prepare_path($sta);
-
-    opendir(DIR,$path) or elog_die("Failed to open $path: $!");
-
-    while($f = readdir DIR) {
-
-        $file = "$path/$f";
-
-        if(-d "$file"){ next; }
-
-        elsif($f =~ /..-...._\d-\d+-\d+/ ){
-            remove_file($sta,$f);
-        }
-
-        elsif($f !~ /.*${sta}.*/ ){
-            remove_file($sta,$f);
-        }
-
-        elsif($f =~ /.*-${sta}_4-.*/ ){
-            $list{$f} = ();
-        }
+    if ( $1 and $2 and $3 ) {
+        return str2epoch("$2/$3/$1");
+    } else {
+        elog_notify( "ERROR: $filename date $2/$3/$1 => 0" ) if $opt_v;
+        return 0;
     }
-
-    close(DIR);
-
-    foreach (sort keys %list) { elog_notify("LOCAL: $_") if $opt_v; }
-
-    return sort keys %list;
 
 }
 

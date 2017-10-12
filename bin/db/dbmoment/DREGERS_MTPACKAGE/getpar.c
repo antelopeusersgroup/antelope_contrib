@@ -24,8 +24,8 @@
  *-DENVIRONMENT to each of the cc's above.
  */
 #include	<stdio.h>
-#include    <string.h>
-#include    <stdlib.h> 
+#include	<stdlib.h>
+#include	<string.h>
 
 #define MAXLINE		1024	/* max length of line in par file */
 #define MAXNAME		64	/* max length of name */
@@ -227,27 +227,23 @@ gp_do_environment(ac,av)
 int ac; char **av;
    {
 	char **ae;
-    int c; // Added by Juan Reyes
 	register char *pl, *pn, *pv;
 	char name[MAXNAME], value[MAXVALUE], t;
 
 	/* The environ pointer ae, is assumed to have a specific relation
 	   to the arg pointer av. This may not be portable. */
 	ae= av +(ac+1);
-    c = strlen(ae); // Added by Juan Reyes
-	if(ae == NULL) return NULL;
+	if(ae == NULL) return;
 
-	//while(*ae != NULL)
-	while( c > -1 )  // Added by Juan Reyes
+	while(*ae != NULL)
 	   {
-        c--;    // Added by Juan Reyes
 		pl= *ae++;
 		while(*pl == ' ' || *pl == '\t') pl++;
 		/* get name */
 		pn= name;
 		while(*pl != '=' && *pl != '\0') *pn++ = *pl++;
 		*pn = '\0';
-		if(strcmp("NOENV",pn) == 0) return NULL;
+		if(strcmp("NOENV",pn) == 0) return;
 
 		/* get value */
 		if(*pl == '=') pl++;
@@ -428,7 +424,8 @@ boolean:
 				  sprintf(line,"(flt) = %14.6e",*flt); break;
 			case 'F': dbl= (double *)val;
 				  sprintf(line,"(dbl) = %14.6e",*dbl); break;
-			case 's': sprintf(line,"(str) = %s",val); break;
+	/*		case 's': sprintf(line,"(str) = %s",val); break;*/
+			case 's': sprintf(line,"(str) = %s",sptr); break;
 			case 'b': sprintf(line,"(boo) = %d",*val); break;
 			case 'v': switch(type[1])
 				   {
@@ -468,7 +465,7 @@ char *filetype;
 gp_close_dump(file)
 FILE *file;
    {
-	if(file == stderr || file == stdout) return NULL;
+	if(file == stderr || file == stdout) return;
 	fclose(file);
    }
 
@@ -529,16 +526,13 @@ int level;
 	fclose(file);
    }
 
-//gp_getpar_err(subname,mess,a1,a2,a3,a4)
-gp_getpar_err(subname,mess,a1)
+gp_getpar_err(subname,mess,a1,a2,a3,a4)
 char *subname, *mess;
-//int a1, a2, a3, a4;
-int a1;
+int a1, a2, a3, a4;
    {
 	fprintf(stderr,"\n***** ERROR in %s[%s] *****\n\t",
 		(PROGNAME == NULL ? "(unknown)" : PROGNAME),subname);
-	//fprintf(stderr,mess,a1,a2,a3,a4);
-	fprintf(stderr,mess,a1);
+	fprintf(stderr,mess,a1,a2,a3,a4);
 	fprintf(stderr,"\n");
 	exit(GETPAR_ERROR);
    }
