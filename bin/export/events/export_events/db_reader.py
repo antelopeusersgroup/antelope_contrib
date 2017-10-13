@@ -348,7 +348,7 @@ class DatabaseReader(object):
         steps += ['dbsubset auth!~/%s/' % auth
                   for auth in self.origin_auth_reject]
         if self.table_present['origerr']:
-            steps += ['dbjoin -o origerr']
+            steps += ['dbjoin -o origerr orid']
 
         self.origins.get_view(steps, key='origin.orid')
 
@@ -360,7 +360,7 @@ class DatabaseReader(object):
         steps = []
         if (self.table_present['snetsta'] and
                 self.table_present['schanloc']):
-            steps += ['dbjoin -o snetsta']
+            steps += ['dbjoin -o snetsta sta']
             steps += ['dbjoin -o schanloc sta chan']
         return steps
 
@@ -376,7 +376,7 @@ class DatabaseReader(object):
 
             steps = ['dbopen assoc']
             steps += ['dbsubset orid==%d' % orid]
-            steps += ['dbjoin arrival']
+            steps += ['dbjoin arrival arid']
             steps += ['dbsubset auth=~/%s/' % auth
                       for auth in self.arrival_auth_select]
             steps += ['dbsubset auth!~/%s/' % auth
@@ -458,10 +458,10 @@ class DatabaseReader(object):
                       for auth in self.netmag_auth_select]
             steps += ['dbsubset auth!~/%s/' % auth
                       for auth in self.netmag_auth_reject]
-            steps += ['dbjoin -o arrival']
+            steps += ['dbjoin -o arrival arid']
             steps += self._seed_channel_steps()
             if self.table_present['wfmeas']:
-                steps += ['dbjoin -o wfmeas']
+                steps += ['dbjoin -o wfmeas arid']
 
             self.stamags.get_view(steps)
 
