@@ -8,25 +8,51 @@
 #include "ensemble.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
-using namespace std;   
+using namespace std;
 using namespace SEISPP;
 void usage()
 {
     cerr << "export_to_matlab [-v -text -o outfile --help] < in"
         <<endl
-        << "Write data in a single TimeSeriesEnsemble object to a text matrix"<<endl
+        << "Write data in a single TimeSeriesEnsemble object to a matrix format "<<endl
         << "that can be easily read into matlab (load procedure)"<<endl
         << "Use -o outfile to write the data to outfile.  By default the "<<endl
         << "matrix data are written to stdout"<<endl
+        << "Use -h to write a data header with required time series attributes (default is none)"
+        <<endl
+        << "Format:  t0, dt, ns  (space delimited)"<<endl
         << "WARNING:  make sure the input has a relative time standard or span a single time window"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
-        << " -text - switch to text input and output (default is binary)"<<endl;
+        << " -text - switch to text input (default is binary)"<<endl;
     exit(-1);
 }
+class AlignedGather
+{
+public:
+  double t0;
+  double dt;
+  int ns;
+  TimeReferenceType tref;
+  dmatrix d;
+  AlignedGather(dmatrix& din, double t0in, double dtin, int nsin, TimeReferenceType trefin) : d(din)
+  {
+    this->t0=t0in;
+    this->dt=dtin;
+    this->ns=nsin;
+    this->tref=trefin;
+  };
+  AlignedGather(const AlignedGather& parent) : d(parent.d)
+  {
+    t0=parent.t0;
+    dt=parent.dt;
+    ns=parent.ns;
+    tref=parent.tref;
+  }
+};
 /* Data with marked gaps are set to this value */
 const double GapValue(-9.9999999999E99);
-dmatrix convert_to_matrix(TimeSeriesEnsemble& d)
+AlignedGather convert_to_matrix(TimeSeriesEnsemble& d)
 {
   try{
     vector<TimeSeries>::iterator dptr;
@@ -56,6 +82,8 @@ dmatrix convert_to_matrix(TimeSeriesEnsemble& d)
         }
       }
     }
+    TimeReferenceType tref;
+    tref=d.member[0].tref;  //  assume all have the same time base
     int n=d.member.size();
     int m= (int)((tmax-tmin)/dt)+1;
     if(SEISPP_verbose)
@@ -75,7 +103,7 @@ dmatrix convert_to_matrix(TimeSeriesEnsemble& d)
       exit(-1);
     }
     dmatrix work(m,n);
-    /* We initialize the matrix to GapValue.  That allows an easy 
+    /* We initialize the matrix to GapValue.  That allows an easy
      * definition of gaps at start and end. */
     for(i=0;i<m;++i)
       for(j=0;j<n;++j)
@@ -102,11 +130,12 @@ dmatrix convert_to_matrix(TimeSeriesEnsemble& d)
           work(kd,j)=dptr->s[kd];
         }
         /*else is intensionally not present.  work was
-         * initialized to GapValue - else condition is 
+         * initialized to GapValue - else condition is
          * index outside the range of this seismogram.*/
       }
     }
-    return work;
+    AlignedGather result(work,tmin,dt,m,tref);
+    return result;
   }catch(...){throw;};
 }
 bool SEISPP::SEISPP_verbose(false);
@@ -117,6 +146,7 @@ int main(int argc, char **argv)
       if(string(argv[1])=="--help") usage();
     bool binary_data(true);
     bool write_to_stdout(true);
+    bool write_header(false);
     string outfile;
 
     for(i=1;i<argc;++i)
@@ -139,6 +169,10 @@ int main(int argc, char **argv)
           outfile=string(argv[i]);
           write_to_stdout=false;
         }
+        else if(sarg=="-h")
+        {
+          write_header=true;
+        }
         else
             usage();
     }
@@ -156,10 +190,21 @@ int main(int argc, char **argv)
         }
         TimeSeriesEnsemble d;
         d=inp->read();
-        dmatrix dmat;
-        dmat=convert_to_matrix(d);
+        AlignedGather dmat(convert_to_matrix(d));
         if(write_to_stdout)
-          cout << dmat;
+        {
+          if(write_header)
+          {
+            if(dmat.tref == absolute)
+               cout << setprecision(13)<<dmat.t0<<" "<<setprecision(7);
+            else
+            {
+              cout<<dmat.t0<<" ";
+            }
+            cout << dmat.dt<<" "<<dmat.ns<<endl;
+          }
+          cout << dmat.d;
+        }
         else
         {
           ofstream ofs;
@@ -170,7 +215,17 @@ int main(int argc, char **argv)
               << "Data not saved"<<endl;
             usage();
           }
-          ofs << dmat;
+          if(write_header)
+          {
+            if(dmat.tref == absolute)
+              ofs << setprecision(13)<<dmat.t0<<" "<<setprecision(7);
+            else
+            {
+              ofs<<dmat.t0<<" ";
+            }
+            ofs << dmat.dt<<" "<<dmat.ns<<endl;
+          }
+          ofs << dmat.d;
           ofs.close();
         }
     }catch(SeisppError& serr)
@@ -182,4 +237,3 @@ int main(int argc, char **argv)
         cerr << stexc.what()<<endl;
     }
 }
-
