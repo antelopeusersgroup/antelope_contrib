@@ -79,12 +79,16 @@ int mask_high_error_sections(PMTimeSeries& d, TimeSeries& dattr,
       {
         if(d.is_gap(i))
         {
-            if(in_new_gap)
+            if(i==0)
+            {
+                newgap.start=d.time(0)-dto2;
+            }
+            else if(in_new_gap)
             {
                 /* We terminate a new gap in this case when we
                  * encounter a new gap.  Do this because the
                  * gaps intervals cannot overlap.*/
-                newgap.end=d.time(i=1)+dto2;
+                newgap.end=d.time(i-1)+dto2;
                 dattr.add_gap(newgap);
                 ++number_added;
                 in_new_gap=false;
@@ -167,7 +171,7 @@ TimeSeries extract_attribute_error_data(PMTimeSeries& d,PMAttributeType pmat)
     derror.live=d.live;
     if(derror.live)
     {
-      const double ERROR_UNDEFINED(9.9999e99);
+      const double ERROR_UNDEFINED(-9.9999e99);
       derror.dt=d.dt;
       derror.tref=d.tref;
       derror.t0=d.t0;
@@ -283,9 +287,12 @@ int main(int argc, char **argv)
       StreamObjectWriter<TimeSeries> outp(form);
       PMTimeSeries d;
       TimeSeries dout;
+      TimeSeries derr;
       while(inp.good())
       {
         d=inp.read();
+        if(use_error_cutoff)
+            derr=extract_attribute_error_data(d,pmat);
         if(save_error)
         {
           dout=extract_attribute_error_data(d,pmat);
@@ -318,12 +325,15 @@ int main(int argc, char **argv)
 
          };
          int ngaps;
-         ngaps=mask_high_error_sections(d,dout,pmat,error_cutoff);
-         if(SEISPP_verbose)
+         if(use_error_cutoff)
          {
-            cerr<< "extract_pm_attributes:  added "<<ngaps
-                << " gap sections for high uncertainty time periods"
-                <<endl;
+             ngaps=mask_high_error_sections(d,dout,pmat,error_cutoff);
+             if(SEISPP_verbose)
+             {
+                cerr<< "extract_pm_attributes:  added "<<ngaps
+                    << " gap sections for high uncertainty time periods"
+                    <<endl;
+             }
          }
         }
         outp.write(dout);
