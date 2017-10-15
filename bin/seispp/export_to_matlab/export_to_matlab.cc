@@ -33,20 +33,23 @@ public:
   double t0;
   double dt;
   int ns;
+  int nseis;
   TimeReferenceType tref;
   dmatrix d;
-  AlignedGather(dmatrix& din, double t0in, double dtin, int nsin, TimeReferenceType trefin) : d(din)
+  AlignedGather(dmatrix& din, double t0in, double dtin, int nsin, int nseisin, TimeReferenceType trefin) : d(din)
   {
     this->t0=t0in;
     this->dt=dtin;
     this->ns=nsin;
     this->tref=trefin;
+    this->nseis=nseisin;
   };
   AlignedGather(const AlignedGather& parent) : d(parent.d)
   {
     t0=parent.t0;
     dt=parent.dt;
     ns=parent.ns;
+    nseis=parent.nseis;
     tref=parent.tref;
   }
 };
@@ -134,7 +137,7 @@ AlignedGather convert_to_matrix(TimeSeriesEnsemble& d)
          * index outside the range of this seismogram.*/
       }
     }
-    AlignedGather result(work,tmin,dt,m,tref);
+    AlignedGather result(work,tmin,dt,m,n,tref);
     return result;
   }catch(...){throw;};
 }
@@ -201,7 +204,7 @@ int main(int argc, char **argv)
             {
               cout<<dmat.t0<<" ";
             }
-            cout << dmat.dt<<" "<<dmat.ns<<endl;
+            cout << dmat.dt<<" "<<dmat.ns<<" "<<dmat.nseis<<endl;
           }
           cout << dmat.d;
         }
@@ -223,7 +226,7 @@ int main(int argc, char **argv)
             {
               ofs<<dmat.t0<<" ";
             }
-            ofs << dmat.dt<<" "<<dmat.ns<<endl;
+            ofs << dmat.dt<<" "<<dmat.ns<<" "<<dmat.nseis<<endl;
           }
           ofs << dmat.d;
           ofs.close();
