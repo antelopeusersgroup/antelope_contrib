@@ -151,7 +151,11 @@ class Css2Qml(object):
                  qml_bed_ns='http://quakeml.org/xmlns/bed/1.2',
                  qml_bedrt_ns='http://quakeml.org/xmlns/bed-rt/1.2',
                  info_description=None, info_comment=None,
-                 preferred_magtypes=('mw', 'ms', 'mb', 'ml'),
+                 preferred_magtypes=('Mw', 'mw', 'MW',
+                                     'mb_Lg', 'mbLg',
+                                     'Ms_20', 'Ms_BB', 'Ms', 'ms', 'MS',
+                                     'mb', 'mB_BB', 'mB', 'Mb', 'MB',
+                                     'ML', 'ml', 'Ml'),
                  add_origin=True, add_magnitude=True, add_stamag=True,
                  add_arrival=True, add_fplane=True, add_mt=True,
                  add_detection=False, extend_anss_catalog=False):
