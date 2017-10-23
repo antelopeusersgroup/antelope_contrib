@@ -177,7 +177,7 @@ int main(int argc, char **argv)
         TimeWindow nwin(nwstart,nwend);
         bool force_pmws=control.get_bool("force_mask_time_before_noise_window");
         double snr_floor=control.get<double>("snr_floor");
-        string snrkey=control.get_string("snr_key");
+        string noise_key=control.get_string("noise_level_key");
         int minsamp=control.get<int>("minimum_samples_per_gap");
         shared_ptr<StreamObjectReader<PMTimeSeries>> inp;
         if(binary_data)
@@ -219,14 +219,14 @@ int main(int argc, char **argv)
               double noise_level;
               try{
                 noise_level=median_noise(d,nwin);
-                d.put(snrkey,noise_level);
+                d.put(noise_key,noise_level);
               }catch(SeisppError& serr)
               {
                 cerr << "Problem handling PMTimeSeries number "<<count<<endl;
                 serr.log_error();
                 cerr << "Passing this data along with no marked gap and noise level set 0"
                   <<endl;
-                d.put(snrkey,0.0);
+                d.put(noise_key,0.0);
                 continue; //this should transfer control outside the if live block
               }
               /* This is used by median_noise to signal a noise window larger
@@ -243,7 +243,12 @@ int main(int argc, char **argv)
               {
                 d.add_gap(nwin);
               }
-              set_data_gaps(d,snr_floor,nwin,minsamp);
+              /* Convert to the noise level to log power and 
+                 compute the snr floor in a log10 sense. */
+              double lognoise=log10(noise_level);
+              lognoise *= 20.0;
+              double snrfdb = lognoise + 20.0*log10(snr_floor);
+              set_data_gaps(d,snrfdb,nwin,minsamp);
             }
             /* Perhaps should automatically drop data not marked live
             but for now copy such data */
