@@ -214,6 +214,8 @@ template <typename Tdata, typename Tkey>
         ++nout;
       }
     }
+    if(inp!=NULL) delete inp;
+    if(outp!=NULL) delete outp;
     return nout;
   }catch(...)
   {
