@@ -43,7 +43,7 @@ PMAttributeType GetPMAType(string name)
     pmat=MinAmp;
   else if(name=="major_azimuth")
     pmat=MajAz;
-  else if(name=="minor_aximuth")
+  else if(name=="minor_azimuth")
     pmat=MinAz;
   else if(name=="major_inclination")
     pmat=MajInc;
