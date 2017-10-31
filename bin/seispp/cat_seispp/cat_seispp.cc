@@ -4,11 +4,11 @@
 #include <iostream>
 #include <memory>
 #include <list>
+#include "PMTimeSeries.h"
 #include "seispp.h"
 #include "ensemble.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
-#include "PMTimeSeries.h"
 using namespace std;   
 using namespace SEISPP; 
 void usage()
