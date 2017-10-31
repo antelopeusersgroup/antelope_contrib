@@ -270,9 +270,8 @@ int main(int argc, char **argv)
     string outfile(argv[1]);
     if(fileExists(outfile))
     {
-      cerr << "mwpmavg:  files specified as argument 1="<<outfile<<" exists"<<endl
-         << "Fatal error:   exiting to avoid overwriting possible previous results"<<endl;
-      usage();
+      cerr << "mwpmavg(Warning):  files specified as argument 1="<<outfile<<" exists"<<endl
+         << "Appending these results to this file - beware of duplicates"<<endl;
     }
     bool binary_data(true);
     string pffile("mwpmavg.pf");
@@ -316,9 +315,10 @@ int main(int argc, char **argv)
         TimeWindow avgwin(ts,te);
         string name_key=control.get_string("name_key");
         string key_type=control.get_string("name_key_type");
+        string az_key=control.get_string("source_azimuth_key");
         allowed_key_types kt;
         kt=parse_key_name(key_type);
-        ofstream ofs(outfile.c_str(),std::ios::out | std::ios::trunc);
+        ofstream ofs(outfile.c_str(),std::ios::out | std::ios::app);
         if(ofs.fail())
         {
           cerr << "Open failed for output file="<<outfile<<endl;
@@ -352,6 +352,19 @@ int main(int argc, char **argv)
                  << "Message posted:"<<endl;
               mde.log_error();
               cerr << "Attempting to continue"<<endl;
+              nametag="BAD";
+            }
+            double az;
+            try{
+                az=d.get<double>(az_key);
+            }catch(MetadataGetError& mde)
+            {
+                cerr << "mwpmavg:  Error reading azimuth header value="
+                    << az_key<<endl;
+                cerr << "Message posted:"<<endl;
+                mde.log_error();
+                cerr << "az field set to 999.9"<<endl;
+                az=999.9;
             }
             /* This routine does all the work.   Returns result in the class
             defined above */
@@ -360,7 +373,7 @@ int main(int argc, char **argv)
             int band;
             if(avg.live)
             {
-              ofs << nametag<<","<<phase<<","<<band<<","
+              ofs << nametag<<","<<phase<<","<<band<<","<<az<<","
                   <<avg<<endl;
               ++nd;
             }
