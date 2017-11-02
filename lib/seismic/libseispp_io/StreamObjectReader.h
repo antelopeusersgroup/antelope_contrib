@@ -174,7 +174,7 @@ template <typename T>
     input_is_stdio=false;
     n_previously_read=0;
     string magic_test;
-    char tagbuf[BINARY_TAG_SIZE];
+    char tagbuf[BINARY_TAG_SIZE+1];
     switch(format)
     {
       case 't':
@@ -191,7 +191,7 @@ template <typename T>
       default:
         ifs.seekg(-(BinaryIOStreamEOFOffset),ios_base::end);
         ifs.read(tagbuf,BINARY_TAG_SIZE);
-        cerr << "read tagbuf="<<tagbuf<<endl;
+        tagbuf[BINARY_TAG_SIZE]='\0';
         magic_test=string(tagbuf);
         ifs.read((char*)(&(this->nobjects)),sizeof(long));
         if(ifs.fail())
