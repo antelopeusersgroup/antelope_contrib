@@ -20,6 +20,7 @@ void usage()
         << "Averages multiwavelet particle motion estimates produced by mwpm"<<endl
         << "in a time window relative to time of a specified seismic phase"<<endl
         << "Results are a csv file defined by argument 1. "<<endl
+        << "To get related attributes run listhdr with -csv option to build a parallel matrix of metadata"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl
@@ -315,7 +316,6 @@ int main(int argc, char **argv)
         TimeWindow avgwin(ts,te);
         string name_key=control.get_string("name_key");
         string key_type=control.get_string("name_key_type");
-        string az_key=control.get_string("source_azimuth_key");
         allowed_key_types kt;
         kt=parse_key_name(key_type);
         ofstream ofs(outfile.c_str(),std::ios::out | std::ios::app);
@@ -343,6 +343,8 @@ int main(int argc, char **argv)
             /* First fetch the name key that will be used as a tag.  always
             returned as a string.  real numbers drop period */
             string nametag;
+            int band;
+            band=d.get<int>("band");
             try{
               nametag=fetch_nametag(d,name_key,kt);
             }catch(MetadataGetError& mde)
@@ -354,26 +356,13 @@ int main(int argc, char **argv)
               cerr << "Attempting to continue"<<endl;
               nametag="BAD";
             }
-            double az;
-            try{
-                az=d.get<double>(az_key);
-            }catch(MetadataGetError& mde)
-            {
-                cerr << "mwpmavg:  Error reading azimuth header value="
-                    << az_key<<endl;
-                cerr << "Message posted:"<<endl;
-                mde.log_error();
-                cerr << "az field set to 999.9"<<endl;
-                az=999.9;
-            }
             /* This routine does all the work.   Returns result in the class
             defined above */
             const string band_key("band");
             PMAverageData avg(d,phase_time_key,avgwin);
-            int band;
             if(avg.live)
             {
-              ofs << nametag<<","<<phase<<","<<band<<","<<az<<","
+              ofs << nametag<<","<<","<<band<<","
                   <<avg<<endl;
               ++nd;
             }
