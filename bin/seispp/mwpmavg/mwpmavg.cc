@@ -362,7 +362,7 @@ int main(int argc, char **argv)
             PMAverageData avg(d,phase_time_key,avgwin);
             if(avg.live)
             {
-              ofs << nametag<<","<<","<<band<<","
+              ofs << nametag<<","<<band<<","
                   <<avg<<endl;
               ++nd;
             }
