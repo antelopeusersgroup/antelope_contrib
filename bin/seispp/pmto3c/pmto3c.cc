@@ -3,9 +3,9 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include "PMTimeSeries.h"
 #include "seispp.h"
 #include "ThreeComponentSeismogram.h"
-#include "PMTimeSeries.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
 using namespace std;   
