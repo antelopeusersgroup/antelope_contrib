@@ -87,6 +87,19 @@ int main(int argc, char **argv)
         while(inp->good())
         {
             d=inp->read();
+            /* This works around a bug in the current (Nov 2017) version of
+             * the seispp library, but it is safer to force this anyway.  
+             * It forces an assumption that the particle motion vectors
+             * are cardinal*/
+            d.put("U11",1.0);
+            d.put("U22",1.0);
+            d.put("U33",1.0);
+            d.put("U12",0.0);
+            d.put("U13",0.0);
+            d.put("U23",0.0);
+            d.put("U21",0.0);
+            d.put("U31",0.0);
+            d.put("U32",0.0);
             ThreeComponentSeismogram dout(dynamic_cast<Metadata&>(d),false);
             dout.ns=d.ns;
             dout.t0=d.t0;
