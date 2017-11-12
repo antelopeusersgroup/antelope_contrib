@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include "PMTimeSeries.h"
 #include "seispp.h"
 #include "ensemble.h"
 #include "StreamObjectReader.h"
@@ -97,14 +98,14 @@ int main(int argc, char **argv)
       switch(objt)
       {
       case PMTS:
-        nprocessed=rtoa<ThreeComponentSeismogram>(binary_data);
+        nprocessed=rtoa<PMTimeSeries>(binary_data);
         break;
       case TCS:
         nprocessed=rtoa<ThreeComponentSeismogram>(binary_data);
         break;
       case TS:
       default:
-        nprocessed=rtoa<ThreeComponentSeismogram>(binary_data);
+        nprocessed=rtoa<TimeSeries>(binary_data);
       };
       if(SEISPP_verbose) cerr << "rtoa:  processed "<<nprocessed
           << " objects from stdin"<<endl;
