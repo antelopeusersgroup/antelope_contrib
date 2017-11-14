@@ -15,12 +15,15 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "mwpmavg outfile [-v --help -text -pf pffile] < in "
+    cerr << "mwpmavg outfile [-avglimit n -v --help -text -pf pffile] < in "
         <<endl
         << "Averages multiwavelet particle motion estimates produced by mwpm"<<endl
         << "in a time window relative to time of a specified seismic phase"<<endl
         << "Results are a csv file defined by argument 1. "<<endl
         << "To get related attributes run listhdr with -csv option to build a parallel matrix of metadata"<<endl
+        << " -avglimit flag sets the maximum number of nongap samples to average to n"<<endl
+        << "This is useful to limit averaging to only early part of the signal"
+        <<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl
@@ -42,13 +45,24 @@ public:
   double dtheta_minor_axes;  // same for minor axis
   bool live;  // true of computed ok - false if the constructor found no data in twin
   int count;  // number of non-gap time steps averaged for this estimate
-  PMAverageData(PMTimeSeries& d, string phase_time_key, TimeWindow twin);
+  /*! \brief primary constructor
+
+    \param d - input data 
+    \param phase_time_key - used to fetch arrival time
+    \param twin - time window to average (time relative to arrival time 
+       defined by phase_time_key
+    \param maxavg - maximum number of samples to average for estimate.
+      Used to allow longer twin but limit estimate to earliest part of
+      the signal.  If less than 0 set to number of samples in win */
+  PMAverageData(PMTimeSeries& d, string phase_time_key, 
+          TimeWindow twin, int maxavg);
   friend ostream& operator<<(ostream& os,PMAverageData& d);
 };
 /* PMAverageData is defined really by this constructor.   It computes
 all the attributes by computing the median of all attributes and storing
 them in the public attribures */
-PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
+PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win,
+        int maxavg)
 {
   try{
     ParticleMotionEllipse pme;
@@ -64,6 +78,14 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
     tas=time+win.start;
     tae=time+win.end;
     double dt=d.dt;
+    int windowsizelimit;
+    if(maxavg<0)
+    {
+        windowsizelimit=floor((win.end-win.start)/dt);
+        if(windowsizelimit<0) windowsizelimit=1;//perhaps should abort on this
+    }
+    else
+        windowsizelimit=maxavg;
     vector<double> vmajnrm,vmajinc,vmajaz;
     vector<double> vminnrm,vmininc,vminaz;
     vector<double> vdmajnrm,vdmajaz,vdmajinc;
@@ -95,6 +117,7 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
       vdmininc.push_back(pmerr.dtheta_minor);
       vdrect.push_back(pmerr.delta_rect);
       ++(this->count);
+      if((this->count)>=windowsizelimit) break;
     }
     if((this->count)<=0)
     {
@@ -130,17 +153,8 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
     dmatrix majsamples(3,this->count);
     dmatrix minsamples(3,this->count);
     int k,ii;
-    for(t=tas,ii=0;t<=tae;t+=dt)
+    for(t=tas,ii=0;(t<=tae)&&(ii<(this->count));t+=dt)
     {
-      if(ii==this->count)
-      {
-          cerr << "PMAverageData constructor:  gap count mismatch"
-              <<" at sample count="<<ii<<endl
-              << "This should not happen, but exiting major and minor"
-              << " vector averaging loop on this nonfatal error"
-              <<endl;
-          break;
-      }
       int i=d.sample_number(t);
       if(i>=d.ns) break;
       if(i<0) continue;
@@ -165,8 +179,9 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
     {
         for(k=0;k<3;++k)
         {
-            this->major[k]=majsamples(k,1);
-            this->minor[k]=minsamples(k,1);
+            /* This is excessively pessimisic */
+            this->major[k]=majsamples(k,0);
+            this->minor[k]=minsamples(k,0);
             this->dtheta_major_axes=M_PI;
             this->dtheta_minor_axes=M_PI;
         }
@@ -181,6 +196,7 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
         for(k=0;k<3;++k) this->minor[k]=vtmp[k];
         if((this->count)<count_floor)
         {
+            /* Also excessively pessimistic */
             this->dtheta_major_axes=M_PI;
             this->dtheta_minor_axes=M_PI;
         }
@@ -276,6 +292,7 @@ int main(int argc, char **argv)
     }
     bool binary_data(true);
     string pffile("mwpmavg.pf");
+    int windowlimit(-1); // negative signals to turn this feature off
     for(i=2;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -286,6 +303,12 @@ int main(int argc, char **argv)
         else if(sarg=="-text")
         {
             binary_data=false;
+        }
+        else if(sarg=="-avglimit")
+        {
+          ++i;
+          if(i>=argc)usage();
+          windowlimit=atoi(argv[i]);
         }
         else if(sarg=="-pf")
         {
@@ -359,7 +382,7 @@ int main(int argc, char **argv)
             /* This routine does all the work.   Returns result in the class
             defined above */
             const string band_key("band");
-            PMAverageData avg(d,phase_time_key,avgwin);
+            PMAverageData avg(d,phase_time_key,avgwin,windowlimit);
             if(avg.live)
             {
               ofs << nametag<<","<<band<<","
