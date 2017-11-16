@@ -79,6 +79,8 @@ void set_data_gaps(PMTimeSeries& d, double snr_floor, TimeWindow nw, int minsamp
     for(i=is;i<d.ns;++i)
     {
       ParticleMotionEllipse pme=d.ellipse(i);
+      //DEBUG - verbose
+      //cerr << "i="<<i<<" amp="<<pme.majornrm<<endl;
       if(pme.majornrm < snr_floor)
       {
         if(in_low_snr_section)
@@ -220,6 +222,8 @@ int main(int argc, char **argv)
               try{
                 noise_level=median_noise(d,nwin);
                 d.put(noise_key,noise_level);
+                //DEBUG
+                //cerr << "mask_pm_snr:  computed noise level power="<<noise_level<<endl;
               }catch(SeisppError& serr)
               {
                 cerr << "Problem handling PMTimeSeries number "<<count<<endl;
@@ -229,9 +233,6 @@ int main(int argc, char **argv)
                 d.put(noise_key,0.0);
                 continue; //this should transfer control outside the if live block
               }
-              /* This is used by median_noise to signal a noise window larger
-              than the data window.  In this case we want to do nothing. */
-              if(noise_level<0.0) continue;
               /* the noise window is always added as a gap.   Expanded with
               force_pmws option */
               if(force_pmws)
@@ -243,12 +244,8 @@ int main(int argc, char **argv)
               {
                 d.add_gap(nwin);
               }
-              /* Convert to the noise level to log power and 
-                 compute the snr floor in a log10 sense. */
-              double lognoise=log10(noise_level);
-              lognoise *= 20.0;
-              double snrfdb = lognoise + 20.0*log10(snr_floor);
-              set_data_gaps(d,snrfdb,nwin,minsamp);
+              double snrlimit=noise_level*snr_floor;
+              set_data_gaps(d,snrlimit,nwin,minsamp);
             }
             /* Perhaps should automatically drop data not marked live
             but for now copy such data */

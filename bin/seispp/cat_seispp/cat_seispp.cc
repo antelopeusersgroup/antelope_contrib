@@ -4,18 +4,21 @@
 #include <iostream>
 #include <memory>
 #include <list>
+#include "PMTimeSeries.h"
 #include "seispp.h"
 #include "ensemble.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
-#include "PMTimeSeries.h"
 using namespace std;   
 using namespace SEISPP; 
 void usage()
 {
-    cerr << "cat file1 file2 ... filen [-text --help]"
+    cerr << "cat_seispp file1 file2 ... filen [-t objt -text --help]"
         <<endl
         << "Concatenate a set of seispp files into a single larger file"<<endl
+        << "Use -t option to set object type of the files."<<endl
+        << "(Accepted options:  TimeSeries, ThreeComponentSeismogram, "
+        << "TimeSeriesEnemble, ThreeComponentEnsemble, PMTimeSeries"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"
         << "(Note:  will exit with an error if the count of files is only one)"
@@ -33,6 +36,10 @@ AllowedObjects get_object_type(string otype)
         return TCE;
     else if(otype=="PMTimeSeries")
         return PMTS;
+    else if(otype=="TimeSeries")
+        return TS;
+    else if(otype=="TimeSeriesEnsemble")
+        return TSE;
     else
     {
         cerr << "Do not know how to handle object type="<<otype

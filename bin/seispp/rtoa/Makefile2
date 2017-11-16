@@ -1,15 +1,15 @@
-BIN=subset_streamfile
+BIN=rtoa
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lseispp -lgclgrid -lmwtpp -lmultiwavelet -lgenloc $(DBLIBS) $(TRLIBS) -lseispp -lperf -lboost_serialization
+ldlibs=-lmwtpp -lmultiwavelet -lgenloc -lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE) 
 include $(ANTELOPEMAKELOCAL)
 CXXFLAGS += -I$(BOOSTINCLUDE)
 
-OBJS=subset_streamfile.o
+OBJS=rtoa.o
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

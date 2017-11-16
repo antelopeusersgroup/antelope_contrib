@@ -12,10 +12,9 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "ator < in > out [-key key -t objt --help -text -v]"
+    cerr << "rtoa < in > out [-t objt --help -text -v]"
         <<endl
         << "Switches input data from absolute to a relative time standard"<<endl
-        << "Use -key to change attribute used to define time shift (default arrival.time)"
         <<endl
         << "Use -objt to change expected object type"<<endl
         << "(default ThreeComponentSeismogram.  Alteratives are TimeSeries and PMTimeSeries)"<<endl
@@ -36,14 +35,14 @@ AllowedObjects get_object_type(string otype)
         return PMTS;
     else
     {
-        cerr << "ator: cannot handle object type="<<otype
+        cerr << "rtoa: cannot handle object type="<<otype
             <<endl<< "Cannot continue"<<endl;
         exit(-1);
     }
 }
 /* Returns number of objects processed.   Read from stdin and write
- * to stdout defined object type.   Use key to define shift */
-template <typename T> int ator(string key,bool binary_data)
+ * to stdout defined object type.   */
+template <typename T> int rtoa(bool binary_data)
 {
   try{
     char form('t');
@@ -54,19 +53,8 @@ template <typename T> int ator(string key,bool binary_data)
     while(inp.good())
     {
       T d=inp.read();
-      /* Skip and write an error message for any seismogram
-      for which the key is not defined */
-      double t;
-      try{
-        t=d.get_double(key);
-        d.ator(t);
-        outp.write(d);
-      }catch(...)
-      {
-        cerr << "ator:  Problems processing seismogram number "<<dcount
-          << " while fetching time with key="<<key<<endl
-          << "Data for this seismogram will be skipped"<<endl;
-      }
+      d.rtoa();
+      outp.write(d);
       ++dcount;
     }
     return dcount;
@@ -80,7 +68,6 @@ int main(int argc, char **argv)
     if(argc<=1) usage();
     if(string(argv[1])=="--help") usage();
     bool binary_data(true);
-    string key("arrival.time");
 
     for(i=1;i<argc;++i)
     {
@@ -103,12 +90,6 @@ int main(int argc, char **argv)
             if(i>=argc) usage();
             objt=get_object_type(string(argv[i]));
         }
-        else if(sarg=="-key")
-        {
-            ++i;
-            if(i>=argc) usage();
-            key=string(argv[i]);
-        }
         else
             usage();
     }
@@ -117,16 +98,16 @@ int main(int argc, char **argv)
       switch(objt)
       {
       case PMTS:
-        nprocessed=ator<PMTimeSeries>(key,binary_data);
+        nprocessed=rtoa<PMTimeSeries>(binary_data);
         break;
       case TCS:
-        nprocessed=ator<ThreeComponentSeismogram>(key,binary_data);
+        nprocessed=rtoa<ThreeComponentSeismogram>(binary_data);
         break;
       case TS:
       default:
-        nprocessed=ator<TimeSeries>(key,binary_data);
+        nprocessed=rtoa<TimeSeries>(binary_data);
       };
-      if(SEISPP_verbose) cerr << "ator:  processed "<<nprocessed
+      if(SEISPP_verbose) cerr << "rtoa:  processed "<<nprocessed
           << " objects from stdin"<<endl;
     }catch(SeisppError& serr)
     {

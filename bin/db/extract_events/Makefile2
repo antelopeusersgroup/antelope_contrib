@@ -3,7 +3,8 @@ PF   = $(BIN).pf
 MAN1 = $(BIN).1
 
 DBG = -g
-cxxflags=-O2
+#cxxflags=-O2
+cxxflags=-g
 ldlibs= -lgclgrid -lseispp $(TRLIBS) -lperf
 
 SUBDIR=/contrib

@@ -3,12 +3,10 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include "PMTimeSeries.h"
 #include "seispp.h"
-#include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #include "ensemble.h"
-/* Disabled for now */
-//#include "PMTimeSeries.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
 using namespace std;
@@ -216,6 +214,8 @@ template <typename Tdata, typename Tkey>
         ++nout;
       }
     }
+    if(inp!=NULL) delete inp;
+    if(outp!=NULL) delete outp;
     return nout;
   }catch(...)
   {
@@ -524,12 +524,8 @@ int main(int argc, char **argv)
                     veq,vmin,vmax,equal_test,minonly,maxonly,binary_data);
           break;
         case PMTS:
-          /*
           nout=subset_processor<PMTimeSeries>(key,keytype,
                     veq,vmin,vmax,equal_test,minonly,maxonly,binary_data);
-                    */
-          cerr << "ParticleMotionTimeSeries not yet supported"<<endl;
-          exit(-1);
           break;
       }
       cerr << "subset_streamfile:  Total number of objects copied to output="<<nout<<endl;

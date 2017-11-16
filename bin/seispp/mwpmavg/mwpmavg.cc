@@ -10,6 +10,7 @@
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
 #include "VectorStatistics.h"
+#include "Vector3DBootstrapError.h"
 using namespace std;
 using namespace SEISPP;
 void usage()
@@ -19,6 +20,7 @@ void usage()
         << "Averages multiwavelet particle motion estimates produced by mwpm"<<endl
         << "in a time window relative to time of a specified seismic phase"<<endl
         << "Results are a csv file defined by argument 1. "<<endl
+        << "To get related attributes run listhdr with -csv option to build a parallel matrix of metadata"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl
@@ -28,6 +30,7 @@ void usage()
 class PMAverageData
 {
 public:
+  double major[3],minor[3]; 
   double majornrm,majoraz,majorinc;
   double minornrm,minoraz,minorinc;
   double rectilinearity;
@@ -35,6 +38,8 @@ public:
   double dmajoraz,dminoraz;
   double dmajorinc,dminorinc;
   double drect;
+  double dtheta_major_axes; //scatter in major vectors dot product angle
+  double dtheta_minor_axes;  // same for minor axis
   bool live;  // true of computed ok - false if the constructor found no data in twin
   int count;  // number of non-gap time steps averaged for this estimate
   PMAverageData(PMTimeSeries& d, string phase_time_key, TimeWindow twin);
@@ -95,9 +100,11 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
     {
       /* We signal null result by setting this boolean false */
       live=false;
+      return;
     }
     else
     {
+      live=true;
       majornrm=median<double>(vmajnrm);
       majoraz=median<double>(vmajaz);
       majorinc=median<double>(vmajinc);
@@ -113,6 +120,76 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
       dminoraz=median<double>(vdminaz);
       drect=median<double>(vdrect);
     }
+    /* We handle the major and minor axis vector data 
+     * separately.   We compute a new bootstrap error
+     * of average angle deviation of these vectors 
+     * over the defined range.  Not sure how meaningful that
+     * estimate is beause the numbers are so strongly 
+     * correlated, but might be a useful qc measure even
+     * if it may not mean anything in an absolute sense. */
+    dmatrix majsamples(3,this->count);
+    dmatrix minsamples(3,this->count);
+    int k,ii;
+    for(t=tas,ii=0;t<=tae;t+=dt)
+    {
+      if(ii==this->count)
+      {
+          cerr << "PMAverageData constructor:  gap count mismatch"
+              <<" at sample count="<<ii<<endl
+              << "This should not happen, but exiting major and minor"
+              << " vector averaging loop on this nonfatal error"
+              <<endl;
+          break;
+      }
+      int i=d.sample_number(t);
+      if(i>=d.ns) break;
+      if(i<0) continue;
+      if(d.is_gap(t))continue;
+      pme=d.ellipse(i);
+      for(k=0;k<3;++k)
+      {
+          majsamples(k,ii)=pme.major[k];
+          minsamples(k,ii)=pme.minor[k];
+      }
+      ++ii;
+    }
+    /* Now we use the bootstrap error estimator in libmwpm.
+     * The confidence value and multiplier on the number of trials
+     * is fixed here.   May want to add that as a parameter to the
+     * pf for htis program */
+    const double conf(0.95),sampmultiplier(100);
+    int numtrials=(this->count)*sampmultiplier;
+    int count_floor(4);   // When less than this set the error to +-180
+    vector<double> vtmp;
+    if((this->count)==1)
+    {
+        for(k=0;k<3;++k)
+        {
+            this->major[k]=majsamples(k,1);
+            this->minor[k]=minsamples(k,1);
+            this->dtheta_major_axes=M_PI;
+            this->dtheta_minor_axes=M_PI;
+        }
+    }
+    else
+    {
+        Vector3DBootstrapError majerr(majsamples,conf,numtrials);
+        Vector3DBootstrapError minerr(minsamples,conf,numtrials);
+        vtmp=majerr.mean_vector();
+        for(k=0;k<3;++k) this->major[k]=vtmp[k];
+        vtmp=minerr.mean_vector();
+        for(k=0;k<3;++k) this->minor[k]=vtmp[k];
+        if((this->count)<count_floor)
+        {
+            this->dtheta_major_axes=M_PI;
+            this->dtheta_minor_axes=M_PI;
+        }
+        else
+        {
+            this->dtheta_major_axes=majerr.angle_error();
+            this->dtheta_minor_axes=minerr.angle_error();
+        }
+    }
   }catch(...){throw;};
 }
 ostream& operator<<(ostream& os,PMAverageData& d)
@@ -127,7 +204,13 @@ ostream& operator<<(ostream& os,PMAverageData& d)
     << deg(d.minoraz) << ","<< deg(d.dminoraz)<<","
     << deg(d.minorinc) << ","<< deg(d.dminorinc)<<","
     << d.rectilinearity<<","<< d.drect;
-    return os;
+  int k;
+  for(k=0;k<3;++k) os<<","<<d.major[k];
+  os<<","<<deg(d.dtheta_major_axes);
+  for(k=0;k<3;++k) os<<","<<d.minor[k];
+  os<<","<<deg(d.dtheta_minor_axes);
+  os<<","<<d.count;
+  return os;
 }
 bool fileExists(const std::string& file) {
     struct stat buf;
@@ -188,9 +271,8 @@ int main(int argc, char **argv)
     string outfile(argv[1]);
     if(fileExists(outfile))
     {
-      cerr << "mwpmavg:  files specified as argument 1="<<outfile<<" exists"<<endl
-         << "Fatal error:   exiting to avoid overwriting possible previous results"<<endl;
-      usage();
+      cerr << "mwpmavg(Warning):  files specified as argument 1="<<outfile<<" exists"<<endl
+         << "Appending these results to this file - beware of duplicates"<<endl;
     }
     bool binary_data(true);
     string pffile("mwpmavg.pf");
@@ -236,7 +318,7 @@ int main(int argc, char **argv)
         string key_type=control.get_string("name_key_type");
         allowed_key_types kt;
         kt=parse_key_name(key_type);
-        ofstream ofs(outfile.c_str(),std::ios::out | std::ios::trunc);
+        ofstream ofs(outfile.c_str(),std::ios::out | std::ios::app);
         if(ofs.fail())
         {
           cerr << "Open failed for output file="<<outfile<<endl;
@@ -261,6 +343,8 @@ int main(int argc, char **argv)
             /* First fetch the name key that will be used as a tag.  always
             returned as a string.  real numbers drop period */
             string nametag;
+            int band;
+            band=d.get<int>("band");
             try{
               nametag=fetch_nametag(d,name_key,kt);
             }catch(MetadataGetError& mde)
@@ -270,12 +354,18 @@ int main(int argc, char **argv)
                  << "Message posted:"<<endl;
               mde.log_error();
               cerr << "Attempting to continue"<<endl;
+              nametag="BAD";
             }
             /* This routine does all the work.   Returns result in the class
             defined above */
+            const string band_key("band");
             PMAverageData avg(d,phase_time_key,avgwin);
-            ofs << nametag<<","<<phase<<","<<avg<<endl;
-            ++nd;
+            if(avg.live)
+            {
+              ofs << nametag<<","<<band<<","
+                  <<avg<<endl;
+              ++nd;
+            }
         }
     }catch(SeisppError& serr)
     {
