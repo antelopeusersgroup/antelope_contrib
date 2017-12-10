@@ -42,7 +42,7 @@ AllowedObjects get_object_type(string otype)
         return TCS;
     else if(otype=="TimeSeries")
         return TS;
-    else if(otype=="ParticleMotionTimeSeries")
+    else if(otype=="PMTimeSeries")
         return PMTS;
     else if(otype=="TimeSeriesEnsemble")
         return TSE;
