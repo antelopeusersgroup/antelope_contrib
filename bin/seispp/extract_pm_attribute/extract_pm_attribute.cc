@@ -7,20 +7,25 @@
 #include "seispp.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
+#include "AttributeTextWriter.h"
 using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "extract_pm_attribute < in > out [-a attribute_type -mec xxx -v --help -text]"
+    cerr << "extract_pm_attribute < in [(-dir outdir | -o outfile) -a attribute_type -mec xxx -v --help -text]"
         <<endl
         << "extracts one of a set of supported attributes from PMTimeSeries objects"<<endl
-        << "writes output as stream of TimeSeries objects or (optionally) a TimeSeriesEnsemble"<<endl
+        << "Results are written as either a set of text files in directory defined by -dir "<<endl
+        << "or a serialized set of TimeSeries objects written to outfile (-o option)"<<endl
+        << "Type of output is controlled by whether or not the -dir or -o option appears"<<endl
+        << "-dir implies text out put while -o implies serialized TimeSeries data stream"<<endl
         << " -a set the attribute to be extracted to output (default is major axis azimuth)"<<endl
         << "Attribute_type must be one of:  major_axis_amplitude, minor_axis_amplitude, "<<endl
         << " major_azimuth, minor_azimuth, major_inclination, minor_inclination, rectilinearity"<<endl
         << " -save_error - flag used to output error estimate of an attribute instead of the values"<<endl
         << "(e.g. -a major_azimuth -save_error would write estimated errors for major axis azimuth)"
         <<endl
+        << "Note this option is ignored for text output as the error data is always written to output then"<<endl
         << "-mec - optionally mask sections with error estimate for attribute "
         << "larger than xxx as data gap in output"<<endl
         << "(Exit with an error if -mec is used with -save_error)"<<endl
@@ -57,6 +62,44 @@ PMAttributeType GetPMAType(string name)
     usage();
   }
   return pmat;
+}
+/* builds a file name to save text format for use by matlab, gnuplot, or gmt. */
+string build_filename(Metadata& d,PMAttributeType pmat)
+{
+    string atype;
+    switch(pmat)
+    {
+      case MajAmp:
+          atype="MajAmp";
+          break;
+      case MinAmp:
+          atype="MinAmp";
+          break;
+      case MajAz:
+          atype="MajAz";
+          break;
+      case MinAz:
+          atype="MinAz";
+          break;
+      case MajInc:
+          atype="MajInc";
+          break;
+      case MinInc:
+          atype="MinInc";
+          break;
+      case Rect:
+          atype="Rect";
+          break;
+    };
+    /* This is a fragile approach but this program is not intended to be
+     * particularly generic.   */
+    string sta=d.get_string("sta");
+    long evid=d.get<long>("evid");
+    int band=d.get<int>("band");
+    stringstream ss;
+    ss<<atype<<"_"<<evid<<"_"<<sta<<"_"<<band;
+    string fname(ss.str());
+    return fname;
 }
 /* This little procedure adds gaps for sections with for which
  * the error estimate for the attribute exceeds threshold cutoff.
@@ -219,6 +262,28 @@ TimeSeries extract_attribute_error_data(PMTimeSeries& d,PMAttributeType pmat)
     return derror;
   }catch(...){throw;};
 }
+/* A odd mismatch in the PMTimeSeries object is that the errors
+ * for amplitude are computed in dB relative to the measured
+ * amplitude.   However, we store the amplitude in physical units.
+ * Hence, we thus have to convert (cautiously due to gaps) amplitude
+ * data to db.  This procedure does this. */
+TimeSeries amptodb(TimeSeries& d)
+{
+    TimeSeries ddb(d);
+    int i;
+    for(i=0;i<d.ns;++i)
+    {
+        if(d.is_gap(i))
+        {
+            ddb.s[i]=0.0;
+        }
+        else
+        {
+            ddb.s[i]=20.0*log10(d.s[i]);
+        }
+    }
+    return ddb;
+}
 bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
@@ -228,6 +293,10 @@ int main(int argc, char **argv)
     bool use_error_cutoff(false);
     bool save_error(false);
     double error_cutoff(-99.0);
+    /* This is used as a switch for output format.  When true use serialization */
+    bool TSOutputMode(false);
+    string outdir(".");
+    string outfile("BAD");
     if(argc>1)
       if(string(argv[1])=="--help") usage();
 
@@ -243,6 +312,20 @@ int main(int argc, char **argv)
             ++i;
             if(i>=argc)usage();
             pmat=GetPMAType(string(argv[i]));
+        }
+        else if(sarg=="-dir")
+        {
+            ++i;
+            if(i>=argc)usage();
+            outdir=string(argv[i]);
+            TSOutputMode=false;
+        }
+        else if(sarg=="-o")
+        {
+            ++i;
+            if(i>=argc)usage();
+            outfile=string(argv[i]);
+            TSOutputMode=true;
         }
         else if(sarg=="-mec")
         {
@@ -273,7 +356,7 @@ int main(int argc, char **argv)
           SEISPP_verbose=true;
         else
             usage();
-      }
+    }
     if(save_error && use_error_cutoff)
     {
       cerr << "extract_pm_attribute:  illegal argument combination"<<endl
@@ -284,28 +367,29 @@ int main(int argc, char **argv)
       char form('t');
       if(binary_data) form='b';
       StreamObjectReader<PMTimeSeries> inp(form);
-      StreamObjectWriter<TimeSeries> outp(form);
+      StreamObjectWriter<TimeSeries> *outp;
+      if(TSOutputMode)
+      {
+          outp=new StreamObjectWriter<TimeSeries>(outfile,form);
+      }
+      /* Always create this thing as the overhead is low*/
+      AttributeTextWriter atw(outdir,true);
       PMTimeSeries d;
       TimeSeries dout;
       TimeSeries derr;
       while(inp.good())
       {
         d=inp.read();
-        if(use_error_cutoff)
-            derr=extract_attribute_error_data(d,pmat);
-        if(save_error)
+        derr=extract_attribute_error_data(d,pmat);
+        switch(pmat)
         {
-          dout=extract_attribute_error_data(d,pmat);
-        }
-        else
-        {
-         switch(pmat)
-         {
           case MajAmp:
             dout=d.major_axis_amplitude();
+            dout=amptodb(dout);
             break;
           case MinAmp:
             dout=d.minor_axis_amplitude();
+            dout=amptodb(dout);
             break;
           case MajAz:
             dout=d.major_azimuth();
@@ -322,7 +406,6 @@ int main(int argc, char **argv)
           case Rect:
             dout=d.rectilinearity();
             break;
-
          };
          int ngaps;
          if(use_error_cutoff)
@@ -335,8 +418,19 @@ int main(int argc, char **argv)
                     <<endl;
              }
          }
-        }
-        outp.write(dout);
+         if(TSOutputMode)
+         {
+            if(save_error)
+                outp->write(derr);
+            else
+                outp->write(dout);
+         }
+         else
+         {
+             /*This creates the file name */
+             string fname=build_filename(d,pmat);
+             atw.write(fname,dout,derr);
+         }
       }
     }catch(SeisppError& serr)
     {
