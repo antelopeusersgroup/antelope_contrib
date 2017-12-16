@@ -284,6 +284,19 @@ TimeSeries amptodb(TimeSeries& d)
     }
     return ddb;
 }
+/* PMTimeSeries store angles in radians.  We need to convert to 
+ * degrees to produce rational plots*/
+TimeSeries radian_to_degree(TimeSeries& d)
+{
+    TimeSeries ddeg(d);
+    int i;
+    for(i=0;i<d.ns;++i)
+    {
+        /* We don't worry about gaps just blindly convert all samples */
+        ddeg.s[i]=deg(d.s[i]);
+    }
+    return ddeg;
+}
 bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
@@ -393,15 +406,23 @@ int main(int argc, char **argv)
             break;
           case MajAz:
             dout=d.major_azimuth();
+            dout=radian_to_degree(dout);
+            derr=radian_to_degree(derr);
             break;
           case MinAz:
             dout=d.minor_azimuth();
+            dout=radian_to_degree(dout);
+            derr=radian_to_degree(derr);
             break;
           case MajInc:
             dout=d.major_inclination();
+            dout=radian_to_degree(dout);
+            derr=radian_to_degree(derr);
             break;
           case MinInc:
             dout=d.minor_inclination();
+            dout=radian_to_degree(dout);
+            derr=radian_to_degree(derr);
             break;
           case Rect:
             dout=d.rectilinearity();
