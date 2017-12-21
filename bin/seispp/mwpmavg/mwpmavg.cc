@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <sys/stat.h>
+#include "perf.h"
 #include "PMTimeSeries.h"
 #include "seispp.h"
 #include "ensemble.h"
@@ -30,7 +31,7 @@ void usage()
 class PMAverageData
 {
 public:
-  double major[3],minor[3]; 
+  double major[3],minor[3];
   double majornrm,majoraz,majorinc;
   double minornrm,minoraz,minorinc;
   double rectilinearity;
@@ -42,23 +43,22 @@ public:
   double dtheta_minor_axes;  // same for minor axis
   bool live;  // true of computed ok - false if the constructor found no data in twin
   int count;  // number of non-gap time steps averaged for this estimate
-  PMAverageData(PMTimeSeries& d, string phase_time_key, TimeWindow twin);
+  PMAverageData(PMTimeSeries d, string phase_time_key, TimeWindow twin,
+        int maxsamples);
   friend ostream& operator<<(ostream& os,PMAverageData& d);
 };
-/* PMAverageData is defined really by this constructor.   It computes
-all the attributes by computing the median of all attributes and storing
-them in the public attribures */
-PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
+
+/* This is the older algorithm.  Retained for debugging to ease comparison.
+delete when new algorithm is validated.
+PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win)
 {
   try{
     ParticleMotionEllipse pme;
     ParticleMotionError pmerr;
     int i;
     double time;
-    /* This needs to be the zero reference time - typicall predicted arrival time
-    or a measured arrival time */
+
     time=d.get<double>(key);
-    /* First make sure we restore these data to absolute time standard */
     d.rtoa();
     double tas,tae;   //computed absolute start and end times
     tas=time+win.start;
@@ -76,8 +76,7 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
       if(i>=d.ns) break;
       if(i<0) continue;
       if(d.is_gap(t))continue;
-      /* We land here if there is valid data.   Then we extract ellipse data
-      and fill all these vectors that we reduce to medians below */
+
       pme=d.ellipse(i);
       vmajnrm.push_back(pme.majornrm);
       vminnrm.push_back(pme.minornrm);
@@ -98,7 +97,6 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
     }
     if((this->count)<=0)
     {
-      /* We signal null result by setting this boolean false */
       live=false;
       return;
     }
@@ -120,13 +118,7 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
       dminoraz=median<double>(vdminaz);
       drect=median<double>(vdrect);
     }
-    /* We handle the major and minor axis vector data 
-     * separately.   We compute a new bootstrap error
-     * of average angle deviation of these vectors 
-     * over the defined range.  Not sure how meaningful that
-     * estimate is beause the numbers are so strongly 
-     * correlated, but might be a useful qc measure even
-     * if it may not mean anything in an absolute sense. */
+
     dmatrix majsamples(3,this->count);
     dmatrix minsamples(3,this->count);
     int k,ii;
@@ -153,10 +145,7 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
       }
       ++ii;
     }
-    /* Now we use the bootstrap error estimator in libmwpm.
-     * The confidence value and multiplier on the number of trials
-     * is fixed here.   May want to add that as a parameter to the
-     * pf for htis program */
+
     const double conf(0.95),sampmultiplier(100);
     int numtrials=(this->count)*sampmultiplier;
     int count_floor(4);   // When less than this set the error to +-180
@@ -192,10 +181,175 @@ PMAverageData::PMAverageData(PMTimeSeries& d, string key, TimeWindow win)
     }
   }catch(...){throw;};
 }
+*/
+PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win,
+   int maxsamples)
+{
+  try{
+    int i,j,k,ii;
+    ParticleMotionEllipse pme;
+    ParticleMotionError pmerr;
+    double time;
+    /* This needs to be the zero reference time - typicall predicted arrival time
+    or a measured arrival time */
+    time=d.get<double>(key);
+    /* First make sure we restore these data to absolute time standard */
+    d.rtoa();
+    double tas,tae;   //computed absolute start and end times
+    tas=time+win.start;
+    tae=time+win.end;
+    double dt=d.dt;
+    double t;
+    /* inc and az vectors below are only used if count is one, but
+    kept as a vector for parallel structure with a minor memory cost*/
+    vector<double> vmajnrm,vmajinc,vmajaz;
+    vector<double> vminnrm,vmininc,vminaz;
+    vector<double> vdmajnrm,vdmajaz,vdmajinc;
+    vector<double> vdminnrm,vdminaz,vdmininc;
+    vector<double> vrect,vdrect;
+    dmatrix majsamples(3,maxsamples);
+    dmatrix minsamples(3,maxsamples);
+    for(t=tas,ii=0;t<=tae;t+=dt)
+    {
+      i=d.sample_number(t);
+      if(i>=d.ns) break;
+      if(i<0) continue;
+      if(!d.is_gap(t))
+      {
+        pme=d.ellipse(i);
+        for(k=0;k<3;++k)
+        {
+          majsamples(k,ii)=pme.major[k];
+          minsamples(k,ii)=pme.minor[k];
+        }
+        vmajnrm.push_back(pme.majornrm);
+        vminnrm.push_back(pme.minornrm);
+        vmajaz.push_back(pme.major_azimuth());
+        vmajinc.push_back(pme.major_inclination());
+        vminaz.push_back(pme.minor_azimuth());
+        vmininc.push_back(pme.minor_inclination());
+        vrect.push_back(pme.rectilinearity());
+        pmerr=d.errors(i);
+        vdmajnrm.push_back(pmerr.dmajornrm);
+        vdminnrm.push_back(pmerr.dminornrm);
+        vdmajaz.push_back(pmerr.dphi_major);
+        vdminaz.push_back(pmerr.dphi_minor);
+        vdmajinc.push_back(pmerr.dtheta_major);
+        vdmininc.push_back(pmerr.dtheta_minor);
+        vdrect.push_back(pmerr.delta_rect);
+        ++ii;
+        if(ii>=maxsamples)break;
+      }
+    }
+    this->count=ii;
+    if((this->count)<=0)
+    {
+      live=false;
+      return;
+    }
+    else
+    {
+      live=true;
+    }
+    /* Now we use the bootstrap error estimator in libmwpm.
+     * The confidence value and multiplier on the number of trials
+     * is fixed here.   May want to add that as a parameter to the
+     * pf for htis program */
+    const double conf(0.95),sampmultiplier(100);
+    int numtrials=(this->count)*sampmultiplier;
+    int count_floor(4);   // When less than this set the error to +-180
+    vector<double> vtmp;
+    if((this->count)==1)
+    {
+        for(k=0;k<3;++k)
+        {
+          this->major[k]=majsamples(k,1);
+          this->minor[k]=minsamples(k,1);
+        }
+        this->dtheta_major_axes=M_PI;
+        this->dtheta_minor_axes=M_PI;
+        majornrm=vmajnrm[0];
+        minornrm=vminnrm[0];
+        majoraz=vmajaz[0];
+        minoraz=vminaz[0];
+        majorinc=vmajinc[0];
+        minorinc=vmininc[0];
+        rectilinearity=vrect[0];
+        dmajornrm=vdmajnrm[0];
+        dminornrm=vdminnrm[0];
+        dmajorinc=vdmajinc[0];
+        dminorinc=vdmininc[0];
+        dmajoraz=vdmajaz[0];
+        dminoraz=vdminaz[0];
+        drect=vdrect[0];
+    }
+    else
+    {
+        Vector3DBootstrapError majerr(majsamples,conf,numtrials);
+        Vector3DBootstrapError minerr(minsamples,conf,numtrials);
+        vtmp=majerr.mean_vector();
+        for(k=0;k<3;++k) this->major[k]=vtmp[k];
+        majoraz=M_PI_2 - atan2(vtmp[1],vtmp[0]);
+        /* We need to force the minor axis to be perpendicular to
+        major axis to match the particle ellipse model.   This algorithm
+        is the same one used in PMTimeSeries */
+        vtmp=minerr.mean_vector();
+        double w[3],w2[3];
+        dr3cros(this->major,&(vtmp[0]),w);
+        dr3cros(w,this->major,w2);
+        double wnrm;
+        for(wnrm=0,j=0;j<3;++j)wnrm+=w2[j]*w2[j];
+        wnrm=sqrt(wnrm);
+        /* This sets minor axis and normalizes it to unit length in one pass*/
+        for(j=0;j<3;++j) this->minor[j]=w2[j]/wnrm;
+        minoraz = M_PI_2 - atan2(w2[1],w2[0]);
+        /* the emergence angle for both major and minor is easily computed from
+        dot product of units vectors.  azimuth requires a potentially dangerous
+        - due to possible divide by 0 error - division by sin of the theta angle */
+        double vert[3]={0.0,0.0,1.0};
+        double vproj,theta;
+        vproj=ddot(3,this->major,1,vert,1);
+        theta=acos(theta);
+        /* This will be botched if theta is negative, which it will be if
+        * the vector has a downward component.  Hence this correction.
+        Not if we do this flip we also need to alter the aziiuth by 180
+        degrees */
+        if(theta<0.0)
+        {
+          theta=(-theta);
+          majoraz+=M_PI;
+          if(majoraz>(2.0*M_PI)) majoraz -= (2.0*M_PI);
+        }
+        majorinc=theta;
+        /* repeat for minor axis */
+        vproj=ddot(3,this->minor,1,vert,1);
+        theta=acos(theta);
+        if(theta<0.0)
+        {
+          theta=(-theta);
+          minoraz+=M_PI;
+          if(minoraz>(2.0*M_PI)) minoraz -= (2.0*M_PI);
+        }
+        minorinc=theta;
+        /* We compute these averages from medians values */
+        minornrm=median<double>(vminnrm);
+        majornrm=median<double>(vmajnrm);
+        rectilinearity=median<double>(vrect);
+        dmajornrm=median<double>(vdmajnrm);
+        dminornrm=median<double>(vdminnrm);
+        dmajorinc=median<double>(vdmajinc);
+        dminorinc=median<double>(vdmininc);
+        dmajoraz=median<double>(vdmajaz);
+        dminoraz=median<double>(vdminaz);
+        drect=median<double>(vdrect);
+    }
+  }catch(...){throw;};
+}
+
 ostream& operator<<(ostream& os,PMAverageData& d)
 {
-    /* Note we convert all angle terms to degrees as 
-     * angles are always stored internally in radians, but 
+    /* Note we convert all angle terms to degrees as
+     * angles are always stored internally in radians, but
      * humans mostly can't relate to radians */
   os << d.majornrm << ","<< d.dmajornrm<<","
     << deg(d.majoraz) << ","<< deg(d.dmajoraz)<<","
@@ -314,6 +468,7 @@ int main(int argc, char **argv)
         ts=control.get<double>("average_window_start");
         te=control.get<double>("average_window_end");
         TimeWindow avgwin(ts,te);
+        int maxsamples=control.get<int>("number_of_samples_cutoff");
         string name_key=control.get_string("name_key");
         string key_type=control.get_string("name_key_type");
         allowed_key_types kt;
@@ -359,7 +514,7 @@ int main(int argc, char **argv)
             /* This routine does all the work.   Returns result in the class
             defined above */
             const string band_key("band");
-            PMAverageData avg(d,phase_time_key,avgwin);
+            PMAverageData avg(d,phase_time_key,avgwin,maxsamples);
             if(avg.live)
             {
               ofs << nametag<<","<<band<<","
