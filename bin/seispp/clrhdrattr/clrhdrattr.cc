@@ -63,7 +63,7 @@ template <typename DataType> int clrhdrattr(std::set<string> keys, bool binary_d
         if(binary_data) form='b';
         StreamObjectReader<DataType> inp(form);
         StreamObjectWriter<DataType>  outp(form);
-        int count;
+        int count(0);
         DataType d;
         std::set<string>::iterator kptr;
         while(inp.good())
@@ -72,6 +72,7 @@ template <typename DataType> int clrhdrattr(std::set<string> keys, bool binary_d
             for(kptr=keys.begin();kptr!=keys.end();++kptr)
             {
               d.remove(*kptr);
+              ++count;
             }
             outp.write(d);
             ++count;
@@ -110,7 +111,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            if( not_allowed.find(sarg) == not_allowed.end() )
+            if( not_allowed.find(sarg) != not_allowed.end() )
             {
               cerr << "Attribute="<<sarg<<" cannot be cleared - it is used by some constructors"<<endl;
               usage();
@@ -137,6 +138,7 @@ int main(int argc, char **argv)
                 break;
             case PMTS:
                 count=clrhdrattr<PMTimeSeries>(keys, binary_data);
+                break;
             default:
                 cerr << "Coding problem - dtype variable does not match enum"
                     <<endl
