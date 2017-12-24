@@ -12,13 +12,15 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "extract_pm_attribute < in [(-dir outdir | -o outfile) -a attribute_type -mec xxx -v --help -text]"
+    cerr << "extract_pm_attribute < in [(-dir outdir | -o outfile) -a attribute_type -mec -save_error xxx -v --help -text]"
         <<endl
         << "extracts one of a set of supported attributes from PMTimeSeries objects"<<endl
         << "Results are written as either a set of text files in directory defined by -dir "<<endl
         << "or a serialized set of TimeSeries objects written to outfile (-o option)"<<endl
         << "Type of output is controlled by whether or not the -dir or -o option appears"<<endl
         << "-dir implies text out put while -o implies serialized TimeSeries data stream"<<endl
+        << "(text output order is:  time, value, lowerror, higherror) - natural input for errorlines of gnuplot"
+        <<endl
         << " -a set the attribute to be extracted to output (default is major axis azimuth)"<<endl
         << "Attribute_type must be one of:  major_axis_amplitude, minor_axis_amplitude, "<<endl
         << " major_azimuth, minor_azimuth, major_inclination, minor_inclination, rectilinearity"<<endl
@@ -29,6 +31,8 @@ void usage()
         << "-mec - optionally mask sections with error estimate for attribute "
         << "larger than xxx as data gap in output"<<endl
         << "(Exit with an error if -mec is used with -save_error)"<<endl
+        << " -save_error - use this option to write a TimeSeries of one of the error attributes"<<endl
+        << "  (Note: this flag is ignored if the -dir option is used)"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl

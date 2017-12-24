@@ -159,6 +159,7 @@ int main(int argc, char **argv)
                 break;
             case PMTS:
                 count=unbundled_print<PMTimeSeries>(cout,binary_data);
+                break;
             default:
                 cerr << "Coding problem - dtype variable does not match enum"
                     <<endl
