@@ -16,17 +16,34 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "mwpmavg outfile [-v --help -text -pf pffile] < in "
+    cerr << "mwpmavg outfile [-avglimit n -v --help -text -pf pffile] < in "
         <<endl
         << "Averages multiwavelet particle motion estimates produced by mwpm"<<endl
         << "in a time window relative to time of a specified seismic phase"<<endl
         << "Results are a csv file defined by argument 1. "<<endl
         << "To get related attributes run listhdr with -csv option to build a parallel matrix of metadata"<<endl
+        << " -avglimit flag sets the maximum number of nongap samples to average to n"<<endl
+        << "This is useful to limit averaging to only early part of the signal"
+        <<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl
         << " -pf - read parameters from pffile instead of defaul mwpmavg.pf"<<endl;
     exit(-1);
+}
+/* Small helper procedure.  Truncates a 3xn matrix stored with extra
+ * columns to n.  Returns the 3xn result. */
+dmatrix truncate_cols(dmatrix& d, int n)
+{
+    /*This could be made faster with pointers or memcp but speed is not
+     * an issue with the program at present */
+    dmatrix result(3,n);
+    int i,j;
+    for(j=0;j<n;++j)
+    {
+        for(i=0;i<3;++i) result(i,j)=d(i,j);
+    }
+    return result;
 }
 class PMAverageData
 {
@@ -43,14 +60,24 @@ public:
   double dtheta_minor_axes;  // same for minor axis
   bool live;  // true of computed ok - false if the constructor found no data in twin
   int count;  // number of non-gap time steps averaged for this estimate
-  PMAverageData(PMTimeSeries d, string phase_time_key, TimeWindow twin,
-        int maxsamples);
+  /*! \brief primary constructor
+
+    \param d - input data 
+    \param phase_time_key - used to fetch arrival time
+    \param twin - time window to average (time relative to arrival time 
+       defined by phase_time_key
+    \param maxavg - maximum number of samples to average for estimate.
+      Used to allow longer twin but limit estimate to earliest part of
+      the signal.  If less than 0 set to number of samples in win */
+  PMAverageData(PMTimeSeries d, string phase_time_key, 
+          TimeWindow twin, int maxavg);
   friend ostream& operator<<(ostream& os,PMAverageData& d);
 };
 
 /* This is the older algorithm.  Retained for debugging to ease comparison.
 delete when new algorithm is validated.
 PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win)
+>>>>>>> adda8fc1e1ac0006f2d95b51bde533aee28a1218
 {
   try{
     ParticleMotionEllipse pme;
@@ -64,6 +91,14 @@ PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win)
     tas=time+win.start;
     tae=time+win.end;
     double dt=d.dt;
+    int windowsizelimit;
+    if(maxavg<0)
+    {
+        windowsizelimit=floor((win.end-win.start)/dt);
+        if(windowsizelimit<0) windowsizelimit=1;//perhaps should abort on this
+    }
+    else
+        windowsizelimit=maxavg;
     vector<double> vmajnrm,vmajinc,vmajaz;
     vector<double> vminnrm,vmininc,vminaz;
     vector<double> vdmajnrm,vdmajaz,vdmajinc;
@@ -94,6 +129,7 @@ PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win)
       vdmininc.push_back(pmerr.dtheta_minor);
       vdrect.push_back(pmerr.delta_rect);
       ++(this->count);
+      if((this->count)>=windowsizelimit) break;
     }
     if((this->count)<=0)
     {
@@ -122,17 +158,8 @@ PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win)
     dmatrix majsamples(3,this->count);
     dmatrix minsamples(3,this->count);
     int k,ii;
-    for(t=tas,ii=0;t<=tae;t+=dt)
+    for(t=tas,ii=0;(t<=tae)&&(ii<(this->count));t+=dt)
     {
-      if(ii==this->count)
-      {
-          cerr << "PMAverageData constructor:  gap count mismatch"
-              <<" at sample count="<<ii<<endl
-              << "This should not happen, but exiting major and minor"
-              << " vector averaging loop on this nonfatal error"
-              <<endl;
-          break;
-      }
       int i=d.sample_number(t);
       if(i>=d.ns) break;
       if(i<0) continue;
@@ -148,14 +175,14 @@ PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win)
 
     const double conf(0.95),sampmultiplier(100);
     int numtrials=(this->count)*sampmultiplier;
-    int count_floor(4);   // When less than this set the error to +-180
+    int count_floor(4);   
     vector<double> vtmp;
     if((this->count)==1)
     {
         for(k=0;k<3;++k)
         {
-            this->major[k]=majsamples(k,1);
-            this->minor[k]=minsamples(k,1);
+            this->major[k]=majsamples(k,0);
+            this->minor[k]=minsamples(k,0);
             this->dtheta_major_axes=M_PI;
             this->dtheta_minor_axes=M_PI;
         }
@@ -285,6 +312,13 @@ PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win,
     }
     else
     {
+        /* We have truncate the input matrices due to the above
+         * algorithm if the matrix is not filled */
+        if((this->count)!=maxsamples)
+        {
+            majsamples=truncate_cols(majsamples,this->count);
+            minsamples=truncate_cols(minsamples,this->count);
+        }
         Vector3DBootstrapError majerr(majsamples,conf,numtrials);
         Vector3DBootstrapError minerr(minsamples,conf,numtrials);
         vtmp=majerr.mean_vector();
@@ -309,7 +343,7 @@ PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win,
         double vert[3]={0.0,0.0,1.0};
         double vproj,theta;
         vproj=ddot(3,this->major,1,vert,1);
-        theta=acos(theta);
+        theta=acos(vproj);
         /* This will be botched if theta is negative, which it will be if
         * the vector has a downward component.  Hence this correction.
         Not if we do this flip we also need to alter the aziiuth by 180
@@ -323,7 +357,7 @@ PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win,
         majorinc=theta;
         /* repeat for minor axis */
         vproj=ddot(3,this->minor,1,vert,1);
-        theta=acos(theta);
+        theta=acos(vproj);
         if(theta<0.0)
         {
           theta=(-theta);
@@ -417,6 +451,7 @@ bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
     int i;
+    if(argc<2) usage();
     if(argc>1)
     {
       if(string(argv[1])=="--help")
@@ -430,6 +465,7 @@ int main(int argc, char **argv)
     }
     bool binary_data(true);
     string pffile("mwpmavg.pf");
+    int windowlimit(-1); // negative signals to turn this feature off
     for(i=2;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -440,6 +476,12 @@ int main(int argc, char **argv)
         else if(sarg=="-text")
         {
             binary_data=false;
+        }
+        else if(sarg=="-avglimit")
+        {
+          ++i;
+          if(i>=argc)usage();
+          windowlimit=atoi(argv[i]);
         }
         else if(sarg=="-pf")
         {

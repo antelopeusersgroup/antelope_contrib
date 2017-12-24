@@ -61,6 +61,7 @@ AlignedGather convert_to_matrix(TimeSeriesEnsemble& d)
     vector<TimeSeries>::iterator dptr;
     double dt,tmin,tmax;
     int i,j;
+    int nsmax;
     for(i=0,dptr=d.member.begin();dptr!=d.member.end();++i,++dptr)
     {
       if(i==0)
@@ -68,6 +69,7 @@ AlignedGather convert_to_matrix(TimeSeriesEnsemble& d)
         tmin=dptr->time(0);
         tmax=dptr->endtime();
         dt=dptr->dt;
+        nsmax=dptr->ns;
       }
       else
       {
@@ -83,12 +85,14 @@ AlignedGather convert_to_matrix(TimeSeriesEnsemble& d)
             << dt<<endl<<"No output will be generated"<<endl;
           exit(-1);
         }
+        if((dptr->ns)>nsmax) nsmax=dptr->ns;
       }
     }
     TimeReferenceType tref;
     tref=d.member[0].tref;  //  assume all have the same time base
     int n=d.member.size();
     int m= (int)((tmax-tmin)/dt)+1;
+    if(m<nsmax) m=nsmax;
     if(SEISPP_verbose)
     {
       cerr << "export_to_matlab:  time range of output="<<tmin<<" to "<<tmax<<endl;

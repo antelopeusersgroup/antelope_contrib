@@ -62,7 +62,7 @@ int main(int argc, char **argv)
     string masterfile(argv[1]);
     string joinfile(argv[2]);
     int keycolm(1),keycolin(1),valcol(2);
-    for(i=1;i<argc;++i)
+    for(i=3;i<argc;++i)
     {
         string sarg(argv[i]);
         if(sarg=="--help")
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
       ovals=new string[nrows];
       int maxcol=max(keycolin,valcol);
       int nset(0);
-      while(!rightin.read_line())
+      while(rightin.read_line())
       {
         map<string,int>::iterator mptr;
         string key,val,stmp;
@@ -123,22 +123,27 @@ int main(int argc, char **argv)
             key=stmp;
           if(i==valcol)
             val=stmp;
-          mptr=master.find(key);
-          if(mptr!=master.end())
-          {
+        }
+        mptr=master.find(key);
+        if(mptr!=master.end())
+        {
             iout=master[key];
             if(iout>=nrows)
             {
               cerr << "Master index value ="<<iout<<" exceeds expected size="
                 << nrows<<endl
                 << "This should not happen - programming bug likely"
-                <<endl;
+                <<endl
+                << "Blundering on but output is is suspect"<<endl;
+            }
+            else
+            {
               okeys[iout]=key;
               ovals[iout]=val;
               ++nset;
+              continue;
             }
           }
-        }
       }
       for(i=0;i<nrows;++i)
       {

@@ -17,7 +17,7 @@ include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 CXXFLAGS += -I$(BOOSTINCLUDE)
 
-OBJS=extract_pm_attribute.o
+OBJS=extract_pm_attribute.o AttributeTextWriter.o
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
