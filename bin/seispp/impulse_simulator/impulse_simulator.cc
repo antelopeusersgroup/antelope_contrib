@@ -106,8 +106,8 @@ ThreeComponentEnsemble create_pattern_from_pf(PfStyleMetadata& control)
     /* this key defines the integer count key set for each seismogram*/
     string member_count_key=control.get<string>("member_count_key");
     ThreeComponentEnsemble result(nmembers,ns);
-    int i;
-    for(i=0;i<nmembers;++i)
+    int i,evid;
+    for(i=0,evid=666;i<nmembers;++i,++evid)
     {
       ThreeComponentSeismogram d(ns);
       d.u.zero();
@@ -137,12 +137,11 @@ ThreeComponentEnsemble create_pattern_from_pf(PfStyleMetadata& control)
       /* This oddity is necessary to set an internal boolean 
        * */
       d.ator(0.0);
-      /* We arbitrarily set sta as a means to define a gather
-       * downstream if desired*/
+      /* We arbitrarily set sta and evid as a means to define a gather
+       * downstream if desired.  This meshes with current use but
+       * is not as generic as it should be*/
       d.put("sta","impulse_simulation");
-      /* Also arbitrarily set evid - needed commonly so best set
-       * define rather than undefined which can create annoying errors*/
-      d.put("evid",666);
+      d.put("evid",evid);
       /* Constructor used above creates the pattern so we 
        * copy this new d into slot i*/
       result.member[i]=d;
