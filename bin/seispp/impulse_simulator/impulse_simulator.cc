@@ -140,6 +140,9 @@ ThreeComponentEnsemble create_pattern_from_pf(PfStyleMetadata& control)
       /* We arbitrarily set sta as a means to define a gather
        * downstream if desired*/
       d.put("sta","impulse_simulation");
+      /* Also arbitrarily set evid - needed commonly so best set
+       * define rather than undefined which can create annoying errors*/
+      d.put("evid",666);
       /* Constructor used above creates the pattern so we 
        * copy this new d into slot i*/
       result.member[i]=d;
