@@ -89,53 +89,17 @@ int main(int argc, char **argv)
         ThreeComponentEnsemble d;
         while(!ia->eof())
         {
+          d=ia->read();
           int nm=d.member.size();
           for(i=0;i<nm;++i)
           {
             if(d.member[i].live)
             {
-               ThreeComponentSeismogram work(d.member[i]);
-               /* Compute the time shift for this signal as
-                  t0+offset/vreduce  */
-               double tshift=t0;
-               double offset=work.get_double("offset");
+               double tshift;
+               double offset=d.member[i].get_double("offset");
                offset=fabs(offset);
-               tshift -= (offset/vreduce);
-               int ioffset=work.sample_number(tshift);
-               /* a basic sanity check on velocity and t0  */
-               if(abs(ioffset)>work.ns)
-               {
-                   cerr << "linearmoveout(Fatal Error):  irrational time shift"
-                        <<endl;
-                   cerr << "using t0="<<t0<<" and reducing velocity="<<vreduce
-                       << endl
-                       << "This seismogram has offset set as "<<offset
-                       << " which yields a time shift of "<<ioffset<<"samples"
-                       <<endl
-                       << "This exceeds number of data samples ="
-                       <<work.ns<<endl;
-                   exit(-1);
-               }
-               int nsout=work.ns - ioffset;
-               int ncopy=min(work.ns,nsout);
-               work.u=dmatrix(3,nsout);
-               work.u.zero();
-               work.t0+=t0;
-               int lag=work.sample_number(-offset/vreduce);
-               double *ptr;
-               if(lag>=0)
-               {
-                   ptr=work.u.get_address(0,lag);
-                   dcopy(3*ncopy,d.member[i].u.get_address(0,0),1,ptr,1);
-                   work.ns=nsout;
-               }
-               else
-               {
-                   ptr=d.member[i].u.get_address(0,ioffset);
-                   dcopy(3*ncopy,ptr,1,work.u.get_address(0,0),1);
-                   work.ns=nsout;
-               }
-               d.member[i]=work;
+               tshift = (offset/vreduce);
+               d.member[i].t0 -= tshift;
             }
           }
           oa->write(d);
