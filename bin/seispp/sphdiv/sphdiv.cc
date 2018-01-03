@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     for(i=narg_required+1;i<argc;++i)
     {
         string sarg(argv[i]);
-        if(sarg=="-power")
+        if(sarg=="-decay")
         {
             ++i;
             if(i>=argc)usage();
