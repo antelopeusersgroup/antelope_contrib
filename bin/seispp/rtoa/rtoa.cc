@@ -12,12 +12,15 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "rtoa < in > out [-t objt --help -text -v]"
+    cerr << "rtoa < in > out [-t objt -t0shift xxx --help -text -v]"
         <<endl
         << "Switches input data from absolute to a relative time standard"<<endl
         <<endl
         << "Use -objt to change expected object type"<<endl
         << "(default ThreeComponentSeismogram.  Alteratives are TimeSeries and PMTimeSeries)"<<endl
+        << " -t0shift - force shift of xxx to each start time"<<endl
+        << " (This option is useful to force shot data to look like absolute time)"
+        <<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"
         << " -v - be more verbose"<<endl
@@ -42,7 +45,7 @@ AllowedObjects get_object_type(string otype)
 }
 /* Returns number of objects processed.   Read from stdin and write
  * to stdout defined object type.   */
-template <typename T> int rtoa(bool binary_data)
+template <typename T> int rtoa(bool force_shift, double t0shift, bool binary_data)
 {
   try{
     char form('t');
@@ -53,7 +56,10 @@ template <typename T> int rtoa(bool binary_data)
     while(inp.good())
     {
       T d=inp.read();
-      d.rtoa();
+      if(force_shift)
+          d.rtoa(t0shift);
+      else
+          d.rtoa();
       outp.write(d);
       ++dcount;
     }
@@ -68,6 +74,8 @@ int main(int argc, char **argv)
     if(argc<=1) usage();
     if(string(argv[1])=="--help") usage();
     bool binary_data(true);
+    bool force_shift(false);
+    double t0shift(0.0);
 
     for(i=1;i<argc;++i)
     {
@@ -75,6 +83,13 @@ int main(int argc, char **argv)
         if(sarg=="--help")
         {
             usage();
+        }
+        else if(sarg=="-t0shift")
+        {
+            ++i;
+            if(i>=argc) usage();
+            force_shift=true;
+            t0shift=atof(argv[i]);
         }
         else if(sarg=="-text")
         {
@@ -93,19 +108,23 @@ int main(int argc, char **argv)
         else
             usage();
     }
+    cerr << "rtoa (WARNING):  t0 of output changed by "<<t0shift
+        << " seconds"<<endl
+        << "This mode is intended only for fake time shifts applied to active source data"
+        <<endl;
     try{
       int nprocessed;
       switch(objt)
       {
       case PMTS:
-        nprocessed=rtoa<PMTimeSeries>(binary_data);
+        nprocessed=rtoa<PMTimeSeries>(force_shift,t0shift,binary_data);
         break;
       case TCS:
-        nprocessed=rtoa<ThreeComponentSeismogram>(binary_data);
+        nprocessed=rtoa<ThreeComponentSeismogram>(force_shift,t0shift,binary_data);
         break;
       case TS:
       default:
-        nprocessed=rtoa<TimeSeries>(binary_data);
+        nprocessed=rtoa<TimeSeries>(force_shift,t0shift,binary_data);
       };
       if(SEISPP_verbose) cerr << "rtoa:  processed "<<nprocessed
           << " objects from stdin"<<endl;
