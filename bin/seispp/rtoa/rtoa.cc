@@ -19,6 +19,8 @@ void usage()
         << "Use -objt to change expected object type"<<endl
         << "(default ThreeComponentSeismogram.  Alteratives are TimeSeries and PMTimeSeries)"<<endl
         << " -t0shift - force shift of xxx to each start time"<<endl
+        << "  When applied sets attribute rtoa_t0shift to this value in output"
+        <<endl
         << " (This option is useful to force shot data to look like absolute time)"
         <<endl
         << " --help - prints this message"<<endl
@@ -48,6 +50,7 @@ AllowedObjects get_object_type(string otype)
 template <typename T> int rtoa(bool force_shift, double t0shift, bool binary_data)
 {
   try{
+    const string t0shiftkey("rtoa_t0shift");
     char form('t');
     if(binary_data)form='b';
     StreamObjectReader<T> inp(form);
@@ -57,7 +60,10 @@ template <typename T> int rtoa(bool force_shift, double t0shift, bool binary_dat
     {
       T d=inp.read();
       if(force_shift)
+      {
           d.rtoa(t0shift);
+          d.put(t0shiftkey,t0shift);
+      }
       else
           d.rtoa();
       outp.write(d);
