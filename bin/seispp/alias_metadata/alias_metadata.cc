@@ -156,7 +156,7 @@ template <typename DataType> int set_aliases(list<AttributeAlias> aliases,
         if(binary_data) form='b';
         StreamObjectReader<DataType> inp(form);
         StreamObjectWriter<DataType>  outp(form);
-        int count;
+        int count(0);
         DataType d;
         while(inp.good())
         {
@@ -172,24 +172,25 @@ template <typename DataType> int set_aliases(list<AttributeAlias> aliases,
                  * That may not be the best but for now will do that. */
                 try{
                     string key=aptr->old_name();
+                    string newkey=aptr->new_name();
                     MDtype mdt=aptr->AttributeType();
                     switch (mdt)
                     {
                         case MDreal:
                             dval=d.get<double>(key);
-                            d.put(key,dval);
+                            d.put(newkey,dval);
                             break;
                         case MDint:
                             ival=d.get<long>(key);
-                            d.put(key,ival);
+                            d.put(newkey,ival);
                             break;
                         case MDstring:
                             sval=d.get_string(key);
-                            d.put(key,sval);
+                            d.put(newkey,sval);
                             break;
                         case MDboolean:
                             bval=d.get_bool(key);
-                            d.put(key,bval);
+                            d.put(newkey,bval);
                             break;
                         case MDinvalid:
                         default:
@@ -283,7 +284,7 @@ int main(int argc, char **argv)
                 count=set_aliases<TimeSeriesEnsemble>(aalist,binary_data);
                 break;
             case PMTS:
-                count=set_aliases<TimeSeriesEnsemble>(aalist,binary_data);
+                count=set_aliases<PMTimeSeries>(aalist,binary_data);
                 break;
             default:
                 cerr << "Coding problem - dtype variable does not match enum"
@@ -291,7 +292,7 @@ int main(int argc, char **argv)
                     << "Fatal error - bug fix required. "<<endl;
                 exit(-1);
         };
-        cerr << "template:  copied "<<count<<" objects from stdin to stdout"
+        cerr << "alias_metadata:  processed "<<count<<" objects"
             <<endl;
     }catch(SeisppError& serr)
     {
