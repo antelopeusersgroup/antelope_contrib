@@ -12,7 +12,7 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "extract_pm_attribute < in [(-dir outdir | -o outfile) -a attribute_type -mec -save_error xxx -v --help -text]"
+    cerr << "extract_pm_attribute < in [(-dir outdir | -o outfile) -a attribute_type -mec -save_error xxx -t0shift -v --help -text]"
         <<endl
         << "extracts one of a set of supported attributes from PMTimeSeries objects"<<endl
         << "Results are written as either a set of text files in directory defined by -dir "<<endl
@@ -33,6 +33,8 @@ void usage()
         << "(Exit with an error if -mec is used with -save_error)"<<endl
         << " -save_error - use this option to write a TimeSeries of one of the error attributes"<<endl
         << "  (Note: this flag is ignored if the -dir option is used)"<<endl
+        << " -t0shift - shift all output by wavelet duratio/2 to align attribute times to leading edge of wavelet"<<endl
+        << "  (default puts time reference at center of each wavelet)"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl
@@ -314,6 +316,7 @@ int main(int argc, char **argv)
     bool TSOutputMode(false);
     string outdir(".");
     string outfile("BAD");
+    bool apply_t0shift(false);
     if(argc>1)
       if(string(argv[1])=="--help") usage();
 
@@ -365,6 +368,8 @@ int main(int argc, char **argv)
         {
           save_error=true;
         }
+        else if(sarg=="-t0shift")
+            apply_t0shift=true;
         else if(sarg=="-text")
         {
             binary_data=false;
@@ -397,6 +402,15 @@ int main(int argc, char **argv)
       while(inp.good())
       {
         d=inp.read();
+        /* We time shift the PMTimeSeries data then the TimeSeries
+         * used for output will also be shifted. */
+        if(apply_t0shift)
+        {
+            double t0shift;
+            t0shift=d.get_wavelet_duration();
+            t0shift/=2.0;  // shift is by half length 
+            d.shift(-t0shift);
+        }
         derr=extract_attribute_error_data(d,pmat);
         switch(pmat)
         {
