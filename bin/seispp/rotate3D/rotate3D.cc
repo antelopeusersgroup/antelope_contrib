@@ -43,14 +43,14 @@ int main(int argc, char **argv)
             ++i;
             if(i>=argc)usage();
             phi=atof(argv[i]);
-            compute_from_coordinates=true;
+            compute_from_coordinates=false;
         }
         else if(sarg=="-theta")
         {
             ++i;
             if(i>=argc)usage();
             theta=atof(argv[i]);
-            compute_from_coordinates=true;
+            compute_from_coordinates=false;
         }
         else if(sarg=="-accumulate")
             accum_mode=true;
