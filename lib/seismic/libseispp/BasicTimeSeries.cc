@@ -80,7 +80,7 @@ void BasicTimeSeries::rtoa(double tshift)
 	}
 	gaps = shifted_gaps;
 	tref=absolute;
-        t0shift_is_valid=false;
+        t0shift_is_valid=true;
 }
 void BasicTimeSeries::rtoa()
 {
