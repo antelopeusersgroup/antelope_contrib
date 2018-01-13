@@ -303,6 +303,31 @@ TimeSeries radian_to_degree(TimeSeries& d)
     }
     return ddeg;
 }
+/* procedure to remove wraparound problems for azimuths*/
+void fix_wraparound(TimeSeries& d,TimeSeries& e)
+{
+    if(d.ns != e.ns)
+    {
+        cerr << "extract_pm_attributes fix_wraparound procedure:  "
+            << "data ns="<<d.ns <<" but error vector ns="<<e.ns<<endl
+            << "This should not happen and indicates a coding error."
+            << "Exiting"<<endl;
+        exit(-1);
+    }
+    int i;
+    for(i=0;i<d.ns;++i)
+    {
+        float az0,az;
+        az0=d.s[i];
+        /* This assumes data were converted to degrees */
+        az=regularize_angle(az0);
+        if(az!=az0)
+        {
+            d.s[i]=az;
+        }
+    }
+}
+
 bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
@@ -426,11 +451,13 @@ int main(int argc, char **argv)
             dout=d.major_azimuth();
             dout=radian_to_degree(dout);
             derr=radian_to_degree(derr);
+            fix_wraparound(dout,derr);
             break;
           case MinAz:
             dout=d.minor_azimuth();
             dout=radian_to_degree(dout);
             derr=radian_to_degree(derr);
+            fix_wraparound(dout,derr);
             break;
           case MajInc:
             dout=d.major_inclination();
