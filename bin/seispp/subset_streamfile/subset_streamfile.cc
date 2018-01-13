@@ -85,7 +85,7 @@ private:
 };
 void usage()
 {
-    cerr << "subset_streamfile key:type ( -eq val | -ne val | -range minval maxval | -min minval -max maxval ) [-objt object_type --help -text]"<<endl
+    cerr << "subset_streamfile key:type ( -eq val | -ne val | -range minval maxval | -min minval -max maxval ) [-t object_type --help -text]"<<endl
         <<endl
         << " seispp unix filter to subset a data set read from stdin and write result to out"
         <<endl
@@ -93,8 +93,8 @@ void usage()
         << "optionally append :type of int or real (e.g. evid:int) "<<endl
         << "Default (no :type specified) is string (char * for C programmers)"
         <<endl
-        <<  "  [-objt data_object_type]"<<endl
-        << " Accepted object types for arg following -objt flag are:"<<endl
+        <<  "  [-t data_object_type]"<<endl
+        << " Accepted object types for arg following -t flag are:"<<endl
         << "  ThreeComponentSeismogram"<<endl
         << "  ThreeComponentEnsemble"<<endl
         << "  TimeSeries"<<endl
@@ -443,7 +443,9 @@ int main(int argc, char **argv)
           maxonly=false;
           test_range=true;
         }
-        else if(sarg=="-objt")
+        /* For now allows -objt or -t as I (glp) have a bunch of 
+         * shell scripts use -objt as this flag */
+        else if(sarg=="-objt" || sarg=="-t")
         {
           ++i;
           if(i>=argc)usage();
