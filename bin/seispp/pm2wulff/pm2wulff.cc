@@ -4,9 +4,8 @@
 #include <string>
 #include <iostream>
 #include <memory>
-#include "seispp.h"
 #include "PMTimeSeries.h"
-#include "ensemble.h"
+#include "seispp.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
 using namespace std;
@@ -51,7 +50,15 @@ WulffData::WulffData(double *u)
   {
     phi=atan2(u[0],u[1]);
     theta=atan2(u[3],rhorizontal);
-    r=cos(theta)/(1.0+sin(theta));
+    if(theta>=0.0)
+        r=cos(theta)/(1.0+sin(theta));
+    else
+    {
+        phi+=M_PI;
+        if(phi>M_PI) phi -= (2.0*M_PI);
+        theta=-theta;
+        r=cos(theta)/(1.0+sin(theta));
+    }
   }
 }
 void write_Wulffnet_data(PMTimeSeries& d,string outdir)
@@ -59,7 +66,7 @@ void write_Wulffnet_data(PMTimeSeries& d,string outdir)
   try{
     string base_error("pm2wulffne - write_Wulffnet_data procedure:  ");
     int evid=d.get<long>("evid");
-    string sta=d.get_string("string");
+    string sta=d.get_string("sta");
     int band=d.get<int>("band");
     string path;
     stringstream ss;
