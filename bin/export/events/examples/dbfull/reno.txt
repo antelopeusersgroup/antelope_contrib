@@ -1,0 +1,113 @@
+             time [UTC]  lat. [°N]  lon. [°E]  dep. [km]  mb  ms    ml  event type certainty              Flinn-Engdahl region
+2015-12-29 00:02:51.044    37.0160  -116.4143    10.4397 NaN NaN -1.19        None      None                   SOUTHERN NEVADA
+2015-12-29 00:12:43.388    39.0714  -119.0049     6.7396 NaN NaN  1.53        None      None                            NEVADA
+2015-12-29 00:16:01.890    40.3968  -119.5536     0.0000 NaN NaN   NaN        None      None                            NEVADA
+2015-12-29 00:57:00.304    41.4875  -118.9234     1.7015 NaN NaN  2.42        None      None                            NEVADA
+2015-12-29 01:09:29.086    41.8831  -119.6215     7.7206 NaN NaN  1.15        None      None                            NEVADA
+2015-12-29 01:27:51.536    38.5423  -118.1826    12.7433 NaN NaN  0.48        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 01:39:55.200    37.1121  -116.3586     9.4712 NaN NaN -0.90        None      None                   SOUTHERN NEVADA
+2015-12-29 01:52:04.289    -3.2090   158.1807    30.0000 NaN NaN   NaN  earthquake      None          NORTH OF SOLOMON ISLANDS
+2015-12-29 02:06:45.414    27.4305  -131.8361    30.0000 NaN NaN   NaN        None      None               NORTH PACIFIC OCEAN
+2015-12-29 02:22:21.796    36.7299  -112.7477     3.0000 NaN NaN   NaN  earthquake      None                   WESTERN ARIZONA
+2015-12-29 02:31:43.694    41.8656  -119.6278     7.0131 NaN NaN  1.11        None      None                            NEVADA
+2015-12-29 02:42:58.061    39.7481  -120.6349     6.5625 NaN NaN  1.24        None      None               NORTHERN CALIFORNIA
+2015-12-29 02:54:31.357     9.2303   -78.1808    30.0000 NaN NaN   NaN  earthquake      None                            PANAMA
+2015-12-29 03:07:29.765    41.8732  -119.6043     8.4400 NaN NaN  0.91        None      None                            NEVADA
+2015-12-29 03:20:51.231    37.0343  -116.3823     8.6188 NaN NaN -1.01        None      None                   SOUTHERN NEVADA
+2015-12-29 03:24:25.827    37.8335  -118.9564    15.0000 NaN NaN  1.14        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 03:29:08.889    37.3712  -113.3171     0.0000 NaN NaN   NaN        None      None                              UTAH
+2015-12-29 03:29:50.491    40.7325  -116.3290    19.2276 NaN NaN  1.96        None      None                            NEVADA
+2015-12-29 03:34:29.219    44.2430  -129.9058    30.0000 NaN NaN   NaN  earthquake      None               OFF COAST OF OREGON
+2015-12-29 03:34:38.748    40.8882  -130.5197    30.0000 NaN NaN   NaN  earthquake      None  OFF COAST OF NORTHERN CALIFORNIA
+2015-12-29 03:45:50.489    41.1182  -118.4837    22.0891 NaN NaN   NaN        None      None                            NEVADA
+2015-12-29 03:50:15.223    37.8339  -118.8897    12.0000 NaN NaN  1.31        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 04:06:38.711    35.9081  -114.9290     0.0000 NaN NaN  1.60        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 04:20:37.629    41.4727  -118.9171     2.5434 NaN NaN  2.41        None      None                            NEVADA
+2015-12-29 04:37:10.418    36.2324  -117.8729     0.0000 NaN NaN  2.11  earthquake      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 04:38:35.354    36.6986  -119.9716     0.0000 NaN NaN  1.83  earthquake      None                CENTRAL CALIFORNIA
+2015-12-29 04:46:31.062    37.4519  -115.9618     0.0000 NaN NaN  0.08        None      None                   SOUTHERN NEVADA
+2015-12-29 04:47:48.128    41.8912  -119.6058     5.2594 NaN NaN  2.31        None      None                            NEVADA
+2015-12-29 05:09:14.193    37.3729  -117.1285    14.8527 NaN NaN -0.02        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 05:11:44.650    41.8590  -119.6117     6.8140 NaN NaN  0.93        None      None                            NEVADA
+2015-12-29 05:44:00.673    38.4983  -118.0676    15.0000 NaN NaN   NaN        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 05:49:19.701    38.3838  -119.9253     0.0000 NaN NaN  2.13        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 06:07:11.458    15.5749   179.8546    30.0000 NaN NaN   NaN        None      None           MARSHALL ISLANDS REGION
+2015-12-29 06:23:36.629    38.1722  -119.2058     0.0000 NaN NaN   NaN        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 06:24:14.887    37.5991  -120.0829     9.0000 NaN NaN   NaN        None      None                CENTRAL CALIFORNIA
+2015-12-29 06:31:16.896    41.8720  -119.6075     9.7313 NaN NaN  3.34        None      None                            NEVADA
+2015-12-29 06:34:56.851    41.8786  -119.6395     9.2282 NaN NaN  0.73        None      None                            NEVADA
+2015-12-29 06:36:20.840    32.7639  -137.5900    30.0000 NaN NaN   NaN  earthquake      None               NORTH PACIFIC OCEAN
+2015-12-29 06:45:12.192    41.8855  -119.6255     7.4618 NaN NaN  1.19        None      None                            NEVADA
+2015-12-29 07:00:39.211    41.8672  -119.6298     7.9111 NaN NaN  1.39        None      None                            NEVADA
+2015-12-29 07:03:03.879    41.8672  -119.6186     4.8752 NaN NaN  0.86        None      None                            NEVADA
+2015-12-29 07:26:04.539    38.5503  -116.0720     0.0000 NaN NaN  2.01        None      None                            NEVADA
+2015-12-29 07:27:51.594    39.3657  -119.9776     4.8203 NaN NaN -0.29        None      None                            NEVADA
+2015-12-29 08:15:39.311    39.9327  -120.7302    13.8387 NaN NaN  0.96        None      None               NORTHERN CALIFORNIA
+2015-12-29 08:31:20.968    37.2345  -114.5986     0.0000 NaN NaN  1.23        None      None                   SOUTHERN NEVADA
+2015-12-29 08:33:01.774    36.4408  -116.9631    11.4637 NaN NaN  0.32        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 08:50:02.815    38.5132  -118.4085     2.8380 NaN NaN  0.27        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 08:51:54.594    38.0361  -118.5801    15.0000 NaN NaN   NaN        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 09:40:18.642    38.1323  -119.1829    12.0000 NaN NaN   NaN        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 09:59:28.492    38.3161  -118.7385    15.0000 NaN NaN   NaN        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 10:03:37.522    38.5904  -119.4816    15.0000 NaN NaN   NaN        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 10:40:32.735    38.6565  -118.7847    11.3707 NaN NaN  0.31        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 10:54:47.349    22.1362   167.0234    30.0000 NaN NaN   NaN        None      None               NORTH PACIFIC OCEAN
+2015-12-29 11:09:50.990    38.1526  -119.1609     0.0000 NaN NaN   NaN        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 11:11:28.178    35.7201  -116.4922     0.0000 NaN NaN   NaN  earthquake      None                CENTRAL CALIFORNIA
+2015-12-29 11:12:05.912    37.9664  -116.5324    15.0000 NaN NaN   NaN        None      None                   SOUTHERN NEVADA
+2015-12-29 11:14:43.931    37.0153  -115.9811     4.0828 NaN NaN -0.22        None      None                   SOUTHERN NEVADA
+2015-12-29 11:20:06.976    37.2437  -117.8036    10.1701 NaN NaN   NaN        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 11:29:29.828    38.4363  -117.4405    15.0000 NaN NaN   NaN        None      None                            NEVADA
+2015-12-29 11:42:11.365    38.9003  -120.2092     0.0000 NaN NaN   NaN        None      None               NORTHERN CALIFORNIA
+2015-12-29 11:45:18.938    38.2267  -116.5044    15.0000 NaN NaN   NaN        None      None                            NEVADA
+2015-12-29 11:51:44.304    38.5860  -118.3265     9.5405 NaN NaN  0.35        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 11:59:33.202    38.5510  -119.4136     0.0000 NaN NaN  2.54        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 12:39:03.883    38.1125  -119.1603     0.0000 NaN NaN   NaN        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 12:46:13.870   -46.4230    75.2284    30.0000 NaN NaN   NaN        None      None          KERGUELEN ISLANDS REGION
+2015-12-29 12:57:59.599    37.4537  -118.7752    12.0000 NaN NaN  1.06        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 13:14:36.109    28.7051  -170.0076    30.0000 NaN NaN   NaN        None      None           HAWAIIAN ISLANDS REGION
+2015-12-29 13:23:33.913    41.8743  -119.6072     8.9445 NaN NaN  3.50        None      None                            NEVADA
+2015-12-29 13:26:13.892    37.7465  -116.5815     9.0000 NaN NaN  1.96        None      None                   SOUTHERN NEVADA
+2015-12-29 13:30:28.822    38.9184  -118.5635     0.0000 NaN NaN  2.02        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 13:33:00.401    41.8763  -119.6054     7.2358 NaN NaN  3.39        None      None                            NEVADA
+2015-12-29 14:03:42.273    41.8772  -119.6096    10.0205 NaN NaN  3.45        None      None                            NEVADA
+2015-12-29 14:05:53.113    41.8889  -119.6228     7.8083 NaN NaN  1.82        None      None                            NEVADA
+2015-12-29 14:09:46.266    39.4195  -119.7891     8.8114 NaN NaN  0.94        None      None                            NEVADA
+2015-12-29 14:15:15.458    39.0643  -119.0101     5.7798 NaN NaN  0.20        None      None                            NEVADA
+2015-12-29 14:27:09.632    39.0661  -119.0130     6.9559 NaN NaN  1.10        None      None                            NEVADA
+2015-12-29 14:30:15.023    41.8950  -119.6198     6.6268 NaN NaN  1.17        None      None                            NEVADA
+2015-12-29 14:40:14.869    41.8738  -119.6135     7.0207 NaN NaN  1.91        None      None                            NEVADA
+2015-12-29 14:53:46.584    41.8778  -119.6193     7.0512 NaN NaN  0.90        None      None                            NEVADA
+2015-12-29 14:57:26.498   -20.9670   -66.4752    30.0000 NaN NaN   NaN        None      None                  SOUTHERN BOLIVIA
+2015-12-29 15:33:59.920    41.0576  -116.6897    13.0310 NaN NaN  1.91        None      None                            NEVADA
+2015-12-29 15:57:04.755   -26.5599    40.8610    30.0000 NaN NaN   NaN        None      None                SOUTH INDIAN OCEAN
+2015-12-29 15:57:22.660    36.9664  -117.9853    12.5999 NaN NaN  1.86        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 16:18:59.225     1.4719   163.0861    30.0000 NaN NaN   NaN        None      None   E. CAROLINE ISLANDS, MICRONESIA
+2015-12-29 16:20:47.958    38.3657  -116.4118    15.0000 NaN NaN  2.54        None      None                            NEVADA
+2015-12-29 16:24:51.170    38.4563  -117.4403    15.0000 NaN NaN   NaN        None      None                            NEVADA
+2015-12-29 16:33:36.668    36.8333  -118.5285     0.0000 NaN NaN   NaN        None      None                CENTRAL CALIFORNIA
+2015-12-29 16:47:02.410    41.8757  -119.5899     8.1950 NaN NaN  1.25        None      None                            NEVADA
+2015-12-29 17:25:25.119    41.8716  -119.6020     4.7185 NaN NaN  1.41        None      None                            NEVADA
+2015-12-29 17:31:22.583    37.7156  -117.5770     0.0000 NaN NaN  1.06        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 18:05:05.882    37.6379  -118.8577     5.4464 NaN NaN  0.67        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 18:19:35.291    39.7726  -114.0712     0.0000 NaN NaN  3.26        None      None                            NEVADA
+2015-12-29 19:51:55.181    36.1523  -117.9600     0.0000 NaN NaN  2.94  earthquake      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 19:54:49.433    36.1123  -118.0035     3.0000 NaN NaN  1.58  earthquake      None                CENTRAL CALIFORNIA
+2015-12-29 19:56:27.087    41.8723  -119.6107     9.8852 NaN NaN  1.58        None      None                            NEVADA
+2015-12-29 20:09:01.200    36.7017  -116.3170     9.7381 NaN NaN -0.53        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 20:12:40.226    39.3313  -116.6382     0.0000 NaN NaN   NaN        None      None                            NEVADA
+2015-12-29 20:14:56.203    38.6744  -117.1012     0.0000 NaN NaN  1.68        None      None                            NEVADA
+2015-12-29 20:30:09.351    37.2109  -119.0813     0.0000 NaN NaN   NaN  earthquake      None                CENTRAL CALIFORNIA
+2015-12-29 20:35:58.765    42.3335  -116.2391     0.0000 NaN NaN   NaN        None      None                     WESTERN IDAHO
+2015-12-29 20:38:23.586    41.8771  -119.6096     5.6019 NaN NaN  1.04        None      None                            NEVADA
+2015-12-29 20:52:28.535    41.8861  -119.6013     5.0150 NaN NaN  1.39        None      None                            NEVADA
+2015-12-29 20:54:35.422    37.1455  -117.2273    12.5692 NaN NaN  0.32        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 21:15:20.082    36.9037  -117.5597     7.1279 NaN NaN  0.74        None      None   CALIFORNIA-NEVADA BORDER REGION
+2015-12-29 21:19:19.050    45.0709  -139.0290    30.0000 NaN NaN   NaN  earthquake      None          WEST OF VANCOUVER ISLAND
+2015-12-29 21:25:21.782    41.8774  -119.6057     5.9378 NaN NaN  1.16        None      None                            NEVADA
+2015-12-29 22:02:36.067    41.8604  -121.4338    12.0000 NaN NaN   NaN  earthquake      None               NORTHERN CALIFORNIA
+2015-12-29 22:11:05.952    40.5942  -116.6111    15.0000 NaN NaN   NaN        None      None                            NEVADA
+2015-12-29 22:18:19.758    41.8821  -119.6201     8.8993 NaN NaN  1.28        None      None                            NEVADA
+2015-12-29 22:47:19.487    41.8511  -119.6287     6.3372 NaN NaN  1.39        None      None                            NEVADA
+2015-12-29 22:57:51.828    36.0255  -114.7562     0.0000 NaN NaN  1.90        None      None                   SOUTHERN NEVADA
+2015-12-29 23:18:21.643    38.6047  -118.3114    10.6997 NaN NaN -0.07        None      None   CALIFORNIA-NEVADA BORDER REGION

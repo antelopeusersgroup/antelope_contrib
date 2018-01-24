@@ -3,7 +3,7 @@ use Datascope;
 use orb ;
 use utilfunct;
 #use strict;
-#use warnings;
+use warnings;
 
 use Getopt::Std;
 
@@ -14,28 +14,33 @@ use Getopt::Std;
 # Add X to Adoption types, triggering write to new db for a CEUSN-type adoption/transition 
 #  - J.Eakins 9/17/2013 
 #
+# Switch to using trloadchan to get "true" start/end time of waveforms
+#  - J.Eakins 3/15/2016
 #
 # J.Eakins
 # 1/2009
 # jeakin@ucsd.edu
 #
 
-our ($opt_k,$opt_n,$opt_v,$opt_y,$opt_I,$opt_R,$opt_U,$opt_A,$opt_m,$opt_w,$opt_W);
-our ($opt_s,$opt_S,$opt_p,$opt_P,$opt_C,$opt_V,$opt_d,$opt_e);
-our ($dbops,$snet,$sta,$mytime,$newprovider,$newcommtype,$newvnet,$mydb,$newpower,$newdutycycle,$power,$dutycycle);
+our ($opt_k,$opt_v,$opt_y,$opt_I,$opt_R,$opt_U,$opt_A,$opt_D,$opt_m,$opt_w,$opt_W);
+our ($opt_s,$opt_S,$opt_p,$opt_P,$opt_C,$opt_V,$opt_d,$opt_e,$opt_q);
+our ($dbops,$snet,$sta,$mytime,$newprovider,$newcommtype,$newvnet,$mydb,$newpower,$newdutycycle);
+our ($power,$dutycycle,$equiptype,$newequiptype);
 our ($samecomm,$type,$atype,$stime,$table,$table_filename);
 our ($newnet,$newsta,$newDCC);
 our ($ctime,$cendtime,$wfendtime,$sendtime,$dtime,$endtime);
 our ($nbytes,$packet,$pkttime,$srcname,$pktid,$select,$n);
 our ($model,$ssident,$dltime,$idtag,$lat,$lon,$elev);
-our ($dmctime,$pdcc,$sdcc,$dlname,$startnull,$endnull,$earntime,$atime); 
+our ($pdcc,$sdcc,$dlname,$startnull,$endnull,$earntime,$atime); 
 our ($stasub,$dlstasub,$nullsub,$commsub,$dlsitesub,$depsub,$chansub,$stagesub,$wfsub,$vnetsub);
-our ($status_orb,$cmd_orb,$prelim_orb,$wfdb,$vnet,$packet_ext,$preorb,$statorb,$cmdorb);
+our ($status_orb,$cmd_orb,$prelim_orb,$preorb,$wfdb,$vnet,$packet_ext);
 our (%Pf,$pf,$prelimwf_db,$sitedb,$newdb,$newdbpath,$newsuffix);
 our (@db,@prewf,@ops,@stage,@wfdisc,@deployment,@dlsite,@comm,@adoption);
 our (@newops,@newdeployment,@newdlsite,@newcomm,@newadoption,@rm_list,$cp);
 our (%adoption_types,@single_comm,@single_deployment,@single_stage,@single_dlsite,$commtype,$provider,$adoption_type);
 our (@adoption_record,@dep_record,@deptable,@comm_record,@commtable,@dlsite_record);
+our (@tr,$wfsta,$wfchan,$wfstr,$wfstart,$wfend,$nseg) ;
+
 
   my $pgm = $0 ;
   $pgm =~ s".*/"" ;
@@ -44,8 +49,8 @@ our (@adoption_record,@dep_record,@deptable,@comm_record,@commtable,@dlsite_reco
 
   elog_notify($cmd);
 
-  if ( !getopts('knvyIRUAm:w:W:s:S:p:P:C:V:d:e:') || @ARGV < 4 || @ARGV > 6 ) {
-    die ("USAGE: $0 { -I | -U | -R | -A }  [-k] [-n] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-C cmdORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] [-d yes|no|string] [-e powersource] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
+  if ( !getopts('knvyIRUADm:w:W:s:S:p:P:C:V:d:e:q:') || @ARGV < 4 || @ARGV > 6 ) {
+    die ("USAGE: $0 { -I | -U | -R | -A | -D }  [-k] [-y] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-C cmdORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] [-d yes|no|string] [-e powersource] [-q equipment] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
   }
 
   $dbops	= $ARGV[0];
@@ -86,21 +91,11 @@ our (@adoption_record,@dep_record,@deptable,@comm_record,@commtable,@dlsite_reco
   }
 
 
-if ($opt_e) {
-   $power = $opt_e;
-} else {
-   $power = "-";
-}
-
-if ($opt_d) {
-   $dutycycle = $opt_d;
-} else {
-   $dutycycle = "-";
-}
+$power = $opt_e ? $opt_e : "-" ;
+$dutycycle = $opt_d ? $opt_d : "-" ;
+$equiptype = $opt_q ? $opt_q : "-" ;
 
 # set up some defaults
-
-$dmctime	= 19880899199.00000;		# DMC requested time translates to 12/31/2599 23:59:59 
 
 $pdcc	=	"-";
 $sdcc	=	"-";
@@ -133,7 +128,6 @@ $chansub	= $Pf{channel_match};
 
 $chansub	= "chan=~/$chansub/" ;
 
-$stagesub	= "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/&&endtime!='9999999999.99900'" ;
 $wfsub 	= "$stasub && $chansub";
 
 # command line overrides 
@@ -162,11 +156,7 @@ if (defined $newprovider) {
   }
 }
 
-if ($opt_s) {
-  $sitedb		= $opt_s ;
-} else {
-  $sitedb		= $dbops ;
-}
+$sitedb  = $opt_s ? $opt_s : $dbops ;
 
 @ops		= dbopen ( $dbops, "r+") ; 
 @stage 		= dbopen_table ( $sitedb.".stage", "r") ; 
@@ -181,23 +171,34 @@ elog_notify(0,"\t wf     database: $wfdb\n") if ($opt_R || $opt_W || $opt_A);
 @comm		= dblookup(@ops,  "", "comm" ,       "" , "");
 @adoption	= dblookup(@ops,  "", "adoption" ,     "" , "");
 
+# warn if dlsite records exist but you are choosing not to review/modify
+
+elog_warn("\nRecords exist in dlsite table!  Consider running mk_dbops with the -y option!!  Else no updates will be considered!\n\n") if (dbquery(@dlsite, "dbRECORD_COUNT") ) ; 
 
 
   if ($opt_I) {
     $type = "INSTALL" ;
-    if ($opt_R || $opt_U || $opt_A ) {
-	elog_die("Must use only one of -A, -I, -R, -U \n");
+    if ($opt_R || $opt_U || $opt_A || $opt_D ) {
+	elog_die("Must use only one of -A, -I, -R, -U, -D \n");
     } 
+
   } elsif ($opt_R) {
     $type = "REMOVAL" ;
-    if ($opt_I || $opt_U || $opt_A ) {
-	elog_die("Must use only one of -A, -I, -R, -U \n");
+    if ($opt_I || $opt_U || $opt_A || $opt_D ) {
+	elog_die("Must use only one of -A, -I, -R, -U, -D \n");
     } 
+
+  } elsif ($opt_D) {
+    $type = "DROP" ;
+    if ($opt_I || $opt_U || $opt_A || $opt_R ) {
+	elog_die("Must use only one of -A, -I, -R, -U, -D \n");
+    } 
+
 
   } elsif ($opt_A) {
     $type = "ADOPTION" ;
-    if ($opt_I || $opt_U || $opt_R ) {
-	elog_die("Must use only one of -A, -I, -R, or -U \n");
+    if ($opt_I || $opt_U || $opt_R || $opt_D ) {
+	elog_die("Must use only one of -A, -I, -R, -U, -D \n");
     } 
 
     $atype	= ask( "Adoption type (E|T|R|X|-):  " ) ;
@@ -263,11 +264,11 @@ elog_notify(0,"\t wf     database: $wfdb\n") if ($opt_R || $opt_W || $opt_A);
   } elsif ($opt_U) {
     $type = "UPDATE" ;
     if ($opt_R || $opt_I ) {
-	elog_die("Must use only one of -A, -I, -R, -U \n");
+	elog_die("Must use only one of -A, -I, -R, -U, -D \n");
     } 
 
   } else {
-    elog_die("Must specify either -I, -R, or -U, -A.  Corresponds to install, removal, update, or adoption \n");
+    elog_die("Must specify either -I, -R, -U, -A, -D.  Corresponds to install, removal, update, adoption, or drop. \n");
   }
 
   elog_notify("\n  ---  Dbops update type:   $type  --- \n\n");
@@ -276,44 +277,41 @@ elog_notify(0,"\t wf     database: $wfdb\n") if ($opt_R || $opt_W || $opt_A);
 #  not needed if you are using prelimwf_db
 
 if ($opt_I && !$opt_w ) {		
-  $preorb    = orbopen   ($prelim_orb, "r&" );
+  my $preorbchk    = orbopen   ($prelim_orb, "r&" );
   elog_notify("Prelim orb:  $prelim_orb\n") if $opt_v ;
- 
-  if ($preorb == -1) {
-     elog_die("Can't open $prelim_orb\n") ;
-  }
+  elog_die("Can't open $prelim_orb\n") if ($prelim_orb == -1) ;
+  orbclose($preorbchk);
+
 }
 
 # check for "alive" status and cmd orb if you are updating or installing.   
 #  not needed if you are using prelimwf_db
 
 if ($opt_U || $opt_I) {
-  $statorb    = orbopen   ($status_orb, "r&" );
+  my $statorb    = orbopen   ($status_orb, "r&" );
   elog_notify("Status orb:  $status_orb\n") if $opt_v ;
- 
-  if ($statorb == -1) {
-     elog_die("Can't open $status_orb\n") ;
-  }
-  if (!$opt_n) {
-    $cmdorb    = orbopen   ($cmd_orb, "r&" );
+  elog_die("Can't open $status_orb\n") if ($statorb == -1) ;
+  orbclose($statorb);
+
+  if ($opt_y) {
+    my $cmdorb    = orbopen   ($cmd_orb, "r&" );
     elog_notify("Cmd orb:  $cmd_orb\n") if $opt_v ;
- 
-    if ($cmdorb == -1) {
-     elog_die("Can't open $cmd_orb\n") ;
-    }
+    elog_die("Can't open $cmd_orb\n") if ($cmdorb == -1) ;
+    orbclose($cmdorb);
   }
+
 }
 
 if ($opt_U) {
 
-  elog_notify("Starting UPDATE specific commands\n") if $opt_v ;
+  elog_notify("Starting UPDATE specific commands\n") ;
 
-  elog_notify("Command line timestamp:  ". &strydtime($mytime) . " used for comm.endtime, new comm.time, dlsite.endtime, and new dlsite.endtime\n");
+  elog_notify("Command line timestamp:  ". &strydtime($mytime) . " used for comm.endtime, and new comm.time\n");
 
   elog_notify("Creating backup of tables:  \n") if ($opt_v) ;
 
 
-  &backup_tables("comm", "dlsite");
+  $opt_y ? &backup_tables("comm", "dlsite") : &backup_tables("comm") ;
 
   elog_notify("Backup tables will be removed upon success.\n") if ($opt_v && !$opt_k) ;
 
@@ -328,14 +326,15 @@ if ($opt_U) {
     elog_complain "Update $pf\.pf with a new accepted_comm_type: $newcommtype!!\n\n";
  }
 
-  @deptable =  defined $newdb && ($db eq $newdb)   ? @newdeployment : @deployment ;
+  @deptable =  defined $newdb && ($dbops eq $newdb)   ? @newdeployment : @deployment ;
 
   $newpower     = $opt_e && ($opt_e !~ $power)     ? $opt_e  : $power ;
   $newdutycycle = $opt_d && ($opt_d !~ $dutycycle) ? $opt_d  : $dutycycle ;
+  $newequiptype = $opt_q && ($opt_q !~ $equiptype) ? $opt_q  : $equiptype ;
 
-  &add2comm($dbops,$sta,$mytime,$newcommtype,$newprovider,$newpower,$newdutycycle) ;
+  &add2comm($dbops,$sta,$mytime,$newcommtype,$newprovider,$newpower,$newdutycycle,$newequiptype) ;
 
-  &modifydlsite($dbops) ;
+  &modifydlsite($dbops) if $opt_y ;	# only look for dlsite if specifically requested via -y/$opt_y
 
 } elsif ($opt_A) {
 
@@ -380,7 +379,7 @@ if ($opt_U) {
 
     #  add to the new comm table
       elog_notify("\t starting add2comm for new comm table\n");
-      &add2comm($newdb,$newsta,$earntime+0.001,$commtype,$provider,$power,$dutycycle) ;
+      &add2comm($newdb,$newsta,$earntime+0.001,$commtype,$provider,$power,$dutycycle,$equiptype) ;
     # close out old deployment, comm, and dlsite records
       elog_notify("\t starting close_deployment for old deployment table\n");
       &close_deployment ($dbops, $earntime, $endnull, $mytime ) ; 
@@ -388,19 +387,19 @@ if ($opt_U) {
 
     # add to new dlsite
 
-      if (!$opt_n) {
+      if ($opt_y) {
 	elog_notify("Starting modification of dlsite via external program q330_location. \n")  ;
 	elog_notify("This program assumes sitedb and dbops are the same..... \n")  ;
 	&add2dlsite($newdb);
       } else {
-	elog_notify("\n   You need to run q330_location to populate dlsite table\n\n") ;
+	elog_notify("No modifictaions to dlsite.  You need to run q330_location to populate dlsite table\n\n") ;
       }
 
     } else {
       &add2deployment ($dbops, $newvnet, $newnet, $newsta, $earntime+0.001, $stime, $mytime) ; 
     }
 
-    elog_notify("This is a '$atype' station transition.  No change to comm or dlsite.\n" ) if ($opt_v);
+    elog_notify("This is a '$atype' station transition.  No change to comm.\n" ) if ($opt_v);
 
     &add2adoption($dbops,$earntime) ; 
 
@@ -412,9 +411,9 @@ if ($opt_U) {
 
     elog_notify("Creating backup of tables:  \n") if ($opt_v) ;
 
-    &backup_tables("adoption", "comm", "deployment", "dlsite");
+    $opt_y ? &backup_tables("adoption", "comm", "deployment", "dlsite") :  &backup_tables("adoption", "comm", "deployment");
 
-    $sendtime	= &get_stageendtime ;
+    $sendtime	= &get_stageendtime ;	# this should look for non-null/non-future stage.endtime
     $wfendtime	= &get_wfendtime ;
 
     if ( $wfendtime > $sendtime ) {
@@ -423,9 +422,9 @@ if ($opt_U) {
 
     &close_deployment($dbops, $wfendtime, $endnull, $mytime) ; 
 
-    elog_notify("This is a '$atype' station transition.  Comm and dlsite will be changed.\n" )  if ($opt_v) ;
+    elog_notify("This is a '$atype' station transition.  Comm table will be changed.\n" )  if ($opt_v) ;
 
-    &close_dlsite($dbops, $sendtime); 
+    &close_dlsite($dbops, $sendtime) if $opt_y ; 
     &close_comm($dbops, $sendtime) ;
 
     if ($adoption_type == 'T' ) {
@@ -438,12 +437,13 @@ if ($opt_U) {
   }
 
 
-} elsif ($opt_R) {
+} elsif ($opt_R || $opt_D ) {
 
-  elog_notify("Starting REMOVAL specific commands\n");
+  elog_notify("Starting $type specific commands\n") ; 
+
   elog_notify("Command line timestamp:  ". &strydtime($mytime) . " used for deployment.decert_time \n");
 
-  &backup_tables("comm", "deployment", "dlsite");
+  $opt_y ? &backup_tables("comm", "deployment", "dlsite") : &backup_tables("comm", "deployment");
 
   $sendtime = &get_stageendtime ;
   $wfendtime = &get_wfendtime ;
@@ -465,7 +465,7 @@ if ($opt_U) {
 #   chose to use stage.endtime
 #  NOTE:  if opt_A, -A, dlsite.endtime is set to NULL
 
-  &close_dlsite($dbops, $sendtime) ; 
+  &close_dlsite($dbops, $sendtime)  if $opt_y ; 
 
 } elsif ($opt_I) {
 
@@ -473,7 +473,7 @@ if ($opt_U) {
 
   elog_notify("Creating backup of tables:  \n") if ($opt_v) ;
 
-  &backup_tables("comm", "deployment", "dlsite");
+  $opt_y ? &backup_tables("comm", "deployment", "dlsite") : &backup_tables("comm", "deployment");
 
   elog_notify("Backup tables will be removed upon success.\n") if ($opt_v && !$opt_k) ;
 
@@ -483,7 +483,7 @@ if ($opt_U) {
 
   $stime = &get_stagestarttime ;
 
-  &add2comm($dbops,$sta,$stime,$newcommtype,$newprovider,$power,$dutycycle) ;
+  &add2comm($dbops,$sta,$stime,$newcommtype,$newprovider,$power,$dutycycle,$equiptype) ;
 
 # get deployment.time from (first time in wfdisc?  stage.time?  first data in orb?)
 #   chose to use first data in orb - override with -w
@@ -497,8 +497,20 @@ if ($opt_U) {
      @prewf 	= dbsort (@prewf, "time") ;	# get single record that will be updated
 
      $prewf[3] 	= 0 ;
+     ($wfsta,$wfchan,$wfstart,$wfendtime) = dbgetv(@prewf, qw( sta chan time endtime ) );
+     elog_notify("Verifying first sample time in wfdisc.  Reviwing traces for null data fill values\n") if $opt_v ;
+     elog_notify( sprintf ("Looking at %s:%s  -  %s", $wfsta, $wfchan, strydtime($wfstart)) ) if $opt_v ;
 
-     $dtime = dbgetv(@prewf, qw( time ) );
+     @tr = trloadchan(@prewf, $wfstart-10, $wfendtime+10, $wfsta, $wfchan) ;
+     trsplit (@tr) ;
+     $nseg = dbquery(@tr, dbRECORD_COUNT) ;
+     die ( "Failed to find single trace data from $wfsta:$wfchan\n") if $nseg != 1 ;
+     $tr[3] = 0;
+     ($dtime) = dbgetv(@tr, qw( time ) );
+
+     elog_notify( sprintf ("Found adjusted start time of wf: %s" , strydtime($dtime) ) ) ;
+
+     trfree(@tr);
      dbfree(@prewf);
 
   } else {		# get time from prelim orb
@@ -509,8 +521,11 @@ if ($opt_U) {
        $select = $dlname . "(" . $packet_ext . ")" ;	# Look for data packets
      }
 
+     # for some reason, I need to reopen this orb
+     $preorb    = orbopen   ($prelim_orb, "r&" );
      $n = orbselect($preorb, $select) ;
      $n = orbposition($preorb, "oldest") ;
+
 
      if ($n < 1 ) {
         elog_die("Can't select $select packets from prelim orb, $prelim_orb\n");
@@ -518,19 +533,19 @@ if ($opt_U) {
 
      ($pktid, $srcname, $pkttime, $packet, $nbytes) = orbreap($preorb) ;
      $dtime = $pkttime ;
-
+     orbclose($preorb);
   }
 
   &trim($dtime) ;
 
   &add2deployment($dbops, $vnet, $snet, $sta, $dtime, $stime, $mytime) ;  
 
-  if (!$opt_n) {
+  if ($opt_y) {
      elog_notify("Starting modification of dlsite via external program q330_location. \n")  ;
      elog_notify("This program assumes sitedb and dbops are the same..... \n")  ;
      &add2dlsite($dbops);
   } else {
-     elog_notify("\n   You need to run q330_location to populate dlsite table\n\n") ;
+     elog_notify("No modifications to dlsite. You need to run q330_location to populate dlsite table\n\n") ;
   }
 
 }
@@ -558,11 +573,17 @@ exit ;
 
 sub get_stageendtime {		# get the stage.endtime
 
-  elog_notify ("Starting get_stageendtime\n");
+  elog_notify ("Starting get_stageendtime\n") if $opt_v ;
+
+#  $stagesub	= "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/&&(endtime!='9999999999.99900'||endtime!>now())" ;
+
+# if it's a "Dropped" station, endtime might be NULL/future
+# get single record by sta/chan/gtype stagesub without endtime, then sort stage in reverse for most recent record?
+
+  $stagesub = $opt_D ? "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/&&(endtime=='9999999999.99900'||endtime>now())" : "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/&&(endtime!='9999999999.99900'||endtime<now())"  ;
 
   @single_stage	= dbsubset (@stage, $stagesub) ;		
-  @single_stage	= dbsort(@single_stage, "endtime") ;	# get single record that will be updated
-  
+
   elog_die("No matching records in stage table for station $sta.  Possibly check stagesub: $stagesub \n") if (!dbquery(@single_stage, "dbRECORD_COUNT") ) ; 
 
   $single_stage[3] 	= dbquery(@single_stage, "dbRECORD_COUNT") - 1 ;	# get last record, which should indicate close time
@@ -574,6 +595,7 @@ sub get_stageendtime {		# get the stage.endtime
 
 sub get_stagestarttime {		# get the stage.time
 
+  elog_notify ("Starting get_stagestarttime\n") if $opt_v ;
   $stagesub	= "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/" ;
 
   @single_stage	= dbsubset (@stage, $stagesub) ;		
@@ -591,13 +613,31 @@ sub get_stagestarttime {		# get the stage.time
 
 sub get_wfendtime {		# get the last time of available data from DB 
 
+    elog_notify ("Starting get_wfendtime\n") if $opt_v ;
+
     @wfdisc	= dbsubset (@wfdisc, $wfsub) ;
     @wfdisc 	= dbsort   (@wfdisc, "endtime") ;	# get single record that will be updated
 
     elog_die("No records in certified wf db matching $sta for $wfsub \n") if (!dbquery(@wfdisc, "dbRECORD_COUNT") ) ; 
 
     $wfdisc[3] 	= dbquery(@wfdisc, "dbRECORD_COUNT") - 1  ;
-    $wfendtime = dbgetv(@wfdisc, qw( endtime ) );
+    ($wfsta,$wfchan,$wfstart,$wfendtime) = dbgetv(@wfdisc, qw( sta chan time endtime ) );
+    $wfstr = epoch2str($wfendtime,"%H:%M");
+
+# only go into tr if endtime is "end of day" which might be safe as "23:59"??
+    if ($wfstr  =~ /23:59/) {
+       elog_notify("Questionable last sample time in wfdisc.  Reviwing traces for null data fill values\n") if $opt_v ;
+       elog_notify( sprintf ("Looking at %s:%s  -  %s", $wfsta, $wfchan, strydtime($wfendtime)) ) if $opt_v ;
+       @tr = trloadchan(@wfdisc, $wfstart-10, $wfendtime+10, $wfsta, $wfchan) ;
+       trsplit (@tr) ;
+       $nseg = dbquery(@tr, dbRECORD_COUNT) ;
+       die ( "Failed to find single trace data from $wfsta:$wfchan\n") if $nseg != 1 ;
+       $tr[3] = 0;
+       ($wfendtime) = dbgetv(@tr, qw( endtime ) );
+       elog_notify( sprintf ("Found adjusted endtime of wf: %s" , strydtime($wfendtime) ) ) ;
+       trfree(@tr);
+    }
+
     return($wfendtime);
 }
 
@@ -605,6 +645,7 @@ sub modifydlsite {		# modifydlsite($db)		# modify record in dlsite table
 
   my ($db) = @_; 
 
+  elog_notify ("Starting modifydlsite\n") if $opt_v ;
   @dlsite = defined $newdb && ( $db eq $newdb )  ? @newdlsite : @dlsite ;
 
   @single_dlsite	= dbsubset (@dlsite, $dlsitesub) ;		# get single record that will be updated
@@ -673,11 +714,14 @@ sub close_deployment {		# close_deployment($db, $endtime,$equip_removal,$decertt
     elog_notify("Attempting subsetting based on vnet. \n") if ($opt_V) ; 
     @single_deployment	= dbsubset (@single_deployment, $vnetsub) ;
     if (dbquery(@single_deployment, "dbRECORD_COUNT") > 1) {
-	elog_die("Too many records in deployment table.  Fix your deployment table.\n") ; 
+	elog_die("Too many records in deployment table.  Fix your deployment table.\n") ;
+    } elsif (dbquery(@single_deployment, "dbRECORD_COUNT") < 1) {
+	elog_die("Too few records in deployment table.  Fix your deployment table.\n") ;
     } 
   }
 
   $single_deployment[3]	= 0 ;
+  elog_notify("Attempting dbputv into single record of deployment table\n");
 
   dbputv(@single_deployment,"endtime",$time1,"equip_remove",$time2,"decert_time",$time3) ; 
 
@@ -711,6 +755,7 @@ sub modifycomm {  # &modifycomm($db,$time)
 
 my ($db,$endcommtime)  = @_ ;
 
+  elog_notify ("Starting modifycomm\n") if $opt_v ;
   @comm = defined $newdb && ( $db eq $newdb )  ? @newcomm : @comm ;
 
   @single_comm = dbsubset (@comm, $commsub) ;		# get single record that will be updated
@@ -719,7 +764,7 @@ my ($db,$endcommtime)  = @_ ;
   elog_die("Too many records in comm matching $sta\n") if (dbquery(@single_comm, "dbRECORD_COUNT") > 1) ; 
   $single_comm[3] = 0 ;
 
-  ($ctime,$cendtime,$commtype,$provider,$power,$dutycycle) = dbgetv(@single_comm, qw(time endtime commtype provider power dutycycle) );
+  ($ctime,$cendtime,$commtype,$provider,$power,$dutycycle,$equiptype) = dbgetv(@single_comm, qw(time endtime commtype provider power dutycycle equiptype) );
 
   if ( $endcommtime > $ctime ) {
      dbputv(@single_comm,"endtime",$endcommtime);
@@ -735,6 +780,7 @@ sub close_comm { # &close_comm($dbops,$time)
 
   my ($db,$endcommtime) = @_ ;
 
+  elog_notify ("Starting close_comm\n") if $opt_v ;
   @comm = defined $newdb && ( $db eq $newdb )  ? @newcomm : @comm ;
 
   @single_comm = dbsubset (@comm, $commsub) ;		# get single record that will be updated
@@ -766,9 +812,10 @@ sub add2dlsite	{	# add2dlsite ($db) 		# add a new record to the dlsite table
 
 }
 
-sub add2comm {	#add2comm($db, $sta, $time, $commtype, $provider, $power, $dutycycle)		# add a new record to the comm table
+sub add2comm {	#add2comm($db, $sta, $time, $commtype, $provider, $power, $dutycycle, $equiptype)		# add a new record to the comm table
 
-  my ($db, $sta, $stime, $commtype, $provider, $power, $dutycycle) = @_;
+  my ($db, $sta, $stime, $commtype, $provider, $power, $dutycycle, $equiptype) = @_;
+  elog_notify ("Starting add2comm\n") if $opt_v ;
 
   @comm_record = ();
   push(@comm_record,
@@ -777,7 +824,8 @@ sub add2comm {	#add2comm($db, $sta, $time, $commtype, $provider, $power, $dutycy
                         "commtype",     $commtype,
                         "provider",     $provider,
                         "power",        $power,
-                        "dutycycle",    $dutycycle
+                        "dutycycle",    $dutycycle,
+                        "equiptype",    $equiptype
         ) ;
 
   @commtable = defined $newdb && ($db eq $newdb)   ? @newcomm : @comm ;
@@ -800,6 +848,7 @@ sub add2deployment  {	# ( $db, $vnet, $net, $sta, $time, $equip_install, $cert_t
 
   my ($db, $vnet, $net, $sta, $time, $install_time, $cert_time)  = @_ ; 
 
+  elog_notify ("Starting add2deployment\n") if $opt_v ;
   elog_notify("Db: $db; Vnet: $vnet; Snet: $net; Sta: $sta; \n")  ;
 
   @dep_record = ();
@@ -837,6 +886,7 @@ sub add2adoption {	# $add2adoption($db,$time) 		# add a new record to the adopti
 
   my ($db, $time) = @_ ; 
 
+  elog_notify ("Starting add2adoption\n") if $opt_v ;
   @adoption=  defined $newdb && ($db eq $newdb)   ? @newadoption : @adoption;
 
   push(@adoption_record,
@@ -896,7 +946,6 @@ sub backup_tables { 	#    &backup_tables($tbl1, $tbl2, ...)
    my @tables = @_;
    while ( $_ = shift @tables ) {
      elog_notify("\t  $_ \n") if ($opt_v) ;
-# HERE
      my $table_filename =  dbquery(@$_, "dbTABLE_FILENAME") ; 
      $cp  = "/bin/cp $table_filename $table_filename+" ;
      if (-e $table_filename) {
@@ -937,15 +986,19 @@ sub usage {
 
    For a new installation:
 
-       USAGE: $0  -I [-k] [-n] [-v] [-V vnet] [-d dutycycle] [-e power] [-m source_match] [-p pf] [-C cmdORB] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-s siteDB] dbopsdb snet sta certify_time comm_provider comm_type  \n");
+       USAGE: $0  -I [-k] [-n] [-v] [-V vnet] [-d dutycycle] [-e power] [-q equiptype] [-m source_match] [-p pf] [-C cmdORB] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-s siteDB] dbopsdb snet sta certify_time comm_provider comm_type  \n");
 
    For a comms update:    
 
-       USAGE: $0 -U [-k] [-p pf] [-d dutycycle] [-e power] dbopsdb snet sta time_of_comm_change comm_provider [comm_type]  \n");
+       USAGE: $0 -U [-k] [-p pf] [-d dutycycle] [-e power] [-q equiptype] dbopsdb snet sta time_of_comm_change comm_provider [comm_type]  \n");
 
    For a station removal:
 
        USAGE: $0 -R [-k] [-p pf] [-W wfDB] [-s siteDB] dbopsdb snet sta decert_time   \n");
+
+   For dropping a contributing station that has not been removed:
+
+       USAGE: $0 -D [-k] [-p pf] [-W wfDB] [-s siteDB] dbopsdb snet sta decert_time   \n");
 
    For a station transition to regional network:
 

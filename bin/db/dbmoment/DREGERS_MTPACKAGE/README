@@ -1,60 +1,23 @@
 # EXAMPLE_CODE
 
-Folder is intended to facilitate the use of the original Dreger's code
-with the dbmoment tool. The original source and several helper functions
-are in this folder. Doing a "make; make install;" on the folder will
-produce all requred code and will add it to your Antelope folder
-structure. Then you can go to the directory with the example data and
-configuratoin file to run the example: " cd ../example/ "
-
-FOLDERS:
-All folders here are require by the original code. There are commands on
-our Makefile to go into those folders and compile the code that we need.
-There should be no need for you to compile anything on them by hand.
-    1) GETPAR
-    2) NRC
-    3) STDPLT
-
-### OTHER CODE
-
-## example2wfdisc
-Script intended to bring Dreger’s example data to Antelope and test the validity
-of the dbmoment code against the original code example.
-
-This code will create a wfdisc table referencing the data for the examples in
-Dreger’s MTPACKAGE code. The Examples in the distribution are written in plain
-text (ascii) following Helmberger Format for seismograms. There is a small
-header for every trace. The header contains the samplerate and the total number
-of samples. The start and endtime are omitted and we are forced to set the
-trace to start at 0 and end at (total_points * samplerate) time.
-The names of the channels are hardcoded on the original code that extract the
-information and it maps to [ T, R and Z]. The format will be specified as “as”
-and the data type to “D” (displacement) in the wfdisc.
-
-To use:
-```
-$ make
-
-produce example2wfdisc
-
-$ cd ../moment_tensor/example
-
-$ example2wfdisc sta1 testdata1 TESTDB
-$ example2wfdisc sta2 testdata2 TESTDB
-$ example2wfdisc sta3 testdata3 TESTDB
-
-$ dbselect TESTDB.wfdisc
-
-```
+Folder includes the original Dreger's code.  Doing a "make; make install;"
+on the folder will produce all required code and will add it to your
+Antelope's folder structure.
 
 
-A second use for this code:
+# ORIGINAL README FILE
+tdmt_invc_iso - full regional distance moment tensor inversion
+ 
+Copyright (c):
+Douglas Dreger
+Berkeley Seismological Laboratory
+University of California, Berkeley
+ 
+This software has no warranty, and may not be distributed without permission.
+ 
+If you use this software in your research use the following acknowledgement
+ 
+"The tdmt_invc_iso moment tensor package was provided by Douglas Dreger and Sean Ford of the Berkeley Seismological Laboratory, University of California, Berkeley."
+ 
+http://seismo.berkeley.edu/~dreger/
 
-We can use this to verify the functionality of the Fortran wrapper that is
-producing our Green functions. The original Dreger's code will output a final
-ascii formatted time domain Green's fucntions after you run the run_fkrsort
-code. The order of the 8 traces is important and the documentation specify it
-as: TSS, TDS, XSS, XDS, XDD, ZSS, ZDS, ZDD.
-
-If there are 3 channels it will use T,R and Z. The second group of 8 channel
-names will be used otherwise.

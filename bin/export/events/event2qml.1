@@ -1,0 +1,75 @@
+.TH EVENT2QML 1
+
+.SH NAME
+event2qml \- export CSS3.0 events to QuakeML format
+
+.SH SYNOPSIS
+.nf
+\fBevent2qml\fR [-v] [-d] [-p parameter_file] [-o output_file] database EVID
+.fi
+
+.SH DESCRIPTION
+Export a particular EVID from an CSS3.0 database and output all associated information, to
+a file or STDOUT, in QuakeML format. This includes all Origins, Associations, Arrivals,
+Detections, MomentTensors, FocalMechanisms, Magnitudes, and StationMagnitudes. We avoid
+any waveform measurements, exported into Amplitude elements, until we can develop a method
+for linking the entries in the wfmeas table to only one ORID in the list.
+
+QuakeML is an XML representation of seismological data. Intended to standardize seismological
+data exchange. A basic outline of the general concept of QuakeML can be found in
+Schorlemmer et al. (2004). Other online references:
+    https://quake.ethz.ch/quakeml
+    https://earthquake.usgs.gov/earthquakes/feed/v1.0/quakeml.php
+
+This version was intended for exchanging parametric data between ANSS networks,
+IRIS and other international partners. The specifics on ANSS Quakeml Standards can be
+found on https://github.com/usgs/Quakeml/wiki/ANSS-Quakeml-Standards-Working-Group-Project-Brief
+With that in mind we try to match the specifics stated in the ANSS-Quakeml-Standards and avoid
+some of the suggestions listed in the official documentation:
+    QuakeML—An XML Representation of Seismological Data Basic Event Description
+    Version 1.2
+    Recommendation 14 February 2013
+On the other hand, the code will validate your output against the RelaxNG description of
+QuakeML-1.2.rng distributed in that same document and everything should pass.
+
+.SH OPTIONS
+.IP "\fB-o\fR output_file.xml"
+Export the information to this file.
+ 
+.IP \fB-v\fR
+Run in verbose mode.
+ 
+.IP \fB-d\fR
+Debug mode.
+ 
+.IP "\fB-p\fR pf_file"
+Parameter file to use.
+
+.SH EXAMPLE
+Example 1 is to export an event to STDOUT for the user to read the information.
+.nf
+    event2qml -v /opt/antelope/data/db/demo/demo 15
+.fi
+
+Example 2 is the same event but piping the output to a file by hand.
+.nf
+    event2qml -v /opt/antelope/data/db/demo/demo 15 > demo_event.txt
+.fi
+
+Example 3 is to save the event to file directly
+.nf
+    event2qml -v -o demo_event.txt /opt/antelope/data/db/demo/demo 15
+.fi
+
+.SH "BUGS AND CAVEATS"
+The output is not including any amplitude measurements in this version. The rest
+of the QuakeML structure shoul be there. You should not see any "amplitude"
+elements and no "stationMagnitudeContribution" in this version.
+
+The RealTime version of the Basic Event Description is coded in this version
+but no methods are provided for you to use it since all interaction is
+limited to the database. You always know the EVID linked to all of the
+information that your are exporting.
+
+.SH AUTHOR
+Juan Reyes <reyes@ucsd.edu>

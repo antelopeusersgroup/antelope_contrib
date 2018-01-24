@@ -5,34 +5,38 @@
 #
 #  The software will connect to any active baler44 station and will
 #  download all missing miniseed files on the local archive. The
-#  code will get the list of stations and the ips from the information
-#  present in tables [deployment, stabaler, staq330] (all of them
-#  are required for the process to run). The process will ping each
+#  code will get the list of stations and the ips from a web API
+#  that we populate from a database query to a join on several
+#  tables [deployment, stabaler, staq330] 
+#
+#  The process will clean all databases and then subset for
+#  active stations only. Each of those will start with a ping to each
 #  station for connectivity and then will download a compressed list
-#  of files present on the remote media. The list is verified with
+#  of files present on the remote media. The list is correlated with
 #  the local list of files and any missing file is flagged for
-#  download. Each file will also have a md5 checksum present on the
+#  download. Each file should  have a md5 checksum present on the
 #  remote baler. The checksum is also downloaded and verified with
 #  the locally calculated checksum. Each step of the process is
 #  archived on a rsyncbaler table in the local directory.
 #
 #   author: Juan C. Reyes
 #   email:  reyes@ucsd.edu
-#   last update 05/2013
 #
 
-#
-#  Program setup
-#
-# we want to build vars on the fly. Cannot use strict subs.
+# PERL PRAGMAS
+# we want to create variables on the fly. Cannot use strict subs.
 #use strict "subs" ;
 use strict "vars" ;
 use warnings ;
+
+# Need to include some files from Antelope
+use lib "$ENV{ANTELOPE}/contrib/data/perl" ;
 
 use LWP ;
 use Fcntl ;
 use POSIX ;
 use archive ;
+use subnetMatch ;
 use utilfunct qw[getparam check_procs];
 use sysinfo ;
 use Net::Ping ;
@@ -42,22 +46,34 @@ use IO::Handle ;
 use File::Spec ;
 use File::Copy qw[move];
 use Getopt::Std ;
+use LWP::Simple ;
 use File::Fetch ;
-#use File::Basename ;
+use JSON::PP;
 use Digest::MD5 qw[md5_hex] ;
 use IO::Uncompress::AnyUncompress qw[anyuncompress $AnyUncompressError] ;
+
 
 our(%pf) ;
 our(%logs,%errors) ;
 our($to_parent,$nstas,$get_sta,$parent,$host) ;
-our($string,$problems,$nchild,$file_fetch) ;
-our($subject,$start,$end,$run_time_str) ;
-our($opt_n,$opt_x,$opt_V,$opt_r,$opt_s,$opt_h,$opt_v,$opt_m,$opt_p,$opt_d) ;
+our($problems,$nchild,$file_fetch,$start_sta) ;
+our($force_include,$avoid_ips,$subject,$start,$end,$run_time_str) ;
+our($opt_n,$opt_x,$opt_r,$opt_s,$opt_h,$opt_w,$opt_v,$opt_m,$opt_p,$opt_d) ;
+
 
 use constant false => 0 ;
 use constant true  => 1 ;
 
+
+#
+# Set umask for process
+#
+umask 002 ;
+
+
+# Helpful on the non-block reads from threads
 STDOUT->autoflush(1) ;
+
 
 $ENV{'ELOG_MAXMSG'} = 0 ;
 $ENV{'ELOG_TAG'} = 'rsync_baler *%s*' ;
@@ -67,57 +83,70 @@ $host = my_hostname() ;
 
 elog_init($0,@ARGV) ;
 
+
+
+# Command line arguments
 unless ( &getopts('nxhdvm:p:s:r:') || @ARGV > 1 ) {
     pod2usage({-exitval => 99, -verbose => 2}) ;
 }
 
+
 #
 # Print help and exit
 #
-pod2usage({-exitval => 99, -verbose => 2}) if $opt_h ;
+pod2usage({-exitval => 9, -verbose => 2}) if $opt_h ;
+
+
+#
+# Implicit flags
+#
+# rewrite opt_v with opt_w to avoid printing getparam() logs
+# it's unfortunate that the library got written with global
+# variables hard-coded in the logic.
+$opt_w = $opt_d ? $opt_d : $opt_v ;
+$opt_v = $opt_d ; # unless we are in debug, then we let the lib do it's logging
+
+
+# Some feedback to the user that we are working
+fork_log("$0 @ARGV") ;
 
 
 #
 # If we want to fork the process this will take
 # the argument  for the station that needs processing.
+# If this is the mater process then this will be NULL.
 #
 $get_sta = $ARGV[0] || '' ;
 
-if ( $get_sta ) {
-    # run as child...
-    $parent = 0 ;
-    fork_notify("Running as child process for station: $get_sta")
-        if $opt_v ;
 
-} else {
-    # run as parent (deamon)...
-    fork_notify("Running as parent process.\n") if $opt_v ;
-}
+#
+# Get parameters from config file (PF file)
+#
+$opt_p ||= "rsync_baler.pf" ;
+%pf = getparam($opt_p) ;
+
 
 #
 # Initialize  mail
 #
 if ($opt_m){
     savemail() ;
-    fork_notify("Initialize mail") if $opt_v ;
+    fork_log("Initialize mail") ;
 }
 
-fork_notify("$0 @ARGV") if $opt_v ;
-fork_notify("Starting at ".strydtime($start)." on $host")
-    if $opt_v ;
 
-#
-# Implicit flags
-#
-$opt_v = $opt_d ? $opt_d : $opt_v ;
-$opt_V = $opt_d ;
-$opt_p ||= "rsync_baler.pf" ;
+if ( $get_sta ) {
+    # run as child...
+    $parent = 0 ;
+    fork_log("Starting $get_sta at ".strydtime($start)." on $host") ;
+    fork_debug("Running as child process for station: $get_sta") ;
 
-#
-# Get parameters from config file
-#
-fork_notify("Getting params from: $opt_p") if $opt_v ;
-%pf = getparam($opt_p) ;
+} else {
+    fork_notify("Starting at ".strydtime($start)." on $host") ;
+    # run as parent (daemon mode)...
+    fork_debug("Running as parent process.\n") ;
+}
+
 
 #
 # Verify reject station subset
@@ -126,14 +155,31 @@ fork_notify("Getting params from: $opt_p") if $opt_v ;
 #   then we use that string. If we don't then
 #   we look into the parameter file for a possible
 #   definition set on days of the week. This is
-#   related to the second process that we run
+#   related to a different process that we run
 #   over the files and parses the data. We want
-#   to avoid collision with that process.
+#   to avoid access collision with that process.
+#   If you just want the data then you can avoid this.
 #
 if ( $pf{avoid_on_day_of_week} ) {
     $opt_r ||= $pf{avoid_on_day_of_week}{epoch2str( now(), "%A" )} ;
 }
 
+
+#
+# Load reject IPS from parameter file.
+# Should be fine with NULL input from the PF file.
+#
+$avoid_ips = subnet_match( @{$pf{avoid_ips}} ) ;
+$force_include = subnet_match( @{$pf{force_include}} ) ;
+
+
+
+#
+# Configure object used to download files from the sites. This
+# part will specify the system calls deep down on the library
+# and can be useful for troubleshooting strange performance
+# issues. We also try to match the verbosity to the one we
+# got from the user for this process.
 #
 #  Set File::Fetch options
 #
@@ -150,6 +196,7 @@ $File::Fetch::DEBUG     = 1 if $opt_d ;
 $File::Fetch::TIMEOUT   = $pf{download_timeout} ;
 $File::Fetch::BLACKLIST = [qw/LWP ncftp lftp lynx iosock/] ;
 
+
 #
 # Verify access to directory
 #
@@ -158,53 +205,56 @@ fork_die("Can't access dir => $pf{local_data_dir}.")
 
 
 #
+# Verify metadata URL
+# We don't query the dbmaster directly anymore so we need
+# a valid URL to get our information from the API. At this
+# time we have a NoSQL server delivering JSON data but this
+# will be trivial to modify.
+#
+fork_die("Can't work without (JSON) url pf[json_url] => $pf{json_url}")
+    unless $pf{json_url} ;
+
+
+
+#
 # ************************
 # **    MAIN LOOP       **
+# ************************
+# Now we start with the actual processing and work.
 # Two options here...
 # 1) Parent process loop for thread spawning.
-# 2) Child process func call to get data.
+# 2) Child process function call to get data.
 #
 
-$string = "finished processing station" ;
-
 #
-# Get data from the stations
+# CHILD PROCESS...  Get data from the stations
 #
 if ( $get_sta ) {
-    get_data($get_sta) ;
-    fork_notify("$get_sta - $string") ;
-    exit ;
-    # CHILD PROCESS WILL END HERE!!!!
-}
-else {
-    $nstas = run_in_threads() ;
+    get_data($get_sta) ; # CHILD PROCESS WILL END HERE!!!!
+    exit 0;
 }
 
 
-#
-# ONLY PARENT PROC SHOULD COME HERE!!!!
-#
+###########################################
+# ONLY PARENT PROC SHOULD CONTINUE!!!!
+###########################################
 
-#
-# Find aborted child
-#
-&test_missing_children ( $string, \%logs, \%errors ) ;
+$nstas = run_in_threads() ;
+
 
 #
 # Print error logs
 #
-( $nchild, $problems ) = &test_problem_print ( \%errors ) ;
+( $nchild, $problems ) = &problem_print ( \%errors ) ;
 
 #
 # Print logs
 #
-&test_log_print ( \%logs ) ;
+&log_print ( \%logs ) ;
 
 
-if ( $opt_v ) {
-    fork_notify("started at ".strydtime($start)." on $host") ;
-    fork_notify ("completed at ".strydtime(now())." \n\n" ) ;
-}
+fork_log("started at ".strydtime($start)." on $host") ;
+fork_log ("completed at ".strydtime(now())." \n\n" ) ;
 
 if ($problems == 0 ) {
     $subject = sprintf("Success $0  $host - $nstas stations") ;
@@ -227,146 +277,133 @@ exit ;
 # ************************
 # **   Functions:       **
 #
-sub get_stations_from_db {
-    my ($ip,$dlsta,$net,$sta,$nrecords) ;
+sub get_json {
+    # Get informaiton from URL in JSON format
+    my $url = shift ;
+
+    my $json        = JSON::PP->new->utf8 ;
+
+    fork_log("Get URL: $url");
+
+    my $network = LWP::UserAgent->new ;
+    $network->timeout( 120 ) ;
+    my $resp = $network->get( $url ) ;
+
+    fork_die( "No response from server for $url" ) unless ( $resp->is_success ) ;
+
+    return $json->decode( $resp->content ) ;
+}
+
+sub get_stations_from_url {
+    my ($ip,$dlsta,$net,$sta) ;
     my %sta_hash ;
-    my (@db,@db_sta) ;
 
-    fork_notify('Get list of stations:') if $opt_v ;
+    my $avoid_today = $pf{avoid_on_day_of_week}{epoch2str( now(), "%A" )} || '';
 
-    #
-    # Verify Database
-    #
-    fork_notify("Using database $pf{database}") if $opt_v ;
+    my $json_data = get_json( $pf{json_url} ) ;
 
-    @db = dbopen( $pf{database}, "r" )
-        or fork_die("Can't open DB: $pf{database}") ;
+    for my $data_hash ( @$json_data ) {
 
-    # Open table for list of station types ie 'PacketBaler44'
-    @db_sta = dblookup(@db, "", "stabaler", "", "") ;
+        my $sta = $data_hash->{'sta'};
 
-    #
-    # Get stations with baler44s
-    #
-    fork_notify("dbsubset ( stablaler.model =~ /$pf{baler_model}/)") if $opt_v ;
-    @db_sta = dbsubset( @db_sta, "stabaler.model =~ /$pf{baler_model}/ ") ;
+        fork_debug( "Test response: $sta" ) ;
 
-    if ( $opt_s ) {
-        fork_notify("dbsubset ( sta =~ /$opt_s/)") ;
-        @db_sta = dbsubset( @db_sta, "sta =~ /$opt_s/") ;
+        # Filter out station if needed
+        next if $opt_s and $sta !~ /$opt_s/ ;
+        next if $opt_r and $sta =~ /$opt_r/ ;
+        next if $avoid_today and $sta =~ /$avoid_today/ ;
+
+        $sta_hash{$sta}{'dlsta'} = $data_hash->{'id'};
+        $sta_hash{$sta}{'snet'} = $data_hash->{'snet'};
+        $sta_hash{$sta}{'sta'} = $data_hash->{'sta'};
+
+        fork_log( "Add $sta_hash{$sta}{'dlsta'} to list." ) ;
+
+
     }
 
-    if ( $opt_r ) {
-        fork_notify("dbsubset ( sta !~ /$opt_r/)") ;
-        @db_sta = dbsubset( @db_sta, "sta !~ /$opt_r/") ;
-    }
-
-    $nrecords = dbquery(@db_sta,dbRECORD_COUNT)
-        or fork_die("No records after dbsubset()") ;
-
-    fork_notify("$nrecords after subset") ;
-
-    for ( $db_sta[3]=0 ; $db_sta[3] < $nrecords ; $db_sta[3]++ ) {
-
-        fork_debug("Get $db_sta[3] of $nrecords") if $opt_d ;
-
-        ($dlsta,$net,$sta) = dbgetv(@db_sta, qw/dlsta net sta/) ;
-
-        $sta_hash{$sta}{dlsta} = $dlsta ;
-        $sta_hash{$sta}{net}   = $net ;
-
-        fork_debug("selected: $net $sta") if $opt_d ;
-    }
-
-    dbclose(@db) ;
-
-    fork_die("NO STATIONS SELECTED FROM DATABASE.")
-        unless %sta_hash ;
+    fork_die("NO STATIONS SELECTED FROM DATABASE.") unless %sta_hash ;
 
     return %sta_hash ;
 }
 
+
 sub get_info_for_sta {
+    # We got a list of sites on the parent process. Now we need
+    # to get details on this particular station that we are processing
+    # in a different thread.
+
     my $sta = shift ;
     my ($ip,$dlsta,$net) ;
     my %sta_hash ;
-    my (@db,@db_sta,@db_ip,@db_on) ;
 
-    #
-    # Verify Database
-    #
-    fork_debug("Using db $pf{database}") if $opt_v ;
+    my $url  = "$pf{json_url}&sta=$sta" ;
+    my $json_data = get_json( $url ) ;
 
-    @db = dbopen( $pf{database}, "r" )
-        or fork_die("Can't open DB: $pf{database}") ;
+    for my $data_hash ( @$json_data ) {
 
-    # Open table for list of valid stations
-    @db_on = dblookup(@db, "", "deployment" , "", "") ;
+        fork_debug( "Got metadata for station: $data_hash->{id}" ) ;
 
-    # Open table for list of station types ie 'PacketBaler44'
-    @db_sta = dblookup(@db, "", "stabaler", "", "") ;
+        next if $data_hash->{sta} !~ /$sta/ ;
 
-    # Open table for list of current ips
-    @db_ip = dblookup(@db, "", "staq330" , "", "") ;
+        $sta_hash{dlsta} = $data_hash->{'id'};
+        $sta_hash{net} = $data_hash->{'snet'};
+        $sta_hash{snet} = $data_hash->{'snet'};
+        $sta_hash{sta} = $data_hash->{'sta'};
+        $sta_hash{time} = $data_hash->{'time'};
+        $sta_hash{endtime} = $data_hash->{'endtime'};
+        $sta_hash{ip} = 0 ;
+        $sta_hash{port} = 0 ;
 
-    #
-    # Net and dlsta values
-    #
-    $db_sta[3] = dbfind(@db_sta, " sta =~ /$sta/ ",-1) ;
+        $sta_hash{status} = 'Decom' ;
+        if ($sta_hash{endtime} eq '-') {
+            $sta_hash{status} = 'Active' ;
 
-    #
-    # NOTE:
-    #   Get the value ONLY if we get a valid pointer at $db_sta[3]
-    #
-    ($dlsta,$net) = dbgetv(@db_sta, qw/dlsta net/)
-        if ( $db_sta[3] >= 0 ) ;
+            if ( $data_hash->{'orbcomms'} ) {
+                $sta_hash{ip} = $data_hash->{'orbcomms'}->{'inp'};
+                fork_debug( "\tip: $sta_hash{ip}" ) ;
 
-    $sta_hash{dlsta}  = $dlsta ;
-    $sta_hash{net}    = $net ;
-    $sta_hash{status} = 'Decom' ;
-    $sta_hash{ip}     = 0 ;
+                #
+                # Use this regex to clean the IP string...
+                #
+                if ( $sta_hash{ip} =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}):([\d]{4}):/ ) {
+                    $sta_hash{ip} = $1 ;
+                    $sta_hash{port} = int($2) + int($pf{http_port_offset}) ;
 
-    if ( dbfind(@db_on,
-            "sta =~ /$sta/ && snet =~ /$net/ && endtime == NULL", -1)
-            >= 0 )
-    {
-        #
-        # If we find it then it is ACTIVE...
-        #
-        $sta_hash{status} = 'Active' ;
+                }
+                else {
+                    fork_complain("Failed grep on IP (ip'$sta_hash{ip}',dlsta'$sta_hash{dlsta}')") ;
+                }
 
-        #
-        # Get ip for station
-        #
-        $db_ip[3] = dbfind( @db_ip,
-            " dlsta =~ /$dlsta/ && endtime == NULL",-1) ;
-
-        if ( $db_ip[3] >= 0 ) {
-
-            $ip = dbgetv(@db_ip, 'inp') ;
-
-            #
-            # Use this regex to clean the ip string...
-            #
-            $ip =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})/ ;
-
-            if ( $1 ) {
-                $sta_hash{ip} = $1 if $1 ;
             }
-            else {
-                fork_complain("Failed grep on IP (ip'$ip',dlsta'$dlsta')") ;
+            else{
+                fork_complain("No ORBCOMMS information on $sta_hash{dlsta}") ;
             }
+
+        }
+
+
+        fork_log( "$sta: $sta_hash{time} $sta_hash{endtime} $sta_hash{status} $sta_hash{ip}:$sta_hash{port} " );
+
+    }
+
+
+
+    #
+    # Verify if IP is in range of restiction list
+    #
+    # Some sites need a different configuration for the download
+    # of the files. Most likely because the low bandwidth satlinks.
+    # If we match then we should stop here.
+    # There is a way to keep a sub-group of sites within the bigger
+    # rejected group. Just make sure that you set the correct netmasks
+    # on the parameter file.
+    if ( $sta_hash{ip} && $avoid_ips->($sta_hash{ip}) ) {
+        unless ( $force_include->($sta_hash{ip}) ) {
+            fork_notify("\t$sta_hash{dlsta} $sta_hash{ip} matches entry in AVOID IP LIST')") ;
+            exit ;
         }
     }
-
-    if ( $opt_d ) {
-        fork_notify("$dlsta => $sta $net") ;
-        fork_notify("$dlsta => $sta_hash{status}") ;
-    }
-
-    fork_notify("$dlsta => $sta_hash{ip}:$pf{http_port}") ;
-
-    dbclose(@db) ;
 
     return %sta_hash ;
 }
@@ -377,13 +414,15 @@ sub run_in_threads {
     my $pid ;
     my $cmd ;
     my $max_out = $pf{max_procs} ;
-    my %archive = get_stations_from_db() ;
+    #my %archive = get_stations_from_db() ;
+    my %archive = get_stations_from_url() ;
 
     $nstas = scalar keys %archive ;
 
     STATION: foreach $station (sort keys %archive) {
 
-        fork_debug("run_in_threads($station)") if $opt_d ;
+        my $sta = $archive{$station}{'sta'} ;
+        fork_debug("run_in_threads($sta)") ;
 
         #
         # throttle the reading engine
@@ -399,17 +438,13 @@ sub run_in_threads {
         #
         # Read messages from pipes
         #
-        test_nonblock_read(\%archive,\%logs,\%errors) ;
+        nonblock_read(\%archive,\%logs,\%errors) ;
 
         #
         # Stop if we are at max procs
         #
         redo STATION if scalar(@procs) >= $max_out ;
 
-        if ( $opt_d ) {
-            fork_debug("Spawn: get_data($station).") ;
-            fork_debug("Now: ".@procs." procs") ;
-        }
 
         #
         # Fork the script (not using &fork)
@@ -417,16 +452,14 @@ sub run_in_threads {
         $cmd   =  "$0 " ;
         $cmd  .=  "-n " if $opt_n ;
         $cmd  .=  "-x " if $opt_x ;
-        $cmd  .=  "-v " if $opt_v ;
+        $cmd  .=  "-v " if $opt_w ;
         $cmd  .=  "-d " if $opt_d ;
         $cmd  .=  "-p $opt_p " if $opt_p ;
-        $cmd  .=  "$station " ;
+        $cmd  .=  "$sta " ;
 
 
-        if ( $opt_v ) {
-            fork_notify("Now: ".@procs." procs") ;
-            fork_notify("Starting $station: $cmd ") ;
-        }
+        fork_debug("Now: ".@procs." procs") ;
+        fork_log("Starting $sta: $cmd ") ;
 
         ##################
         #   OLD METHOD   #
@@ -437,7 +470,7 @@ sub run_in_threads {
         #exec( $cmd ) unless $pid ;
 
         undef $pid ;
-        $pid = open($archive{$station}{fh}, "-|") ;
+        $pid = open( $archive{$station}{fh}, "-|" ) ;
 
         #
         # Test for possible errors on fork process
@@ -452,7 +485,7 @@ sub run_in_threads {
             fcntl($archive{$station}{fh},F_SETFL, O_NONBLOCK) ;
             $archive{$station}{fh}->autoflush(1) ;
 
-            fork_debug("Got pid $pid for $station") if $opt_d ;
+            fork_debug("Got pid $pid for $sta") ;
             push @procs, $pid ;
             $archive{$station}{pid} = $pid ;
 
@@ -468,7 +501,7 @@ sub run_in_threads {
 
     }
 
-    fork_debug("Initiated all stations." ) if $opt_v ;
+    fork_log("Initiated all stations." ) ;
 
     #
     # wait for all children to finish
@@ -476,7 +509,7 @@ sub run_in_threads {
     #nonblock_read(\%archive,\%logs,\%errors) while check_procs(@procs) ;
     while ( 1 ){
 
-        test_nonblock_read(\%archive,\%logs,\%errors) ;
+        nonblock_read(\%archive,\%logs,\%errors) ;
 
         last unless scalar check_procs(@procs) ;
 
@@ -488,36 +521,13 @@ sub run_in_threads {
     }
     #while (<$to_parent>) { fork_notify($_) ; }
 
+    fork_log("All stations completed." ) ;
+
     return $nstas ;
 
 }
 
-sub test_missing_children { # &missing_children ( $string, \%logs, \%errors ) ; 
-    my ( $string, $logs, $errors ) = @_ ;
-    my ( $line ) ;
-
-
-    LOG: for my $log ( sort keys %$logs) {
-
-        for my $lineno ( sort keys %{$logs->{$log}} ) {
-            next if ( $lineno =~ /lines/ ) ;
-            if ( $logs->{$log}->{$lineno} =~ /.*$string.*/ ) {
-                next LOG ;
-            }
-        }
-
-        $line = "$log DID NOT COMPLETE!" ;
-        $logs->{$log}->{lines}++ ;
-        $logs->{$log}->{ $logs->{$log}->{lines} } = $line ;
-        $errors->{$log}->{problems}++ ;
-        $errors->{$log}{ $errors->{$log}->{problems} } = $line ;
-
-    }
-
-    return ;
-}
-
-sub test_problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) ;
+sub problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) ;
     my $errors = shift ;
     my ( @total ) ;
     my ( $nchild, $nerr, $nprob ) ;
@@ -525,53 +535,57 @@ sub test_problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) 
     $nchild = $nerr = $nprob = 0 ;
 
 
-    fork_complain('') ;
-    fork_complain('') ;
-    fork_complain("-------- Problems: --------") ;
-    fork_complain('') ;
+    if( keys %$errors) {
+        log_complain('') ;
+        log_complain('') ;
+        log_complain("-------- Problems: --------") ;
+        log_complain('') ;
 
 
-    for my $k ( sort keys %$errors) {
+        for my $k ( sort keys %$errors) {
 
-        next if ( $errors->{$k}->{problems} == 0 ) ;
-        $nchild++ ;
-        $nprob++ ;
-        fork_complain("On child $k:") ;
+            next if ( $errors->{$k}->{problems} == 0 ) ;
+            $nchild++ ;
+            $nprob++ ;
+            log_complain("   $k:") ;
 
-        @total = () ;
-        for my $j ( keys %{$errors->{$k}} ) {
-            next if ( $j =~ /problems/ ) ;
-            push( @total, int($j) ) ;
+            @total = () ;
+            for my $j ( keys %{$errors->{$k}} ) {
+                next if ( $j =~ /problems/ ) ;
+                push( @total, int($j) ) ;
+            }
+
+            for my $j ( sort {$a <=> $b} @total ) {
+                log_complain("   $j) $errors->{$k}->{$j}") ;
+                $nerr++ ;
+            }
+
+            log_complain('') ;
         }
 
-        for my $j ( sort {$a <=> $b} @total ) {
-            fork_complain("   $j) $errors->{$k}->{$j}") ;
-            $nerr++ ;
-        }
+        log_complain("-------- End of problems: --------") ;
+        log_complain('') ;
+    } else  {
 
-        fork_complain('') ;
+        log_log("No problems in script.");
+
     }
-
-    fork_complain("No problems in script.") unless $nprob ;
-
-    fork_complain("-------- End of problems: --------") ;
-    fork_complain('') ;
 
     return ( $nchild, $nerr ) ;
 }
 
-sub test_log_print { # &log_print ( \%logs ) ;
+sub log_print { # &log_print ( \%logs ) ;
     my $logs = shift ;
     my ( @total ) ;
 
-    fork_notify('') ;
-    fork_notify('') ;
-    fork_notify("-------- Logs: --------") ;
-    fork_notify('') ;
+    log_log('') ;
+    log_log('') ;
+    log_log("-------- Logs: --------") ;
+    log_log('') ;
 
     for my $k ( sort keys %$logs) {
 
-        fork_notify("On child $k:") ;
+        log_log("On child $k:") ;
 
         @total = () ;
         for my $j ( keys %{$logs->{$k}} ) {
@@ -580,24 +594,26 @@ sub test_log_print { # &log_print ( \%logs ) ;
         }
 
         for my $j ( sort {$a <=> $b} @total ) {
-            fork_notify("   $j) $logs->{$k}->{$j}") ;
+            log_log("   $j) $logs->{$k}->{$j}") ;
         }
 
-        fork_notify('') ;
+        log_log('') ;
     }
 
-    fork_notify("-------- End of logs: --------") ;
-    fork_notify('') ;
+    log_log("-------- End of logs: --------") ;
+    log_log('') ;
 }
 
-sub test_nonblock_read { # &nonblock_read ( \%stas, \%logs, \%errors ) ;
+sub nonblock_read { # &nonblock_read ( \%stas, \%logs, \%errors ) ;
     my ( $stas, $logs, $errors ) = @_ ;
     my ( $fh, $fileline, $line )  ;
 
+    #fork_debug('nonblock_read()') ;
     foreach my $sta (sort keys %$stas) {
+        #fork_debug("nonblock_read($sta)") ;
 
         next unless $fh = $stas->{$sta}->{fh} ;
-        #fork_debug ( $parent, "nonblock_read $sta    $stas->{$sta}->{fh}" );
+        #fork_debug( $parent, "nonblock_read $sta    $stas->{$sta}->{fh}" );
 
         while ( $fileline = <$fh> ) {
 
@@ -605,16 +621,19 @@ sub test_nonblock_read { # &nonblock_read ( \%stas, \%logs, \%errors ) ;
                 $line = $1 ;
                 $logs->{$sta}->{lines}++ ;
                 $logs->{$sta}->{ $logs->{$sta}->{lines} } = $line ;
+                fork_debug( "$sta - $1" ) ;
             }
             while ( $fileline =~ /\[NOTIFY:(.*?)\]$/g )     {
                 $line = $1 ;
                 $logs->{$sta}->{lines}++ ;
                 $logs->{$sta}->{ $logs->{$sta}->{lines} } = $line ;
+                fork_debug( "$sta - $1" ) ;
             }
             while ( $fileline =~ /\[DEBUG:(.*?)\]$/g )     {
                 $line = $1 ;
                 $logs->{$sta}->{lines}++ ;
                 $logs->{$sta}->{ $logs->{$sta}->{lines} } = $line ;
+                fork_debug( "$sta - $1" ) ;
             }
             while ( $fileline =~ /\[PROBLEM:(.*?)\]$/g )     {
                 $line = $1 ;
@@ -622,6 +641,7 @@ sub test_nonblock_read { # &nonblock_read ( \%stas, \%logs, \%errors ) ;
                 $logs->{$sta}->{ $logs->{$sta}->{lines} } = $line ;
                 $errors->{$sta}->{problems}++ ;
                 $errors->{$sta}->{ $errors->{$sta}->{problems} } = $line ;
+                fork_complain( "$sta - $1" ) ;
             }
         }
 
@@ -636,21 +656,32 @@ sub test_nonblock_read { # &nonblock_read ( \%stas, \%logs, \%errors ) ;
 
 sub get_data {
 
+    #
+    # CHILD PROCESS ONLY...
+    # We start by cleaning the databases first. Verify that
+    # all the files on disk are listed on the database and that
+    # every entry on the database is present on disk or correctly
+    # tagged as missing. If the station is too old then we are going
+    # to kill the process early. This is done by looking at the
+    # "endtime" of the station.
+    #
+
     my $sta = shift ;
 
     fork_die("No value for station in child.") unless $sta ;
 
     my (%active_media_files,$media,@rem_file) ;
-    my (%remote,$size,$nrecords,@temp_download,@dbwr,@dbr,@dbr_sub) ;
+    my (%remote,$size,@temp_download,@dbwr,@dbr,@dbr_sub) ;
     my (%clean,$local_path_file,%avoid,$replace,$file,$speed,$run_time) ;
     my ($bytes,$d_data,$start_file,$where,$attempts,@missing) ;
     my ($p,$rem_s,$loc_s,@diff,$results,$run_time_str,$dbout) ;
-    my ($msdtime,$end_file,$record,$time,$endtime,$dir,$dfile) ;
+    my ($msdtime,$end_file,$record,$time,$dir,$dfile) ;
     my ($k,$m,$g,$total_size,%temp_hash,@total_downloads,@download) ;
     my ($digest,$hexd,$md5,$remote_file_content, $remote_file_handle) ;
     my ($stat,$mode,$f,$http_folder,$md5_lib,@original_downloads) ;
-    my (@lists,@dbscr,@recs,@data,@db_r,%remove,%flagged,@db,@db_t) ;
-    my ($media_active, $media_reserve,%downloaded) ;
+    my (@lists,@dbscr,@recs,@data,@db_r,%remove,$flagged,@db,@db_t) ;
+    my (@download_list, $media_active, $media_reserve,%downloaded) ;
+    my ($mlimit, $days,@missing_files);
     my ($start_of_report) ;
 
     my %table = get_info_for_sta($sta) ;
@@ -660,14 +691,28 @@ sub get_data {
     #
     my $type    = '' ;
     my $resp    = 0 ;
-    my $ip     = $table{ip} ;
+    my $ip     = $table{ip} or 0;
+    my $port   = $table{port} or 0;
     my $dlsta  = $table{dlsta} ;
     my $net    = $table{net} ;
     my $status = $table{status} ;
-    my @dates  = $table{dates} ;
+    my $endtime = $table{endtime} ;
     my $path = prepare_path($sta,$status) ;
-    my $start_sta = now() ;
 
+    $start_sta = now() ;
+
+
+    #
+    # Stop if the enditme is larger than the
+    # value limit_innactive_age in parameter
+    # file.
+    #
+    if ( $pf{limit_innactive_age}  and  $status ne 'Active' and int($endtime) > 0) {
+        if ( $pf{limit_innactive_age} < (now() - $endtime)  ) {
+            fork_notify("STOP $sta, more than $pf{limit_innactive_age} seconds old.") ;
+            exit ;
+        }
+    }
 
     #
     # Stop if this is a DECOM station
@@ -675,92 +720,114 @@ sub get_data {
     # in the archive.
     #
     unless ( -e $path ) {
-        fork_notify("STOP! $sta DECOMMISSION with no folder.") ;
-        return 0 ;
+        fork_notify("STOP $sta, DECOMMISSIONED and no folder.") ;
+        exit ;
     }
-
-    #
-    # Set umask for process
-    #
-    umask 002 ;
-
 
     #
     # Try to lock baler database.
     #
-    if ( dblock("${path}/${sta}_baler",$pf{max_child_run_time}) ) {
+    if ( dblock("${path}/${sta}_baler", $pf{max_child_run_time} * 1.25) ) {
         fork_die("Cannot lock database ${path}/${sta}_baler") ;
     }
 
+
     #
-    # Read local files and fix errors
+    # Read local files and fix errors on database
     #
     fix_local( $sta,$net,$dlsta ) ;
 
+
     #
-    # For DECOM stations stop here
+    # For DECOM ( non-Active so we catch all options ) stations stop here
     #
     unless ( $status eq 'Active') {
         dbunlock("${path}/${sta}_baler") ;
         fork_notify("$sta is under DECOMMISSION status.") ;
-        return ;
+        exit ;
     }
 
     #
     # No more to do in this case.
     #
-    unless ( $ip ) {
-        dbunlock("${path}/${sta}_baler") ;
-        fork_die("$sta has no IP") ;
-    }
+    #unless ( $ip ) {
+    #    dbunlock("${path}/${sta}_baler") ;
+    #    fork_die("$sta has no IP") ;
+    #}
 
     #
-    # Limit the downloads to lest than 3 Gbs in last 21 days
+    # Limit the downloads to some Megabytes in some days
     #
-    $d_data = total_data_downloaded($sta,21) || 0.0 ;
-    if ( $d_data > 3000 ) {
-        dbunlock("${path}/${sta}_baler") ;
-        fork_die("$sta downloaded ( $d_data ) Mbts in the last 21 days!") ;
+    while ( ($days, $mlimit) = each $pf{bandwidth_limits} ) {
+        $d_data = total_data_downloaded($sta,$days) || 0.0 ;
+        fork_log("$sta downloaded $d_data Mbyts in last $days days.") ;
+        if ( $d_data > $mlimit ) {
+            #dbunlock("${path}/${sta}_baler") ;
+            fork_die("$sta downloaded ( $d_data ) Mbts in the last $days days.") ;
+        }
+
     }
 
-    #
-    # Ping the station
-    #
-    $p = Net::Ping->new("tcp", 5) ;
-    $p->port_number($pf{http_port}) ;
     $record=0 ;
 
+    # Need the infinite loop so you can easily control this from
+    # the parameter file. There are multiple ways on how to do this...
     while ( 1 ) {
         $record++;
 
-        last if $p->ping($ip) ;
+        %table = get_info_for_sta($sta) ;
+        $ip     = $table{ip} or 0;
+        $port   = $table{port} or 0;
 
-        sleep 5 ;
+        fork_log("Ping $sta on http://$ip:$port") ;
 
-        if ( $record == 20 ) {
-            dbunlock("${path}/${sta}_baler") ;
-            fork_die("$sta on http://$ip:$pf{http_port} NOT RESPONDING!") ;
+        #
+        # Ping the station
+        #
+        if ( $ip and $port ) {
+            $p = Net::Ping->new("tcp", 25) ;
+            $p->port_number($port) ;
+            last if $p->ping($ip) ;
+            fork_log( "http://$ip:$port not responding. wait($pf{connect_pause})" ) ;
+        } else {
+            fork_log( "Address problem. IP:$ip PORT:$port. wait($pf{connect_pause})" ) ;
+        }
+
+        sleep $pf{connect_pause} ;
+
+        if ( $record == $pf{max_attempts} ) {
+            #dbunlock("${path}/${sta}_baler") ;
+            fork_die("$sta on http://$ip:$port NOT RESPONDING!") ;
         }
     }
+    fork_log("$sta responded after $record attempts and $pf{connect_pause} secs wait time." )
+                if $record > 1 ;
 
+    # Destroy that Net object
     undef($p) ;
+
 
     #
     # Get medias ID's
+    # Read that status page on the baler and scrape the values from the text
     #
     ($media_active, $media_reserve, @lists)
-        = get_medias_and_lists($sta,$ip) ;
+        = get_medias_and_lists($sta,$ip,$port) ;
     $media_active ||= 'unknown' ;
     $media_reserve ||= 'unknown' ;
+
 
     #
     # Review all entries on the database
     #
     @db = open_db($sta) ;
+
     unless ( @db  ) {
-        dbunlock("${path}/${sta}_baler") ;
+        #dbunlock("${path}/${sta}_baler") ;
         fork_die("$sta Problems on db open!") ;
     }
+
+
     $record  =  dbquery(@db, dbRECORD_COUNT) ;
     LINE: for ( $db[3] = 0 ; $db[3] < $record ; $db[3]++ ) {
 
@@ -786,146 +853,198 @@ sub get_data {
         }
 
         if ($stat =~ /skip/ ) {
-            fork_complain("$dfile status set to skiped") ;
+            fork_log("$dfile status set to skip") ;
             next LINE ;
         }
 
         if ( $msdtime > 1 ) {
             # file already processed
-            fork_debug("$dfile already processed msdtime=>$msdtime")
-                if $opt_d ;
+            fork_debug("$dfile already processed msdtime=>$msdtime") ;
             next LINE ;
         }
 
-        if ($attempts > 5) {
-            # Too many attempts
-            # Add file if we are using the opt_x flag at runtime
+        # Maybe we want to avoid old files.
+        # We don't get the wfdisc present on the Baler medias
+        # with some of the metadata for the files but the names
+        # of the files are a great way to extract the most important
+        # part... the age of the file.
+        if ( yesno( $pf{limit_history} ) ) {
+
+            # Match name to get time of data.
+            $dfile =~ m/^\S*-(\d{4})(\d{2})(\d{2})(\d{6})$/ ;
+            fork_debug( "$dfile date is $2/$3/$1" );
+
+            if ( $1 and $2 and $3 ) {
+                if ( (now() - str2epoch("$2/$3/$1")) > int($pf{limit_history}) ) {
+                    fork_debug( "$dfile is too old: " . strtdelta(now() - str2epoch("$2/$3/$1")) );
+                    next LINE;
+                }
+
+            }
+
+        }
+
+
+        if ($attempts > 5 ) {
+            # Too many attempts, or add file
+            # if we are using the opt_x flag at runtime
             if ( $opt_x ) {
 
-                fork_complain("$dfile will not be rejected based on -x flag") ;
+                fork_notify("$dfile will NOT be rejected based on -x flag") ;
 
             } else {
 
-                fork_complain("$dfile *AVOID* attempts=>$attempts status=>$stat md5=$md5") ;
+                fork_log("$dfile *AVOID - MAX ATTEMPTS* attempts=>$attempts status=>$stat md5=$md5") ;
                 next LINE ;
 
             }
 
         }
 
+
+
         #
-        # Files to get
+        # Make list of files to download from Baler
         #
         if ($stat !~ /downloaded/) {
             #
             # We already have an entry that IS NOT downloaded.
             # Get file one more time.
             #
+            fork_log("$dfile listed in database but not done") ;
 
-            fork_debug("$dfile Already in db and flagged for download")
-                if $opt_v ;
-
-            $flagged{$dfile} = '' ;
+            $flagged->{$dfile} = '' ;
             next LINE ;
 
         }
+
 
         #
         # This is a typical filie with an error
         # on the download that creates a html
         # only file with some logs in it.
+        # ALWAYS SAME SIZE OF 591
         #
         if ( -s "$path/$dfile" == 591 ) {
             fork_complain("$dfile error in file size == 591") ;
-            fork_complain("$dfile add to download list") ;
-            $flagged{$dfile} = '' ;
+            fork_complain("$dfile add to download list. From-DB") ;
+            $flagged->{$dfile} = '' ;
             next LINE ;
         }
 
-        #
-        # Verify for valid checksum
-        #
-        if ($md5 =~ /(\S{32})/ or $md5 =~ /ignore/ ) {
 
-            if ( $opt_d ) {
-                fork_debug("$dfile verified md5=>$md5") ;
+        #
+        # Use/Avoid md5 verification
+        #
+        if ( yesno( $pf{use_md5} ) ) {
+
+            #
+            # Verify for valid checksum
+            #
+            if ($md5 =~ /(\S{32})/ or $md5 =~ /ignore|skip/ ) {
+
+                if ( $opt_d ) {
+                    fork_debug("$dfile verified md5=>$md5") ;
+                }
+                next LINE ;
+
             }
-            next LINE ;
 
-        }
+            fork_log("$dfile fixing md5=>$md5") ;
 
-        fork_debug("$dfile fixing md5=>$md5") if $opt_v ;
+            #
+            # If missing checksum then connect to station
+            #
 
-        #
-        # If missing checksum then connect to station
-        #
+            if ( $ip and not $opt_n) {
 
-        if ( $ip and not $opt_n) {
+                fork_debug("Get md5 for $dfile") ;
 
-            fork_debug("Get md5 for $dfile") if $opt_d ;
+                # Keep track of attemtps.
+                dbputv(@db,'attempts',int(dbgetv(@db,'attempts'))+1,"lddate",dbgetv(@db,"lddate")) ;
 
-            dbputv(@db, "md5", get_md5($sta,$dfile,$ip,\@lists),
-                    "lddate",dbgetv(@db,"lddate") ) ;
+                # Get the md5 file
+                dbputv(@db, "md5", get_md5($sta,$dfile,$ip, $port, \@lists),
+                        "lddate",dbgetv(@db,"lddate") ) ;
 
-            # Verify...
-            $md5 = dbgetv(@db,'md5') ;
+                # Verify.
+                $md5 = dbgetv(@db,'md5') ;
 
-            # Keep track of attemtps.
-            dbputv(@db,'attempts',int(dbgetv(@db,'attempts'))+1,"lddate",dbgetv(@db,"lddate")) ;
-
-        }
-
-        next if $md5 =~ /missing/ ;
-
-        #
-        # Verify for valid checksum
-        #
-        if ($md5 =~ /(\S{32})/) {
-
-            if ( $opt_d ) {
-                fork_debug("$dfile verified md5=>$md5") ;
             }
-            next LINE ;
+
+            next if $md5 =~ /missing/ ;
+
+            #
+            # Verify for valid checksum
+            #
+            if ($md5 =~ /(\S{32})/) {
+
+                if ( $opt_d ) {
+                    fork_debug("$dfile verified md5=>$md5") ;
+                }
+                next LINE ;
+
+            }
+
+            fork_complain("$dfile Problem with md5. Add to download list.") ;
+            $flagged->{$dfile} = '' ;
 
         }
 
-        fork_complain("$dfile Problem with md5.") ;
-        fork_complain("$dfile Add to download list.") ;
-        $flagged{$dfile} = '' ;
 
     }
 
 
     dbclose(@db) ;
 
-    if ( $opt_v ) {
-        fork_notify("F-DB: $_") foreach ( sort keys %flagged ) ;
-    }
+    fork_log("From-DB: $_") foreach ( sort keys %$flagged ) ;
 
-    %remote = read_baler( $sta, $ip, \@lists, $media_active, $media_reserve) ;
+    # Done with the local database.
+
+    # Now read the Baler...
+    %remote = read_baler( $sta, $ip, $port, \@lists, $media_active, $media_reserve) ;
 
     unless ( keys %remote ) {
-        dbunlock("${path}/${sta}_baler") ;
-        fork_complain("Can't get any lists of files: $ip:$pf{http_port})") ;
-        return ;
+        #dbunlock("${path}/${sta}_baler") ;
+        fork_die("Can't get list of files: $ip:$port)") ;
     }
 
+    # There is a parameter to set the max amount of time
+    # that we have for each process. Verify this now.
     unless ( check_time($start_sta) ) {
-        dbunlock("${path}/${sta}_baler") ;
-        fork_complain("No more time! EXIT!!!!") ;
-        return ;
+        #dbunlock("${path}/${sta}_baler") ;
+        fork_die("No more time to complete the downloads. EXIT!!!!") ;
     }
 
     #
-    # Compare local to remote
+    # Compare remote list to local archive
     #
     @db = open_db($sta) ;
     unless ( @db  ) {
-        dbunlock("${path}/${sta}_baler") ;
+        #dbunlock("${path}/${sta}_baler") ;
         fork_die("$sta Problems on db open!") ;
     }
+
     foreach $f ( sort keys %remote ) {
+        # Don't verify checksum files
         next if $f =~ /\.md5/ ;
+
+        # Maybe we want to avoid old files.
+        if ( yesno( $pf{limit_history} ) ) {
+
+            # Match name to get time of data.
+            $f =~ m/^\S*-(\d{4})(\d{2})(\d{2})(\d{6})$/ ;
+            fork_debug( "$f date is $2/$3/$1" );
+
+            if ( $1 and $2 and $3 ) {
+                if ( (now() - str2epoch("$2/$3/$1")) > int($pf{limit_history}) ) {
+                    fork_log( "$f is too old: " . strtdelta(now() - str2epoch("$2/$3/$1")) );
+                    next;
+                }
+
+            }
+
+        }
 
         #
         # Check if we have the file
@@ -934,30 +1053,33 @@ sub get_data {
 
         if ($db[3] >= 0 ){
 
+            # Skip file if "downloaded", "skip" or "avoid" flags
             next if dbgetv(@db,'status') =~ /downloaded/ ;
+            next if dbgetv(@db,'status') =~ /avoid/ ;
+            next if dbgetv(@db,'status') =~ /skip/ ;
 
+            # Don't do anything is we got to 5 attempts
             unless ( $opt_x ) {
                 next if dbgetv(@db,'attempts') > 5 ;
             }
 
-            if ( dbgetv(@db,'status') =~ /flagged/ ) {
-                fork_complain("Increase attemtps: $f") ;
-                dbputv(@db,
-                    "net",      $net,
-                    "sta",      $sta,
-                    "dlsta",    $dlsta,
-                    "dfile",    $f,
-                    "dir",      $remote{$f},
-                    "media",    ($remote{$f} =~ /WDIR2/) ? $media_reserve : $media_active,
-                    "attempts", int( dbgetv(@db,'attempts') )+1,
-                    "time",     now(),
-                    "lddate",   now(),
-                    "status",   "flagged") unless $opt_n ;
-            }
+            fork_complain("Increase attemtps: $f") ;
+            dbputv(@db,
+                "net",      $net,
+                "sta",      $sta,
+                "dlsta",    $dlsta,
+                "dfile",    $f,
+                "dir",      $remote{$f},
+                "media",    ($remote{$f} =~ /WDIR2/) ? $media_reserve : $media_active,
+                "attempts", int( dbgetv(@db,'attempts') )+1,
+                "time",     now(),
+                "lddate",   now(),
+                "status",   "flagged") unless $opt_n ;
 
         } else {
 
-            fork_notify("F-Baler: $f") ;
+
+            fork_log("Add to flagged list. From-Baler: $f") ;
             dbaddv(@db,
                 "net",      $net,
                 "sta",      $sta,
@@ -972,64 +1094,94 @@ sub get_data {
 
         }
 
+
+
         #
         # Add the files to the list we want to downlaod
         #
-        $flagged{$f} = $remote{$f} ;
+        $flagged->{$f} = $remote{$f} ;
 
     }
 
-
-    # Fix media ids in database
-    foreach $f ( sort keys %remote ) {
-        next if $f =~ /\.md5/ ;
-        next unless $media_active ;
-        next unless $media_reserve ;
-        next unless $remote{$f} ;
-
-        next if $opt_n ;
-
-        #
-        # Check if we have the file
-        #
-        $db[3] = dbfind(@db, "dfile =~ /$f/", -1) ;
-
-        if ($db[3] >= 0 ){
-            dbputv(@db,
-                "media",  ($remote{$f} =~ /WDIR2/) ? $media_reserve : $media_active,
-                "lddate", dbgetv(@db,"lddate")
-            ) ;
-
-        }
-
-    }
 
     dbclose(@db) ;
 
-    unless (keys %flagged) {
-        fork_notify("No new files. http://$ip:$pf{http_port}") ;
+
+    unless (keys %$flagged) {
+        fork_log("No new files. http://$ip:$port") ;
+        dbunlock("${path}/${sta}_baler") ;
         return ;
     }
 
-    if ( $opt_d ) {
-        foreach $file ( sort keys %flagged ) {
-            fork_notify("$file => $flagged{$file}") ;
-        }
-    }
-    elsif ( $opt_v ) {
-        fork_notify('Files: ' . join(' ' ,sort keys %flagged)) ;
+
+    #
+    # Download the missing files. A simple natural
+    # sort will get the files in order. Except when
+    # the system changed names and the files have
+    # mixed station names. That will only be an issue
+    # if the other name is EXMP because all others
+    # are filtered out.
+    #
+    if ( $pf{newest_first} ) {
+        # Start at newest.
+        @download_list = sort {$b cmp $a} keys %$flagged ;
+    } else {
+        # Start at oldest.
+        @download_list = sort {$a cmp $b} keys %$flagged ;
     }
 
     #
-    # Download the missing files
+    # Log list of files
     #
-    FILE: foreach $file ( sort keys %flagged ) {
+    foreach $file ( @download_list ) {
+        fork_debug("$file => $flagged->{$file}") ;
+    }
 
-        $dir = $flagged{$file} ;
+    fork_log('Files to download: ' . join(' ' ,@download_list)) ;
+
+    FILE: foreach $file ( @download_list ) {
+
+        $dir = $flagged->{$file} ;
         $where = '' ;
         last unless check_time($start_sta) ;
 
-        fork_notify("Start download: $dir/$file") if $opt_v ;
+
+        # Maybe we want to avoid old files.
+        if ( yesno( $pf{limit_history} ) ) {
+
+            # Match name to get time of data.
+            $file =~ m/^\S*-(\d{4})(\d{2})(\d{2})(\d{6})$/ ;
+            fork_debug( "$file date is $2/$3/$1" );
+
+            if ( $1 and $2 and $3 ) {
+                if ( (now() - str2epoch("$2/$3/$1")) > int($pf{limit_history}) ) {
+                    fork_complain( "$file is too old: " . strtdelta(now() - str2epoch("$2/$3/$1")) );
+                    next;
+                }
+
+            }
+
+        }
+
+
+        #
+        # Limit the downloads to some Megabytes in some time (days)
+        #
+        while ( ($days, $mlimit) = each $pf{bandwidth_limits} ) {
+            $d_data = total_data_downloaded($sta,$days) || 0.0 ;
+            fork_debug("$sta downloaded $d_data Mbyts in last $days days.") ;
+            if ( $d_data > $mlimit ) {
+                fork_die("$sta downloaded ( $d_data ) Mbts in the last $days days.") ;
+            }
+
+        }
+
+
+        # Notify if we are working with EXMP files
+        fork_complain("Donwloading EXMP file: $file") if $file =~ /.*EXMP.*/ ;
+
+
+        fork_log("Start download: $dir/$file") ;
 
         if ($file !~ /($pf{regex_for_files})/ ) {
             fork_complain("ERROR ON FLAGGED NAME: $file") ;
@@ -1046,7 +1198,7 @@ sub get_data {
             #
             # Move the file to the trash folder.
             #
-            fork_notify("move $path/$file to $path/trash/") if $opt_v ;
+            fork_log("move $path/$file to $path/trash/") ;
 
             #
             # Clean old copy on trash folder first.
@@ -1065,10 +1217,10 @@ sub get_data {
         #
         if ( $dir ) {
 
-            fork_notify("download_file($dir/$file,$path,$ip)") if $opt_v ;
+            fork_log("download_file($dir/$file,$path,$ip,$port)") ;
 
             $start_file = now() ;
-            $where = download_file("$dir/$file",$path,$ip) || '' ;
+            $where = download_file("$dir/$file",$path,$ip,$port) || '' ;
             $end_file = now() ;
 
         } else {
@@ -1079,56 +1231,16 @@ sub get_data {
             #
             foreach $f (@lists) {
 
-                fork_notify("Now with directory $f") if $opt_d ;
+                fork_log("Now with directory $f") ;
 
                 $dir = ( $f =~ /active/ ? 'WDIR' : 'WDIR2' ) ;
-
-                #
-                # For now ALL data files are in some "data" 
-                # directory. The md5's are in "recover"
-                # direcotries that we get on a different
-                # function.
-                #
-                # Lists may vary in names that are 
-                # impossible to predict.
-                # Example: TA_445A
-                # list.active.admin.gz
-                # list.active.cont.gz
-                # list.active.data-20130101060955.gz
-                # list.active.data.gz
-                # list.active.gz
-                # list.active.recover-20130101060955.gz
-                # list.active.recover-20130101060955.other-20111110225028.gz
-                # list.active.recover.gz
-                # list.active.sdata-20130101060955.gz
-                # list.active.sdata.gz
-                # list.active.wfdisc-20130101060955.gz
-                # list.active.wfdisc.gz
-                # list.reserve.cont.gz
-                # list.reserve.data.gz
-                # list.reserve.gz
-                # list.reserve.recover.gz
-                # list.reserve.recover.other-20111110225253.gz
-                # list.reserve.sdata.gz
-                # list.reserve.wfdisc.gz
-                #
-                # The regex will allow us to get the possible 
-                # variations on the names. Then we can build
-                # a good URL for the file.
-                #
-                ################################################
-                # NOTE:
-                # Adding option to look into sdata directories.
-                # OLD: $f =~ m/list\.\w+\.(data\S*)\.gz/ ;
-                # 4/14
-                #
 
                 $f =~ m/list\.\w+\.(s?data\S*)\.gz/ ;
                 next unless $1 ;
 
                 $start_file = now() ;
-                fork_notify("attempt download: $dir/$1/$file") if $opt_v ;
-                $where = download_file("$dir/$1/$file",$path,$ip) || '' ;
+                fork_log("attempt download: $dir/$1/$file") ;
+                $where = download_file("$dir/$1/$file",$path,$ip,$port) || '' ;
                 $end_file = now() ;
                 last if $where ;
 
@@ -1138,23 +1250,30 @@ sub get_data {
 
         $run_time = $end_file-$start_file ;
         $run_time_str = strtdelta($run_time) ;
-        if ( -f $where and $opt_v ) {
-            fork_notify("Success download $file $run_time_str") ;
+        if ( -f $where ) {
+            fork_log("Success download $file $run_time_str") ;
         }
 
         #
         # Verify downloaded file
         #
+        $md5 = 'error' ;
+        $status = 'downloaded' ;
         if ( -f $where) {
 
-            $status = 'downloaded' ;
-            $md5 = get_md5($sta,$file,$ip,\@lists) || 'error' ;
+            if ( yesno( $pf{use_md5} ) ) {
 
-            if ( $md5 =~ /(\S{32})/ or $md5 =~ /ignore/ ) {
-                fork_notify("$file verified with md5: $md5") if $opt_v ;
-            }
-            else {
-                fork_complain("$file => status:$status md5:$md5") ;
+                $md5 = get_md5($sta,$file,$ip,$port,\@lists) || 'error' ;
+
+                if ( $md5 =~ /(\S{32})/ ) {
+                    fork_log("$file verified with md5: $md5") ;
+                }
+                else {
+                    fork_complain("$file => status:$status md5:$md5") ;
+                }
+
+            } else {
+                $md5 = 'avoid' ;
             }
 
             push @total_downloads, $file ;
@@ -1167,13 +1286,13 @@ sub get_data {
             fork_complain("Resurrect file from $path/trash/$file") ;
             move("$path/trash/$file","$path/$file")
                 or fork_complain("Can't move $file to $path") ;
-            $status = 'downloaded' ;
-            $md5 = get_md5($sta,$file,$ip,\@lists) || 'error' ;
+            if ( yesno( $pf{use_md5} ) ) {
+                $md5 = get_md5($sta,$file,$ip,$port,\@lists) || 'error' ;
+            }
 
         } else {
 
             fork_complain("$file => Not present after download") ;
-            $md5 = 'error' ;
             $status = 'error' ;
             $dir = '' ;
 
@@ -1196,10 +1315,9 @@ sub get_data {
         # Add to DB
         #
         @db = open_db($sta) ;
-        unless ( @db  ) {
-            dbunlock("${path}/${sta}_baler") ;
-            fork_die("$sta Problems on db open!") ;
-        }
+
+        fork_die("$sta Problems on db open!") unless @db ;
+
         $db[3] = dbfind(@db, "dfile =~ /$file/", -1) ;
 
         #
@@ -1213,9 +1331,8 @@ sub get_data {
 
         }
 
-        fork_debug("$file | $dlsta | $start_file | $end_file "
-            ."| $status | $attempts | $size | $speed | $md5")
-            if $opt_v ;
+        fork_log("$file | $dlsta | $start_file | $end_file "
+            ."| $status | $attempts | $size | $speed | $md5") ;
 
         if ($db[3] >= 0) {
             dbputv(@db,
@@ -1253,22 +1370,21 @@ sub get_data {
 
         dbclose(@db) ;
 
-        fork_debug("Next file") if $opt_d ;
+        fork_debug("Next file") ;
 
     }
-
-    dbunlock("${path}/${sta}_baler") ;
 
     unless ( scalar @total_downloads ) {
-        fork_die("NO DOWNLOADS!!!! "
-                    ."Station not downloading any files. "
-                    ."http://$ip:$pf{http_port}");
+        fork_die("NO DOWNLOADS!!!! http://$ip:$port");
     }
 
-    delete $flagged{$_} foreach @total_downloads ;
+    delete $flagged->{$_} foreach @total_downloads ;
 
-    if ( scalar keys %flagged ) {
-        fork_complain('Missing: '.join(' ',sort keys %flagged)) ;
+    @missing_files = sort keys %{$flagged};
+
+    if ( @missing_files > 0 ) {
+        fork_complain('Missing: '. scalar @missing_files . ' files') ;
+        fork_debug('Missing: '. join(' ',@missing_files) ) ;
     }
 
     #
@@ -1284,10 +1400,12 @@ sub get_data {
     $run_time = now() - $start_sta ;
     $run_time_str = strtdelta($run_time) ;
 
-    fork_notify( "$sta with ".@total_downloads." files "
+    fork_notify( "$sta with ". scalar @total_downloads." files "
         ."($m Mb) from $ip in $run_time_str") ;
 
-    return ;
+    dbunlock("${path}/${sta}_baler") ;
+
+    return 0;
 
 }
 
@@ -1305,7 +1423,7 @@ sub check_time {
             #
             # Ran out of time. Return false.
             #
-            return 0 ;
+            return ;
         }
     }
 
@@ -1319,72 +1437,56 @@ sub check_time {
 sub total_data_downloaded {
     my $sta  = shift ;
     my $days = shift || 1 ;
-    my ($start,$r) ;
+    my ($start,$r,$record) ;
     my (@db_temp,@db,@dbscr,@recs) ;
     my $total_bytes = 0.0 ;
 
     #
     # Verify Database
     #
-    fork_notify("Get data downloaded in last $days for $sta")
-        if $opt_d ;
+    fork_debug("Get data downloaded in last $days for $sta") ;
 
     @db = open_db($sta) ;
 
     unless ( @db  ) {
-        return 0;
+        return $total_bytes ;
     }
 
     eval { dbquery(@db,dbTABLE_PRESENT) ; } ;
     if ( $@ ) {
-        fork_debug("$total_bytes bytes downloaded") if $opt_d ;
         dbclose(@db) ;
-        return ;
+        return $total_bytes ;
     }
 
     if (dbquery(@db, dbRECORD_COUNT) < 1) {
-        fork_debug("$total_bytes bytes downloaded") if $opt_d ;
         dbclose(@db) ;
-        return ;
+        return $total_bytes ;
     }
 
     $start = str2epoch("-${days}days") ;
     @db= dbsubset ( @db,
-        "status =~ /downloaded|error/ && time >= $start ") ;
+        "status =~ /downloaded/ && time >= $start && endtime != NULL") ;
 
     unless ( dbquery(@db, dbRECORD_COUNT) ){
-        fork_debug("$total_bytes bytes downloaded") if $opt_d ;
         dbclose(@db) ;
-        return ;
+        return $total_bytes ;
     }
 
-    #
-    # Build scratch record for matching.
-    #
-    @dbscr = dblookup(@db,0,0,0,"dbSCRATCH") ;
-    dbputv(@dbscr,"status",'downloaded') ;
-    @recs = dbmatches(@dbscr,@db,"stat","status") ;
-
-    unless ( scalar @recs ){
-        dbclose(@db) ;
-        return ;
-    }
-
-    for $r ( @recs ) {
-        $db[3] = $r ;
+    $record  =  dbquery(@db, dbRECORD_COUNT) ;
+    for ( $db[3] = 0 ; $db[3] < $record ; $db[3]++ ) {
         $total_bytes += (dbgetv (@db, 'filebytes')) ;
     }
 
     dbclose(@db) ;
 
-    fork_debug("$total_bytes downloaded") if $opt_d ;
+    fork_debug("$total_bytes downloaded") ;
 
     # for Kbytes
     $total_bytes = sprintf("%0.2f", $total_bytes/1024) ;
     # for Mbytes
     $total_bytes = sprintf("%0.2f", $total_bytes/1024) ;
 
-    fork_debug("Total bytes downloaded: $total_bytes") if $opt_d ;
+    fork_debug("Total Megabytes downloaded: $total_bytes") ;
 
     return $total_bytes ;
 
@@ -1394,7 +1496,10 @@ sub download_file {
     my $file = shift ;
     my $path = shift ;
     my $ip = shift ;
-    my ($file_fetch,$where) ;
+    my $port = shift ;
+    my ($file_fetch,$where,$url) ;
+    my $type = 'error' ;
+    my $size = 0 ;
     my @temp_new ;
 
 
@@ -1405,23 +1510,21 @@ sub download_file {
 
     #$file = join('/',@temp_new) ;
 
-    fork_debug( "Build File::Fetch object: "
-        ."http://$ip:$pf{http_port}/$file")
-        if $opt_d ;
+    $url = "http://$ip:$port/$file" ;
+
+    fork_debug( "Build File::Fetch object: $url") ;
 
     eval{
-        $file_fetch = File::Fetch->new(
-            uri => "http://$ip:$pf{http_port}/$file") ;
+        $file_fetch = File::Fetch->new( uri => $url) ;
     } ;
     fork_complain("File::Fetch -> $@") if $@ ;
 
-    fork_complain("ERROR in build of File::Fetch -> "
-        ."http://$ip:$pf{http_port}/$file")
+    fork_complain("ERROR in build of File::Fetch -> $url" )
         unless $file_fetch ;
 
     return unless $file_fetch ;
 
-    fork_debug("Download: ".$file_fetch->uri) if $opt_d ;
+    fork_debug("Download: ".$file_fetch->uri) ;
 
     #eval {  $where = $file_fetch->fetch( to => "$path/" ) ; } ;
     #fork_complain("File::Fetch ".$file_fetch->uri." $@") if $@ ;
@@ -1434,18 +1537,44 @@ sub download_file {
 
     return unless -f $where ;
 
-    fork_complain("Maybe there is a problem with the file. "
-        ."$where from http://$ip:$pf{http_port}/$file")
-        if -s $where == 591 ;
+
+    # Verify size of file
+    ($type, $size) = head( $url ) or fork_complain("ERROR $url: $!") ;
+
+    if ( $size ){
+
+        fork_debug("New downloaded file $where:   type:$type    size:$size") ;
+
+        # If size of file is not the expected
+        if ( -s $where != $size ) {
+            fork_complain("Problem with file size of $where Reported:$size") ;
+            move($where,"$path/trash/")
+                or fork_complain("Can't move $where to $path/trash/") ;
+            return ;
+        }
+
+    } else {
+
+        fork_complain("Can't get size of $url on HTTP call.") ;
+
+    }
+
+    # Size 591 is a text page of HTTP errors.
+    if ( -s $where == 591 ) {
+        fork_complain("Problem with the file. $where from $url") ;
+        move($where,"$path/trash/")
+            or fork_complain("Can't move $where to $path/trash/") ;
+        return ;
+    }
 
     #fork_complain("ERROR on $file after download. Problem with name")
     #   unless $where =~ /$temp_new[-1]/ ;
 
-    #fork_complain("Cannot see $file after download") unless -f $where ;
+    fork_complain("Cannot see $where after download") unless -f $where ;
 
     return $where if -f $where ;
 
-    return
+    return ;
 
 }
 
@@ -1463,13 +1592,13 @@ sub open_db {
     #
     $dbout = File::Spec->rel2abs( "${path}/${sta}_baler" ) ;
 
-    fork_debug("Opening database ($dbout).") if $opt_d ;
+    fork_debug("Opening database ($dbout).") ;
 
     #
     # Create descriptor file if missing
     #
     unless ( -e $dbout) {
-        fork_debug("$sta Creating new database ($dbout).") if $opt_d ;
+        fork_debug("$sta Creating new database ($dbout).") ;
 
         open FILE, ">", $dbout
             or fork_die("Could not create file [$dbout] :$!") ;
@@ -1494,7 +1623,7 @@ sub open_db {
     # Open table
     #
     $dbout .= ".rsyncbaler" ;
-    fork_debug("$sta Openning database table  ($dbout)") if $opt_d ;
+    fork_debug("$sta Openning database table  ($dbout)") ;
 
     @db = dbopen_table($dbout,"r+") or 0;
 
@@ -1516,7 +1645,7 @@ sub fix_local {
     my $nulls = 0 ;
     my ($mode,@fields) ;
 
-    fork_debug("Reading and fixing of local directory") if $opt_d ;
+    fork_debug("Reading and fixing of local directory") ;
 
     $path = prepare_path($sta) ;
 
@@ -1538,7 +1667,7 @@ sub fix_local {
     @dbscr = dblookup(@db,0,0,0,"dbSCRATCH") ;
 
     foreach $file (sort keys %list) {
-        fork_debug("Clean table for dfile =~/$file/ ") if $opt_d ;
+        fork_debug("Clean table for dfile =~/$file/ ") ;
 
         #
         # Add file name to scratch record
@@ -1610,7 +1739,7 @@ sub fix_local {
         #
         # Verify file name is for this station
         #
-        if ( $file !~ /(${sta}|EXMP)/ or $file !~ /($pf{regex_for_files})/ ) {
+        if ( $file !~ /(${sta}|EXMP)/ ) {
             fork_complain("filename failed regex match "
                 ."for station: remove(): $file") ;
             fork_complain("remove record $unique: "
@@ -1627,6 +1756,7 @@ sub fix_local {
             fork_complain("remove(not in directory): $file") ;
             dbmark(@db) unless $opt_n ;
             $nulls = 1 ;
+            next;
         }
 
         #
@@ -1669,7 +1799,7 @@ sub fix_local {
         next if $f !~ /(${sta}|EXMP)/ ;
         next if $f !~ /($pf{regex_for_files})/ ;
 
-        fork_debug("local file: $f") if $opt_d ;
+        fork_debug("local file: $f") ;
 
         #
         # Add file name to scratch record
@@ -1686,8 +1816,7 @@ sub fix_local {
         #
         @recs = sort {$a <=> $b} @recs ;
 
-        fork_debug("Got subset for enties for $f: (@recs)")
-            if $opt_d ;
+        fork_debug("Got subset for $f: (@recs)") ;
 
         if (scalar @recs == 1 ) {
 
@@ -1698,15 +1827,11 @@ sub fix_local {
 
             if ( dbgetv(@db, 'status') =~ /downloaded/) {
 
-                fork_debug("$f already in database as downloaded") if $opt_d ;
-
-                #} elsif ( dbgetv(@db, 'status') =~ /skip/) {
-
-                #fork_complain("$f already flagged as 'skipped'") ;
+                fork_debug("$f already in database as downloaded") ;
 
             } else {
 
-                fork_complain("$f updated to 'downloaded'") ;
+                fork_notify("$f updated to 'downloaded'") ;
                 dbputv(@db,
                     'status', 'downloaded',
                     'attempts', 1,
@@ -1723,7 +1848,7 @@ sub fix_local {
             # Add the missing file
             #
             $size = -s "$path/$f" || 0 ;
-            fork_complain("$f adding as 'downloaded'") ;
+            fork_notify("$f adding as 'downloaded'") ;
             dbaddv(@db,
                 "net",      $net,
                 "sta",      $sta,
@@ -1745,7 +1870,7 @@ sub fix_local {
     #
     # Clean memory pointers and null entries
     #
-    fork_complain("Crunch table.") if $nulls ;
+    fork_log("Crunch table.") if $nulls ;
     dbcrunch(@db) if $nulls and not $opt_n ;
     dbclose(@db) ;
 
@@ -1761,10 +1886,11 @@ sub fix_local {
 sub read_baler {
     my $sta   = shift ;
     my $ip    = shift ;
+    my $port    = shift ;
     my $dir   = shift ;
     my $media_active    = shift ;
     my $media_reserve    = shift ;
-    my ($path,$name,$test,$nrecords) ;
+    my ($path,$name,$test) ;
     my %list ;
     my ($input,$list,$where,$files) ;
     my @temp_dir = () ;
@@ -1779,7 +1905,7 @@ sub read_baler {
 
     chdir $path or fork_die("Cannot go to directory ($path)") ;
 
-    fork_debug("Full array for directories: @$dir") if $opt_d ;
+    fork_debug("Full array for directories: @$dir") ;
 
     #
     # For each of the folders
@@ -1790,7 +1916,7 @@ sub read_baler {
 
         next unless $list =~ /$pf{folder_with_files}/ ;
 
-        fork_debug("Get: $list") if $opt_d ;
+        fork_debug("Get: $list") ;
 
         unlink $list if -e $list ;
         #
@@ -1798,7 +1924,7 @@ sub read_baler {
         #
         eval{
             $file_fetch = File::Fetch->new(
-                uri => "http://$ip:$pf{http_port}/$list") ;
+                uri => "http://$ip:$port/$list") ;
         } ;
         fork_complain("File::Fetch($list) => $@") if $@ ;
 
@@ -1822,12 +1948,13 @@ sub read_baler {
         }
 
         unless ( $where ) {
-            fork_complain("Error fetching:  http://$ip:$pf{http_port}/$list") ;
+            fork_complain("Error fetching:  http://$ip:$port/$list") ;
             next ;
         }
 
-        fork_complain("ERROR after download of: $list")
-            unless -e $list ;
+        fork_debug("Success in download of: $list") if -e $list ;
+
+        fork_complain("ERROR after download of: $list") unless -e $list ;
 
         open $input, "<$list" ;
         $files = new IO::Uncompress::AnyUncompress $input
@@ -1850,16 +1977,16 @@ sub read_baler {
             @temp_dir = split(/\//,$test) ;
             $name = pop(@temp_dir) ;
             next unless $name ;
-            #fork_debug("passed name test") if $opt_v ;
-            #fork_debug("Test $name => $pf{regex_for_files}") if $opt_v ;
+            #fork_debug("passed name test") ;
+            fork_debug("Test $name => $pf{regex_for_files}")  ;
             next unless  $name =~ /($pf{regex_for_files})/ ;
-            #fork_debug("passed regex") if $opt_v ;
+            fork_debug("passed regex") ;
             next unless $name =~ /.*(${sta}|EXMP).*/ ;
-            #fork_debug("passed ${sta}|EXMP regex") if $opt_v ;
+            fork_debug("passed ${sta}|EXMP regex") ;
             unshift(@temp_dir, $list =~ /active/ ? 'WDIR' : 'WDIR2' ) ;
 
             $list{$name} = join('/',@temp_dir) ;
-            fork_debug("$name => $list{$name}") if $opt_v ;
+            fork_debug("$name => $list{$name}") ;
         }
 
     }
@@ -1872,6 +1999,7 @@ sub get_md5 {
     my $sta  = shift ;
     my $file  = shift ;
     my $ip    = shift ;
+    my $port    = shift ;
     my $lists    = shift ;
     my ($old,$md5_lib,$f,$d,$digest,$md5,$local_path,$folder) ;
     my ($where) ;
@@ -1885,7 +2013,7 @@ sub get_md5 {
 
     $file .= '.md5' unless $file =~ /\.md5/ ;
 
-    fork_notify("Get MD5 $file") if $opt_d ;
+    fork_debug("Get MD5 $file") ;
 
     chdir $local_path
         or fork_die("Cannot change to directory ($local_path)") ;
@@ -1893,23 +2021,21 @@ sub get_md5 {
     unless ( -s "$local_path/$file" ) {
 
         unlink "$local_path/$file" ;
-        fork_notify("Lets download MD5 file $file -> $local_path")
-            if $opt_d ;
+        fork_notify("Lets download MD5 file $file -> $local_path") ;
 
         foreach $f (@$lists) {
 
             next unless $f =~ m/$pf{md5_folder}/ ;
-            fork_notify("Now with directory $f") if $opt_d ;
+            fork_debug("Now with directory $f") ;
             $d = ( $f =~ /active/ ? 'WDIR' : 'WDIR2' ) ;
             $f =~ m/list\.\w+\.($pf{md5_folder}\S*)\.gz/ ;
             next unless $1 ;
 
-            fork_notify("attempt download of MD5: $d/$1/$file")
-                if $opt_d ;
+            fork_debug("attempt download of MD5: $d/$1/$file") ;
 
-            $where = download_file("$d/$1/$file",$local_path,$ip) ;
+            $where = download_file("$d/$1/$file",$local_path,$ip,$port) ;
             last if $where ;
-            $where = download_file("$d/$1/$file",$local_path,$ip) ;
+            $where = download_file("$d/$1/$file",$local_path,$ip,$port) ;
             last if $where ;
 
         }
@@ -1926,7 +2052,7 @@ sub get_md5 {
 
     while (<DAT>) {
         chomp ;
-        fork_debug("MD5 file:: $_") if $opt_v ;
+        fork_log("MD5 file:: $_") ;
         push @md5_raw, split ;
     }
 
@@ -2004,8 +2130,14 @@ sub get_md5 {
 }
 
 sub get_medias_and_lists {
+    # Connect to the Baler and parse the text
+    # that we get on the status page. This page is
+    # continuously updating and kept in memory. Returns
+    # relatively fast without timeouts.
+    # We try 2 times anyway....
     my $sta = shift ;
     my $ip = shift ;
+    my $port = shift ;
     my (@text,$line,$browser, $resp) ;
     my $active = '' ;
     my $reserve = '' ;
@@ -2016,21 +2148,19 @@ sub get_medias_and_lists {
     $resp = $browser->timeout(120) ;
 
     fork_debug("$sta:\tLWP::UserAgent->get("
-        ."http://$ip:$pf{http_port}/stats.html)")
-        if $opt_d ;
+        ."http://$ip:$port/stats.html)") ;
 
-    $resp = $browser->get("http://$ip:$pf{http_port}/stats.html") ;
+    $resp = $browser->get("http://$ip:$port/stats.html") ;
 
     unless ( $resp->is_success ) {
 
         fork_debug("2nd time.... $sta:"
             ."\tLWP::UserAgent->get("
-            ."http://$ip:$pf{http_port}/stats.html)")
-            if $opt_d ;
+            ."http://$ip:$port/stats.html)") ;
 
-        $resp = $browser->get("http://$ip:$pf{http_port}/stats.html") ;
+        $resp = $browser->get("http://$ip:$port/stats.html") ;
 
-        fork_complain("Missing http://$ip:$pf{http_port}/stats.html")
+        fork_complain("Missing http://$ip:$port/stats.html")
             unless $resp ;
 
         return unless $resp ;
@@ -2070,30 +2200,30 @@ sub get_medias_and_lists {
             push(@dir,"$1") if $pf{md5_folder} =~ /\w{1,}/ and
                 $text[$line] =~ m/>(list\.(active|reserve)\.$pf{md5_folder}.*\.gz)</ ;
 
-            fork_debug("Got md5 Folder: $1") if $1 and $opt_v ;
+            fork_debug("Got md5 Folder: $1") if $1 ;
 
         }
     }
     else {
 
-        fork_complain("problem reading http://$ip:$pf{http_port}/stats.html") ;
+        fork_complain("problem reading http://$ip:$port/stats.html") ;
         return ;
 
     }
 
-    fork_complain("Cannot find MEDIA 1 in http://$ip:$pf{http_port}/stats.html")
+    fork_complain("Cannot find MEDIA 1 in http://$ip:$port/stats.html")
         unless $active ;
 
-    fork_complain("Cannot find MEDIA 2 in http://$ip:$pf{http_port}/stats.html")
-        unless $reserve ;
+    # Alaska sites may have only 1 media
+    #if ( $pf{media2_warning} ) {
+    #    fork_complain("Cannot find MEDIA 2 in http://$ip:$port/stats.html")
+    #        unless $reserve ;
+    #}
 
     $active  ||= '' ;
     $reserve ||= '' ;
 
-    fork_debug("get_medias_and_lists("
-        ."http://$ip:$pf{http_port}/stats.html) "
-        ."=> ($active,$reserve)")
-        if $opt_v ;
+    fork_log("get_medias_and_lists(http://$ip:$port/stats.html) => ($active,$reserve)") ;
 
     return ($active,$reserve,@dir) ;
 
@@ -2142,8 +2272,12 @@ sub prepare_path {
 
 sub dblock { # $lock_status = &dblock ( $db, $lock_duration ) ;
     my ( $db, $lock_duration ) = @_ ;
-    my ( $Pf, $dbloc_pf_file, $host, $pid ) ;
+    my ( $Pf, $dbloc_pf_file, $host, $pid, $endlock ) ;
     my ( %pf ) ;
+
+    fork_debug ( "Set lock on $db for $lock_duration secs" );
+
+    $endlock = &now() + $lock_duration ;
 
     chop ($host = `uname -n` ) ;
     $pid = $$ ;
@@ -2151,63 +2285,51 @@ sub dblock { # $lock_status = &dblock ( $db, $lock_duration ) ;
     $Pf            = $db . "_LOCK" ;
     $dbloc_pf_file = $db . "_LOCK.pf" ;
     fork_debug ( "Pf    $Pf     dbloc_pf_file   "
-        ."$dbloc_pf_file  pid $pid" )
-        if $opt_V ;
+        ."$dbloc_pf_file  pid $pid" ) ;
+
 
     if ( ! -f $dbloc_pf_file ) {
 
-        fork_debug (
-            sprintf("$db new lock set to %s",
-                strydtime ( now() + $lock_duration ))
-            ) if $opt_V ;
+        fork_log ( sprintf("$db new lock set to %s", strydtime($endlock)) ) ;
 
-        &write_dblock ( $dbloc_pf_file, $0,
-            $host, $pid, &now(), &now() + $lock_duration ) ;
-
-        return 0 ;
+        &write_dblock ( $dbloc_pf_file, $0, $host, $pid, &now(), $endlock ) ;
 
     } else {
 
         %pf = getparam( $Pf ) ;
+
+        fork_debug( "Found previous lock file: $db " ) ;
+        fork_debug( "\tprogram        $pf{program}" ) ;
+        fork_debug( "\thost           $pf{host}" ) ;
+        fork_debug( "\tpid            $pf{pid}" ) ;
+        fork_debug( "\tlock_time      $pf{lock_time}" ) ;
+        fork_debug( "\tunlock_time    $pf{unlock_time} " );
+
         if ( $pf{unlock_time} > &now() && $pf{pid} != $pid ) {
 
-            fork_complain (
-                sprintf ("$db is locked until %s",
-                    strydtime ( $pf{unlock_time} )
-                    ) ) ;
-
-                #prettyprint ( \%pf ) ;
-            return 1 ;
+            fork_complain ( "$db is locked until ". strydtime ( $pf{unlock_time} ) ) ;
+            return 1;
 
         } elsif  ( $pf{unlock_time} > &now() && $pf{pid} == $pid ) {
 
-            fork_debug (
-                sprintf ("$db lock is extended to %s",
-                    strydtime ( now() + $lock_duration )
-                ) ) if $opt_V ;
+            fork_log ( "$db lock is extended to ". strydtime( $endlock ) ) ;
 
-            &write_dblock ( $dbloc_pf_file, $0,
-                $host, $pid, $pf{lock_time},
-                now() + $lock_duration ) ;
+            &write_dblock ( $dbloc_pf_file, $0, $host, $pid, $pf{lock_time}, $endlock );
 
             %pf = () ;
-            return 0 ;
 
         } else {
 
-            fork_debug (
-                sprintf ("$db lock set to %s",
-                    strydtime ( now() + $lock_duration )
-                ) ) if $opt_V ;
+            fork_log ( "$db lock set to ". strydtime( $endlock ) ) ;
 
-            &write_dblock ( $dbloc_pf_file, $0,
-                $host, $pid, &now(), &now() + $lock_duration ) ;
+            &write_dblock ( $dbloc_pf_file, $0, $host, $pid, &now(), $endlock ) ;
 
             %pf = () ;
-            return 0 ;
 
         }
     }
+
+    return 0;
 
 }
 
@@ -2222,13 +2344,12 @@ sub dbunlock { # $lock_status = &dbunlock ( $db ) ;
 
     $Pf            = $db . "_LOCK" ;
     $dbloc_pf_file = $db . "_LOCK.pf" ;
-    fork_debug ( "Pf    $Pf     "
-        ."dbloc_pf_file   $dbloc_pf_file" ) if $opt_V ;
+    fork_log ( "Pf    $Pf     "
+        ."dbloc_pf_file   $dbloc_pf_file" ) ;
 
     if ( ! -f $dbloc_pf_file ) {
 
         fork_complain ( "dbunlock:      $dbloc_pf_file does not exist!" ) ;
-        return 1 ;
 
     } else {
 
@@ -2236,27 +2357,31 @@ sub dbunlock { # $lock_status = &dbunlock ( $db ) ;
         %pf = getparam( $Pf ) ;
         if ($0 ne $pf{program} || $pid != int($pf{pid}) || $host ne $pf{host}) {
 
-            fork_complain ( "unable to unlock $db" ) ;
-            fork_complain ( "program    $0      $pf{program}" ) ;
-            fork_complain ( "pid        $pid    $pf{pid}" ) ;
-            fork_complain ( "host       $host   $pf{host}" ) ;
-            return 1 ;
+            fork_complain( "unable to unlock $db " );
+            fork_complain( "\tprogram    now[$0]      set[$pf{program}] " );
+            fork_complain( "\tpid        now[$pid]    set[$pf{pid}] " );
+            fork_complain( "\thost       now[$host]   set[$pf{host}] " );
+            fork_complain( "\tlock_time      $pf{lock_time}" ) ;
+            fork_complain( "\tunlock_time    $pf{unlock_time} " );
 
-        }
-        if ( $pf{unlock_time} < &now() ) {
-
-            fork_complain (
-                sprintf ("$db was already unlocked at %s",
-                    strydtime ( $pf{unlock_time} )
-                ) ) ;
-            return 1 ;
+            return ;
 
         }
 
-        &write_dblock ( $dbloc_pf_file, $0,
-            $host, $pid, $pf{lock_time}, &now() ) ;
+        if ( $pf{unlock_time} > 0 && $pf{unlock_time} < &now() ) {
 
-        return 0 ;
+            fork_complain( "$db auto-unlocked but not cleaned" ) ;
+            fork_complain( "\tprogram    now[$0]      set[$pf{program}]" ) ;
+            fork_complain( "\thost       now[$host]   set[$pf{host}]" ) ;
+            fork_complain( "\tpid        now[$pid]    set[$pf{pid}]" ) ;
+            fork_complain( "\tlock_time      $pf{lock_time}" ) ;
+            fork_complain( "\tunlock_time    $pf{unlock_time} " );
+
+        }
+
+        &write_dblock ( $dbloc_pf_file, $0, $host, $pid, $pf{lock_time}, 0 ) ;
+
+        return ;
     }
 
 }
@@ -2277,7 +2402,36 @@ sub write_dblock {
 
 }
 
+sub log_log {
+    my $line = shift;
+
+    return if not $opt_w ;
+
+    elog_notify( $line );
+}
+
+sub log_notify {
+    my $line = shift;
+
+    elog_notify( $line );
+}
+
+sub log_debug {
+    my $line = shift;
+
+    return if not $opt_d ;
+
+    elog_debug( $line );
+}
+
+sub log_complain {
+    my $line = shift;
+
+    elog_complain( $line );
+}
+
 sub fork_log { # &fork_log ( $parent, $line ) ;
+    return if not $opt_w ;
     my $line = shift;
 
     unless ( $parent ) {
@@ -2285,7 +2439,7 @@ sub fork_log { # &fork_log ( $parent, $line ) ;
         return;
     }
 
-    elog_log( $line );
+    log_log( $line );
 
     return;
 }
@@ -2298,12 +2452,13 @@ sub fork_notify { # &fork_notify ( $parent, $line ) ;
         return;
     }
 
-    elog_notify( $line );
+    log_notify( $line );
 
     return;
 }
 
 sub fork_debug { # &fork_debug ( $parent, $line ) ;
+    return if not $opt_d ;
     my $line = shift;
 
     unless ( $parent ) {
@@ -2311,7 +2466,7 @@ sub fork_debug { # &fork_debug ( $parent, $line ) ;
         return;
     }
 
-    elog_debug( $line );
+    log_debug( $line );
 
     return;
 }
@@ -2324,7 +2479,7 @@ sub fork_complain { # &fork_complain ( $parent, $line ) ;
         return;
     }
 
-    elog_complain( $line );
+    log_complain( $line );
 
     return  ;
 }
@@ -2338,15 +2493,27 @@ sub fork_die { # &fork_die ( $parent, $line ) ;
 
     } else {
 
-        fork_complain( $line );
-        fork_notify("finished processing station") ;
-        exit ;
+        # Maybe we need to unlock the database before
+        # we exit. Try to create the path just from the
+        # station name. The name comes from the command-
+        # line argument.
+
+        my $path = prepare_path($get_sta) ;
+        my $full_path = "${path}/${get_sta}_baler";
+        dbunlock( $full_path ) if -f $full_path ;
+
+        #
+        # Calc the total time to rsync station
+        #
+
+        fork_complain( "$get_sta:DIED: $line after ".  strtdelta( now() - $start_sta ) ) ;
+
+        exit 9;
 
     }
 }
 
 __END__
-#{{{
 =pod
 
 =head1 NAME
@@ -2412,4 +2579,3 @@ Juan C. Reyes <reyes@ucsd.edu>
 Perl(1).
 
 =cut
-#}}}

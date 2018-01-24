@@ -1,0 +1,182 @@
+
+DataLink protocol 1.0
+2008/9/12
+
+--------------------------  General concepts  ------------------------------
+
+DataLink operates to two different modes: query mode and streaming
+mode.  In query mode a client submits commands to a server and the
+server responds with either status replies or data content.  In
+streaming mode a server sends selected data packets to a client as
+they become available on the server with no specific per-packet
+interaction from the client.  A DataLink connection is always in query
+mode by default, switching to streaming mode only when specifically
+requested by the client.
+
+Client commands and server replies are encapsulated in DataLink packet
+structures.  All command and reply exchanges are formulated using
+ASCII characters with the exception of a single byte length parameter
+(preheader) and packet data.
+
+Various client commands and server responses contain time stamps
+represented as high-precision time values defined as Unix/POSIX epoch
+times in microseconds.  These high-precision time values are
+abbreviated to 'hptime', 'hppkttime', 'hpdatastart' or 'hpdataend'.
+
+
+-----------------------   DataLink packet structure   ----------------------
+
+'preheader' + 'header' [+ 'data']
+
+Vertical bars are used to separate the DataLink packet sections in
+this documentation, they are not included in the packets.
+
+All DataLink packets include a preheader and header, some exchanges do
+not include a data portion.  The preheader is always a 3 byte
+sequence, the first two bytes are the sequence bytes 'D' and 'L' and
+the third is an unsigned 1-byte integer indicating the size of the
+header portion following the preheader.  The header is a maximum of
+255 bytes in length.  The header portion is always composed of ASCII
+characters.
+
+
+---------------------------  Client commands  ------------------------------
+
+DataLink client commands go into the header section of a DataLink
+packet with any associated data in the data section.
+
+The server will reply to most client commands with a status indicator
+of either OK or ERROR and include a integer value (meaning is command
+dependent) and an optional message.
+
+The command description below includes the commands themselves in
+upper case letters with required arguments in lower case letters
+followed by a short description of the command.
+
+ID clientid
+
+  Purpose: Send client identification and receive server identification
+  - Client ID string is: "programname:username:processid:architecture"
+  - Reply is header-only formulated as: "ID DataLink <version> :: <capabilities>"
+
+
+POSITION SET pktid hppkttime
+
+  Purpose: Set the client read position in the server to a specific packet
+  - As special cases pktid can be "EARLIEST" or "LATEST"
+  - Reply is OK|ERROR with value as packet ID on success
+
+
+POSITION AFTER hptime
+
+  Purpose: Set the client read position to first packet with data start time after hptime
+  - Reply is OK|ERROR with value as packet ID on success
+
+
+MATCH size|<match pattern of length size>
+
+  Purpose: Set the connection packet matching expression
+  - The matching pattern is sent in the data section of the DataLink packet
+  - Size in the header is the length of the match pattern in bytes
+  - Reply is OK|ERROR with value as number currently matched streams
+
+
+REJECT size|<reject pattern of length size>
+
+  Purpose: Set the connection packet rejecting expression
+  - The rejection pattern is sent in the data section of the DataLink packet
+  - Size in the header is the length of the reject pattern in bytes
+  - Reply is OK|ERROR with value as number currently rejected streams
+
+
+WRITE streamid hpdatastart hpdataend flags size|<packet data of length size>
+
+  Purpose: Send data packet to DataLink server
+  - Flags: "N" = no acknowledgement requested, "A" = acknowledgement requested
+  - Size in the header is the length of the packet data in bytes
+  - Reply when acknowledgement requested is OK|ERROR with value of inserted packet ID
+
+
+READ pktid
+
+  Purpose: Request data packet from DataLink server
+  - Reply is either PACKET (DataLink data packet) or ERROR
+
+
+STREAM
+
+  Purpose: Request start of streaming mode
+  - Server sends all current and future data packets to client starting at
+    the client read position using the matching and rejecting expressions.
+  - No client commands are accepted in streaming mode except ID requests
+
+
+ENDSTREAM
+
+  Purpose: Request end of streaming mode, connection returns to query mode
+  - Server returns ENDSTREAM when streaming mode has ended
+
+
+INFO type|[match]
+
+  Purpose: Request an INFO packet from the server
+  - INFO types include: STATUS, STREAMS and CONNECTIONS
+  - A match expression can be supplied with CONNECTIONS, matches client IDs and addresses
+  - Server returns INFO (DataLink INFO packet) or ERROR
+
+
+---------------------------  Server responses  -----------------------------
+
+ERROR value size|<error message>
+OK value size|<status message>
+
+  Purpose: Return status of a command
+  - Integer value is command dependent
+  - Optional message may be included in the data section
+  - Size in the header is the length of the message in bytes
+
+
+INFO type size|<XML info data of length size>
+
+  Purpose: Return INFO data requested
+  - All INFO data is returned as XML
+  - The type will always be the same as that requested
+  - Size in the header is the length of the XML in bytes
+
+
+PACKET <streamid> <pktid> <hppackettime> <hpdatastart> <hpdataend> <size>|<packet data of length size>
+
+  Purpose: Send data packets to client
+  - Size in the header is the length of the packet data in bytes
+
+  Each DataLink data packet includes the following header information:
+
+  - Stream ID :: A string identifying a data stream in W_X_Y_Z/TYPE format
+  - Packet ID :: An integer ID, unique within a DataLink server at any given time
+  - Packet Time :: Time that a packet was accepted by the DataLink server
+  - Data Start :: Start time associated with the data in the packet
+  - Data End :: End time associated with the data in the packet
+  - Data Size :: Length of the data section of the packet in bytes
+
+  The combination of packet ID and packet time uniquely identify a
+  packet, using this combination is necessary as packet IDs will
+  eventually be reused.
+
+
+---------------------------  Example sequences  ------------------------------
+
+One of the most common sequences would be a client connecting to a
+server, exchanging IDs, setting a stream matching pattern and
+collecting data in streaming mode.  This is illustrated below (the
+preheaders of the DataLink packets have been omitted for clarity):
+
+<client connects to server>
+C: ID dalitool:rt:12501:SunOS-5.10
+S: ID DataLink 2008.196 :: DLPROTO:1.0 PACKETSIZE:512
+C: MATCH 9|IU_ANMO.*
+S: OK 10 31|10 streams selected after match
+C: STREAM
+S: PACKET IU_ANMO_00_BH1/MSEED 3973329 1216097732215400 1216097361127600 1216097381127600 512|<packet data>
+S: PACKET IU_ANMO_00_BH2/MSEED 3973330 1216097732875400 1216097362789500 1216097382789500 512|<packet data>
+S: PACKET IU_ANMO_00_BHZ/MSEED 3973331 1216097732784300 1216097361789600 1216097381789600 512|<packet data>
+... <more packets until either a connection shutdown or ENDSTREAM command>

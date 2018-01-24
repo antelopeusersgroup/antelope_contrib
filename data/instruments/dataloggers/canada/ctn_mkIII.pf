@@ -22,7 +22,7 @@ response	&datafile(responses/dummy)
 }
 
 a/d	&Arr{
-samprate	40
+samprate	60
 gtype		digitizer
 iunits		V
 ounits		counts
@@ -32,6 +32,6 @@ sn		datalogger
 ctn_mkIII	&Arr{
 gtype		paz
 decifac		1
-response	&datafile(responses/cnt_mkIII)
+response	&datafile(responses/ctn_mkIII)
 }
 

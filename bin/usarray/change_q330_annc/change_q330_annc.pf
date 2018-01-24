@@ -10,6 +10,9 @@ alt_auth_codes  &Tbl{
 #	000000000000BAAB	
 }
 
+q330util_timeout	30	# timeout value in seconds for q330util (wait time for return UDP packets)
+
+umsg_institution 	&ref(site, Institution)		
 
 # default POC settings
 # DO NOT CHANGE THESE unless you really know why you need to

@@ -1,0 +1,201 @@
+.TH Q330_PF_DUPES 1 
+.SH NAME
+q330_pf_dupes \- check for duplicated q330 serial number, station names, and dlsta in q3302orb pf files 
+.SH SYNOPSIS
+.nf
+\fBq330_pf_dupes\fP [-v | -q] [-a] [-m mailto] [-r rtpath] 
+.fi
+.SH DESCRIPTION
+This program checks all \fBq3302orb\fP parameter files for a single real-time 
+system to see if there has been any duplication in q330 serial number, dlsta, or
+sta.  Requires access to an \fIrtexec.pf\fP, instances of \fBq3302orb\fP must be referenced
+in that \fIrtexec.pf\fP, and access (valid PFPATH) to the \fIq3302orb.pf\fP files used in the command lines
+for \fBq3302orb\fP.  Assumes instances of \fBq3302orb\fP are running and only checks those.  
+If you want non-running instances checked, use the \fI-a\fP option. 
+.LP
+You very likely will never see this program report duplications of information.  However, if 
+you modify your \fBq3302orb\fP parameter files often, manage large numbers of stations, or
+have a setup where you transfer acquisition from a \fIprelim\fP to a \fIcertified\fP acquisition
+instance of \fBq3302orb\fP, it is possible to make mistakes and this script aims to catch 
+the problems early so you don't end up fragmenting your data due to dual acquisition attempts. 
+
+.SH OPTIONS
+.IP -a
+Check all \fBq3320orb\fP tasks referenced in the \fIrtexec.pf\fP file, not just 
+the instances that are currently running.   
+.IP "-r rtpath"
+Directory where \fIrtexec.pf\fP and \fIrtsys/rtsys\fP reside, if not the current directory.
+.IP "-m email1,email2,..."
+List of email addresses to send summary email/report of problems.
+.IP -q
+Quiet mode.  Only report complaints and failures, not normal operations.  Cannot be used with \fI-v\fP
+or \fI-V\fP.
+.IP -v,-V
+Verbosity level.  Cannot be used with \fI-q\fP.
+.SH FILES
+.LP
+Requires a \fIrtexec.pf\fP file with \fBq3302orb\fP tasks.  
+.LP 
+Requires access to the \fBrtsys/rtsys\fP database to determine active instances
+of \fBq3302orb\fP.
+.SH ENVIRONMENT
+Antelope needs to be available.
+.SH PARAMETER FILE
+None.
+.SH EXAMPLE
+.LP
+Check for duplicates in all active instances of \fBq3302orb\fP.  Report what files are being checked.
+
+.in 2c
+.ft CW
+.nf
+
+% \fB q330_pf_dupes\fP -v
+
+2016-216 19:20:03 perl *notify*: q330_pf_dupes start time
+
+command line:	q330_pf_dupes  -v 
+
+2016-216 19:20:03 perl *notify*: 26 active processes
+2016-216 19:20:03 perl *notify*: 13 active q3302orb processes
+Pf files to compare:
+	q3302orb_prelim
+	q3302orb_prelimB
+	q3302orb_prelimR
+	q3302orb_north 
+	q3302orb_east      
+	q3302orb_south 
+	q3302orb_west 
+	q3302orb_faraway
+	q3302orb_neighbor
+	q3302orb_special
+	q3302orb_notsospecial
+	q3302orb_wowthere
+	q3302orb_arealot
+2016-216 19:20:03 perl *notify*: No duplicated sn in q330 pf files.
+2016-216 19:20:03 perl *notify*: No duplicated sta in q330 pf files.
+2016-216 19:20:03 perl *notify*: No duplicated dlsta in q330 pf files.
+
+2016-216 19:20:03 perl *notify*: Success - q330_pf_dupes your.host.edu  No duplication of critical information in q3302orbs for this rtsystem.
+
+.fi
+.ft R
+.in
+
+.LP
+Check for duplicates.  Review every \fBq3302orb\fP task in the local \fIrtexec.pf\fP, including
+those not set to run. This will include all \fBq3302orb\fP instances in the Task section of the 
+\fIrtexec.pf\fP in the directory where this program is run.  
+
+.in 2c
+.ft CW
+.nf
+
+% \fBq330_pf_dupes\fP -a
+
+2016-216 18:06:32 perl *notify*: q330_pf_dupes start time
+
+command line:	q330_pf_dupes  
+
+2016-216 18:06:32 perl *notify*: q3302orb_FAKE is not actively running
+2016-216 18:06:32 perl *notify*: Checking anyway because of -a
+Couldn't find parameter file 'q3302orb_FAKE':
+	 at q330_pf_dupes line 170.
+
+.fi
+.ft R
+.in
+
+.LP
+Look for \fIrtexec.pf\fP and \fIrtsys/rtsys\fP in an alternate directory.  In this example, 
+the parameter files are not found because they are not in the PFPATH.  
+
+.in 2c
+.ft CW
+.nf
+
+% pwd
+/some/random/place
+ 
+% \fBq330_pf_dupes\fP -r ~/rtsystems/yournetwork/
+
+2016-216 19:34:21 perl *notify*: ./q330_pf_dupes start time
+
+command line:	q330_pf_dupes  -r /export/home/rt/rtsystems/yournetwork/ 
+
+Couldn't find parameter file 'q3302orb_AKCAN':
+	 at q330_pf_dupes line 170.
+
+% ln -s ~/rtsystems/yournetwork/pf
+% \fBq330_pf_dupes\fP -r ~/rtsystems/yournetwork/
+
+2016-216 19:36:47 perl *notify*: ./q330_pf_dupes start time
+
+command line:	q330_pf_dupes  -r /export/home/rt/rtsystems/TAq330/ 
+
+2016-216 19:36:47 perl *notify*: No duplicated sn in q330 pf files.
+2016-216 19:36:47 perl *notify*: No duplicated sta in q330 pf files.
+2016-216 19:36:47 perl *notify*: No duplicated dlsta in q330 pf files.
+
+2016-216 19:36:47 perl *notify*: Success - q330_pf_dupes your.host.edu  No duplication of critical information in q3302orbs for this rtsystem.
+
+.fi
+.ft R
+.in
+
+.LP
+
+Look for duplicates and only report problems.
+
+.in 2c
+.ft CW
+.nf
+
+% \fBq330_pf_dupes\fR -q
+2016-216 21:00:03 perl *complain*: 010000044D44D44D is found in more than one q3302orb pf file.
+2016-216 21:00:03 perl *complain*: 010000044DBBD44B is found in more than one q3302orb pf file.
+2016-216 21:00:03 perl *complain*: ABCD is found in more than one q3302orb pf file.
+2016-216 21:00:03 perl *complain*: XX_ABCD is found in more than one q3302orb pf file.
+2016-216 21:00:03 perl *complain*: XX_MNOP is found in more than one q3302orb pf file.
+
+2016-216 21:00:03 perl *complain*: Problems - q330_pf_dupes your.host.edu  Duplication of critical information in q3302orbs for this rtsystem!
+.fi
+.ft R
+.in
+
+.SH RETURN VALUES
+0 if no duplications, 1 if duplications are found.
+
+.SH DIAGNOSTICS
+.LP
+Running the script in a directory where there is no rtsys directory results in the error:
+"dbopen failed: perl: './rtsys/rtsys' does not exist".  Either use the \fI-r rtdir\fP 
+option, or run the script from where the \fIrtexec.pf\fP and \fIrtsys/rtsys\fP exist.
+
+.LP
+If the \fBq3302orb\fP instance does not use the \fI-pf\fP option, the default q3302orb.pf file is assumed.
+.LP
+If the PFPATH is set differently in the \fIrtexec.pf\fP file then the script might not be able
+to find the pfs.  In this case, initially the program exits with a message that it 
+'Couldn't find parameter file "X"'.  Resolved when you make sure the pf files are available (by 
+creating a link to the pf directory).
+
+.SH "SEE ALSO"
+.nf
+\fBq3302orb(1)\fP
+\fBrtexec(1)\fP
+.fi
+.SH "BUGS AND CAVEATS"
+
+This script does not report which parameter file has the duplication.  That is left to the 
+operator to figure out (and to determine where the datalogger belongs).
+
+This does not handle multiple instances of \fBq3302orb\fP running on the same host via different
+instances of \fBrtexec\fP.
+
+Extra \fBq3302orb\fP parameter files that exist along the PFPATH are not searched.  Only those 
+parameter files that are referred to by a task in the \fIrtexec.pf\fP are reviewed.
+.SH AUTHOR
+Jennifer Eakins
+.br
+jeakins@ucsd.edu

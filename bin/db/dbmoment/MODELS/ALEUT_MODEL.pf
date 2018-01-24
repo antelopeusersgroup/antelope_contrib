@@ -1,0 +1,41 @@
+#
+# 1D velocity structure appropriate
+# for the Aleutians region
+#
+name            ALEUT_MODEL
+
+decay           4.0
+
+start_frequency 1
+
+end_frequency   512
+
+samplerate      4
+
+# Phase velocity window
+cmax    10000
+c1      30
+c2      1.9
+cmin    1.7
+
+velocity_reduction   8.0
+
+distance_min   0
+
+distance_max   500
+
+distance_step  5
+
+
+
+# MODEL PARAMETERS
+# Layer: thickness(km), p-velocity(km/s), s-velocity(km/s), density(g/cc), Q-alpha, Q-beta
+model &Literal{
+4.0     4.7     2.67    2.35    600     300
+4.0     5.3     3.01    2.52    600     300
+4.0     6.6     3.75    2.89    600     300
+19.0    7.1     4.03    3.03    600     300
+16.0    7.9     4.49    3.26    600     300
+17.0    8.1     4.60    3.32    600     300
+400.0   8.3     4.72    3.37    600     300
+ }

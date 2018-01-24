@@ -20,6 +20,8 @@ from numpy import append,\
                   ones,\
                   zeros
 import numpy as np
+import random
+from core_tools_c import grid_search
 
 logger = logging.getLogger(__name__)
 
@@ -394,88 +396,38 @@ class Locator:
                             % (arrival.phase, arrival.sta))
                     continue
                 arrivals += [arrival]
-#Make sure there are at least 5 arrivals to use in relocation
-        #if len(arrivals) < 5:
-#The above line is Amir's, the below line is Malcolm's
-        if len(arrivals) < 10:
+#Make sure there are at least pfile['nobs'] arrivals to use in relocation
+        if len(arrivals) < self.nobs:
             logger.info("[evid: %d] Only %d valid arrivals found. Skipping "\
                     "relocation." % (event.evid, len(arrivals)))
-            return None, None
+            return None, None, None
         stations = [arrival.sta for arrival in arrivals]
-        #predicted_travel_times = read_predicted_travel_times(stations,
-        #                                                     tt_map_dir,
-        #                                                     nlon,
-        #                                                     nlat,
-        #                                                     nz)
         predicted_travel_times = read_predicted_travel_times(arrivals,
                                                              tt_map_dir,
                                                              nlon,
                                                              nlat,
                                                              nz)
-        #for sta in predicted_travel_times:
-        #    for phase in predicted_travel_times[sta]:
-        #        print sta, phase, len(predicted_travel_times[sta][phase])
 #Perform a grid search
         logger.debug("[evid: %d] Starting grid search." % event.evid)
         qx = range(0, nlon - 1)
         qy = range(0, nlat - 1)
         qz = range(0, nz - 1)
-        minx, miny, minz, otime, ha = grid_search_abs(qx,
-                                                      qy,
-                                                      qz,
-                                                      arrivals,
-                                                      predicted_travel_times,
-                                                      li)
+        minx, miny, minz, otime, ha = grid_search(qx,
+                                                 qy,
+                                                 qz,
+                                                 arrivals,
+                                                 predicted_travel_times,
+                                                 li)
         logger.debug("[evid: %d] Grid search complete." % event.evid)
-#        print minx, miny, minz, otime
-        #logger.debug("[evid: %d] Starting dbgrassoc grid search." % event.evid)
-        #minx, miny, minz, otime = grid_search_dbgrassoc(qx,
-        #                                                qy,
-        #                                                qz,
-        #                                                arrivals,
-        #                                                tt_map_dir)
-        #logger.debug("[evid: %d] dbgrassoc grid search complete." % event.evid)
-        #print minx, miny, minz, otime
-        #print '!!!'
-        #print event.time - otime
-        #print '!!!'
 #Best-fit grid point
-        glon = qlon[minx]
-        glat = qlat[miny]
-        gz = qdep[minz]
-#        new_origin =  Origin(glat,
-#                             glon,
-#                             gz,
-#                             otime,
-#                             '3Dreloc',
-#                             arrivals=event.arrivals,
-#                             evid=event.evid,
-#                             nass=len(event.arrivals),
-#                             ndef=len(arrivals))
-#        return new_origin
+#        glon = qlon[minx]
+#        glat = qlat[miny]
+#        gz = qdep[minz]
         logger.debug("[evid: %d] Starting sub-grid location inversion." %\
                 event.evid)
 #Get subgrid location
         dz = -dr
         arrival_times = [arrival.time for arrival in arrivals]
-        #for i in range(10):#This is really a while loop, but like this in case it is degenerate
-        #    c, resid, tt_updated, sigma, resid_std =\
-        #            self.get_subgrid_loc(minx,
-        #                                 miny,
-        #                                 minz,
-        #                                 arrivals,
-        #                                 predicted_travel_times,
-        #                                 li)
-        #    loc_change = c * [dlon, dlat, dz]
-#Find the best-fit source location in geographic coordinates
-        #    newloc = [newlon, newlat, newz] =\
-        #            asarray([glon, glat, gz]) + loc_change
-        #    ix = nonzero(qlon == find_nearest(qlon, newlon))[0][0]
-        #    iy = nonzero(qlat == find_nearest(qlat, newlat))[0][0]
-        #    iz = nonzero(qdep == find_nearest(qdep, newz))[0][0]
-        #    if minx == ix and miny == iy and minz == iz:
-        #        break
-        #    minx, miny, minz = ix, iy, iz
 ###############
         #This is for testing new inversion algorithm
         result = self.get_subgrid_loc_new(minx,
@@ -488,9 +440,10 @@ class Locator:
                                           qlat,
                                           qdep)
         if result:
-            u, tt_updated, sdobs = result
+            u, tt_updated, P_residuals, S_residuals = result
+            sdobs = 9.99 #THIS IS A DUMMY VALUE!!
         else:
-            return None, None
+            return None, None, None
         origerr = Origerr(sdobs)
         newloc = [newlon, newlat, newz] = \
                 [minlon + u[0] * dlon,
@@ -500,15 +453,12 @@ class Locator:
             newloc[2] = 0.0
             newz =  0.0
         otime = u[3]
-        #print event.lon, event.lat, event.depth, event.time
-        #print newlon, newlat, newz, otime
-        #print sdobs
 ################
 #Make sure origin is within boundary of velocity model
         if newloc[0] < min(qlon) or newloc[0] > max(qlon) or\
                 newloc[1] < min(qlat) or newloc[1] > max(qlat) or\
                 newloc[2] < min(qdep) or newloc[2] > max(qdep):
-            return None, None
+            return None, None, None
         logger.debug("[evid: %d] Sub-grid location inversion complete." %\
                 event.evid)
 #Update calculated travel times in Event object
@@ -520,6 +470,23 @@ class Locator:
         elapsed_time = time.time() - start_time
         logger.info("[evid: %d] Relocation took %.3f seconds" %\
                 (event.evid, elapsed_time))
+        logger.debug("[evid: %d] Starting bootstrap error analysis" %\
+                event.evid)
+        start_time = time.time()
+        emodelx, emodely, emodelz, emodelt, remark =\
+                self.run_bootstrap(minx, miny, minz,
+                                   qx, qy, qz,
+                                   arrivals,
+                                   predicted_travel_times,
+                                   li,
+                                   qlon, qlat, qdep,
+                                   P_residuals, S_residuals,
+                                   minlon, dlon,
+                                   minlat, dlat,
+                                   earth_rad, minr, dz)
+        elapsed_time = time.time() - start_time
+        logger.info("[evid: %d] Bootstrap error analysis took %.3f seconds" %\
+                (event.evid, elapsed_time))
         new_origin =  Origin(newlat,
                              newlon,
                              newz,
@@ -529,156 +496,91 @@ class Locator:
                              evid=event.evid,
                              nass=len(event.arrivals),
                              ndef=len(arrival_times))
-        #print event.lat - newlat, event.lon - newlon, event.depth - newz, sqrt((event.lat - newlat)**2 + (event.lon - newlon)**2)
+        emodel = Emodel(emodelx, emodely, emodelz, emodelt)
         cfg_dict = {'earth_radius': earth_rad,\
                     'tt_map_dir': tt_map_dir,\
                     'propagation_grid': self.propagation_grid}
         logger.debug('[evid: %d] Updating predicted arrival times.' %\
                 event.evid)
-        new_origin.update_predarr_times(cfg_dict, predicted_travel_times)
+        print new_origin.lat, new_origin.lon, new_origin.depth
+        #new_origin.update_predarr_times(cfg_dict, predicted_travel_times)
         logger.debug('[evid: %d] Predicted arrival times updated.' %\
                 event.evid)
-        return new_origin, origerr
+        return new_origin, emodel, remark
 
-    def get_subgrid_loc_new(self, ix, iy, iz, arrivals, pred_tts, li, qlon, qlat, qdep):
+    def get_subgrid_loc_new(self,
+                            ix,
+                            iy,
+                            iz,
+                            arrivals,
+                            pred_tts,
+                            li,
+                            qlon,
+                            qlat,
+                            qdep):
         '''
         NEEDS TO BE UPDATED
         '''
 #Test least squares on real data
-        #stas = [arrival.sta for arrival in arrivals]
-        #P_arrivals = [arrival for arrival in arrivals if arrival.phase == 'P']
-        #S_arrivals = [arrival for arrival in arrivals if arrival.phase == 'S']
         arrival_times = [arrival.time for arrival in arrivals]
-        #P_arrival_times = [arrival.time for arrival in arrivals if \
-        #        arrival.phase == 'P']
-        #S_arrival_times = [arrival.time for arrival in arrivals if \
-        #        arrival.phase == 'S']
 #Calculate forward deriatives making sure that each calculation
 #involves two unique points
         ind = li.convert_to_1D(ix, iy, iz)
         t0 = array([arrival.time - pred_tts[arrival.sta][arrival.phase][ind] \
                 for arrival in arrivals]).mean()
         u = [ix, iy, iz, t0]
-        #print u[0], u[1], u[2], u[3]
-        #Ptt000 = array([pred_tts[arrival.sta]['P'][ind] for arrival in \
-        #        P_arrivals])
-        #Stt000 = array([pred_tts[arrival.sta]['S'][ind] for arrival in \
-        #        S_arrivals])
         tt000 = array([pred_tts[arrival.sta][arrival.phase][ind] for arrival in\
                 arrivals])
         if ix == li.nx - 1:
-        #    Pdt_dx = None
-        #    Sdt_dx = None
             dt_dx = None
         else:
             ind = li.convert_to_1D(ix + 1, iy, iz)
-        #    Ptt100 = array([pred_tts[arrival.sta]['P'][ind] for arrival in \
-        #            P_arrivals])
-        #    Stt100 = array([pred_tts[arrival.sta]['S'][ind] for arrival in \
-        #            S_arrivals])
-        #    Pdt_dx = Ptt100 - Ptt000
-        #    Sdt_dx = Stt100 - Stt000
             tt100 = array([pred_tts[arrival.sta][arrival.phase][ind] for \
                     arrival in arrivals])
             dt_dx = tt100 - tt000
         if iy == li.ny - 1:
-        #    Pdt_dy = None
-        #    Sdt_dy = None
             dt_dy = None
         else:
             ind = li.convert_to_1D(ix, iy + 1, iz)
-        #    Ptt010 = array([pred_tts[arrival.sta]['P'][ind] for arrival in \
-        #            P_arrivals])
-        #    Stt010 = array([pred_tts[arrival.sta]['S'][ind] for arrival in \
-        #            S_arrivals])
-        #    Pdt_dy = Ptt010 - Ptt000
-        #    Sdt_dy = Stt010 - Stt000
             tt010 = array([pred_tts[arrival.sta][arrival.phase][ind] for \
                     arrival in arrivals])
             dt_dy = tt010 - tt000
         if iz == li.nz - 1:
-        #    Pdt_dz = None
-        #    Sdt_dz = None
             dt_dz = None
         else:
             ind = li.convert_to_1D(ix, iy, iz + 1)
-        #    Ptt001 = array([pred_tts[arrival.sta]['P'][ind] for arrival in \
-        #            P_arrivals])
-        #    Stt001 = array([pred_tts[arrival.sta]['S'][ind] for arrival in \
-        #            S_arrivals])
-        #    Pdt_dz = Ptt001 - Ptt000
-        #    Sdt_dz = Stt001 - Stt000
             tt001 = array([pred_tts[arrival.sta][arrival.phase][ind] for \
                     arrival in arrivals])
             dt_dz = tt001 - tt000
 #Calculate backward derivatives making sure that each calculation
 #involves two unique points
         if ix == 0:
-        #    Pbdt_dx = None
-        #    Sbdt_dx = None
             bdt_dx = None
         else:
             ind = li.convert_to_1D(ix - 1, iy, iz)
-        #    Pbtt100 = array([pred_tts[arrival.sta]['P'][ind] for arrival in \
-        #            P_arrivals])
-        #    Sbtt100 = array([pred_tts[arrival.sta]['S'][ind] for arrival in \
-        #            S_arrivals])
-        #    Pbdt_dx = Ptt000 - Pbtt100
-        #    Sbdt_dx = Stt000 - Sbtt100
             btt100 = array([pred_tts[arrival.sta][arrival.phase][ind] for \
                     arrival in arrivals])
             bdt_dx = tt000 - btt100
         if iy == 0:
-        #    Pbdt_dy = None
-        #    Sbdt_dy = None
             bdt_dy = None
         else:
             ind = li.convert_to_1D(ix, iy - 1, iz)
-        #    Pbtt010 = array([pred_tts[arrival.sta]['P'][ind] for arrival in \
-        #            P_arrivals])
-        #    Sbtt010 = array([pred_tts[arrival.sta]['S'][ind] for arrival in \
-        #            S_arrivals])
-        #    Pbdt_dy = Ptt000 - Pbtt010
-        #    Sbdt_dy = Stt000 - Sbtt010
             btt010 = array([pred_tts[arrival.sta][arrival.phase][ind] for \
                     arrival in arrivals])
             bdt_dy = tt000 - btt010
         if iz == 0:
-        #    Pbdt_dz = None
-        #    Sbdt_dz = None
             bdt_dz = None
         else:
             ind = li.convert_to_1D(ix, iy, iz - 1)
-        #    Pbtt001 = array([pred_tts[arrival.sta]['P'][ind] for arrival in \
-        #            P_arrivals])
-        #    Sbtt001 = array([pred_tts[arrival.sta]['S'][ind] for arrival in \
-        #            S_arrivals])
-        #    Pbdt_dz = Ptt000 - Pbtt001
-        #    Sbdt_dz = Stt000 - Sbtt001
             btt001 = array([pred_tts[arrival.sta][arrival.phase][ind] for \
                     arrival in arrivals])
             bdt_dz = tt000 - btt001
 #Calculate central derivative (average) ensuring each independant
 #derivative was calculated using two unique points.
-        #Pdt_dx = [deriv for deriv in (Pdt_dx, Pbdt_dx) if deriv != None]
-        #Pdt_dx = sum(Pdt_dx) / len(Pdt_dx)
-        #Sdt_dx = [deriv for deriv in (Sdt_dx, Sbdt_dx) if deriv != None]
-        #Sdt_dx = sum(Sdt_dx) / len(Sdt_dx)
-        #dt_dx = append(Pdt_dx, Sdt_dx)
         dt_dx = [deriv for deriv in (dt_dx, bdt_dx) if deriv != None]
         dt_dx = sum(dt_dx) / len(dt_dx)
-        #Pdt_dy = [deriv for deriv in (Pdt_dy, Pbdt_dy) if deriv != None]
-        #Pdt_dy = sum(Pdt_dy) / len(Pdt_dy)
-        #Sdt_dy = [deriv for deriv in (Sdt_dy, Sbdt_dy) if deriv != None]
-        #Sdt_dy = sum(Sdt_dy) / len(Sdt_dy)
-        #dt_dy = append(Pdt_dy, Sdt_dy)
         dt_dy = [deriv for deriv in (dt_dy, bdt_dy) if deriv != None]
         dt_dy = sum(dt_dy) / len(dt_dy)
-        #Pdt_dz = [deriv for deriv in (Pdt_dz, Pbdt_dz) if deriv != None]
-        #Pdt_dz = sum(Pdt_dz) / len(Pdt_dz)
-        #Sdt_dz = [deriv for deriv in (Sdt_dz, Sbdt_dz) if deriv != None]
-        #Sdt_dz = sum(Sdt_dz) / len(Sdt_dz)
-        #dt_dz = append(Pdt_dz, Sdt_dz)
         dt_dz = [deriv for deriv in (dt_dz, bdt_dz) if deriv != None]
         dt_dz = sum(dt_dz) / len(dt_dz)
 #Build and condition residual vector
@@ -701,7 +603,6 @@ class Locator:
 
 #Compute updated travel times
         u_prime = array([ix, iy, iz, t0]) + delta_u
-        #print u_prime[0], u_prime[1], u_prime[2], u_prime[3]
 
         tt_updated_temp = tt000 + (A * delta_u).sum(axis=1)
         tt_updated = {}
@@ -713,7 +614,6 @@ class Locator:
             i += 1
 
 #calculate new set of residuals
-        #residuals = arrival_times - (u_prime[3] + [tt_updated[sta] for sta in stas])
         residuals = arrival_times - (u_prime[3] + \
                 [tt_updated[arrival.sta][arrival.phase] \
                 for arrival in arrivals])
@@ -725,7 +625,6 @@ class Locator:
                     #this should probably be zeros.
                     dt_dx = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix + 1, iy, iz)
-                #dt_dx = array([pred_tts[sta][ind] for sta in stas]) - tt000
                 dt_dx = array([pred_tts[arrival.sta][arrival.phase][ind] for \
                         arrival in arrivals]) - tt000
             elif delta_u[0] < 0:
@@ -733,7 +632,6 @@ class Locator:
                     #this should probably be zeros.
                     dt_dx = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix - 1, iy, iz)
-                #dt_dx = tt000 - array([pred_tts[sta][ind] for sta in stas])
                 dt_dx = tt000 - \
                         array([pred_tts[arrival.sta][arrival.phase][ind] for \
                         arrival in arrivals])
@@ -746,7 +644,6 @@ class Locator:
                     #this should probably be zeros.
                     dt_dy = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix, iy + 1, iz)
-                #dt_dy = array([pred_tts[sta][ind] for sta in stas]) - tt000
                 dt_dy = array([pred_tts[arrival.sta][arrival.phase][ind] for \
                         arrival in arrivals]) - tt000
             elif delta_u[1] < 0:
@@ -754,7 +651,6 @@ class Locator:
                     #this should probably be zeros.
                     dt_dy = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix, iy - 1, iz)
-                #dt_dy = tt000 - array([pred_tts[sta][ind] for sta in stas])
                 dt_dy = tt000 - \
                         array([pred_tts[arrival.sta][arrival.phase][ind] for \
                         arrival in arrivals])
@@ -767,7 +663,6 @@ class Locator:
                     #this should probably be zeros.
                     dt_dz = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix, iy, iz + 1)
-                #dt_dz = array([pred_tts[sta][ind] for sta in stas]) - tt000
                 dt_dz = array([pred_tts[arrival.sta][arrival.phase][ind] for \
                         arrival in arrivals]) - tt000
             elif delta_u[2] < 0:
@@ -775,7 +670,6 @@ class Locator:
                     #this should probably be zeros.
                     dt_dz = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix, iy, iz - 1)
-                #dt_dz = tt000 - array([pred_tts[sta][ind] for sta in stas])
                 dt_dz = tt000 - \
                         array([pred_tts[arrival.sta][arrival.phase][ind] for \
                         arrival in arrivals])
@@ -786,7 +680,6 @@ class Locator:
             delta_u, residues, rank, sigma = linalg.lstsq(A, residuals)
 #Compute updated travel times
             u_prime = u_prime + delta_u
-            #print u_prime[0], u_prime[1], u_prime[2], u_prime[3]
             tt_updated_temp = array([tt_updated[arrival.sta][arrival.phase] \
                     for arrival in arrivals]) + (A * delta_u).sum(axis=1)
             tt_updated = {}
@@ -805,13 +698,125 @@ class Locator:
                 return None
             j += 1
             delta_residuals = residuals.std() - residuals_prime.std()
-            #delta_r = sqrt(sum([x ** 2 for x in delta_u[:2]]))
             if delta_residuals < self.sdobs_stable_thresh:
-            #if delta_r < 0.02:
                 logger.debug("sdobs stablilized below threshold - %f" % self.sdobs_stable_thresh)
                 break
             residuals = residuals_prime
-        return u_prime, tt_updated, residuals.std()
+        P_residuals, S_residuals = [], []
+        for i in range(len(arrivals)):
+            if arrivals[i].phase == 'P':
+                P_residuals += [residuals[i]]
+            else:
+                S_residuals += [residuals[i]]
+        return u_prime, tt_updated, P_residuals, S_residuals
+
+    def run_bootstrap(self,
+                      ominx, ominy, ominz,
+                      qx, qy, qz,
+                      arrivals,
+                      pred_tts,
+                      li,
+                      qlon, qlat, qdep,
+                      P_residuals, S_residuals,
+                      minlon, dlon,
+                      minlat, dlat,
+                      earth_rad, minr, dz):
+        SUBGRID_NX, SUBGRID_NY, SUBGRID_NZ = 10, 10, 5 #THIS NEEDS TO BE MOVED TO A PARATMER FILE!
+        PLOT = False
+        if PLOT:
+            import matplotlib.pyplot as plt
+        #for arrival
+        locs = []
+        i, fcnt, tcnt = 0, 0, 0
+        while i < self.n_bootsamp:
+            tcnt += 1.
+            synth_arrs = []
+            for arrival in arrivals:
+                if arrival.phase == 'P':
+                    residuals = P_residuals
+                else:
+                    residuals = S_residuals
+                time = arrival.time + random.choice(residuals)
+                synth_arrs += [Arrival(arrival.sta,
+                                       time,
+                                       arrival.phase,
+                                       arrival.chan)]
+            #minx, miny, minz, otime, ha = grid_search_abs(qx, qy, qz,
+            #                                            synth_arrs,
+            #                                            pred_tts,
+            #                                            li,
+            #                                            subgrid=(minx, miny, minz))
+            minx, miny, minz, otime, ha = grid_search(qx, qy, qz,
+                                                        synth_arrs,
+                                                        pred_tts,
+                                                        li,
+                                                        subgrid=(ominx, SUBGRID_NX,
+                                                                 ominy, SUBGRID_NY,
+                                                                 ominz, SUBGRID_NZ))
+            result = self.get_subgrid_loc_new(minx, miny, minz,
+                                              synth_arrs,
+                                              pred_tts,
+                                              li,
+                                              qlon, qlat, qdep)
+            if result:
+                u, tt_updated, P_residuals, S_residuals = result
+                i += 1
+            else:
+                fcnt += 1.
+                continue
+            newloc = [newlon, newlat, newz] = \
+                    [minlon + u[0] * dlon,
+                            minlat + u[1] * dlat,
+                            earth_rad - minr + u[2] * dz]
+            if newloc[2] < 0:
+                newloc[2] = 0.0
+                newz =  0.0
+            otime = u[3]
+            #print newloc, otime
+            locs += [(newlon, newlat, newz, otime)]
+            #print minx, miny, minz, otime, ha, newlon, newlat, newz
+        if fcnt > 0:
+            remark = Remark('%5.1f %% of bootstrap iteration(s) failed to '\
+                    'converge.' % ((fcnt / tcnt) * 100.))
+        else:
+            remark = None
+        sigma_lon = np.array([loc[0] for loc in locs]).std()
+        sigma_lat = np.array([loc[1] for loc in locs]).std()
+        sigma_depth = np.array([loc[2] for loc in locs]).std()
+        sigma_time = np.array([loc[3] for loc in locs]).std()
+        emodelx = 2 * sigma_lon * 111
+        emodely = 2 * sigma_lat * 111
+        emodelz = sigma_depth
+        emodelt = sigma_time
+        #print "sigma_lon:\t", sigma_lon
+        #print "EW error:\t", 2 * sigma_lon * 111000
+        #print "sigma_lat:\t", sigma_lat
+        #print "NS error:\t", 2 * sigma_lat * 111000
+        #print "sigma_depth:\t", sigma_depth
+        #print "sigma_time:\t", sigma_time
+        if PLOT:
+            fig = plt.figure()
+            ax = fig.add_subplot(1, 1, 1)
+            n, bins, patches = ax.hist([loc[0] for loc in locs], 50)
+            ax.set_xlabel('Longitude Bin [degrees]')
+            ax.set_ylabel('Count')
+            fig = plt.figure()
+            ax = fig.add_subplot(1, 1, 1)
+            n, bins, patches = plt.hist([loc[1] for loc in locs], 50)
+            ax.set_xlabel('Latitude Bin [degrees]')
+            ax.set_ylabel('Count')
+            fig = plt.figure()
+            ax = fig.add_subplot(1, 1, 1)
+            n, bins, patches = plt.hist([loc[2] for loc in locs], 50)
+            ax.set_xlabel('Depth Bin [km]')
+            ax.set_ylabel('Count')
+            fig = plt.figure()
+            ax = fig.add_subplot(1, 1, 1)
+            n, bins, patches = plt.hist([loc[3] for loc in locs], 50)
+            ax.set_xlabel('Time Bin [s]')
+            ax.set_ylabel('Count')
+            plt.show()
+        return emodelx, emodely, emodelz, emodelt, remark
 
     def get_subgrid_loc(self, ix, iy, iz, arrivals, pred_tts, li):
         '''
@@ -924,6 +929,7 @@ def uniq(input):
             output.append(x)
     return output
 
+
 class Station:
     '''
     A container class for station location data.
@@ -954,12 +960,11 @@ class Station:
         ret += 'elev:\t\t%s\n' % self.elev
         return ret
 
-class Event():
+class Event:
     '''
     A container class for earthquake event data. Mirrors the Event
     table of the CSS3.0 databse schema.
     '''
-    #def __init__(self, time, lat, lon, depth, mag, magtype=None, evid=None):
     def __init__(self,
                  prefor=None,
                  evid=None,
@@ -1323,6 +1328,32 @@ class Event():
                                 algorithm=algorithm,
                                 commid=commid,
                                 lddate=lddate)]
+
+class Remark:
+    def __init__(self, remark, lineno=1, commid=None, lddate=None):
+        self.remark = remark
+        self.lineno = lineno
+        self.commid = commid
+        self.lddate = lddate
+
+class Emodel:
+    def __init__(self,
+                 emodelx,
+                 emodely,
+                 emodelz,
+                 emodelt,
+                 orid=None,
+                 lddate=None):
+        self.orid = orid
+        self.emodelx = emodelx
+        self.emodely = emodely
+        self.emodelz = emodelz
+        self.emodelt = emodelt
+        self.lddate = lddate
+
+    def set_orid(self, orid):
+        self.orid = orid
+
 class Origerr():
     '''
     A container class for earthquake event data. Mirrors the Origerr
@@ -1798,19 +1829,35 @@ class Arrival():
         ret += 'predarr:\t\t%s\n' % self.predarr
         return ret
 
-def grid_search_abs(qx, qy, qz, arrivals, pred_tts, linear_index):
+def grid_search_abs(qx, qy, qz,
+                    arrivals,
+                    pred_tts,
+                    linear_index,
+                    subgrid=False):
     '''
     Find the minimum of the absolute value of the calculated origin
     time following Ben-Zion et al., 1992 (JGR)
     '''
+#Define the number of nodes extending in either direction from the best
+#fitting node along each axis.
+    SUBGRID_NX, SUBGRID_NY, SUBGRID_NZ = 5, 5, 5 #THIS NEEDS TO BE MOVED TO A PARATMER FILE!
     best_misfit = float('inf')
     nx = len(qx)
     ny = len(qy)
     nz = len(qz)
     stas = [arrival.sta for arrival in arrivals]
-    for i in range(len(qx)):
-        for j in range(len(qy)):
-            for k in range(len(qz)):
+    if subgrid:
+        minx, miny, minz = subgrid
+        irange = range(max([minx - SUBGRID_NX, 0]), min([minx + SUBGRID_NX + 1, nx]))
+        jrange = range(max([miny - SUBGRID_NY, 0]), min([miny + SUBGRID_NY + 1, ny]))
+        krange = range(max([minz - SUBGRID_NZ, 0]), min([minz + SUBGRID_NZ + 1, nz]))
+    else:
+        irange = range(nx)
+        jrange = range(ny)
+        krange = range(nz)
+    for i in irange:
+        for j in jrange:
+            for k in krange:
                 index = linear_index.convert_to_1D(i, j, k)
                 if min([pred_tts[arrival.sta][arrival.phase][index] for \
                         arrival in arrivals]) < 0:
@@ -1830,39 +1877,3 @@ def grid_search_abs(qx, qy, qz, arrivals, pred_tts, linear_index):
                     x, y, z = qx[i], qy[j], qz[k]
                     best_origin_time = origin_time
     return x, y, z, best_origin_time, best_misfit
-
-#def grid_search_abs(self, arrsta, qx, qy, qz, arrvec, li):
-##Find the minimum of the absolute value of the
-##        calculated origin time following Ben-Zion et al., 1992 (JGR)
-##   sta          list of station names; strings
-##   qx,qy,qz    vectors of indices to search through
-##   arrvec      vector of absolute arrivals in the same order as sta
-##   li          Linear_index class for the entire traveltime grid
-#    from numpy import array,indices #AAA MAY NEED TO DELETE
-#    best_misfit=100000.0
-#    search_inds=LinearIndex(len(qx),len(qy),len(qz))
-#    for ix in range(len(qx)):  #Loop over the three vectors, searching every point
-#        for iy in range(len(qy)):
-#            for iz in range(len(qz)):
-#                calctt=array([]); #initialize the calculated tt vector
-#                ind=li.get_1D(qx[ix],qy[iy],qz[iz]) #Find the vector index
-#                calctt=read_tt_vector(arrsta,
-#                                      ind,
-#                                      self.misc['tt_map_dir']) #Make traveltime vector from calculated times
-#                if min(calctt)<0: #If the traveltime <0, this gridpoint is null
-#                    continue
-#                #Compute misfit measurements
-#                #mini=calctt.argmin() #We will compute the origin time from the smallest traveltime Following Pavlis et al., 2004
-#                orivec=arrvec-calctt #Take the difference
-#                #otime=orivec[mini] #Origin time 
-#                otime=orivec.mean()
-#                res=orivec-otime
-#                #weight=1/abs(res)/(1/abs(res)).sum()  #We can weight by e.g., residual here
-#                #misfit=(abs(res)*weight).sum() #Weighted absolute value
-#                misfit=(abs(res)).sum() #Absolute value
-#                if misfit<best_misfit:
-#                    best_misfit=misfit
-#                    minx,miny,minz=qx[ix],qy[iy],qz[iz]
-#                    best_ot=otime
-#    return minx,miny,minz,best_ot,best_misfit
-#    #return minx,miny,minz,origin_mean,misfit

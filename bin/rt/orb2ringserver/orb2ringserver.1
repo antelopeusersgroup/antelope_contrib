@@ -1,0 +1,133 @@
+.TH ORB2RINGSERVER 1 2012-11-15 "Antelope Contrib SW" "User Commands"
+.SH NAME
+orb2ringserver \- copy data from an orb to a ringserver as miniSEED
+.SH SYNOPSIS
+.nf
+\fBorb2ringserver\fP  [-v]
+    [-f \fIflush-latency\fP]
+    [-R \fIreconnect-interval\fP]
+    [-m \fImatch\fP]
+    [-r \fIreject\fP]
+    [-s \fIpktid\fP]
+    [-S \fIstatefile[:pkts]\fP]
+    \fIorbserver\fP \fIringserver\fP
+
+.fi
+.SH SUPPORT
+.br
+Contributed: NO BRTT support -- please contact author.
+.SH DESCRIPTION
+\fBorb2ringserver\fP collects selected time series packets from an
+orbserver(1), converts the data to 512-byte miniSEED records and
+transmits the records to a ringserver (via DataLink).  If the orb
+packet already contains a 512-byte miniSEED record it is forwarded
+as-is.  The ringserver program is commonly configured to serve the
+data via the SeedLink protocol.
+.LP
+Due to the differences between ORB packet lengths and miniSEED
+records, the program maintains a small internal buffer for each time
+series.  This allows the program to create full and efficient miniSEED
+records, but also introduces a slight delay or latency in the data
+transmission.  The amount of delay depends on the sample rate of the
+data and the compressability of the series, for most purposes it is
+inconsequential.  If the original packet from the ORB is already a
+512-byte miniSEED record no delay is incurred.
+.LP
+The orbserver and ringserver are specified as \fIhost\fP:\fIport\fP.
+Both host and port may be empty (blank), in which case \fIhost\fP
+defaults to \fBlocalhost\fP, and port defaults to \fB6510\fP (for the
+orbserver) or \fB16000\fP (for the ringserver).  The orbserver port
+may be either an explicit number, or an alphanumeric name which is
+looked up in the file \fI$ANTELOPE/data/pf/orbserver_names.pf\fP.
+.LP
+
+
+.SH OPTIONS
+.IP "-v      "
+Increase the verbosity, this flag may be specified multiple times.
+
+.IP "-f latency"
+Flush data from internal buffers when no new packets have arrived for
+\fIlatency\fP seconds, default is 500 seconds.  The latency check is
+applied to each channel/stream individually.  This flushing mechanism
+ensures that data do not remain in the buffers when the channel has
+stopped flowing.  The mechanism can be disabled by specifying a value
+of 0.
+
+.IP "-R interval"
+If the connection to the destination ringserver is broken attempt to
+reconnect at \fIinterval\fP in seconds, default is 60 seconds.  If the
+interval is 0 no reconnections are attempted and the program will exit
+if the connection is broken.
+
+.IP "-m match"
+.IP "-r reject"
+Copy only packets which \fImatch\fP the regular expression \fImatch\fP
+and do not \fImatch\fP the regular expression \fIreject\fP.
+
+.IP "-s pktid|time"
+Start after the particular \fIpktid\fP or \fItime\fP.  Normally the
+input is positioned to the most recent packet on the orbserver or
+positioned based on a state file, and packets after that packet are
+received.  If a \fIpktid\fP or \fItime\fP is specified, and \fIno
+pre-existing state file is used for positioning\fP, the input is
+positioned to the first packet after the specified packet ID or time,
+and packets after that time are received.  The \fItime\fP may be
+specified in a wide variety of formats understood by str2epoch(3) or
+epoch(1).  If the format includes spaces, you must enclose the time
+\fIin\fP quotes.  If the option is all digits it is assumed to be a
+packet ID, otherwise a time.
+
+.IP "-S statefile[:pkts]"
+If the -S option is specified the time and \fIpktid\fP of the last
+packet received are saved to the \fIstatefile\fP file whenever the
+program is terminated.  When the program is restarted, (if the -S
+option is specified), this file will be read and used to resume the
+connection such that there are no gaps.  If a \fIpkts\fP integer is
+specified, the \fIstatefile\fP will be written every number of
+\fIpkts\fP processes to mitigate issues related to unexpected crashes.
+
+.SH EXAMPLE
+.in 2c
+.nf
+%\fB orb2orb -m 'IU.*' -S state/orb2ringserver -v localhost:6510 localhost:16000\fP
+orb2ringserver: orb2ringserver version: 0.1
+orb2ringserver: Connected to orbserver at localhost:6510
+orb2ringserver: Resuming ORB position from state file
+orb2ringserver: Connected to ringserver at localhost:16000
+ ...
+.fi
+.in
+.SH "USAGE"
+This program generates 512-byte miniSEED records with the expectation
+that the destination ringserver can easily be configured to serve data
+via the SeedLink protocol.  The ringserver nor the DataLink protocol
+are limited to miniSEED or 512-bytes, but this is expected to be the
+most common use for this software.
+
+.nf
+The ringserver software is available from:
+\fBhttps://seiscode.iris.washington.edu/projects/ringserver\fP
+.fi
+
+.SH "BUGS AND CAVEATS"
+The internal buffering of time series data can add latency to the data
+streams.  The amount of latency added depends on the sample rate and
+compression of the time series.  For relatively high rate data (>20
+sps) the amount of latency added is quite small for most purposes.
+.LP
+Normally when a termination signal is received the program will flush
+it's internal buffers and send all remaining data to the destination
+ringserver.  This process will likely create "unfilled" miniSEED
+records, this is a very minor issue in most cases.
+.LP
+If a termination signal is received while the connection to the
+destination ringserver is broken the probgram will exit without
+flusing it's internal buffer.  Additionally, the read position of the
+orbserver is saved as the last orb packet receioved, which is not
+necessarily related to the last data transmitted to the ringsever.  In
+short, this scenario will likely generate a gap in all time series.
+.SH AUTHOR
+Chad Trabant
+.br
+IRIS Data Management Center

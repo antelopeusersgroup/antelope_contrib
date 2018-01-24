@@ -17,7 +17,7 @@ info &Literal{
 category    OBSIP
 configuration   T-40 Single-Sided
 
-description Nanometrics Trillium 40 Single Sided
+description T40 Single Sided
 dfile   trillium_40_obsip_sio
 
 rsptype                 V       # velocity instrument

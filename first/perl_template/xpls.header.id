@@ -1,0 +1,6 @@
+#!/bin/bash
+args=("$@")
+. /opt/antelope/$id/setup.sh
+/opt/antelope/$perl/bin/perl -T -- - "${args[@]}" << "AnTeLoPeWrApPeR"
+use lib "/opt/antelope/$id/data/perl";
+use lib "/opt/antelope/$id/contrib/data/perl";

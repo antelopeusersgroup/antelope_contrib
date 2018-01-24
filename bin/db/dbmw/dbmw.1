@@ -1,0 +1,179 @@
+.TH DBMW 1
+.SH dbmw
+dbmw \- moment magnitude calculation from multi-taper spectral analysis
+.SH SYNOPSIS
+.nf
+\fBdbmw\fP \fB[-h] [-c chan_subset] [-e event_subset] [-d] [-p parameter_file]
+[-r reject] [-v] [-x dist]\fP \fIdb [velocity_model]\fP
+.fi
+.SH DESCRIPTION
+
+\fBdbmw\fP will estimate moment magnitude from the low-frequency asymptote of
+stacked P and S wave spectra determined using multi-taper spectral analysis
+techniques. The method implemented in this program is documented in
+Ross et al. 2016. See REFERENCES section for external documentation and
+DEPENDENCIES section for external dependencies.
+
+.SH OPTIONS
+.IP -h
+.fi
+Print help.
+.IP "-c chan_subset"
+.fi
+Channel subset expression to select stations to use in magnitude calculation.
+.IP -d
+.fi
+Only use defining phases in magnitude calculation.
+.IP "-e event_subset"
+.fi
+Event subset expression to select events to calculate magnitude for.
+.IP -p parameter_file
+.fi
+Parameter file.
+.IP "-r reject_expression"
+.fi
+Station rejection expression.
+.IP -v
+.fi
+Verbose flag.
+.IP "-x distance"
+.fi
+Minimum hypocentral distance allowed for stations used in magnitude calculation.
+.SH "PARAMETER FILE"
+.IP sitedir
+.fi
+Site directory with installations of Python module dependencies.
+.IP max_input_q_size
+.fi
+Maximum number of unprocessd origins on the input queue at a time.
+.IP max_output_q_size
+.fi
+Maximum number of processed origins on the output queue at a time.
+.IP n_threads
+.fi
+Number of processing threads.
+.IP trace_twin
+.fi
+Length (in seconds) of trace data time window around phase arrival to load.
+.IP spec_twin
+.fi
+Length (in seconds) of trace data time window used to calculate spectra.
+.IP density
+.fi
+Rock density, a uniform value is used.
+.IP water_level
+.fi
+Water level fraction used for instrument response deconvolution.
+.IP n_min_phase
+.fi
+Minimum number of phases required to make a measurement.
+.IP freq_max
+.fi
+Maximum frequency used in fitting process.
+.SH FILES
+.IP \fBvelocity_model\fP
+
+.ft R
+.in 2c
+.nf
+
+.ne 12
+
+This is the velocity/attentuation structure model to be used in correcting for
+source and propagation effects. Format is white-space separated fields; depth to
+top of layer, S-wave velocity, P-wave velocity, S-wave Q-value, P-wave Q-value.
+The default velocity model file is installed in $ANTELOPE/data/velocity/socal
+and is as follows:
+
+0.0     2.76471     4.7000      24      17
+1.0     2.93582     4.9909      36      24
+1.5     3.02138     5.1363      106     52
+2.0     3.10694     5.2818      106     52
+5.5     3.18        5.50        1000    1000
+16.0    3.64        6.30        1000    1000
+32.0    3.87        6.70        1000    1000
+122     4.50        7.798       1000    1000
+
+.nf
+.fi
+.ft R
+
+.SH EXAMPLE
+.ft R
+.in 2c
+.nf
+
+.ne 12
+
+[mcwhite@whitehawk-CentOS test]$ \fBdbmw test\fP
+2016202 12:19:32::INFO:: Starting...
+2016202 12:19:32::INFO:: Getting site metadata.
+2016202 12:19:32::INFO:: Initializing thread
+2016202 12:19:32::INFO:: Starting origin_reap_thread.
+2016202 12:19:32::INFO:: Starting origin_process_thread.
+2016202 12:19:33::INFO:: 23: 18 P spectra, 18 S spectra, 6 P 6 S, orbassoc_l
+2016202 12:19:33::INFO:: Finished calculating spectra for all stations
+2016202 12:19:33::INFO:: Fitting model to stack
+2016202 12:19:37::INFO:: Finished fitting model..best results are:
+2016202 12:19:37::INFO:: phase=P, Mw=2.04, fc=3.34, [2.02, 2.05], VR=1.00
+2016202 12:19:37::INFO:: Finished calculating spectra for all stations
+2016202 12:19:37::INFO:: Fitting model to stack
+2016202 12:19:41::INFO:: Finished fitting model..best results are:
+2016202 12:19:41::INFO:: phase=S, Mw=1.73, fc=3.34, [1.72, 1.74], VR=1.00
+2016202 12:19:41::INFO:: 2.03508361333
+2016202 12:19:41::INFO:: 1.72970003275
+2016202 12:19:41::INFO:: 23 Mw=1.88
+2016202 12:19:41::INFO:: 24: 18 P spectra, 18 S spectra, 6 P 6 S, orbassoc_l
+2016202 12:19:42::INFO:: Finished calculating spectra for all stations
+2016202 12:19:42::INFO:: Fitting model to stack
+2016202 12:19:45::INFO:: Finished fitting model..best results are:
+2016202 12:19:45::INFO:: phase=P, Mw=1.56, fc=12.20, [1.52, 1.60], VR=1.00
+2016202 12:19:45::INFO:: Finished calculating spectra for all stations
+2016202 12:19:45::INFO:: Fitting model to stack
+2016202 12:19:49::INFO:: Finished fitting model..best results are:
+2016202 12:19:49::INFO:: phase=S, Mw=1.62, fc=3.55, [1.58, 1.66], VR=1.00
+2016202 12:19:49::INFO:: 1.55854234326
+2016202 12:19:49::INFO:: 1.62286254088
+2016202 12:19:49::INFO:: 24 Mw=1.59
+
+
+[mcwhite@whitehawk-CentOS test]$ \fBdbmw -c 'chan =~ /..Z/' -e 'evid == 23' test\fP
+2016202 14:23:10::INFO:: Starting...
+2016202 14:23:10::INFO:: Getting site metadata.
+2016202 14:23:10::INFO:: Initializing thread
+2016202 14:23:10::INFO:: Starting origin_reap_thread.
+2016202 14:23:10::INFO:: Starting origin_process_thread.
+2016202 14:23:10::INFO:: 23: 18 P spectra, 0 S spectra, 6 P 0 S, orbassoc_l
+2016202 14:23:10::INFO:: Finished calculating spectra for all stations
+2016202 14:23:10::INFO:: Fitting model to stack
+2016202 14:23:14::INFO:: Finished fitting model..best results are:
+2016202 14:23:14::INFO:: phase=P, Mw=2.04, fc=3.34, [2.02, 2.05], VR=1.00
+2016202 14:23:14::INFO:: 2.03508361333
+2016202 14:23:14::INFO:: 23 Mw=2.04
+
+.nf
+.fi
+.ft R
+
+.SH REFERENCES
+.nf
+Ross, Z.E., Y. Ben-Zion, M.C. White, F.L. Vernon (2016). Analysis of earthquake
+body wave spectra for potency and magnitude values: Implications for magnitude
+scaling relations \fIGeophy. J. Int. (in review)\fP.
+.fi
+
+.SH DEPENDENCIES
+External dependencies (Python packages) not included:
+.IP "\fBscipy\fP - http://www.scipy.org"
+.IP "\fBnitime\fP - http://www.nipy.org/nitime"
+
+.SH AUTHOR
+.ft R
+.in 2c
+.nf
+Zachary Ross
+California Institute of Technology
+
+Malcolm White
+University of Southern California
+malcolcw@usc.edu

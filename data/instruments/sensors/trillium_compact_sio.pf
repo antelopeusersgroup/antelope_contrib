@@ -10,7 +10,7 @@ See also: http://www.nanometrics.ca/products/trillium-compact-obs
 category    Nanometrics
 configuration   trillium_compact_sio
 
-description trillium_compact_OBS_SIO
+description T-compact OBS-SIO
 dfile   TRcpt        #  if sensitivity varies from sensor to ...
                  #  sensor put sensor-specific sensitivities in this directory
 

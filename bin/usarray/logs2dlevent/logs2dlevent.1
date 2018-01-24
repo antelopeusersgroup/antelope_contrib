@@ -1,0 +1,197 @@
+.TH logs2dlevent 1 "$Date$"
+
+.SH NAME 
+logs2dlevent \- parse logs files for particular phrases and add to a db table
+
+.SH SYNOPSIS
+.nf
+logs2dlevent [-p pf] [-d 'time' ] [-n ndays] [-v] [-l match_logname] [-r reject_logs] logdir db
+.fi
+
+.SH DESCRIPTION
+\fBlogs2dlevent\fP examines logs written to disk with \fBorb2logs\fP(1) to
+find rows which match a regular expression.  The simple match (and reject) 
+expressions are kept in a parameter file, logs2dlevent.pf.  The matching lines
+are placed as a dlcomment into a dlevent table and tagged with a dlevtype.  The
+program \fBdlreport\fP(1) can be run to summarize the events.
+
+.SH OPTIONS
+
+.IP "-p pf"
+Parameter file name.  Default is logs2dlevent.pf.
+.IP "-d time"
+This is the start time for the review.  The default is to start with the 
+previous complete day.
+.IP "-n ndays"
+This is the total number of days of logs to review.  For instance, if you wish
+to review the previous week of logs, not including the current (incomplete) day,
+set -n to 7.  The default is 1 day.
+.IP "-l match_logname"
+Regular expression to reduce the number of files/directories to search. The default 
+is to search only files with "log" in the name.  You may wish to use an expression that
+would filter out logs such as the \fItargetname\fP/log packets produced by \fBq3302orb\fP.
+.IP "-r reject_lognames"
+Regular expression to reduce the number of files/directories to search. Files matching
+this expression are skipped/removed from processing.  The default is to remove any 
+\fIsyslog\fP and \fIelog\fP files produced by marmots as this script cannot parse
+them correctly.  
+.IP "-v"
+Verbose output.
+.IP "-V"
+Very verbose output.
+.IP "logdir"
+Directory where logs are stored as output from \fBorb2logs\fP.  The directory structure
+is assumed to be \fIlogdir\fP/%Y/%j/.
+.IP "db"
+Output db that must use the dlevent schema extension to css3.0.
+
+.SH FILES
+
+Input files to be read are assumed to look like the output from \fBorb2logs\fP.
+
+.SH PARAMETER FILE
+This is an example parameter file:
+.in 2c
+.ft CW
+.nf
+
+.ne 23
+
+
+#
+# logs2dlevent.pf 
+#
+
+match &Tbl{
+UMSG
+recenter
+massrecenter
+masslock
+massunlock
+getconfig
+getannc
+getstatus
+reboot
+}
+
+reject &Tbl{
+#Processing
+sbpwr
+Baler
+dopen
+QMASERV
+C1_UMSG
+Error
+Sending
+Issuing
+}
+
+dlevents &Arr{
+#	dlevtype	log_phrase
+	service		UMSG
+	massrecenter	recenter
+	massrecenter	massrecenter
+	sensor_lock	masslock
+	sensor_unlock	massunlock
+	sensor_cal   	calibration
+	request_config	getconfig
+	request_annc	getannc
+	request_status	getstatus
+	baler		Baler
+	reboot		reboot
+}
+
+convert_umsg &Arr{
+# UMSG_comment_phrase	dlevtype
+        massrecenter    massrecenter
+        recenter        massrecenter
+        center          massrecenter
+        MRC             massrecenter
+        mrc             massrecenter
+        unlock          sensor_unlock
+        lock            sensor_lock
+        Cal             sensor_cal
+} 
+
+.fi
+.ft P
+.in
+.LP
+Which log strings are kept are controlled by:
+.IP \fImatch\fP
+This is a list of regular expressions that will be searched for in the logs.
+.IP \fIreject\fP
+This is a list of regular expressions that will be rejected from any previous matches
+in the logs.  For instance, based on the default parameter file, if there is a message in the 
+logs that has both "massrecenter" and "Sending", that line will be excluded from the output 
+database.
+.LP
+How the strings are mapped to dlevtypes is controlled by:
+.IP \fIdlevents\fP
+This is a mapping of a dlevtype to what is found in the \fImatch\fP.
+.IP \fIconvert_umsg\fP
+This is an attempt to map information from a freeform "UMSG" into a dlevtype.   
+
+.SH EXAMPLE
+.LP
+The intent for this script was to run it as a nightly cronjob on a real-time 
+system to help summarize various interactions with the datalogger (currently 
+only tested on a Q330).  It assumes that interactions via Willard are noted
+with a UMSG or via output from dlcmd.  Hopefully, you can convince those who
+interact with the datalogger via a UMSG to use standard phrases... otherwise
+this script might be of little use.  If the output from dlcmd changes, this 
+script will likely be less effective.  There have been multiple changes in 
+the message format for q3302orb over the years, so results may vary depending
+on your log vintage.
+
+.LP
+A cronjob listing in rtexec.pf that runs on Thursday grabbing the previous 
+week of data might look like:
+.in 2c
+.ft CW
+.nf
+logs2dlevent	UTC  00 12 * * 4 logs2dlevent -n 7 q330logs $DB
+.fi
+.ft R
+.in
+
+.LP
+Capture information of interest from the previous year of logs, including any
+information from the current day using a locally modified log file.
+.in 2c
+.ft CW
+.nf
+logs2dlevent -n 365 -p mylogs2dlevent.pf -v q330logs year_of_logs 
+.fi
+.ft R
+.in
+
+.SH "SEE ALSO"
+.nf
+dlreport(1)
+dlcmd(1)
+.fi
+
+.SH "BUGS AND CAVEATS"
+This has only been tested on output logs from q3302orb(1).  
+.LP
+This program is very slow and very likely could be optimized.
+.LP
+The field size for the dlcomment is only 120 characters.   I do not know 
+what the limit on a UMSG size is so you may overflow the field.
+.LP
+There may be problems with the time subsetting, and crossing year boundaries:  
+neither have been thoroughly tested.
+.LP
+It may take some adjustment of the parameter file to get (or reject) various
+events that you might find interesting.
+.LP
+Greps of log files which change format over time are obviously prone to errors.  
+You may not get all of the information you want in the dlcomment field.
+.LP
+.SH AUTHOR
+.nf
+Jennifer Eakins
+ANF-IGPP-SIO-UCSD
+.fi
+

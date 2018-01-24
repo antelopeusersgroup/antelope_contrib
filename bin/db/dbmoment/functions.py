@@ -1,54 +1,370 @@
+#   Copyright (c) 2016 Boulder Real Time Technologies, Inc.
+#
+#   Written by Juan Reyes
+#
+#   This software may be used freely in any way as long as
+#   the copyright statement above is not removed.
+
+
 from __main__ import *      # Get all the libraries from parent
 
+def open_db(db):
+    '''
+    Open a database (or database pointer)
 
-def log(msg=''):
-    if not isinstance(msg, str):
-        msg = pprint(msg)
-    logger.info(msg)
+    Remember to free the return pointer later!!!
+    '''
+
+    elog.debug( 'Open db' )
+
+    # Verify if we have a string or a pointer DB object
+    if isinstance( db, datascope.Dbptr ):
+        elog.debug( 'got db pointer( %s )' % db )
+        dbview = db
+        dbview.table = datascope.dbALL
+        dbview.record = datascope.dbALL
+        dbview.field = datascope.dbALL
+    else:
+        elog.debug( 'dbopen( %s )' % db )
+        try:
+            dbview = datascope.dbopen( db, "r+" )
+        except Exception,e:
+            elog.error('Problems opening database: %s %s %s' % \
+                    (db,Exception, e) )
+
+    try:
+        # Verify this database
+        elog.debug( 'dbDBPATH => %s' % \
+                dbview.query(datascope.dbDBPATH))
+        elog.debug( 'dbDATABASE_NAME => %s' % \
+                dbview.query(datascope.dbDATABASE_NAME))
+        elog.debug( 'dbDATABASE_IS_WRITABLE => %s' % \
+                dbview.query(datascope.dbDATABASE_IS_WRITABLE))
+    except Exception,e:
+        elog.error('Problem with database [%s]: %s [%s]' % ( db, Exception,e) )
+
+    return dbview
 
 
-def debug(msg=''):
-    if not isinstance(msg, str):
-        msg = pprint(msg)
-    logger.debug(msg)
+def open_table(db, tablename=None):
+    '''
+    Open a database (or database pointer) and verify a table
+
+    Remember to free the return pointer later!!!
+    '''
+
+    elog.debug( 'Open db/table [%s]' % tablename )
+
+    dbview = open_db(db)
+
+    if not tablename:
+        return dbview
+
+    elog.debug( 'Verify table [%s]' % tablename )
+
+    tableview = dbview.lookup(table=tablename)
+
+    # Verify if we have the table
+    elog.debug( 'dbTABLE_PRESENT => %s' % \
+            tableview.query(datascope.dbTABLE_PRESENT))
 
 
-def warning(msg=''):
-    if not isinstance(msg, str):
-        msg = pprint(msg)
-    logger.warning("\t*** %s ***" % msg)
+    # Check if we have something to continue
+    if not tableview.query(datascope.dbTABLE_PRESENT):
+        elog.warning( 'Missing table [%s] in db view.' % tablename )
+
+    if not tableview.record_count:
+        elog.warning( 'EMPTY table %s' % tablename )
+
+    # Return valid view if table is present
+    return tableview
 
 
-def notify(msg=''):
-    if not isinstance(msg, str):
-        msg = pprint(msg)
-    logger.log(35,msg)
+def nice_print_results( results ,split=False, prelim='' ):
+
+    text = '*** NULL RESULTS *** '
+    text2 = '*** NULL RESULTS ***'
+
+    if  results and 'Quality' in results:
+        # First panel
+        text =  "%s %s\n" % ( results['estatus'],prelim )
+        text += "\n"
+        #text += "Location: ( {:0.2f}, {:0.2f} ) ".format( event.lat, event.lon)
+        #text += " {0} km\n".format( event.depth )
+        #text += "\n"
+        #text += "Model:     {0}\n".format( event.model )
+        text += "VarRed:    {:0.1f} %\n".format( float(results['VarRed']) )
+        text += "Mo:        {0}\n".format( results['Mo'] )
+        text += "S:%s  R:%s  D:%s\n" % \
+                ( results['Strike'], results['Rake'], results['Dip'] )
+        # Second panel
+        text2  = "Pdc:       {0:0.1f}%\n".format( float( (results['Pdc'] * 100) ) )
+        text2 += "Pclvd:     {0:0.1f}%\n".format( float( (results['Pclvd'] * 100) ) )
+        text2 += "VAR:       {0:0.1e} \n".format( float( results['Variance'] ) )
+        text2 += "Var/Pdc:   {0:0.1e} \n".format( float( results['Var/Pdc'] ) )
+        text2 += "Mxx:%0.3f  Myy:%0.3f\n" % \
+                (float(results['Mxx']), float(results['Myy']))
+        text2 += "Mxy:%0.3f  Mxz:%0.3f\n" % \
+                (float(results['Mxy']), float(results['Mxz']))
+        text2 += "Myz:%0.3f  Mzz:%0.3f\n" % \
+                (float(results['Myz']), float(results['Mzz']))
+
+    else:
+        elog.warning( 'Cannot find useful information in results.' )
+        elog.warning( results )
+
+    if split:
+        return text, text2
+    else:
+        return text + text2
+
+def roll_logfile( log_filename, log_max_count ):
+    elog.info( 'Using log: {0}'.format( log_filename ) )
+
+    # Clean log folder
+    logfiles = glob.glob('%s%s' % ( log_filename, "*" ) )
+    elog.info( 'Previous files: {0}'.format( logfiles ) )
+    for f in sorted(logfiles, reverse=True):
+        elog.info( 'Verify log: {0}'.format( f ) )
+        m = re.match( "^(%s)(\.)?(\d)*$" % log_filename, f )
+        try:
+            name = m.group(1)
+        except:
+            elog.info( 'No filenames with this format:{0}'.format( log_filename ) )
+            continue
+
+        try:
+            version = int( m.group(3) )
+        except:
+            version = 0
+
+        elog.info( 'File:{0} Version:{1}'.format( name, version ) )
+
+        if version >= int(log_max_count):
+            elog.info( 'Remove old log: {0}'.format( f ) )
+            os.remove(f)
+        else:
+            newname = "%s.%s.tmp" % (m.group(1), version + 1 )
+            elog.info( 'Move %s to %s ' % ( f, newname) )
+            os.rename( f, newname )
+    # Set final names
+    logfiles = glob.glob('%s*.tmp' % ( log_filename ) )
+    for f in sorted(logfiles, reverse=True):
+        elog.info( 'Verify log: {0}'.format( f ) )
+        m = re.match( "^(%s\.\d*)(\.tmp)$" % log_filename, f )
+        try:
+            elog.info( 'Move %s to %s ' % ( f, m.group(1)) )
+            os.rename( f, m.group(1) )
+        except Exception,e:
+            elog.info( 'ERROR: rename tmp to final({0}): {1}'.format( f, e ) )
 
 
-def error(msg=''):
-    if not isinstance(msg, str):
-        msg = pprint(msg)
-    logger.critical(msg)
-    sys.exit("\n\n\t%s\n\n" % msg)
+
+def valid_number( test ):
+
+    if test != test: return False
+    if float(test) == float('Inf'): return False
+    if float(test) == float('-Inf'): return False
+
+    return True
+
+def add_padding(tr):
+
+    elog.debug('Add padding to trace object ' )
+
+    #trcopy = tr.trcopy()
+    #trcopy.trfilter('BW 20 4 0 0')
+
+    # Need to double our traces
+    for rec in tr.iter_record():
 
 
-def pprint(obj):
-    return "\n%s" % json.dumps( obj, indent=4, separators=(',', ': ') )
+        # PADD WITH REVERSED DATA
+        #data = array( rec.trdata() )
+        #reversed_data = data[::-1]
+        #rec.trputdata( concatenate([reversed_data , data]) )
 
-def run(cmd,directory='./'):
-    log("run()  -  Running: %s" % cmd)
-    p = subprocess.Popen([cmd], stdout=subprocess.PIPE,
-                         stderr=subprocess.STDOUT,
-                         cwd=directory, shell=True)
-    stdout, stderr = p.communicate()
 
-    for line in iter(stdout.split('\n')):
-        debug('stdout:\t%s'  % line)
-    if stderr: error('stderr present: %s'  % stderr)
-    if p.returncode != 0:
-        error('Exitcode (%s) on [%s]' % (p.returncode,cmd))
+        # PADD WITH FAKE DATA
+        #data = array( rec.trdata() )
+        #padd = ones( len(data) )
+        #padd = zeros( len(data) )
+        #padd = zeros( 200 )
+        #padd *= data[0]
+        padd = zeros( 5000 )
+        rec.trputdata( concatenate([padd , rec.trdata()]) )
 
-    return iter(stdout.split('\n'))
+
+        # PADD WITH FILTERED DATA
+        #trcopy.record = rec.record
+        #rec.trputdata( concatenate([trcopy.trdata() , rec.trdata()]) )
+
+
+    #trcopy.free()
+
+    return tr
+
+
+#def remove_padding(tr,samples):
+#
+#    elog.debug('Remove padding on trace object ' )
+#
+#    # remove the padding
+#    for rec in tr.iter_record():
+#
+#        #data = array( rec.trdata() )
+#        #rec.trputdata( data[-int(len(data)/2):] )
+#        rec.trputdata( rec.trdata()[-samples:] )
+#
+#    return tr
+
+
+def myround(x, base=5):
+    #from __main__ import elog
+    elog.debug('Round %s to base %s' % (x, base) )
+    return int(int(base) * round(float(x)/int(base)))
+
+def run(cmd,directory='.',max_try=5,ignore_error=False):
+    attempt = 1
+
+    while( attempt < max_try ):
+        attempt += 1
+        elog.debug("run()  -  Running: %s" % cmd)
+        p = subprocess.Popen([cmd], stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            cwd=directory, shell=True)
+        stdout, stderr = p.communicate()
+
+        if stdout:
+            for line in iter(stdout.split('\n')):
+                elog.debug('stdout:\t%s'  % line)
+        if stderr:
+            for line in iter(stderr.split('\n')):
+                elog.debug('stderr:\t%s'  % line)
+
+        if p.returncode != 0 :
+            elog.notify('Exitcode (%s) on [%s]' % (p.returncode,cmd))
+            continue
+
+        if stdout:
+            return iter(stdout.split('\n'))
+        if stderr:
+            return iter(stderr.split('\n'))
+
+    if ignore_error:
+        return False
+
+    elog.error('Cannot successfully run [%s]' % cmd)
+
+def fix_amplitud(tr, value):
+    #from __main__ import elog
+    elog.debug('Fix amplitud by %s' % (value) )
+
+    # Need to double our traces
+    for rec in tr.iter_record():
+        data = array( rec.trdata() )
+
+        rec.trputdata( data * value )
+
+    return tr
+
+
+def add_trace_to_plot( data, style='r', label='signal', count=1, item=1, delay=0, jump=1):
+
+    start =  int(delay * jump)
+    plot_axis = range( start, int( len(data) * jump ) + start, int(jump) )
+
+    pyplot.subplot(count,1,item)
+    pyplot.plot( plot_axis, data, style, label=label )
+    pyplot.legend(loc=1)
+
+
+def plot_tr_object(tr, name='signal', fig=False, style='r', delay=0, jump=1, display=False, debug=False):
+
+    if not fig:
+        fig = pyplot.figure()
+
+    this = 1
+    for rec in tr.iter_record():
+        #data = rec.trdata()
+        data = []
+        tempdata = rec.trdata()
+        padd = 0
+        for i in range (0, len(tempdata)-1):
+            if tempdata[i] > 1.e20:
+                padd += 1
+                continue
+            data.append( tempdata[i] )
+
+
+        if debug:
+            # Test rotations with this synth data. Just a spike
+            original_samples = len(data)
+            ones_data = list( [1] * len(data) )
+            ones_data[ (rec+1) * 1000 ] = 30000
+            tr.trputdata( ones_data )
+
+        add_trace_to_plot( data, style=style, label='%s-%s' % (name, rec.getv('chan')[0]),
+                count=tr.record_count, item=this, delay=delay+padd, jump=jump)
+
+        # start and end marks
+        #pyplot.axvline( (start - got_time ) * samprate, color='y')
+        #pyplot.axvline( ( (start - got_time ) + tw )* samprate , color='y')
+
+        this += 1
+
+    return fig
+
+
+def apply_response(tr, filename, samprate):
+    #from __main__ import elog
+    elog.debug('Aplly response %s' % (filename) )
+
+    if not filename :
+        elog.log( 'No response file provided' )
+        return tr
+
+    if not os.path.isfile( filename ):
+        elog.warning('Problems loading response file: [%s]' % (filename))
+        return tr
+
+    try:
+        respaddr = response._get_response(filename)
+        elog.debug('respaddr')
+        elog.debug(respaddr)
+        if not respaddr: raise RuntimeError
+    except Exception,e:
+        elog.error('Problems loading response file: %s => %s' % (filename, e))
+
+    for rec in tr.iter_record():
+        data = array( rec.trdata() )
+        elog.debug( 'Total samples: %s ' % len(data) )
+
+        npts = len(data)
+
+        elog.debug('compute the one-dimensional discrete Fourier Transform')
+        fft_values = fft(data)[0:int(npts/2)+1]
+
+        # Return the Discrete Fourier Transform sample frequencies
+        elog.debug('compute the Fourier Transform sample frequencies')
+        freq = fftfreq(len(data), d=1.0/samprate)[range(0,npts/2+1)]
+
+        # the last element is negative, because of the symmetry, but should
+        # be positive
+        fft_values[-1] *= -1
+
+
+        convolved = []
+        for f in freq:
+            w = f * 2 * pi
+            convolved.append( response._eval_response(respaddr, w ) )
+
+        data = irfft( convolved * fft_values )
+
+        elog.debug( 'Total samples: %s ' % len(data) )
+        rec.trputdata( data )
+
+    response._free_response ( respaddr )
 
 def fix_exec(content):
 
@@ -61,38 +377,24 @@ def fix_exec(content):
 
 
 def cleanup_db(db,match):
-    debug( 'dbTABLE_PRESENT => %s' % db.query(datascope.dbTABLE_PRESENT) )
-    debug( 'dbTABLE_IS_WRITABLE => %s' % db.query(datascope.dbTABLE_IS_WRITABLE) )
+    #from __main__ import elog
+    elog.debug( 'dbTABLE_PRESENT => %s' % db.query(datascope.dbTABLE_PRESENT) )
+    elog.debug( 'dbTABLE_IS_WRITABLE => %s' % db.query(datascope.dbTABLE_IS_WRITABLE) )
 
-    need_crunch = False
     if db.query(datascope.dbTABLE_PRESENT):
-        while True:
+        while db.record_count:
+
             try:
                 record = db.find(match, first=-1)
             except Exception,e:
-                #log('Problem on dbfind %s %s' % (record, match))
                 record = -1
+
             if record < 0: break
-            log('Found previous record %s for %s' % (record, match))
+            elog.debug('Found previous record %s for %s' % (record, match))
             db.record = record
             db.mark()
-            need_crunch = True
+            elog.debug('%s marked' % record)
 
-        if need_crunch:
-            db.crunch()
-
-
-
-class fkrprogException(Exception):
-    """
-    Local class to raise Exceptions
-    """
-    def __init__(self, msg):
-        self.msg = msg
-    def __repr__(self):
-        return "fkrprogException: %s" % self.msg
-    def __str__(self):
-        return repr(self)
 
 
 class Records():
@@ -100,15 +402,18 @@ class Records():
     Class for tracking info from a single sta
     """
 
-    def __init__(self,sps=0,segtype=None):
+    def __init__(self,sps=0,segtype=None,response=None):
+
+        #from __main__ import elog
         self.chans = {}
         self.samplerate = sps
         self.file = None
         self.segtype = segtype
+        self.response = response
 
     def __iter__(self):
         self.chan_list = sorted( self.chans.keys() )
-        log( 'Chans in Record: %s' % self.chan_list )
+        elog.debug( 'Chans in Record: %s' % self.chan_list )
         return self
 
     def next(self):
@@ -121,12 +426,12 @@ class Records():
 
     def list(self):
         self.chan_list = sorted( self.chans.keys() )
-        #debug( 'Chans in Record: %s' % self.chan_list )
+        #elog.debug( 'Chans in Record: %s' % self.chan_list )
         return self.chan_list
 
     def flip(self):
         for chan in self.chans.keys():
-            debug('Flip channel %s' % chan )
+            elog.debug('Flip channel %s' % chan )
             self.chans[chan] = self.chans[chan] * -1
 
     def get(self,channame):
@@ -138,7 +443,12 @@ class Records():
     def trace(self,channame,data=[]):
         self.set_data(channame,data)
 
+    def set_samplerate(self,sps):
+        self.samplerate = sps
+
+
     def set_data(self,channame,data=[]):
+        data = array( data )
         self.chans[channame] = data
 
     def samplecount(self,channame=False):
@@ -149,11 +459,10 @@ class Records():
                 return 0
         return len( self.chans[channame] )
 
-    def getmin(self,chan=False):
-        if not chan:
+    def getmin(self,channame=False):
+        if not channame:
             channame = self.list()
-        else:
-            channame = [chan]
+
         vmin = False
         for c in channame:
             v = min(self.chans[c])
@@ -165,12 +474,13 @@ class Records():
 
         return vmin
 
-    def getmax(self,chan=False):
-        if not chan:
+    def getmax(self,channame=False):
+
+        if not channame:
             channame = self.list()
-        else:
-            channame = [chan]
+
         vmax = False
+
         for c in channame:
             v = max(self.chans[c])
             try:
@@ -181,11 +491,24 @@ class Records():
 
         return vmax
 
+    def apply_calib(self, calib, chan):
+        elog.debug('Aplly calibration of [%s] to channel %s' % (calib,chan) )
+        elog.debug( self.chans[chan] )
+
+        self.chans[chan] *= calib
+        elog.debug( self.chans[chan] )
+
+
     def get_data(self,chan):
-        #debug('Get %s from trace' % chan)
+        #elog.debug('Get %s from trace' % chan)
         if chan and chan in self.chans:
             return self.chans[chan]
         return self.chans
+
+    def window(self,start=0,end=-1):
+        #elog.debug('Get %s from trace' % chan)
+        for c in self.list():
+            self.chans[c] = self.chans[c][start:end]
 
     def new_script(self,filename,content):
 
@@ -214,108 +537,6 @@ class Records():
 
 
 
-    def filter_script(self,trace_type,hpass=0.02,lpass=0.1,npts=1024,period=0.5):
-
-        global tmp_folder
-
-        text =  "#! /bin/csh\nset dt=%s\nset npts=%s\nset lcrn=%s\nset hcrn=%s\n" % \
-                (period,npts,hpass,lpass)
-
-        text +=  '\ncd %s \n' % tmp_folder
-
-        if trace_type == 'real':
-            text +=  '''
-rm -f t r z tmp*
-fromHelm < $1 > tmp2
-window nt=$npts nx=3 nv=1 v0=0 < tmp2 > tmp3
-bin2sac npts=$npts stime=0.0 dt=$dt < tmp3 > t
-window nt=$npts nx=3 nv=1 v0=1 < tmp2 > tmp4
-bin2sac npts=$npts stime=0.0 dt=$dt < tmp4 > r
-window nt=$npts nx=3 nv=1 v0=2 < tmp2 > tmp5
-bin2sac npts=$npts stime=0.0 dt=$dt < tmp5 > z
-
-sac << sacend
-setbb HCRN $hcrn
-getbb HCRN
-setbb LCRN $lcrn
-getbb LCRN
-cut 0 200
-read t r z
-bp co %LCRN %HCRN p 2
-interpolate delta 1.0
-write over
-quit
-sacend
-
-sac2bin in=t out=tmp
-mv tmp t
-sac2bin in=r out=tmp
-mv tmp r
-sac2bin in=z out=tmp
-mv tmp z
-cat t r z > tmp6
-rm $2
-mkHelm ntr=3 nt=200 dt=1.0 format="(6e12.5)" < tmp6 > $2
-rm -f t r z tmp*
-'''
-
-        else:
-            text +=  '''
-rm -f t r z tmp*
-fromHelm < $1 > tmp7
-window nt=$npts nx=8 nv=1 v0=0 < tmp7 > tmp8
-bin2sac npts=$npts stime=0.0 dt=$dt < tmp8 > tss
-window nt=$npts nx=8 nv=1 v0=1 < tmp7 > tmp9
-bin2sac npts=$npts stime=0.0 dt=$dt < tmp9 > tds
-window nt=$npts nx=8 nv=1 v0=2 < tmp7 > tmp10
-bin2sac npts=$npts stime=0.0 dt=$dt < tmp10 > xss
-window nt=$npts nx=8 nv=1 v0=3 < tmp7 > tmp11
-bin2sac npts=$npts stime=0.0 dt=$dt < tmp11 > xds
-window nt=$npts nx=8 nv=1 v0=4 < tmp7 > tmp12
-bin2sac npts=$npts stime=0.0 dt=$dt < tmp12 > xdd
-window nt=$npts nx=8 nv=1 v0=5 < tmp7 > tmp13
-bin2sac npts=$npts stime=0.0 dt=$dt < tmp13 > zss
-window nt=$npts nx=8 nv=1 v0=6 < tmp7 > tmp14
-bin2sac npts=$npts stime=0.0 dt=$dt < tmp14 > zds
-window nt=$npts nx=8 nv=1 v0=7 < tmp7 > tmp15
-bin2sac npts=$npts stime=0.0 dt=$dt < tmp15 > zdd
-
-sac << sacend
-setbb HCRN $hcrn
-getbb HCRN
-setbb LCRN $lcrn
-getbb LCRN
-cut 0 200
-read tss tds xss xds xdd zss zds zdd
-bp co %LCRN %HCRN p 2
-interpolate delta 1.0
-write over
-quit
-sacend
-
-sac2bin in=tss out=tmp
-mv tmp tss
-sac2bin in=tds out=tmp
-mv tmp tds
-sac2bin in=xss out=tmp
-mv tmp xss
-sac2bin in=xds out=tmp
-mv tmp xds
-sac2bin in=xdd out=tmp
-mv tmp xdd
-sac2bin in=zss out=tmp
-mv tmp zss
-sac2bin in=zds out=tmp
-mv tmp zds
-sac2bin in=zdd out=tmp
-mv tmp zdd
-cat tss tds xss xds xdd zss zds zdd > tmp16
-rm $2
-mkHelm ntr=8 nt=200 dt=1.0 format="(6e12.5)" < tmp16 > $2
-rm -f tss tds xss xds xdd zss zds zdd tmp*
-'''
-        return text
-
 
 
 class Station(Records):
@@ -324,24 +545,45 @@ class Station(Records):
     a particular station.
     """
 
-    def __init__(self,sta):
+    def __init__(self,sta,tmp_folder):
+        #from __main__ import elog
         self.sta = sta
+        self.tmp_folder = tmp_folder
         self.real = Records()
         self.real_file = False
+        self.real_file_name = False
         self.real_samples = 0
         self.real_samplerate = 0
         self.synth = Records()
         self.synth_zrt = Records()
         self.synth_file = False
+        self.synth_file_name = False
         self.synth_samples = 0
         self.synth_samplerate = 0
         self.depth = 0
         self.lat  = False
         self.lon  = False
         self.delta  = False
+        self.realdistance  = False
         self.distance  = False
         self.azimuth  = False
-        self.zcor  = False
+        self.zcor  = 0
+        self.sdelay  = 0
+        self.vr = None
+
+    def clean(self):
+        elog.debug( 'clean object for : %s' % self.sta )
+        self._remove_file( self.real_file )
+        self._remove_file( self.synth_file )
+
+    def _remove_file(self, filename ):
+
+        if os.path.isfile( filename ):
+            try:
+                os.remove( filename )
+            except:
+                elog.warning( 'cannot remove file: %s' % filename )
+
 
     def real_trace(self,channame=False):
         return self.real.get_data(channame)
@@ -371,220 +613,148 @@ class Station(Records):
 
     def to_file(self,trace='rea'):
         if trace == 'real':
-            self.real_file = mkHelm(self.real,append='%s-real' % self.sta)
-            self.real.file = self.real_file
+            self.real_file = makeHelm(self.real,
+                    append='%s-real' % self.sta, folder=self.tmp_folder)
+            self.real_file_name = os.path.basename(self.real_file)
             return self.real_file
         else:
-            self.synth_file = mkHelm(self.synth,append='%s-synth' % self.sta)
+            self.synth_file = makeHelm(self.synth,
+                    append='%s-synth' % self.sta, folder=self.tmp_folder)
             self.synth.file = self.synth_file
+            self.synth_file_name = os.path.basename(self.synth_file)
             return self.synth_file
 
     def save(self,trace='real',data=Records()):
         if trace == 'real':
             self.real = data
-            self.real_samples = self.real.samplecount()
-            self.real_samplerate = self.real.samplerate
+            self.real_file = False
+            self.real_samples = data.samplecount()
+            self.real_samplerate = data.samplerate
         else:
             self.synth = data
-            self.synth_samples = self.synth.samplecount()
-            self.synth_samplerate = self.synth.samplerate
+            self.synth_file = False
+            self.synth_samples = data.samplecount()
+            self.synth_samplerate = data.samplerate
+
+    def max_min_all(self):
+        rmax = self.real.getmax()
+        rmin = self.real.getmin()
+        smax = self.synth.getmax()
+        smin = self.synth.getmin()
+
+
+        rsamps = self.real_samples
+        ssamps = self.synth_samples
+
+        mx = max([rmax, smax])
+        mn = min([rmin, smin])
+        tsamps = max([rsamps, ssamps])
+        return (0, tsamps, mn, mx)
 
     def max_min(self,trace='real'):
         if trace == 'real':
-            usecache = self.real
+            vmax = self.real.getmax()
+            vmin = self.real.getmin()
+            samps = self.real_samples
         else:
-            usecache = self.synth
+            elog.debug( 'synt: %s' % self.synth_samples )
+            vmax = self.synth.getmax()
+            vmin = self.synth.getmin()
+            samps = self.synth_samples
 
-        vmax = usecache.getmax()
-        vmin = usecache.getmin()
+        return (0,samps,vmin,vmax)
 
-        return (0,100,vmin,vmax)
+    def convert_synth(self, results):
 
+        elog.debug(' apply results to greens for plotting ' )
 
-    def convert_synth(self, results, tmp_folder):
+        # Find time shift
+        try:
+            self.zcor = float(results['zcor'][self.sta])
+        except:
+            self.zcor = 0
 
-        # Convert GF's to T,R,Z
-        #"putmt in=dbmoment_STA1-synth_OdTd83.Helm_data out=synth.data azimuth=10 mxx=-0.289 mxy=0.637 mxz=0.198 myy=0.109 myz=-0.446 mzz=0.181 moment=8.22293e+19"
-        #'/opt/antelope/5.4post/bin/sac2bin in=synth.data.rad out=rad'
-        #'/opt/antelope/5.4post/bin/mkHelm ntr=1 nt=200 dt=1.0 format="(6e12.5)" < rad > new_rad'
-
-        self.zcor = float(results['zcor'][self.sta])
-
-        chans =  {'rad':'R','ver':'Z','tan':'T'}
-
-        for m in ['rad','ver','tan']:
-            for f in ['synth.data.','new.','']:
-                try:
-                    os.unlink('%s/%s%s' % (temp_folder,f,m))
-                except:
-                    pass
-
-        # Get the data into sac format
-        cmd = "putmt in=%s out=synth.data azimuth=%s " % (self.synth_file,int(float(self.azimuth)) )
-        cmd += " mxx=%s" % results['Mxx']
-        cmd += " mxy=%s" % results['Mxy']
-        cmd += " mxz=%s" % results['Mxz']
-        cmd += " myy=%s" % results['Myy']
-        cmd += " myz=%s" % results['Myz']
-        cmd += " mzz=%s" % results['Mzz']
-        cmd += " moment=%s" % results['Mo']
-        log( cmd )
-        run(fix_exec(cmd),tmp_folder)
-
-        for f in ['rad','ver','tan']:
-            cmd = 'sac2bin in=synth.data.%s out=%s' % (f,f)
-            log( cmd )
-            run(fix_exec(cmd),tmp_folder)
-
-            cmd = 'mkHelm ntr=1 nt=200 dt=1.0 format="(6e12.5)" < %s > new.%s' % (f,f)
-            log( cmd )
-            run(fix_exec(cmd),tmp_folder)
-
-            #self.synth_zrt.set(chans[f], readHelm( '%s/new.%s' % (tmp_folder,f) ) )
-
-            #data = pylab.array( readHelm( '%s/new.%s' % (tmp_folder,f) )  )
-            data = readHelm( '%s/new.%s' % (tmp_folder,f) )
-            log( 'zcor is %s' % self.zcor)
-            if self.zcor < 0.0:
-                log( 'remove %s points' % self.zcor)
-                data = pylab.delete(data, self.zcor, 0)
-            elif self.zcor > 0.0:
-                log( 'add %s points' % self.zcor)
-                data = pylab.insert(data, 0, pylab.ones(self.zcor) * data[0], 0)
-
-            #data = -1 * data
-            self.synth_zrt.set(chans[f], data )
-        self.flip('synth')
-
-        #if self.zcor > 0.0:
-        #    T = pylab.delete(T, self.zcor, 0)
-        #    R = pylab.delete(R, self.zcor, 0)
-        #    Z = pylab.delete(Z, self.zcor, 0)
-        #elif self.zcor < 0.0:
-        #    T = pylab.insert(T, 0, pylab.ones(self.zcor) * T[0], 0)
-        #    R = pylab.insert(R, 0, pylab.ones(self.zcor) * T[0], 0)
-        #    Z = pylab.insert(Z, 0, pylab.ones(self.zcor) * T[0], 0)
+        strike = results['Strike'][0]
+        rake = results['Rake'][0]
+        dip = results['Dip'][0]
+        moment = float( results['Mo'] )
+        isomoment = float( results['isomoment'] )
 
 
-    #def synth_zrt(self, results):
 
-    #    self.zcor = float(results['zcor'][self.sta])
-    #    az = pylab.array( float(self.azimuth) )
-    #    self.synth_zrt = Records()
-
-    #    TSS = pylab.array( self.synth.get('TSS') )
-    #    TDS = pylab.array( self.synth.get('TDS') )
-    #    XSS = pylab.array( self.synth.get('XSS') )
-    #    XDS = pylab.array( self.synth.get('XDS') )
-    #    XDD = pylab.array( self.synth.get('XDD') )
-    #    ZSS = -1 * pylab.array( self.synth.get('ZSS') )
-    #    ZDS = -1 * pylab.array( self.synth.get('ZDS') )
-    #    ZDD = -1 * pylab.array( self.synth.get('ZDD') )
-
-    #    XX = pylab.array(float(results['Mxx']))
-    #    YY = pylab.array(float(results['Myy']))
-    #    ZZ = pylab.array(float(results['Mzz']))
-    #    XY = pylab.array(float(results['Mxy']))
-    #    XZ = pylab.array(float(results['Mxz']))
-    #    YZ = pylab.array(float(results['Myz']))
+        strike = float(self.azimuth) - strike
+        strike *= pi/180.0
+        rake *= pi/180.0
+        dip *= pi/180.0
 
 
-    #    Z = XX*( (ZSS/2 - pylab.cos(2*az)) * ZDD/3 )
-    #    Z += YY*( -1 * (ZSS/2 * pylab.cos(2*az)) - ZDD/6 )
-    #    Z += ZZ*( ZDD/3 )
-    #    Z += XY* ZSS * pylab.sin(2*az)
-    #    Z += XZ* ZDS * pylab.cos(az)
-    #    Z += YZ* ZDS * pylab.sin(az)
-    #    self.synth_zrt.set('Z',Z)
+        moment /= 1.0e+20
+        isomoment /= 1.0e+20
 
-    #    R = XX*( (XSS/2 * pylab.cos(2*az)) - XDD/6 )
-    #    R += YY*( -1 * (XSS/2 * pylab.cos(2*az)) - XDD/6 )
-    #    R += ZZ*( XDD/3 )
-    #    R += XY* XSS * pylab.sin(2*az)
-    #    R += XZ* XDS * pylab.cos(az)
-    #    R += YZ* XDS * pylab.sin(az)
-    #    self.synth_zrt.set('R',R)
 
-    #    T = XX * TSS / 2 * pylab.sin(2*az)
-    #    T -= YY / 2 * TSS * pylab.sin(2*az)
-    #    T -= XY * TSS * pylab.cos(2*az)
-    #    T -= XZ* TDS * pylab.sin(az)
-    #    T += YZ* TDS * pylab.cos(az)
-    #    self.synth_zrt.set('T',T)
+        A0=sin(2.0*strike)*cos(rake)*sin(dip) + 0.5*cos(2.0*strike)*sin(rake)*sin(2.0*dip)
+        A1=cos(strike)*cos(rake)*cos(dip) - sin(strike)*sin(rake)*cos(2.0*dip)
+        A2=0.5*sin(rake)*sin(2.0*dip)
+        A3=cos(2.0*strike)*cos(rake)*sin(dip) - 0.5*sin(2.0*strike)*sin(rake)*sin(2.0*dip)
+        A4=sin(strike)*cos(rake)*cos(dip) + cos(strike)*sin(rake)*cos(2.0*dip)
+        A4 *= -1.0
 
-    #    if self.zcor > 0.0:
-    #        T = pylab.delete(T, self.zcor, 0)
-    #        R = pylab.delete(R, self.zcor, 0)
-    #        Z = pylab.delete(Z, self.zcor, 0)
-    #    elif self.zcor < 0.0:
-    #        T = pylab.insert(T, 0, pylab.ones(self.zcor) * T[0], 0)
-    #        R = pylab.insert(R, 0, pylab.ones(self.zcor) * T[0], 0)
-    #        Z = pylab.insert(Z, 0, pylab.ones(self.zcor) * T[0], 0)
+        elog.debug( "A1=%f A2=%f A3=%f A4=%f A5=%f" % (A0,A1,A2,A3,A4) )
+
+
+        # synth_channels = ['TSS','TDS','XSS','XDS','XDD','ZSS','ZDS','ZDD','REX','ZEX']
+        #                     0     1     2     3     4     5     6     7     8     9
+
+        tss = self.synth.get( 'TSS' )
+        tds = self.synth.get( 'TDS' )
+        xss = self.synth.get( 'XSS' )
+        xds = self.synth.get( 'XDS' )
+        xdd = self.synth.get( 'XDD' )
+        zss = self.synth.get( 'ZSS' )
+        zds = self.synth.get( 'ZDS' )
+        zdd = self.synth.get( 'ZDD' )
+        rex = self.synth.get( 'REX' )
+        zex = self.synth.get( 'ZEX' )
+
+
+        tan = moment * (A3 * tss + A4 * tds)
+        self.synth_zrt.set('T', tan )
+
+        rad = moment * (A0 * xss + A1 * xds + A2 * xdd) + isomoment * rex
+        self.synth_zrt.set('R', rad )
+
+        ver = -1.0 * moment * (A0 * zss + A1 * zds + A2 * zdd) + isomoment * zex
+        self.synth_zrt.set('Z', ver )
+
 
 
     def plot(self,trace='real'):
-        # open a pylab plot of the data
-        debug('Plot traces for %s' % self.sta )
+        # open a plot of the data
+        elog.debug('Plot traces for %s' % self.sta )
 
-        if trace is 'real': records = self.real
-        else: records = self.synth
+        if trace is 'real':
+            records = self.real
+        else:
+            records = self.synth
 
         if not records:
-            error('Empty Records for %s data on %s' % (trace,self.sta) )
+            elog.error('Empty Records for %s data on %s' % (trace,self.sta) )
+
+        axs = self.max_min(trace)
 
         total = 0
         pyplot.figure()
         channels = records.list()
         for chan, data in records:
-            notify( 'add %s_%s to plot' % (self.sta,chan) )
+            elog.debug( 'add %s_%s to plot' % (self.sta,chan) )
             pyplot.subplot(len(channels),1,total)
             pyplot.plot(data)
             pyplot.legend(["%s_%s" % (self.sta,chan)])
+            pyplot.axis( axs )
             total += 1
 
-        pyplot.suptitle("Real Data: Trace %s" % self.sta)
+        pyplot.suptitle("%s data: Trace %s" % (trace,self.sta) )
         pyplot.show()
-
-    def filter(self,trace='real',hpass=0.02,lpass=0.1):
-
-        global tmp_folder
-
-        if trace == 'real':
-            convert = self.real
-            infile = self.to_file('real')
-            points = self.real_samples
-            period = 1/self.real_samplerate
-        else:
-            convert = self.synth
-            infile = self.to_file('synth')
-            points = self.synth_samples
-            period = 1/self.synth_samplerate
-
-        outfile = '%s/TEMP_FILTER_DATA' % tmp_folder
-
-        script = '%s/run_filter' % tmp_folder
-        script = self.new_script( script, self.filter_script(trace,hpass,lpass,points,period) )
-
-        cmd = '%s %s %s' % (script,infile,outfile)
-        for line in run(cmd):
-            log(line)
-
-        record = readHelm( outfile )
-
-        os.remove( outfile )
-        os.remove( infile )
-
-        if trace == 'real':
-            self.real_data(record)
-            self.real = record
-            self.real_file = ''
-            self.real_samples = record.samplecount()
-            self.real_samplerate  = record.samplerate
-        else:
-            self.synth_data(record)
-            self.synth_file = ''
-            self.synth_samples = record.samplecount()
-            self.synth_samplerate  = record.samplerate
 
 
 def find_executables( execs ):
@@ -596,53 +766,292 @@ def find_executables( execs ):
     Dreger's original code.
     '''
 
+    #from __main__ import elog
+
     if not len(execs): return
 
     global executables
 
     for ex in execs:
-        log("Find executable for (%s)" % ex)
+        elog.debug("Find executable for (%s)" % ex)
 
         newex = spawn.find_executable(ex)
 
         if not newex:
-            error("Cannot locate executable for [%s] in $PATH = \n%s" % \
+            elog.error("Cannot locate executable for [%s] in $PATH = \n%s" % \
                     (ex,os.environ["PATH"].split(os.pathsep)) )
 
         executables[ex] = os.path.abspath( newex )
 
-        log("(%s) => [%s]" % (ex, newex) )
+        elog.debug("(%s) => [%s]" % (ex, newex) )
 
-#def safe_db_get_value(db,field,default):
-#    '''
-#    Safe method to extract values from db
-#    with a default value option.
-#    '''
-#    log( "getv(%s)" % field )
-#    try:
-#        value = db.getv(field)[0]
-#    except Exception,e:
-#        log("[%s]" % db.query(datascope.dbNAME) )
-#        log("problem during getv(%s) => [%s]" % (field,e) )
-#        return default
-#
-#    return value
-def safe_pf_get(pf,field,defaultval=False):
-    '''
-    Safe method to extract values from parameter file
-    with a default value option.
-    '''
-    value = defaultval
-    if pf.has_key(field):
+def plot_results( results, bb_colors={},
+        folder='./', acknowledgement='dbmoment',
+        beachball=False, prelim=''):
+
+    event = results['event']
+    stations = results['stations']
+
+
+    # Done with the inversion. Now set values for plotting results
+    for sta in stations.keys():
+        elog.debug('convert_synth( %s )' % sta)
+        #stations[sta].convert_synth_original( results )
+        stations[sta].convert_synth( results )
+
+    total = 1
+
+    try:
+        event_color = "#%s" % bb_colors[ str(results['Quality']) ]
+    except:
+        event_color = 'k'
+
+    elog.debug('Beachball/Event color: %s => [%s]' % (results['Quality'],event_color) )
+
+
+
+    total_stations = len(stations.keys()) + 2
+    gcf = pyplot.gcf()
+    fig = pyplot.figure(figsize=( 20, 2 * total_stations ))
+
+    max_all = []
+    min_all = []
+    points_all = []
+
+    #for sta in sorted(stations.keys()):
+    for sta in sorted(stations.keys(), key=lambda x: stations[x].realdistance):
+        axs = stations[sta].max_min_all()
+        points_all.append( axs[1] )
+        min_all.append( axs[2] )
+        max_all.append( axs[3] )
+
+    max_plot = max(max_all)
+    min_plot =  min(min_all)
+    points_plot = max(points_all)
+
+
+
+    text, text2  = nice_print_results( results ,split=True, prelim=prelim)
+
+    text += "\n( {:0.1f}, {:0.1f} ) ".format( event.lat, event.lon)
+    text += "{0} km depth\n".format( event.depth )
+    text += "ID:{0}    ".format( event.orid )
+    text += "Model:{0}".format( event.model )
+
+    ax = fig.add_subplot(total_stations,3,total, frameon=False)
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
+    ax.patch.set_alpha(0.0)
+    ax.annotate( text, (0, 1), xycoords="axes fraction", va="top", ha="left",
+                 fontsize=12, bbox=dict(edgecolor='none',boxstyle="round, pad=2", fc="w"))
+    total += 1
+
+    ax = fig.add_subplot(total_stations,3,total, frameon=False)
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
+    ax.patch.set_alpha(0.0)
+    ax.annotate( text2, (0, 1), xycoords="axes fraction", va="top", ha="left",
+                 fontsize=12, bbox=dict(edgecolor='none',boxstyle="round, pad=2", fc="w"))
+
+    # Only run if library ObsPy is present on system.
+    if beachball:
+
+        mt = [ float(results['Mxx']), float(results['Myy']), float(results['Mzz']),
+            float(results['Mxy']), float(results['Mxz']), float(results['Myz']) ]
+
+        bb = beachball(mt, mopad_basis='NED', xy=(0,0), width=30, linewidth=1,
+                edgecolor='k', facecolor=event_color)
+
+        #bb.set_zorder(0)
+
+        ax.add_collection( bb )
+        #ax.set_aspect("equal")
+        ax.set_xlim((-100, 30))
+        ax.set_ylim((-20, 20))
+
+
+    total += 1
+
+    # Third panel for beachball
+    ax = fig.add_subplot(total_stations,3,total, frameon=True)
+    ax.patch.set_alpha(0.0)
+    #ax.set_aspect("equal")
+
+    # Calculate size of MT form Event to Station distance
+    # Look for closest station for us to calculate a scale factor for our
+    # MT beachball on the station map.
+    closest = sorted(stations.keys(), key=lambda x: float(stations[x].distance) )[0]
+    #event_scale = interp(stations[ closest ].distance,[0,500],[8,15])
+    event_scale = 20
+    size = interp(len(stations),[0,15],[10,4])
+    stanumber = 0
+
+    # If we don't have OBSPY then we can add a marker for the event
+    pyplot.plot( results['event'].lon, results['event'].lat,
+            '*', ms=event_scale, color=event_color, zorder=0)
+
+    for sta in sorted(stations.keys(), key=lambda x: float(stations[x].realdistance) ):
+
+        lat,lon = results['event'].location(sta)
+        elog.debug( '%s (%s,%s)' % (sta, lat, lon) )
+
+        color =  colors.cnames.items()[stanumber][0]
+
+        pyplot.plot( lon, lat, '^', ms=size, color=color)
+
+        if lon > results['event'].lon:
+            horizontal = 'left'
+        else:
+            horizontal = 'right'
+
+        ax.annotate(sta, xy=(lon, lat),
+                ha=horizontal, va='bottom', size=10)
+
+
+        stanumber += 1
+
+    ax.set_ymargin(0.25);
+    ax.set_xmargin(0.25);
+    ax.autoscale_view()
+    pyplot.yticks(ax.get_yticks()[::3],size=7)
+    pyplot.xticks(ax.get_xticks()[::3],size=7)
+
+    total += 1
+
+    stanumber = -1
+    for sta in sorted(stations.keys(), key=lambda x: float(stations[x].realdistance) ):
+
+        stanumber += 1
+        elog.debug('Plot traces for results on %s' % sta )
+        if not stations[sta].real:
+            elog.error('Empty Records for data on %s' % sta )
+        if not stations[sta].synth_zrt:
+            elog.error('Empty Records for converted ZRT on %s' % sta)
+
+        distance = int( float(stations[sta].realdistance) )
+        azimuth = int( float(stations[sta].azimuth) )
+        #real = stations[sta].real
+        convertedsynth = stations[sta].synth_zrt
         try:
-            value = pf.get(field,defaultval)
+            zcor = results['zcor'][sta]
+        except:
+            zcor = '-'
+        variance = round( results['variance'][sta], 1)
+
+        try:
+            f = stations[sta].filter.split()
+            if len(f) == 5:
+                filter_used = '%s-%s Hz' % (f[1],f[3])
+            else:
+                filter_used = stations[sta].filter
+        except:
+            filter_used = 'unknown filter'
+
+        # Scale all traces the same way
+        axs = (0, points_plot, min_plot, max_plot)
+
+
+        #for chan, data in real:
+        for chan in ['T', 'R', 'Z']:
+            ax = fig.add_subplot(total_stations,3,total)
+            #real_line, = pyplot.plot(data, label='data' )
+            if zcor > 0:
+                real_line, = pyplot.plot(stations[sta].real.get(chan)[zcor:], label='data' )
+                synth_line, = pyplot.plot(stations[sta].synth_zrt.get(chan)[:-zcor],
+                        linestyle='--', label='synth')
+            else:
+                real_line, = pyplot.plot(stations[sta].real.get(chan)[:-zcor], label='data' )
+                synth_line, = pyplot.plot(stations[sta].synth_zrt.get(chan)[zcor:],
+                        linestyle='--', label='synth')
+
+            if beachball:
+                box_color =  colors.cnames.items()[stanumber][0]
+                ax.spines['bottom'].set_color(box_color)
+                ax.spines['top'].set_color(box_color)
+                ax.spines['right'].set_color(box_color)
+                ax.spines['left'].set_color(box_color)
+
+            pyplot.legend(loc=5, fontsize=8)
+
+            pyplot.axis( axs )
+            pyplot.ylabel('centimeters', fontsize=8)
+            pyplot.yticks(size=8)
+
+            ax.get_xaxis().set_ticks([])
+            #ax.get_yaxis().set_ticks([])
+            ax.yaxis.set_major_formatter(pyplot.FormatStrFormatter('%.1e'))
+
+            # Top of plot
+            pyplot.text (0.5, 0.9, r'$\mathbf{%s}\ -\ \mathbf{%s}\ \ %s_{km}\ \ %s ^o$ %s' % \
+                    (sta,chan,distance,azimuth,filter_used),
+                  horizontalalignment='center', fontsize=13,
+                  verticalalignment='center', transform = ax.transAxes)
+
+            max_amp = stations[sta].real.getmax( chan )
+            min_amp = stations[sta].real.getmin( chan )
+            abs_amp = max_amp - min_amp
+
+            # Bottom of plot
+            text = "MaxAmp: %0.1e (cm)   zcor:%s   VR:%s" % (abs_amp, zcor, int(variance))
+            pyplot.text (0.5, 0.1,text, horizontalalignment='center', fontsize=11,
+                  verticalalignment='center', transform = ax.transAxes)
+
+
+            pyplot.draw()
+            total += 1
+
+    title = "%s %s Mw    " % ( prelim, results['Mw'] )
+    title += results['event'].strtime
+    pyplot.suptitle(title, fontsize=18, ha='center')
+
+    text = "%s \n" % results['event'].strtime
+
+    # Acknowledgement panel
+    ax = fig.add_subplot(total_stations,3,total, frameon=False)
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
+    ax.patch.set_alpha(0.0)
+    ax.annotate( unicode(acknowledgement, "utf-8"), (0, 0), xycoords="axes fraction", va="bottom", ha="left",
+                 fontsize=8, bbox=dict(edgecolor='gray',boxstyle="round, pad=2", fc="w"))
+
+    # Extra info panel
+    total += 1
+    text = "%s\n" % ' '.join( sys.argv )
+    #text += "%s\n" % os.environ['ANTELOPE']
+    text += "Generated at %s" % stock.strtime( stock.now() )
+
+    ax = fig.add_subplot(total_stations,3,total, frameon=False)
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
+    ax.patch.set_alpha(0.0)
+    ax.annotate( unicode(text, "utf-8"), (0, 0), xycoords="axes fraction", va="bottom", ha="left",
+                 fontsize=8, bbox=dict(edgecolor='gray',boxstyle="round, pad=2", fc="w"))
+
+    try:
+        if not os.path.isdir(folder): os.makedirs(folder)
+    except Exception,e:
+        elog.error("Problems while creating folder [%s] %s" % (folder,e))
+
+    # Name of file for image
+    database_name = os.path.basename(event.database)
+    if prelim:
+        filename = "%s/dbmoment_%s_%s_%s-PRELIMINARY-RESULT.png" % ( folder, database_name, event.orid,
+                event.model )
+    else:
+        filename = "%s/dbmoment_%s_%s_%s.png" % ( folder, database_name, event.orid,
+                event.model )
+
+    if os.path.isfile( filename ):
+        elog.notify( 'Remove previous version of the image file: %s' %  filename)
+        try:
+            os.remove( filename )
         except Exception,e:
-            warning('Problems safe_pf_get(%s,%s)' % (field,e))
-            pass
+            elog.error( 'Cannot remove previous version of image [%s]' % filename )
 
-    log( "pf.get(%s,%s) => %s" % (field,defaultval,value) )
+    elog.notify( 'Save plot with results to temp folder: %s' %  filename)
+    pyplot.savefig(filename,bbox_inches='tight', edgecolor='none',pad_inches=0.5, dpi=100)
 
-    return value
+    return filename
 
 
 def clean_trace(data, samplerate, trace_start, trace_end, need_start=False, need_end=False):
@@ -651,33 +1060,25 @@ def clean_trace(data, samplerate, trace_start, trace_end, need_start=False, need
     Return clean list of touples.
     '''
 
+    #from __main__ import elog
 
     new_data = []
+    period = 1/samplerate
+
     if not need_start: need_start = trace_start
     if not need_end: need_end = trace_end
 
-    debug( "clean_trace points:[%s]" % (len(data)) )
-    debug( "actual[%s,%s]" % (trace_start, trace_end) )
-    debug( "needed[%s,%s]" % (need_start, need_end) )
+    elog.debug( "clean_trace samplerate:[%s]" % (samplerate) )
+    elog.debug( "clean_trace points:[%s]" % (len(data)) )
+    elog.debug( "actual[%s,%s]" % (trace_start, trace_end) )
+    elog.debug( "needed[%s,%s]" % (need_start, need_end) )
 
-    if len(data):
+    for d in data:
+        if trace_start >= need_start and trace_start <= need_end:
+            new_data.append(d)
+        trace_start += period
 
-        sps = int( len(data) / (trace_end - trace_start) )
-        period = 1.0/sps
-
-        debug( "calculated sps:[%s] period:[%s]" % (sps,period) )
-
-        if samplerate == sps:
-            for d in data:
-                if trace_start >= need_start and trace_start <= need_end:
-                    new_data.append(d)
-                trace_start += period
-            debug('New trace is: %s' % len(new_data) )
-        else:
-            warning('problem on calculated samplerate %s != %s' % (samplerate,sps) )
-
-    else:
-        warning( 'No data on this trace object' )
+    elog.debug('New trace is: %s' % len(new_data) )
 
     return new_data
 
@@ -685,21 +1086,22 @@ def verify_trace_time(start, end, time, endtime):
     '''
     Verify that we have the requested data
     '''
-    debug( "Requested time: [%s,%s]" % (stock.strtime(start),stock.strtime(end)) )
-    debug( "In trace object: [%s,%s]" % (stock.strtime(time),stock.strtime(endtime)) )
+    #from __main__ import elog
+    elog.debug( "Requested time: [%s,%s]" % (stock.strtime(start),stock.strtime(end)) )
+    elog.debug( "In trace object: [%s,%s]" % (stock.strtime(time),stock.strtime(endtime)) )
 
     tw = end - start
 
     if endtime - time < tw:
-        warning('Got %s secs but expected [%s].' % ( (endtime-time), tw) )
+        elog.warning('Got %s secs but expected [%s].' % ( (endtime-time), tw) )
         return False
 
     if start < time:
-        warning('Trace starts [%s] seconds late.' % ( time - start ) )
+        elog.warning('Trace starts [%s] seconds late.' % ( time - start ) )
         return False
 
     if endtime < end:
-        warning('Trace ends [%s] seconds early.' % ( end - endtime ) )
+        elog.warning('Trace ends [%s] seconds early.' % ( end - endtime ) )
         return False
 
     return True
@@ -708,11 +1110,12 @@ def dynamic_loader(module):
     '''
     Load some libs defined on the pf file.
     '''
-    log( "load moment_tensor.%s" % module )
+    #from __main__ import elog
+    elog.debug( "load dbmoment.%s" % module )
     try:
-        return __import__("moment_tensor.%s" % module, globals(), locals(), [module], -1)
+        return __import__("dbmoment.%s" % module, globals(), locals(), [module], -1)
     except Exception,e:
-        error("Import Error: [%s] => [%s]" % (module,e) )
+        elog.error("Import Error: [%s] => [%s]" % (module,e) )
 
 def cleanup(folder):
     """
@@ -721,10 +1124,12 @@ def cleanup(folder):
     random names.
     """
 
+    #from __main__ import elog
+
     try:
         if not os.path.isdir(folder): os.makedirs(folder)
     except Exception,e:
-        error("Problems while creating folder [%s] %s" % (folder,e))
+        elog.error("Problems while creating folder [%s] %s" % (folder,e))
 
     filelist  = [
         'dbmoment*.Helm_data',
@@ -744,10 +1149,10 @@ def cleanup(folder):
     for f in filelist:
         try:
             temp_file = "%s/%s" % (folder,f)
-            log( 'unlink( %s )' % temp_file )
+            elog.debug( 'unlink( %s )' % temp_file )
             map( os.unlink, glob.glob( temp_file ) )
         except Exception, e:
-            error('Cannot remove temp file %s [%s]' % (temp_file,e) )
+            elog.error('Cannot remove temp file %s [%s]' % (temp_file,e) )
 
 def new_Helm_header(samples,samplerate):
     temp = '     %0.4e     %0.4e      0  0  0.00\n' % (0,0)
@@ -758,32 +1163,33 @@ def fix_format_data(point, decimals, total):
     new = "%0.*e" % (decimals,point)
     return new.rjust(total)
 
-def mkHelm(traces, append='', outputfile='', perline=7, total=14, decimal=5):
+def makeHelm(traces, append='', outputfile='', perline=7, total=14, decimal=5, folder='.dbmoment'):
     """
     Routine to write Helmberger Format Seismograms
     """
-    log('mkHelm')
+    elog.debug('makeHelm')
 
     filename = {}
-    global tmp_folder
 
     if not outputfile:
-        (f, outputfile) = mkstemp(suffix='.Helm_data',
-                prefix='dbmoment_%s_' % append,dir=tmp_folder,text=True)
+        (f, outputfile) = mkstemp(suffix='.Helm_data', prefix='dbmoment_%s_' % append,
+                                dir=folder, text=True)
         f = os.fdopen(f, 'w')
     else:
         try:
             f = open(outputfile, 'w')
         except Exception,e:
-            self.error('Cannot open new file %s %s'% (outputfile,e))
+            self.elog.error('Cannot open new file %s %s'% (outputfile,e))
 
-    debug('New data file %s' % outputfile )
+    elog.debug('New data file %s' % outputfile )
 
 
     if len(traces.list()) == 3:
+        # From dbmoment.xpy code. Also in data.py
         global seismic_channels
         channels = seismic_channels
     else:
+        # From dbmoment.xpy code.
         global synth_channels
         channels = synth_channels
 
@@ -792,14 +1198,18 @@ def mkHelm(traces, append='', outputfile='', perline=7, total=14, decimal=5):
     text += "%8d\n" % ( len(traces.list()) )
     text += "(%de%d.%d)\n" % (perline, total, decimal)
 
-    debug('coded channels %s' % channels )
+    elog.debug('coded channels %s' % channels )
 
-    debug('in object %s' % traces.list() )
+    elog.debug('in object %s' % traces.list() )
 
     for chan in channels:
-        debug('appending %s to %s' % (chan, outputfile) )
+        elog.debug('appending %s to %s' % (chan, outputfile) )
+        #elog.debug('data[ %s:%s ]' % (index_min, index_max) )
 
         data = traces.get(chan)
+        #data = data[0:60]
+        elog.debug('data[ %s ]' % ( len(data) ) )
+        #data = data[index_min:index_max]
         samples = len(data)
 
         # Add channel block header
@@ -822,7 +1232,7 @@ def mkHelm(traces, append='', outputfile='', perline=7, total=14, decimal=5):
         f.write(text)
         f.close()
     except Exception,e:
-        error('Cannot write to new file %s %s'% (outputfile,e))
+        elog.error('Cannot write to new file %s %s'% (outputfile,e))
 
     return outputfile
 
@@ -835,7 +1245,8 @@ def readHelm(inputfile):
         return traces
 
     """
-    log('readHelm')
+    #from __main__ import elog
+    elog.debug('readHelm: %s' % inputfile)
     results = {}
 
 
@@ -844,51 +1255,70 @@ def readHelm(inputfile):
     # Number of channels
     try:
         total_chans = int( fo.readline().strip() )
-        log( "Total channels [%s]" % total_chans )
+        elog.debug( "Total channels [%s]" % total_chans )
     except:
-        error("NOT VALID FILE [%s]" % inputfile)
+        elog.error("NOT VALID FILE [%s]" % inputfile)
 
     if total_chans == 1:
         channels = 'X'
     if total_chans == 3:
+        # From dbmoment.xpy code. Also in data.py
         global seismic_channels
         channels = seismic_channels
     else:
+        # From dbmoment.xpy code.
         global synth_channels
         channels = synth_channels
 
     # Data Format
     try:
         data_format = fo.readline().strip()
+        elog.debug('file format: %s' % data_format )
+        temp = re.match("\((\d+)e(\d+)\.(\d+)\)",data_format)
+        perline = int(temp.group(1))
+        spaces = int(temp.group(2))
+        elog.debug('perline: %s  spaces: %s' % (perline, spaces) )
+
+
     except:
-        error( "NOT VALID FILE [%s]" % inputfile )
+        elog.error( "NOT VALID FILE [%s]" % inputfile )
 
     for chan in range(total_chans):
         channame = channels[chan]
-        log( "chan %s" % channame )
+        elog.debug( "chan %s" % channame )
         try:
             header1 = fo.readline().strip().split()
             header2 = fo.readline().strip().split()
             total_points = int( header2[0] )
             samplerate =  1/float( header2[1] )
         except:
-            error( "NOT VALID FILE [%s]" % inputfile )
+            elog.error( "NOT VALID FILE [%s]" % inputfile )
 
         if not total_points or not samplerate:
-            error( "NOT VALID FILE [%s]" % inputfile )
+            elog.error( "NOT VALID FILE [%s]" % inputfile )
 
         cache = []
-        log( "Total points [%s]" % total_points )
-        log( "Sampelrate [%s]" % samplerate )
+        elog.debug( "Total points [%s]" % total_points )
+        elog.debug( "Sampelrate [%s]" % samplerate )
 
         while (total_points > 0):
             row = fo.readline().strip('\n')
-            if not row: error( 'Problems readHelm(%s)' % inputfile )
-            row = [float(row[i:i+12]) for i in range(0, len(row), 12)]
-            cache.extend( row )
-            total_points -= len( row )
+            #elog.info('row: %s' % row)
+            #elog.info('missing: %s' % total_points)
+            if not row: elog.error( 'Problems readHelm(%s)' % inputfile )
 
-        cache = pylab.array( cache )
+            while ( len(row) > 0 ):
+                point = float(row[0:spaces])
+                row = row[spaces:]
+                #elog.info('%s' % point)
+                cache.append( point )
+                total_points -= 1
+
+            #row = [float(row[i:i+spaces]) for i in range(0, perline)]
+            #cache.extend( row )
+            #total_points -= len( row )
+
+        cache = array( cache )
         if total_chans == 1: return cache
 
         if not results:
@@ -901,9 +1331,94 @@ def readHelm(inputfile):
     return results
 
 
-if __name__ == "__main__":
-    """ If we call this script directly, then output error  """
+def open_verify_pf(pf,mttime=False):
+    '''
+    Verify that we can get the file and check
+    the value of PF_MTTIME if needed.
+    Returns pf_object
+    '''
 
-    print "\n\t** Not to run directly!!!! **\n"
-    print "\n\nNo BRTT support."
-    print "Juan Reyes <reyes@ucsd.edu>\n\n"
+    elog.debug( 'Look for parameter file: %s' % pf )
+
+    if mttime:
+        elog.debug( 'Verify that %s is newer than %s' % (pf,mttime) )
+
+        PF_STATUS = stock.pfrequire(pf, mttime)
+        if PF_STATUS == stock.PF_MTIME_NOT_FOUND:
+            elog.complain( 'Problems looking for %s. PF_MTTIME_NOT_FOUND.' % pf )
+            elog.die( 'No MTTIME in PF file. Need a new version of the %s file!!!' % pf )
+        elif PF_STATUS == stock.PF_MTIME_OLD:
+            elog.complain( 'Problems looking for %s. PF_MTTIME_OLD.' % pf )
+            elog.die( 'Need a new version of the %s file!!!' % pf )
+        elif PF_STATUS == stock.PF_SYNTAX_ERROR:
+            elog.complain( 'Problems looking for %s. PF_SYNTAX_ERROR.' % pf )
+            elog.die( 'Need a working version of the %s file!!!' % pf )
+        elif PF_STATUS == stock.PF_NOT_FOUND:
+            elog.complain( 'Problems looking for %s. PF_NOT_FOUND.' % pf )
+            elog.die( 'No file  %s found!!!' % pf )
+
+        elog.debug( '%s => PF_MTIME_OK' % pf )
+
+    try:
+        return stock.pfread( pf )
+    except Exception,e:
+        elog.die( 'Problem looking for %s => %s' % ( pf, e ) )
+
+
+def get_model_pf( mfile, path=[]):
+    '''
+    EARTH VELOCITY MODEL FILE:
+
+    Need to verify if we have the listed velocity model.
+    The file has a PF format but is not placed on the
+    regular folder with the rest of the parameter files
+    from contrib. That requires a full search on several
+    paths that we get from a parameter in the dbmoment.pf
+    file.
+    '''
+    pf = False
+
+    elog.debug('Get model: %s in %s' % (mfile, path) )
+
+    for d in path:
+        try:
+            elog.debug('Look for model: %s' % os.path.join(d, mfile) )
+            pf = stock.pfin(os.path.join(d, mfile) )
+            break
+        except:
+            pass
+        else:
+            break # Stop if we find one
+
+    if not pf:
+        elog.die('Missing [%s] in [%s]' % ( mfile, ', '.join(path) ) )
+
+    return pf
+
+
+
+def safe_pf_get(pf,field,defaultval=False):
+    '''
+    Safe method to extract values from parameter file
+    with a default value option.
+    '''
+
+    value = defaultval
+    if pf.has_key(field):
+        try:
+            value = pf.get(field,defaultval)
+        except Exception,e:
+            elog.die('Problems safe_pf_get(%s,%s)' % (field,e))
+            pass
+
+    if isinstance( value, (list, tuple)):
+        value = [x for x in value if x]
+
+    elog.debug( "pf.get(%s,%s) => %s" % (field,defaultval,value) )
+
+    return value
+
+
+
+
+if __name__ == "__main__": raise ImportError( "\n\n\tAntelope's dbmoment module. Not to run directly!!!! **\n" )

@@ -6,16 +6,17 @@ change_q330_annc \- change or review the annc structure on a q330 datalogger
 .nf
 \fBchange_q330_annc \fP
 	[-a authcode]
+	[-A new_authcode]
 	[-d dlevent_db]
 	[-l logdir]
+	[-n ]
 	[-p pf]
 	[-P port]
-	[-s select]
-	[-r reject]
+	[-s select_dlsta]
 	[-t targetname]
+	[-T timeout]
 	[-v]
 	[-V]
-	[-n ]
 	[-x exclude_dlsta]
 	{-i dlevent_db | staq330_db} 
 	
@@ -27,14 +28,15 @@ The Earthscope USArray Transportable Array (TA) network uses POC initiated opera
 to connect to the deployed q330 dataloggers.  This requires the field crews to deploy
 the q330s with the ANNC structure properly setup to send these Point-of-Contact (POC)
 messages and to send them to host IPs that are ready to acquire them with a running 
-\fBpocd(1) \fP processes.  On occassion, the datalogger setup, or modifications 
+\fBpocd(1) \fP processes.  On occasion, the datalogger setup, or modifications 
 using Willard go awry and the ANNC structure is set improperly, or the toggle to 
 send out the POCs is not checked.  This script is a way for a data center to 
 query and/or modify that ANNC structure and is a wrapper around the \fBq330util(1)\fP
 command to request or set that structure.  It is a sharp tool, and serious care/caution 
-should be taken before you use this on all of your remote dataloggers!!  \fB Please run this 
-in test/non-commanding mode with the \fI-n\fP option before unleashing it on your 
-remote dataloggers!!\fP  
+should be taken before you use this on all of your remote dataloggers!!  Without the 
+\fI-n\fP option, changes will be made to the ANNC structure on all dataloggers and 
+saved to the EEPROM. \fB Please run this in test/non-commanding mode with the 
+\fI-n\fP option before unleashing it on your remote dataloggers!!\fP  
 
 .SS Auxilliary tables
 This script has been developed for use at the ANF where we have implemented various
@@ -55,15 +57,15 @@ has a staq330 table.
 .IP -n 
 Run \fBchange_q330_annc\fP in report mode only - NO CHANGES will be made to the datalogger.  
 Use this when you want to see what would happen, or get a report on the current settings,  
-but not actually affect any datalogger settings.  Highly recommended that you start with this 
-option enabled!
-.IP -v
-Verbose output.
-.IP -V
-Very verbose output - debugging only.
+but not actually affect any datalogger settings.  \fBHighly recommended that you start with this 
+option enabled!\fP
 .IP "-a authcode" 
 Password/authentication code for the q330 datalogger.  Default of 0000000000000000 is tried, 
 but alternates can be specified with this option or in the parameter file.
+.IP "-A new_authcode" 
+New authcode.  Modify the password/authentication code for the q330 datalogger if it is different
+from the 16 digit hex value specified here.  A successful change will result in a save to eeprom
+and a reboot of the datalogger.  USE WITH CAUTION!!!  No change will occur if \fI-n\fP is specified. 
 .IP -f
 This is a "force" option that will report any pre-existing oddities
 in setup but will go ahead and change them to your new ones.  This could have potentially critical/disasterous 
@@ -71,15 +73,22 @@ consequences to your remote datalogger.  Use with extreme caution!
 .IP "-l logdir"
 Directory to store reports of before and after POC settings and annc commands.  Default is \fIchange_q330_annc_logs\fP. 
 .IP "-p parameter_file"
-Alternate parameter file to use.  The default parameter file name is \fBchange_q330_annc.pf\fP
+Alternate parameter file to use.  The default parameter file name is \fBchange_q330_annc.pf\fP.
 .IP "-P port"
 Use this port number for communications with the q330 rather than the default port number of 5330.
-.IP "-x dl_reject_expression"
-Expression used to reject dataloggers for change or review.  The code performs dlsta !~/$opt_x/".
 .IP "-s dl_select_expression"
 Expression used to select dataloggers for change or review.  The code performs dlsta =~/$opt_s/".
 .IP "-t targetname_expression"
 Expression used to select particular q330 targetnames for change or review.  
+.IP "-T timeout"
+Timeout value in seconds to wait for failure of q330util.  Default is 5 seconds.  For slower links, such as
+a satellite link, 5 seconds is too short and a value such as 30 or 60 is recommended. 
+.IP "-x dl_reject_expression"
+Expression used to reject dataloggers for change or review.  The code performs dlsta !~/$opt_x/".
+.IP -v
+Verbose output.
+.IP -V
+Very verbose output - debugging only.
 .IP "-d dlevent_db"
 Database name that contains a dlevent table to record when the settings change took place.  The dlevent
 table is a css3.0 extension table used at the ANF.  When a setannc command is to be sent to the dataloggers
@@ -174,6 +183,9 @@ script will cycle through each one if it cannot access the datalogger with the \
 The base port number for q330 communications.  The default value is 5330 and is not normally changed 
 unless particular/odd communication paths are needed.  Override of the default can also be done with 
 the \fI-p port\fP option which will take precedence.
+.IP q330util_timeout
+Timeout value in seconds to wait for failure of q330util.  Default is 5 seconds.  If \fI-T\fP is specified,
+it overrides this value.
 .IP unlock_flags
 This should likely always be set to 0xa00 if you are operating in POC mode.  This sets the serial
 number unlocks.
@@ -227,6 +239,9 @@ alt_auth_codes  &Tbl{
 #       000000000000BAAB        
 }
 
+q330util_timeout        30      # timeout value in seconds for q330util (wait time for return UDP packets)
+
+port_base               5330 
 
 # default POC settings
 
@@ -390,6 +405,32 @@ No changes to POC setup needed for: TA_I60A
 Could not reach TA_I61A after attempting all alternate authorization code(s) 
 Station TA_I61A was unreachable. 
 
+.IP \(bu
+Test a proposed change of the authorization code/password for a single station.  
+Note that any necessary changes to the POC setup will also be reported but not
+attempted because of the use of \fI-n\fP..
+.in 2c
+.ft CW
+.nr
+.ne
+%\fB change_q330_annc -A 0000000000BADBAD -n -s "TA_ABCD" db/usarray\fP
+
+TA_ABCD is not in the exclude list in the parameter file.  Getting annc structures
+   Problem - resume_time_in_minutes is 5 rather than 10 for TA_ABCD XXX.XX.XX.X 
+     resume_time_in_minutes will be changed to 10 for TA_ABCD
+   Problem - resume_time_in_minutes is 10 rather than  for TA_ABCD XXX.XX.XX.X 
+     resume_time_in_minutes will be changed to  for TA_ABCD
+   POC setup count is 6 rather than 5 for TA_ABCD
+Changes to POC setup needed for: TA_ABCD 
+
+	User specified -n prevents setannc from running. 
+	   annc structure remains as before for TA_ABCD 
+
+2016-222 21:52:47 perl *complain*: Datalogger auth code,  0000000000000000, differs from to-be-used auth code, 0000000000BADBAD from command line use of -A
+	User specified -n prevents setauth from running. 
+	   auth code remains as before for TA_ABCD 
+
+
 
 .SH DIAGNOSTICS
 .IP "Could not reach XX_ABCD after attempting all alternate authorization code(s)"
@@ -401,6 +442,9 @@ Station has POCs setup as specified in your parameter file.
 The numbered POC structure \fI(n)\fP has incorrect POC settings.  This datalogger 
 will receive a setannc q330util command to modify the POC structures.  Note that 
 only the numbered structures will be modified.
+.IP "PROBLEM |!  No annc structure available for XX_ABCD!!"
+The field crews neglected to set any POC settings on this datalogger.  Settings 
+will be added to the datalogger as long as the \fI -n \fP option is not used.
 .SH "SEE ALSO"
 .nf
 q3302orb(1)
@@ -411,6 +455,10 @@ q330_baler(1)
 .SH "BUGS AND CAVEATS"
 .LP
 Assumes same authorization code across all ports.  
+.LP
+Changing the authorization code via this command, but not in the q3302orb parameter files
+will result in loss of data collection as the datalogger will reboot and the registration
+attempt via q3302orb will fail due to a now invalid auth code.
 .LP
 I expect log messages might be confusing if you have a single datalogger recording 
 two stations worth of data (i.e. both XX_ABCD and XX_EFGH are collected via a single

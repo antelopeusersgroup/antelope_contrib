@@ -1,0 +1,64 @@
+.TH DBMOMENT_RUN_EXAMPLE 1
+
+.SH NAME
+dbmoment_run_example \- run dbmoment on 2 example events
+
+.SH SYNOPSIS
+    dbmoment_run_example [temp_dir]
+
+.SH DESCRIPTION
+The Dreger's inversion source code is included in the contributed code
+repo as well as 2 full examples from the original distribution.
+The data needed for the example is located on folders "EXAMPLE_1" and
+"EXAMPLE_2".
+
+Inversion will have the same limitations as the original Dreger's
+code and users should be familiar with Dreger's documentation.
+
+
+.SH ENVIRONMENT AND DEPENDENCIES
+You need to have $ANTELOPE defined in your environment. Then
+compile the source code.
+
+    make clean;
+    make;
+    make install;
+
+It will require write access to the example folder:
+
+    $ANTELOPE/contrib/example/dbmoment/
+
+OR...  you can run with a possible argument for a
+work folder that the process will use to create
+some tables that will link to the ones in the
+main distribution. You need to do this if you
+don't have write access to $ANTELOPE folder.
+
+.SH PARAMETER FILE
+None.
+
+.SH EXAMPLE
+You can run the dbmoment code by hand from any directory.
+
+Run directly in terminal:
+
+    dbmoment_run_example
+
+This will go to the example folder "$ANTELOPE/contrib/example/dbmoment/" and
+will run both examples. You will see several new folders.
+
+    .dbmoment       => Temp folder for calculations.
+    synthetics_db   => Includes all databases for synthetics.
+    dbmoment_images => Default folder to save the results in PNG files.
+    mt db tables    => Results will go into a new 'mt' table.
+
+
+
+.SH "SEE ALSO"
+.nf
+dbmoment(1)
+.fi
+
+.SH AUTHOR
+Juan Reyes (UCSD)
+
