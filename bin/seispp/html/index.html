@@ -29,6 +29,11 @@ href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_
 
 
 
+
+
+
+
+
       <a
 href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_three_component_seismogram.html">ThreeComponentSeismograms</a>,
       <a
@@ -65,11 +70,21 @@ href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_
 
 
 
+
+
+
+
+
         unix</a>.&nbsp; In many respects this package should be thought
       of as a three-component seismogram version of seismic unix with
       boost serialization as the core external format instead of the
       seismic unix format, which is a variant of <a
 href="http://www.seg.org/Portals/0/SEG/News%20and%20Resources/Technical%20Standards/seg_y_rev1.pdf">SEGY</a>.&nbsp;
+
+
+
+
+
 
 
 
@@ -103,6 +118,11 @@ href="http://www.seg.org/Portals/0/SEG/News%20and%20Resources/Technical%20Standa
       all make use of a generic "header" interface made part of the
       seismic data object by inheritance of the C++ class <a
 href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_metadata.html">SEISPP::Metadata</a>.&nbsp;&nbsp;
+
+
+
+
+
 
 
 
@@ -153,6 +173,11 @@ href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_
 
 
 
+
+
+
+
+
       The core version for this set of modules is a&nbsp;<a
 href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_three_component_ensemble.html">ThreeComponentEnsemble</a>
       which define a generic collection of (atomic)
@@ -163,6 +188,11 @@ href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_
       efficiency, but has an undeniable dark side.&nbsp; Browse the
       source code for this group of programs,&nbsp;<a
 href="https://github.com/antelopeusersgroup/antelope_contrib/tree/master/bin/seispp">which
+
+
+
+
+
 
 
 
@@ -231,16 +261,19 @@ href="https://github.com/antelopeusersgroup/antelope_contrib/blob/master/bin/sei
     (i.e. like save and load in matlab). &nbsp;&nbsp; &nbsp; <br>
     <br>
     The full description of this API can be found in the doxygen pages
-    for the seispp_io library (<b>these need to be built).</b>&nbsp; An
-    important extension of the library is binary data
-    formats.&nbsp;&nbsp; The default serialization is to text data, but
-    for large data sets the optional binary format is likely a very good
-    idea.&nbsp;&nbsp; I have not done benchmarks to know at what scale
-    this might become important, but it is a more than reasonable
-    hypothesis that at some critical file size a binary data format
-    would improve performance.&nbsp; Since the text files are virtually
-    unreadable either, binary probably should have been the default but
-    for now text files are the default. <br>
+    for the seispp_io library (This is the&nbsp;<a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_stream_object_reader.html">reader</a>.&nbsp;
+
+
+    This is the&nbsp;<a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_stream_object_writer.html">writer.</a>)
+    &nbsp; The default serialization is a binary format.&nbsp;&nbsp;
+    This was found important for efficiency as the text format is at
+    least and order of magnitude slower for reading and writing than the
+    binary version.&nbsp;&nbsp; Text format files could be useful for
+    transport between machines, but this will require implementing a
+    feature in the library to allow this.&nbsp;&nbsp; Hence, use the
+    binary format unless you need to try debug the file format.<br>
     <br>
     A final very important point is that a StreamObject file, which is
     the abstraction used here,&nbsp; can contain only one type of of
@@ -264,6 +297,8 @@ href="https://github.com/antelopeusersgroup/antelope_contrib/blob/master/bin/sei
     <h2>Modules</h2>
     <p><a href="programs/agc.html">agc</a> - automatic gain control
       function for ThreeComponentEnsemble data.<br>
+      <a href="./programs/ator.html">ator</a> - convert from an absolute
+      time frame (UTC) to relative time (e.g. origin time = 0)<br>
       <a href="programs/db2seispp.html">db2seispp</a> - creates a file
       of serialized ThreeComponentSeismogram objects from the output of
       extract_events.<br>
@@ -281,13 +316,21 @@ href="https://github.com/antelopeusersgroup/antelope_contrib/blob/master/bin/sei
       serialized ThreeComponentSeismogram objects.<br>
       <a href="programs/display_ensemble.html">display_ensemble</a> -
       graphic display of a ThreeComponentEnsemble.&nbsp;&nbsp; <br>
-      e<a href="programs/export_to_matlab.html">xport_to_matlab</a> -
-      export a ThreeComponentEnsemble as three matrices that can be read
-      into matlab with load<br>
+      <a href="./programs/export_to_matlab.html">export_to_matlab</a> -
+      export a TimeSeriesEnsemble as a matrix that ce read into matlab
+      with the load procedure<br>
+      e<a href="programs/export_to_matlab_3C.html">xport_to_matlab_3C</a>
+      - export a ThreeComponentEnsemble as three matrices that can be
+      read into matlab with load<br>
       <a href="programs/export_to_su.html">export_to_su</a> - export a
       suite of TimeSerieEnsemble objects to a seismic unix
       file.&nbsp;&nbsp; <br>
       <a href="programs/extract_component.html">extract_component</a>&nbsp;
+
+
+
+
+
 
 
       - reduce a file ThreeComponentEnsemble object to a stream of
@@ -306,6 +349,9 @@ href="https://github.com/antelopeusersgroup/antelope_contrib/blob/master/bin/sei
       to list header (metadata) attributes<br>
       <a href="programs/peak_scaling.html">peak_scaling</a> - scale each
       3C seismogram by the largest vector magnitude amplitude<br>
+      <a href="./programs/rename_attributes.html">rename_attributes </a>-
+      limited functionality attrribute editor to rename (optional copy)
+      of one or more attributes<br>
       <a href="programs/rotate.html">rotate</a> - apply a rotation of 3C
       data limited to the horizonals<br>
       rotate3D - apply a full 3D transformation <br>
@@ -327,5 +373,11 @@ href="https://github.com/antelopeusersgroup/antelope_contrib/blob/master/bin/sei
       <a href="programs/zeropad.html">zeropad</a> - zero pad 3C data<br>
       <br>
     </p>
+    <h2>Acknowledgements:</h2>
+    <p>This software was developed over the past 15 years by a series of
+      grants from the Geophysics and Earthscope Programs of EAR division
+      of the National Science Foundation.&nbsp; <br>
+    </p>
+    <p> </p>
   </body>
 </html>

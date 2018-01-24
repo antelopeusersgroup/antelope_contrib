@@ -7,7 +7,7 @@
   <body>
     <h1>dbloadhdr</h1>
     <h3>Usage:</h3>
-    <p>dbloadhdr db [-t type -o logfile -pf pffile --help -binary] &lt;
+    <p>dbloadhdr db [-t type -o logfile -pf pffile --help -text] &lt;
       infile &gt; outfile<br>
     </p>
     <h3>Algorithm:</h3>
@@ -103,11 +103,8 @@
       </i>Read pf data from pffile instead of the default of
       dbloadhdr.pf.&nbsp; <br>
     </p>
-    <h3> </h3>
-    <i>-binary<br>
-    </i>Write the output in binary.&nbsp; Default is text serialized
-    file.<br>
-    <br>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
     <i>-v<br>
     </i>Be more verbose.&nbsp; Note all log information goes to stderr
     so it is best to use this option only for debugging problems.<br>

@@ -17,12 +17,12 @@ using namespace SEISPP;
 typedef map<string,double> StaMap;   // tuple of station name and arrival time
 void usage()
 {
-    cerr << "dbxcor_import db [-s subset -filter -binary -v --help -pf pffile]" <<endl
+    cerr << "dbxcor_import db [-s subset -filter -text -v --help -pf pffile]" <<endl
         << "Constructs a serialized 3C ensemble from Antelope database db"<<endl
         << "serialized data written to stdout"<<endl
         << "The -s flag can be used to apply subset condition to the working database view"<<endl
         << "use -filter to apply the same filter used to compute beam (stored in xcorbeam)"<<endl
-        << "Use -binary to write output in binary format"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
         << "--help returns this usage message and exits"<<endl
         << "Use -v to be more verbose"<<endl
         << "use -pf to specify alternate pf file to default dbxcor_import.pf"
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
   string dbname(argv[1]);
   if(dbname=="--help") usage();
   string pffile("dbxcor_import");
-  bool binary_data(false);
+  bool binary_data(true);
   bool filter_data(false);
   bool apply_subset(false);
   string subset_string;
@@ -253,8 +253,8 @@ int main(int argc, char **argv)
       if(i>=argc)usage();
       subset_string=string(argv[i]);
     }
-    else if(sarg=="-binary")
-      binary_data=true;
+    else if(sarg=="-text")
+      binary_data=false;
     else if(sarg=="-filter")
       filter_data=true;
     else if(sarg=="-v")
@@ -339,6 +339,8 @@ int main(int argc, char **argv)
       long evid,orid;
       evid=get_value<long>("evid",dbh);
       orid=get_value<long>("orid",dbh);
+      d.put("evid",evid);
+      d.put("orid",orid);
       StaMap arrivals=LoadStaMap(dbh,"xcorarrival.time");
       StaMap weights=LoadStaMap(dbh,"stackwgt");
       double avgtime=average_times(arrivals);

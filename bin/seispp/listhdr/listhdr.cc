@@ -4,16 +4,17 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "PMTimeSeries.h"
 #include "seispp.h"
+#include "ensemble.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
-#include "ensemble.h"
 //#include "PMTimeSeries.h"
 using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "listhdr [-i infile -csv format_file -t objecttype -binary -showfile -showcount]  >outfile"
+    cerr << "listhdr [-i infile -csv format_file -t objecttype -text -showfile -showcount]  >outfile"
         <<endl
         << "List metadata components of a stream of serialized objects"
         <<endl
@@ -23,9 +24,9 @@ void usage()
         <<endl
         << "        (default dumps all with operator <<"<<endl
         << " -t - specify the type of object expected"<<endl
-        << "      (Currently accept:  ThreeComponentSeismogram (default) and ThreeComponentEnsemble"<<endl
-        << " -binary - assume in and out data are binary (default is ascii text)"
-        <<endl
+        << "      (Currently accept:  ThreeComponentSeismogram (default), ThreeComponentEnsemble"<<endl
+        << "      TimeSeries, TimeSeriesEnsemble, and PMTimeSeries)"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
         << " -showfile - prints file name in first column (allowed only with -i option)"
         <<endl
         << "-showcount - print object count in a file with multiple objects"
@@ -141,6 +142,10 @@ AllowedObjects get_object_type(string otype)
         return TCE;
     else if(otype=="PMTimeSeries")
         return PMTS;
+    else if(otype=="TimeSeries")
+        return TS;
+    else if(otype=="TimeSeriesEnsemble")
+        return TSE;
     else
     {
         cerr << "Do not know how to handle object type="<<otype
@@ -194,7 +199,7 @@ int main(int argc, char **argv)
     string otype("ThreeComponentSeismogram");
     string fname_csvo;
     bool use_stdin(true);
-    bool binary_data(false);
+    bool binary_data(true);
     bool showfile(false);
     bool showcount(false);
     for(i=1;i<argc;++i)
@@ -220,8 +225,8 @@ int main(int argc, char **argv)
             if(i>=argc)usage();
             otype=string(argv[i]);
         }
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else if(sarg=="-showfile")
             showfile=true;
         else if(sarg=="-showcount")
@@ -264,10 +269,9 @@ int main(int argc, char **argv)
                         showfile,showcount);
                 break;
             case PMTS:
-                cerr << "PMTimeSeries not yet supported"
-                    <<"Cannot run"<<endl;
-                exit(-1);
-                //fofflist=build_index<PMTimeSeries>(infile);
+                listhdr_generic<PMTimeSeries>(infile,
+                        binary_data,use_stdin,csv_output,csv_format_info,
+                        showfile,showcount);
                 break;
             default:
                 cerr << "Coding problem - dtype variable does not match enum"

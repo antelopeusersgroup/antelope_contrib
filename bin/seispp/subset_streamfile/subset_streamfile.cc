@@ -3,12 +3,10 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include "PMTimeSeries.h"
 #include "seispp.h"
-#include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #include "ensemble.h"
-/* Disabled for now */
-//#include "PMTimeSeries.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
 using namespace std;
@@ -57,11 +55,11 @@ template <typename T> bool range_tester<T>::inside(T testval)
 {
   if(use_min)
   {
-    if(testval<=minval)return false;
+    if(testval<minval)return false;
   }
   if(use_max)
   {
-    if(testval>=maxval) return false;
+    if(testval>maxval) return false;
   }
   return true;
 }
@@ -87,7 +85,7 @@ private:
 };
 void usage()
 {
-    cerr << "subset_streamfile key:type ( -eq val | -range minval maxval | -min minval -max maxval ) [-objt object_type --help -binary]"<<endl
+    cerr << "subset_streamfile key:type ( -eq val | -ne val | -range minval maxval | -min minval -max maxval ) [-t object_type --help -text]"<<endl
         <<endl
         << " seispp unix filter to subset a data set read from stdin and write result to out"
         <<endl
@@ -95,20 +93,20 @@ void usage()
         << "optionally append :type of int or real (e.g. evid:int) "<<endl
         << "Default (no :type specified) is string (char * for C programmers)"
         <<endl
-        <<  "  [-objt data_object_type]"<<endl
-        << " Accepted object types for arg following -objt flag are:"<<endl
+        <<  "  [-t data_object_type]"<<endl
+        << " Accepted object types for arg following -t flag are:"<<endl
         << "  ThreeComponentSeismogram"<<endl
         << "  ThreeComponentEnsemble"<<endl
         << "  TimeSeries"<<endl
         << "  TimeSeriesEnsemble"<<endl
         << "  PMTimeSeries"<<endl
         << " -eq implement an exact match test"<<endl
+        << " -ne not equal - opposite of -eq test"<<endl
         << " Use -range to select data with key value between (inclusive) minval and maxval"<<endl
         << " Use -min or -max to specify one sided range tests"
         <<endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"
-        <<endl;
+        << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
 std::pair<string,MDtype> split_arg1(const char *arg)
@@ -124,7 +122,7 @@ std::pair<string,MDtype> split_arg1(const char *arg)
     usage();
   }
   pair<string,MDtype> result;
-  result.first=sarg.substr(0,pos-1);
+  result.first=sarg.substr(0,pos);
   string strfield=sarg.substr(pos+1,sarg.length()-1);
   if(strfield=="int" || strfield=="INT" || strfield=="long")
     result.second=MDint;
@@ -177,6 +175,8 @@ template <typename Tdata, typename Tkey>
         ++nout;
       }
     }
+    delete inp;
+    delete outp;
     return nout;
   }catch(...)
   {
@@ -186,7 +186,8 @@ template <typename Tdata, typename Tkey>
   }
 }
 template <typename Tdata, typename Tkey>
-   int filter_by_match(string key,equal_tester<Tkey> eqt,bool binary_data)
+   int filter_by_match(string key,equal_tester<Tkey> eqt,
+       bool negate,bool binary_data)
 {
   StreamObjectReader<Tdata> *inp=NULL;
   StreamObjectWriter<Tdata> *outp=NULL;
@@ -209,12 +210,24 @@ template <typename Tdata, typename Tkey>
       Tkey mdtest;
       Metadata *md=dynamic_cast<Metadata*>(&d);
       mdtest=md->get<Tkey>(key);
-      if(eqt.is_equal(mdtest))
+      bool testval=eqt.is_equal(mdtest);
+      bool writeme(false);
+      /* There is no doubt a single line way to do this, but hopefull
+         this is clearer for minimal loss in efficiency*/
+      if(negate)
+      {
+        if(!testval)writeme=true;
+      }
+      else if(testval)
+        writeme=true;
+      if(writeme)
       {
         outp->write(d);
         ++nout;
       }
     }
+    if(inp!=NULL) delete inp;
+    if(outp!=NULL) delete outp;
     return nout;
   }catch(...)
   {
@@ -239,7 +252,7 @@ Arguments:
      to range_tester generic function (ignored if equal_test is true).
      */
 template <typename Tdata> int subset_processor(string key, MDtype keytype,
-      void *valeq, void *valmin, void *valmax, bool equal_test,
+      void *valeq, void *valmin, void *valmax, bool equal_test, bool negate,
       bool minonly, bool maxonly, bool binary_data)
 {
   int nout;
@@ -251,7 +264,7 @@ template <typename Tdata> int subset_processor(string key, MDtype keytype,
         {
           int *ieq=static_cast<int*>(valeq);
           equal_tester<int> eqt(*ieq);
-          nout=filter_by_match<Tdata,int>(key,eqt,binary_data);
+          nout=filter_by_match<Tdata,int>(key,eqt,negate,binary_data);
         }
         else
         {
@@ -267,7 +280,7 @@ template <typename Tdata> int subset_processor(string key, MDtype keytype,
         {
           double *req=static_cast<double*>(valeq);
           equal_tester<double> eqt(*req);
-          nout=filter_by_match<Tdata,double>(key,eqt,binary_data);
+          nout=filter_by_match<Tdata,double>(key,eqt,negate,binary_data);
         }
         else
         {
@@ -283,7 +296,7 @@ template <typename Tdata> int subset_processor(string key, MDtype keytype,
         {
           string *seq=static_cast<string*>(valeq);
           equal_tester<string> eqt(*seq);
-          nout=filter_by_match<Tdata,string>(key,eqt,binary_data);
+          nout=filter_by_match<Tdata,string>(key,eqt,negate,binary_data);
         }
         else
         {
@@ -310,8 +323,9 @@ int main(int argc, char **argv)
     const int narg_required(1);
     if(argc<2) usage();
     if(string(argv[1])=="--help") usage();
-    bool binary_data(false);
+    bool binary_data(true);
     bool equal_test(false);
+    bool negate(false);
     bool minonly(false);
     bool maxonly(false);
     bool test_range(false);
@@ -328,8 +342,11 @@ int main(int argc, char **argv)
     for(i=narg_required+1;i<argc;++i)
     {
         string sarg(argv[i]);
-        if(sarg=="-eq")
+        if( (sarg=="-eq") || (sarg=="-ne") )
         {
+          /* handle the equal and not equal match
+             with the same variables, but use the booleans to
+             distinguish which to use */
           ++i;
           if(i>=argc) usage();
           switch(keytype)
@@ -348,6 +365,8 @@ int main(int argc, char **argv)
               veq=static_cast<void *>(&seq);
           }
           equal_test=true;
+          if(sarg=="-ne")
+            negate=true;
         }
         else if(sarg=="-min")
         {
@@ -424,14 +443,16 @@ int main(int argc, char **argv)
           maxonly=false;
           test_range=true;
         }
-        else if(sarg=="-objt")
+        /* For now allows -objt or -t as I (glp) have a bunch of 
+         * shell scripts use -objt as this flag */
+        else if(sarg=="-objt" || sarg=="-t")
         {
           ++i;
           if(i>=argc)usage();
           sarg=string(argv[i]);
           if(sarg=="ThreeComponentSeismogram")
             object_type=TCS;
-          else if(sarg=="ThreeComponentEnemble")
+          else if(sarg=="ThreeComponentEnsemble")
             object_type=TCE;
           else if(sarg=="TimeSeries")
             object_type=TS;
@@ -449,15 +470,15 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else
             usage();
     }
     /* Some sanity checks */
-    if(!(test_range && minonly && maxonly && equal_test))
+    if(!(test_range || minonly || maxonly || equal_test))
     {
       cerr << "no subset test defined"<<endl;
       usage();
@@ -477,6 +498,7 @@ int main(int argc, char **argv)
               << " max="<<imax<<endl;
             usage();
           }
+          break;
         case MDreal:
             if(rmin>=rmax)
             {
@@ -484,6 +506,7 @@ int main(int argc, char **argv)
                 << " max="<<rmax<<endl;
               usage();
             }
+            break;
         case MDstring:
             if(smin>=smax)
             {
@@ -491,6 +514,7 @@ int main(int argc, char **argv)
                   << " max="<<smax<<endl;
               usage();
             }
+            break;
         default:
             /* This block should actually never be executed */
             cerr << "unknown key time"<<endl;
@@ -505,27 +529,23 @@ int main(int argc, char **argv)
       {
         case TCE:
           nout=subset_processor<ThreeComponentEnsemble>(key,keytype,
-                    veq,vmin,vmax,equal_test,minonly,maxonly,binary_data);
+                    veq,vmin,vmax,equal_test,negate,minonly,maxonly,binary_data);
           break;
         case TCS:
           nout=subset_processor<ThreeComponentSeismogram>(key,keytype,
-                    veq,vmin,vmax,equal_test,minonly,maxonly,binary_data);
+                    veq,vmin,vmax,equal_test,negate,minonly,maxonly,binary_data);
           break;
         case TS:
           nout=subset_processor<TimeSeries>(key,keytype,
-                    veq,vmin,vmax,equal_test,minonly,maxonly,binary_data);
+                    veq,vmin,vmax,equal_test,negate,minonly,maxonly,binary_data);
           break;
         case TSE:
           nout=subset_processor<TimeSeriesEnsemble>(key,keytype,
-                    veq,vmin,vmax,equal_test,minonly,maxonly,binary_data);
+                    veq,vmin,vmax,equal_test,negate,minonly,maxonly,binary_data);
           break;
         case PMTS:
-          /*
           nout=subset_processor<PMTimeSeries>(key,keytype,
-                    veq,vmin,vmax,equal_test,minonly,maxonly,binary_data);
-                    */
-          cerr << "ParticleMotionTimeSeries not yet supported"<<endl;
-          exit(-1);
+                    veq,vmin,vmax,equal_test,negate,minonly,maxonly,binary_data);
           break;
       }
       cerr << "subset_streamfile:  Total number of objects copied to output="<<nout<<endl;

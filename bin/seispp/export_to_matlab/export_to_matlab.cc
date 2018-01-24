@@ -3,173 +3,238 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <vector>
+#include <memory>
 #include "seispp.h"
-#include "StreamObjectReader.h"
-#include "dmatrix.h"
 #include "ensemble.h"
-#include "Metadata.h"
+#include "StreamObjectReader.h"
+#include "StreamObjectWriter.h"
 using namespace std;
 using namespace SEISPP;
-
 void usage()
 {
-    cerr << "export_to_matlab [-x1 x1f -x2 x2f -x3 x3f -pf pffile] < in  "
+    cerr << "export_to_matlab [-v -text -o outfile --help] < in"
         <<endl
-        << "Exports serialized seispp 3C ensemble to 3 matlab matrices in 3 files"<<endl
-        << "Use -x1, -x2, or -x3 to set file names for components 1, 2, 3"<<endl
-        << "Default files are x1=T.dat, x2=R.dat, and x3=L.dat"<<endl
-        << "Default names can also be changed by editing default pf file "
-        << "export_to_matlab.pf"<<endl
-        << "(Accepts only text format input)"<<endl;
+        << "Write data in a single TimeSeriesEnsemble object to a matrix format "<<endl
+        << "that can be easily read into matlab (load procedure)"<<endl
+        << "Use -o outfile to write the data to outfile.  By default the "<<endl
+        << "matrix data are written to stdout"<<endl
+        << "Use -h to write a data header with required time series attributes (default is none)"
+        <<endl
+        << "Format:  t0, dt, ns  (space delimited)"<<endl
+        << "WARNING:  make sure the input has a relative time standard or span a single time window"<<endl
+        << " -v - be more verbose"<<endl
+        << " --help - prints this message"<<endl
+        << " -text - switch to text input (default is binary)"<<endl;
     exit(-1);
 }
-vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
+class AlignedGather
 {
-  /* We need to make sure these data are set to relative time.  We
-  also scan for the relative time range of the data. */
-  vector<ThreeComponentSeismogram>::iterator dptr;
-  double tmin,tmax;
-  int i,j;
+public:
+  double t0;
   double dt;
-  for(i=0,dptr=d.member.begin();dptr!=d.member.end();++dptr)
+  int ns;
+  int nseis;
+  TimeReferenceType tref;
+  dmatrix d;
+  AlignedGather(dmatrix& din, double t0in, double dtin, int nsin, int nseisin, TimeReferenceType trefin) : d(din)
   {
-    if(dptr->tref == absolute) dptr->ator(dptr->t0);
-    if(i==0)
+    this->t0=t0in;
+    this->dt=dtin;
+    this->ns=nsin;
+    this->tref=trefin;
+    this->nseis=nseisin;
+  };
+  AlignedGather(const AlignedGather& parent) : d(parent.d)
+  {
+    t0=parent.t0;
+    dt=parent.dt;
+    ns=parent.ns;
+    nseis=parent.nseis;
+    tref=parent.tref;
+  }
+};
+/* Data with marked gaps are set to this value */
+const double GapValue(-9.9999999999E99);
+AlignedGather convert_to_matrix(TimeSeriesEnsemble& d)
+{
+  try{
+    vector<TimeSeries>::iterator dptr;
+    double dt,tmin,tmax;
+    int i,j;
+    int nsmax;
+    for(i=0,dptr=d.member.begin();dptr!=d.member.end();++i,++dptr)
     {
-      tmin=dptr->time(0);
-      tmax=dptr->endtime();
-      dt=dptr->dt;
-    }
-    else
-    {
-      tmin=min(tmin,dptr->time(0));
-      tmax=max(tmax,dptr->endtime());
-      /* Bad form here using a fixed constant to define equivalent
-      sample rates */
-      if(fabs(dt-dptr->dt)>0.0001)
+      if(i==0)
       {
-        cerr << "export_to_matlab:  Mixmatched sample rates in Three C ensemble"<<endl
-          << "This program requires fixed sample rate"<<endl
-          << "Member "<<i<<" has dt="<<dptr->dt<<" put previous members had dt="
-          << dt<<endl<<"No output will be generated"<<endl;
-        exit(-1);
+        tmin=dptr->time(0);
+        tmax=dptr->endtime();
+        dt=dptr->dt;
+        nsmax=dptr->ns;
       }
-    }
-  }
-  cout << "Relative time range of output data is "<<tmin <<" to "<<tmax<<endl;
-  int n=d.member.size();
-  int m=(tmax-tmin)/dt;
-  cout << "Output matrices will be of size "<<m<<"X"<<n<<endl;
-  /* We use this fixed wall as a sanity check */
-  const int Mmax(100000000);
-  if(m>Mmax)
-  {
-    cerr << "Computed number of samples,"<<m<<",  is very large."<<endl
-      << "Aborting to avoid a likely malloc error."<<endl
-      << "You are probably and ensmble with absolute times set as t0 instead of some relative time standard"<<endl;
-    exit(-1);
-  }
-  vector<dmatrix> work;
-  for(i=0;i<3;++i) work.push_back(dmatrix(m,n));
-  for(i=0;i<3;++i) work[i].zero();
-  double t;
-  for(dptr=d.member.begin(),j=0;dptr!=d.member.end();++dptr,++j)
-  {
-    for(t=tmin;t<tmax;t+=dt)
-    {
-      int kd,km;
-      kd=dptr->sample_number(t);
-      if( (kd>=0) && (kd<dptr->ns) )
+      else
       {
-        if(kd<m)
+        tmin=min(tmin,dptr->time(0));
+        tmax=max(tmax,dptr->endtime());
+        /* Bad form here using a fixed constant to define equivalent
+        sample rates */
+        if(fabs(dt-dptr->dt)>0.0001)
         {
-          for(i=0;i<3;++i)
-          {
-            work[i](kd,j)=dptr->u(i,kd);
-          }
+          cerr << "export_to_matlab:  Mixmatched sample rates in input ensemble"<<endl
+            << "This program requires fixed sample rate"<<endl
+            << "Member "<<i<<" has dt="<<dptr->dt<<" but previous members had dt="
+            << dt<<endl<<"No output will be generated"<<endl;
+          exit(-1);
         }
+        if((dptr->ns)>nsmax) nsmax=dptr->ns;
       }
     }
-  }
-  return work;
+    TimeReferenceType tref;
+    tref=d.member[0].tref;  //  assume all have the same time base
+    int n=d.member.size();
+    int m= (int)((tmax-tmin)/dt)+1;
+    if(m<nsmax) m=nsmax;
+    if(SEISPP_verbose)
+    {
+      cerr << "export_to_matlab:  time range of output="<<tmin<<" to "<<tmax<<endl;
+      cerr << " computed number of samples="<<m<<endl
+        << " from "<<n<<" seismograms in the input gather"<<endl;;
+    }
+    /* fixed wall as sanity check */
+    const int Mmax(100000000);
+    if(m>Mmax)
+    {
+      cerr<< "export_to_matlab:  Computed number of samples,"<<m<<",  is very large."<<endl
+          << "Aborting to avoid a likely malloc error."<<endl
+          << "You are probably trying to to convert an  ensmble with absolute times set as t0"<<endl
+          << "If so, run data through ator before running this program"<<endl;
+      exit(-1);
+    }
+    dmatrix work(m,n);
+    /* We initialize the matrix to GapValue.  That allows an easy
+     * definition of gaps at start and end. */
+    for(i=0;i<m;++i)
+      for(j=0;j<n;++j)
+          work(i,j)=GapValue;
+    bool needs_gap_checking;
+    for(j=0,dptr=d.member.begin();dptr!=d.member.end();++j,++dptr)
+    {
+      if(dptr->has_gap())
+        needs_gap_checking=true;
+      else
+        needs_gap_checking=false;
+      double t;
+      for(t=tmin;t<tmax;t+=dt)
+      {
+        int kd,km;
+        kd=dptr->sample_number(t);
+        if( (kd<0) || (kd>=(dptr->ns)) ) continue;
+        if(dptr->is_gap(t))
+        {
+          work(kd,j)=GapValue;
+        }
+        else
+        {
+          work(kd,j)=dptr->s[kd];
+        }
+        /*else is intensionally not present.  work was
+         * initialized to GapValue - else condition is
+         * index outside the range of this seismogram.*/
+      }
+    }
+    AlignedGather result(work,tmin,dt,m,n,tref);
+    return result;
+  }catch(...){throw;};
 }
-
-
-bool SEISPP::SEISPP_verbose(true);
+bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
-
     int i;
-    char *pffile=strdup("export_to_matlab");
+    if(argc>1)
+      if(string(argv[1])=="--help") usage();
+    bool binary_data(true);
+    bool write_to_stdout(true);
+    bool write_header(false);
+    string outfile;
 
-    /* We have to pass through the arg list twice - the first pass 
-       is just to set alterntive pf if requested */
     for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
-        if(sarg=="-pf")
+        if(sarg=="--help")
         {
-            ++i;
-            if(i>=argc)usage();
-            pffile=argv[i];
-        }
-    }
-    try{
-        Pf *pf;
-        if(pfread(pffile,&pf))
-        {
-          cerr << "Error reading parameter file ="<<pffile<<endl;
-          exit(-1);
-        }
-        Metadata control(pf);
-        string x1file=control.get_string("component1_filename");
-        string x2file=control.get_string("component2_filename");
-        string x3file=control.get_string("component3_filename");
-        for(i=1;i<argc;++i)
-        {
-          string sarg(argv[i]);
-          if(sarg=="-pf")
-          {
-            /* in this pass we just skip and can assume the arg following
-               -pf was there */
-            ++i;
-          }
-          else if(sarg=="-x1")
-          {
-            ++i;
-            if(i>=argc)usage();
-            x1file=string(argv[i]);
-          }
-          else if(sarg=="-x2")
-          {
-            ++i;
-            if(i>=argc)usage();
-            x2file=string(argv[i]);
-          }
-          else if(sarg=="-x3")
-          {
-            ++i;
-            if(i>=argc)usage();
-            x3file=string(argv[i]);
-          }
-          else
             usage();
         }
-        StreamObjectReader<ThreeComponentEnsemble> ia;
-        ThreeComponentEnsemble d;
-        d=ia.read();
-        vector<dmatrix> dmat=convert_to_matrices(d);
-        ofstream ofs;
-        ofs.open(x1file.c_str(),ios::out);
-        ofs<<dmat[0];
-        ofs.close();
-        ofs.open(x2file.c_str(),ios::out);
-        ofs<<dmat[1];
-        ofs.close();
-        ofs.open(x3file.c_str(),ios::out);
-        ofs<<dmat[2];
-        ofs.close();
+        else if(sarg=="-text")
+        {
+            binary_data=false;
+        }
+        else if(sarg=="-v")
+          SEISPP_verbose=true;
+        else if(sarg=="-o")
+        {
+          ++i;
+          if(i>=argc) usage();
+          outfile=string(argv[i]);
+          write_to_stdout=false;
+        }
+        else if(sarg=="-h")
+        {
+          write_header=true;
+        }
+        else
+            usage();
+    }
+    try{
+        shared_ptr<StreamObjectReader<TimeSeriesEnsemble>> inp;
+        if(binary_data)
+        {
+          inp=shared_ptr<StreamObjectReader<TimeSeriesEnsemble>>
+             (new StreamObjectReader<TimeSeriesEnsemble>('b'));
+        }
+        else
+        {
+          inp=shared_ptr<StreamObjectReader<TimeSeriesEnsemble>>
+             (new StreamObjectReader<TimeSeriesEnsemble>);
+        }
+        TimeSeriesEnsemble d;
+        d=inp->read();
+        AlignedGather dmat(convert_to_matrix(d));
+        if(write_to_stdout)
+        {
+          if(write_header)
+          {
+            if(dmat.tref == absolute)
+               cout << setprecision(13)<<dmat.t0<<" "<<setprecision(7);
+            else
+            {
+              cout<<dmat.t0<<" ";
+            }
+            cout << dmat.dt<<" "<<dmat.ns<<" "<<dmat.nseis<<endl;
+          }
+          cout << dmat.d;
+        }
+        else
+        {
+          ofstream ofs;
+          ofs.open(outfile.c_str(),ios::out);
+          if(ofs.fail())
+          {
+            cerr << "export_to_matlab:  open failed for output file="<<outfile<<endl
+              << "Data not saved"<<endl;
+            usage();
+          }
+          if(write_header)
+          {
+            if(dmat.tref == absolute)
+              ofs << setprecision(13)<<dmat.t0<<" "<<setprecision(7);
+            else
+            {
+              ofs<<dmat.t0<<" ";
+            }
+            ofs << dmat.dt<<" "<<dmat.ns<<" "<<dmat.nseis<<endl;
+          }
+          ofs << dmat.d;
+          ofs.close();
+        }
     }catch(SeisppError& serr)
     {
         serr.log_error();

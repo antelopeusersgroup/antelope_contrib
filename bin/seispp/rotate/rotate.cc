@@ -21,7 +21,7 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "rotate [-accumulate --help --binary -pf pffile] < infile > outfile"
+    cerr << "rotate [-accumulate --help --text -pf pffile] < infile > outfile"
         <<endl
         << "General purpose three-component rotation processor"
         <<endl
@@ -33,8 +33,7 @@ void usage()
         <<endl
         << "(Options are controlled by this file)"<<endl
         << "Default is simple rotation in horizontal plane to ZRT"<<endl
-        << "use -binary if input and output are binary format (default text)"
-        <<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
         << "--help will print this usage message"<<endl
         << "infile and outfile are a single ThreeComponentEnsemble boost serialization file"
         <<endl;
@@ -150,7 +149,7 @@ int main(int argc, char **argv)
 {
   int i;
   string pffile("rotate");
-  bool binary_data(false);
+  bool binary_data(true);
   bool accum_mode(false);
   for(i=1;i<argc;++i)
   {
@@ -161,8 +160,8 @@ int main(int argc, char **argv)
       if(i>=argc) usage();
       pffile=string(argv[i]);
     }
-    else if(sarg=="-binary")
-      binary_data=true;
+    else if(sarg=="-text")
+      binary_data=false;
     else if(sarg=="-accumulate")
       accum_mode=true;
     else if(sarg=="--help")
@@ -234,7 +233,7 @@ int main(int argc, char **argv)
             {
               evlat=dptr->get_double(rc.evlatkey);
               evlon=dptr->get_double(rc.evlonkey);
-              evdep=d.get_double(rc.evdepthkey);
+              evdep=dptr->get_double(rc.evdepthkey);
             }
             dist(rad(slat),rad(slon),rad(evlat),rad(evlon),&delta,&az);
             /* Azimuth, az, is backazimuth but all the rotation methods

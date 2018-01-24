@@ -16,7 +16,7 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "dbloadhdr db [-t type -o logfile -pf pffile --help -binary] < infile > outfile"
+    cerr << "dbloadhdr db [-t type -o logfile -pf pffile --help -text] < infile > outfile"
         <<endl
         << "Load attributes to seismogram headers from Datascope database db"<<endl
         << "-t Change object type from default (ThreeComponentSeismogram)"<<endl
@@ -26,7 +26,7 @@ void usage()
         << " -pf - use alternative parameter file instead of default dbloadhdr"
         << endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
         << "Error log file is defined in pf (default dbloadhdr_error.log)"
         <<endl;
     exit(-1);
@@ -292,7 +292,7 @@ int main(int argc, char **argv)
     string dbname(argv[1]);
     if(dbname=="--help") usage();
     string pffile("dbloadhdr");
-    bool binary_mode(false);
+    bool binary_mode(true);
     string otype("ThreeComponentSeismogram");
     bool write_logfile(false);
     string logfile("");
@@ -303,9 +303,9 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_mode=true;
+            binary_mode=false;
         }
         else if(sarg=="-pf")
         {

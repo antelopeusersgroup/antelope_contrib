@@ -1,3 +1,5 @@
+/* This set of includes will fail using g++ for reasons I haven't figured out */
+/*
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
@@ -9,16 +11,26 @@
 #include "PfStyleMetadata.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
+*/
+/* Includes in this order work with g++.   */
+#include <string>
+#include <iostream>
+#include "PMTimeSeries.h"
+#include "seispp.h"
+#include "ThreeComponentSeismogram.h"
+#include "PfStyleMetadata.h"
+#include "StreamObjectReader.h"
+#include "StreamObjectWriter.h"
 using namespace std;   
 using namespace SEISPP; 
 void usage()
 {
-    cerr << "mwpm < in > out [-pf pffile --help -binary]"
+    cerr << "mwpm < in > out [-pf pffile --help -text]"
         <<endl
         << "Processes input data set of ThreeComponentSeismogram objects"<<endl
         << "Output is data set of PMTimeSeries objects"<<endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"
+        << " -text - switch to text input and output (default is binary)"
         <<endl;
     exit(-1);
 }
@@ -27,8 +39,8 @@ int main(int argc, char **argv)
 {
     int i,j;
     const int narg_required(0);
-    bool binary_data(false);
-    string pffile("mwpmi.pf");
+    bool binary_data(true);
+    string pffile("mwpm.pf");
 
     for(i=narg_required+1;i<argc;++i)
     {
@@ -37,9 +49,9 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else if(sarg=="-pf")
         {
@@ -83,7 +95,8 @@ int main(int argc, char **argv)
         if(SEISPP_verbose)
         {
           cerr << "mwpm - processing seismogram with "<<mwt.number_frequencies()
-            << " and "<<mwt.number_wavelet_pairs()<<" basis function pairs"
+            <<" frequencies and "
+            <<mwt.number_wavelet_pairs()<<" basis function pairs"
             <<endl;
         }
         ThreeComponentSeismogram d;
@@ -91,7 +104,32 @@ int main(int argc, char **argv)
         while(inp->good())
         {
             d=inp->read();
+            /* The multiwavelet transform has no way currently to handle
+             * data in relative time.   This is a kludge fix to handle 
+             * this situation.   */
+            bool restore_data_to_relative=false;
+            double t0shift; // need this below to restore to absolute if needed
+            if(d.tref == relative) 
+            {
+                restore_data_to_relative=true;
+                t0shift=d.time_reference();
+                d.rtoa(t0shift);
+            }
             MWTBundle dmwt(d,mwt);
+            //DEBUG
+            /*
+            for(j=0;j<dmwt.number_wavelets();++j)
+            {
+                cerr << "t0,dt,ns - each component of mwtransform trace"<<endl;
+                for(int ic=0;ic<3;++ic)
+                {
+                    MWTwaveform mwtmp=dmwt(0,j,ic);
+                    cerr << strtime(mwtmp.t0)<<" "
+                        << mwtmp.dt<<" "
+                        << mwtmp.ns<<endl;
+                }
+            }
+            */
             /* A bundle has data for multiple frequency bands in the general
              multiwavelet transform.  We generate one PMTimeSeries for
              each band.  The band tag is presently frozen, but perhaps
@@ -104,6 +142,15 @@ int main(int argc, char **argv)
               else
                 pmts=PMTimeSeries(dmwt,j);
               pmts.put("band",j);
+              if(restore_data_to_relative) 
+              {
+                  pmts.ator(t0shift);
+              }
+              //DEBUG
+              /*
+              cerr << "PMTimeSeries basic time series attribtues: "
+                  << pmts.dt<<" "<<pmts.ns<<" "<<pmts.t0<<endl;
+                  */
               out->write(pmts);
             }
             ++n;

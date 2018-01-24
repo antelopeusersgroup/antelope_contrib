@@ -1,5 +1,6 @@
 SUBDIR=/contrib
 HTML=agc.html\
+ ator.html \
  cat_seispp.html\
  db2seispp.html\
  dbactive_reader.html\
@@ -18,6 +19,7 @@ HTML=agc.html\
  mwpm.html\
  pattern.html\
  peak_scaling.html\
+ rename_attributes.html \
  rotate.html\
  rotate3D.html\
  seispp_format_converters.html\

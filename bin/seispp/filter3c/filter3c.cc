@@ -12,13 +12,12 @@ using namespace std;
 using namespace SEISPP; 
 void usage()
 {
-    cerr << "filter filter_specification < in > out [-v --help -binary]"
+    cerr << "filter filter_specification < in > out [-v --help -text]"
         <<endl
         << "Apply BRTT filter defined by filter_specification to all data"<<endl
         << " -v - be verbose - here that means echo the filter definition"<<endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"
-        <<endl;
+        << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
 bool SEISPP::SEISPP_verbose(false);
@@ -29,7 +28,7 @@ int main(int argc, char **argv)
     if(argc<2) usage();
     string filter_spec(argv[1]);
     if(filter_spec=="--help") usage();
-    bool binary_data(false);
+    bool binary_data(true);
 
     for(i=narg_required+1;i<argc;++i)
     {
@@ -38,9 +37,9 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else if(sarg=="-v")
             SEISPP_verbose=true;

@@ -2,7 +2,7 @@ BIN=mwpm
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lmwtpp -lmultiwavelet -lgenloc -lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp -lseispp_io
+ldlibs=-lmwtpp -lmultiwavelet -lgenloc -lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE) 

@@ -267,7 +267,11 @@ map<string,AttributeProperties> AttributeMap::aliases(string key)
 				+ string("Attribute named ")
 				+ (*listiter)
 				+ string(" is not defined for this AttributeMap"));
-			result[amiter->second.db_table_name]=amiter->second;
+                        /* We need to copy this AttributeProperty and 
+                         * change the internal_name to the alias name */
+                        AttributeProperties alias_property(amiter->second);
+                        alias_property.internal_name=key;
+			result[amiter->second.db_table_name]=alias_property;
 		}
 	}
 	/* note this silently returns an empty list if key is not alias*/

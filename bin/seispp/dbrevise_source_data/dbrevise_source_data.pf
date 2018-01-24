@@ -1,0 +1,9 @@
+latitude_key origin.lat
+longitude_key origin.lon
+source_depth_key origin.depth
+origin_time_key origin.time
+space_time_tolerance 100.0
+load_from_members false
+recovery_arrival_time_tolerance 20.0
+arrival_time_key xcorarrival
+

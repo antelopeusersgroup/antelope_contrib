@@ -4,20 +4,23 @@
 #include <iostream>
 #include <memory>
 #include <list>
+#include "PMTimeSeries.h"
 #include "seispp.h"
 #include "ensemble.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
-#include "PMTimeSeries.h"
 using namespace std;   
 using namespace SEISPP; 
 void usage()
 {
-    cerr << "cat file1 file2 ... filen [-binary --help]"
+    cerr << "cat_seispp file1 file2 ... filen [-t objt -text --help]"
         <<endl
         << "Concatenate a set of seispp files into a single larger file"<<endl
+        << "Use -t option to set object type of the files."<<endl
+        << "(Accepted options:  TimeSeries, ThreeComponentSeismogram, "
+        << "TimeSeriesEnemble, ThreeComponentEnsemble, PMTimeSeries"<<endl
         << " --help - prints this message"<<endl
-        << " -binary - switch to binary input and output (default is text)"
+        << " -text - switch to text input and output (default is binary)"
         << "(Note:  will exit with an error if the count of files is only one)"
         <<endl;
     exit(-1);
@@ -33,6 +36,10 @@ AllowedObjects get_object_type(string otype)
         return TCE;
     else if(otype=="PMTimeSeries")
         return PMTS;
+    else if(otype=="TimeSeries")
+        return TS;
+    else if(otype=="TimeSeriesEnsemble")
+        return TSE;
     else
     {
         cerr << "Do not know how to handle object type="<<otype
@@ -68,7 +75,7 @@ bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
     int i;
-    bool binary_data(false);
+    bool binary_data(true);
     list<string> FileList;
     AllowedObjects otype;
     if(argc<=2) usage();
@@ -80,9 +87,9 @@ int main(int argc, char **argv)
         {
             usage();
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else if(sarg=="-t")
         {

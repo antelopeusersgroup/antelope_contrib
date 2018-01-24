@@ -22,10 +22,10 @@ rotation_type ZRT
   event_latitude_key origin.lat
   event_depth_key origin.depth
 # These are needed for LQT and FST (surface P and S velocity)
-  vp0=6.2
-  vs0=3.5
-  ttmethod=tttaup
-  ttmodel=iasp91
+  vp0 6.2
+  vs0 3.5
+  ttmethod tttaup
+  ttmodel iasp91
 # default uses P slowness to estimate angles for LQT and FST 
 # If this is set true use S slowness for transformation 
   use_S_slowness false
