@@ -2,6 +2,7 @@
 #include "pf.h"
 #include "db.h"
 #include "Metadata.h"
+#include "PfStyleMetadata.h"
 #include "seispp.h"
 using namespace SEISPP;
 // test routine for metadata functions
@@ -9,7 +10,7 @@ bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
 	//string pfname("test_md");
-	char *pfname="test_md";
+	char *pfname=strdup("test_md");
 	string amname("css3.0");
 	int ierr;
 	SEISPP_verbose=true;
@@ -45,7 +46,7 @@ int main(int argc, char **argv)
 			<< "," 
 			<<mdi2->mdt<<endl;
 		}
-		cout << "Testing delete hypothesis on list object " << endl;
+		cout << "Testing delete on MetadataList object " << endl;
 		MetadataList *mdl3=new MetadataList(mdl);
 		delete mdl3;
 		for(mdi=mdl.begin();mdi!=mdl.end();++mdi)
@@ -65,13 +66,36 @@ int main(int argc, char **argv)
 		cout << mds;
 		cout <<"Trying db constructor in testdb"<<endl;
 		Dbptr db;
-		char *dbname="testdb";
+		char *dbname=strdup("testdb");
 		DatascopeHandle dbh(dbname,pfname,string("dbprocess_list"),
                         false);
 		dbh.rewind();
 		Metadata *mddb = new Metadata(dynamic_cast<DatabaseHandle&>(dbh),
 					mdl,am2);
 		cout << *mddb;
+                /* Now try out the PfStyleMetadata object.  We use the
+                   same pf file as above */
+                string pfsn("test_md");
+                PfStyleMetadata pfsmd(pfsn);
+                cout << "Reading and writing a couple of simple parameters"<<endl;
+                cout << "simple_real_parameter="<<pfsmd.get<double>("simple_real_parameter")
+                  << "simple_int_parameter="<<pfsmd.get<int>("simple_int_parameter")
+                  << "simple_bool_parameter="<<pfsmd.get_bool("simple_bool_parameter")
+                  <<endl;
+                list<string> tsttbl;
+                tsttbl=pfsmd.get_tbl("mdlist");
+                cout << "mdlist Tbl extracted from pf"<<endl;
+                list<string>::iterator iptr;
+                for(iptr=tsttbl.begin();iptr!=tsttbl.end();++iptr)
+                {
+                  cout << *iptr<<endl;
+                }
+                cout << "Trying get_branch method - extracting test_nested_tag"
+                  <<endl;
+                PfStyleMetadata pfbr(pfsmd.get_branch("test_nested_tag"));
+                cout << "Success"<<endl;
+                cout << "test_double parameter in branch="<<pfbr.get_double("test_double")<<endl;
+
 	}
 	catch (MetadataError& mess)
 	{
