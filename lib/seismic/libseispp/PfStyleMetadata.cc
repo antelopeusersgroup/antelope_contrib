@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <unistd.h>
 #include <string>
 #include <list>
 #include <iostream>
@@ -100,7 +101,7 @@ PfStyleMetadata pfread(string fname)
 {
     ifstream inp;
     inp.open(fname.c_str(),ios::in);
-    if(inp.fail()) throw SeisppError("SEISPP::pfread: open failed for file"
+    if(inp.fail()) throw SeisppError("SEISPP::pfread: open failed for file "
             +fname);
 
     /* Eat up the whole file - this assumes not a large
@@ -289,22 +290,23 @@ list<string> split_pfpath(string pfbase, char *s)
   std::size_t found;
   found=pfbase.find(pftest);
   if(found==std::string::npos) pfbase+=pftest;
-  list<string> pffiles;
+  list<string> pftmp;
   char *p;
   p=strtok(s,":");
   while(p!=NULL)
   {
-    pffiles.push_back(string(p));
+    pftmp.push_back(string(p));
     p=strtok(NULL,":");
   }
+  list<string> pfret;
   list<string>::iterator pfptr;
-  for(pfptr=pffiles.begin();pfptr!=pffiles.end();++pfptr)
+  for(pfptr=pftmp.begin();pfptr!=pftmp.end();++pfptr)
   {
     string fname;
     fname=(*pfptr)+"/"+pfbase;
-    pffiles.push_back(fname);
+    pfret.push_back(fname);
   }
-  return pffiles;
+  return pfret;
 }
 PfStyleMetadata::PfStyleMetadata(string pfbase)
 {
@@ -321,10 +323,12 @@ PfStyleMetadata::PfStyleMetadata(string pfbase)
       pffiles=split_pfpath(pfbase,s);
     }
     list<string>::iterator pfptr;
-    int i;
-    for(i=0,pfptr=pffiles.begin();pfptr!=pffiles.end();++pfptr,++i)
+    int nread;
+    for(nread=0,pfptr=pffiles.begin();pfptr!=pffiles.end();++pfptr)
     {
-      if(i==0)
+      // Skip pf files that do not exist
+      if(access(pfptr->c_str(),R_OK)) continue;
+      if(nread==0)
       {
         *this=pfread(*pfptr);
       }
@@ -333,7 +337,10 @@ PfStyleMetadata::PfStyleMetadata(string pfbase)
         PfStyleMetadata pfnext=pfread(*pfptr);
         this->merge_pfmf(pfnext);
       }
+      ++nread;
     }
+    if(nread==0) throw SeisppError(string("PFPATH=")+s
+        +" had no pf files matching" + pfbase);
   }catch(...){throw;};
 }
 
