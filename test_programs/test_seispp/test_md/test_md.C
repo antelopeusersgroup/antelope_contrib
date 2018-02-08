@@ -78,8 +78,10 @@ int main(int argc, char **argv)
                 string pfsn("test_md");
                 PfStyleMetadata pfsmd(pfsn);
                 cout << "Reading and writing a couple of simple parameters"<<endl;
-                cout << "simple_real_parameter="<<pfsmd.get<double>("simple_real_parameter")
-                  << "simple_int_parameter="<<pfsmd.get<int>("simple_int_parameter")
+                cout << "simple_real_parameter="
+                    <<pfsmd.get<double>("simple_real_parameter")<<endl
+                  << "simple_int_parameter="
+                    <<pfsmd.get<int>("simple_int_parameter")<<endl
                   << "simple_bool_parameter="<<pfsmd.get_bool("simple_bool_parameter")
                   <<endl;
                 list<string> tsttbl;
@@ -93,7 +95,9 @@ int main(int argc, char **argv)
                 cout << "Trying get_branch method - extracting test_nested_tag"
                   <<endl;
                 PfStyleMetadata pfbr(pfsmd.get_branch("test_nested_tag"));
-                cout << "Success"<<endl;
+                cout << "Success"<<endl
+                    <<"Contents"<<endl
+                    << dynamic_cast<Metadata&>(pfbr)<<endl;
                 cout << "test_double parameter in branch="<<pfbr.get_double("test_double")<<endl;
 
 	}
