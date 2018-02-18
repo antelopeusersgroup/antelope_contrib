@@ -56,6 +56,11 @@ template <typename T>
     Since a serial file is basd on the concept of sequential access it is
     useful to have the concept of rewind as in a tape. */
     void rewind();
+    /*! \brief Get current file position.
+
+    For files it can be useful to know the current read position.
+    An error will be thrown if input is stdin */
+    long foff();
   private:
     char format;
     boost::archive::text_iarchive *txt_ar;
@@ -151,7 +156,7 @@ template <typename T>
   };
   more_data_available=true;
 }
-template <typename T> 
+template <typename T>
    StreamObjectReader<T>::StreamObjectReader(string fname,const char form)
 {
   try{
@@ -269,13 +274,23 @@ template <typename T>
   else
   {
     /* An oddity of ifstream is this is required to clear EOF flag
-     * which will be set when the constructor reads the last section 
+     * which will be set when the constructor reads the last section
      * of the file.*/
     ifs.clear();
     ifs.seekg(ios::beg);
   }
 }
-
+template <typename T>
+    long StreamObjectReader<T>::foff()
+{
+  try{
+    if(input_is_stdio)
+    {
+      throw SeisppError("StreamObjectReader foff method error:  input file is stdin\nCannot determine position from stdin");
+    }
+    return ifs.tellg();
+  }catch(...){throw;};
+}
 }
 template <typename T>
 StreamObjectReader<T>* BuildReadHandle(string fname, bool binary_mode, bool use_stdin)
