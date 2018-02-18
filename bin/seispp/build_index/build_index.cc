@@ -73,7 +73,7 @@ int main(int argc, char **argv)
     string otype("ThreeComponentSeismogram");
     string dfile(argv[1]);
     string indexfile(argv[2]);
-    string pffile(argv[0]);
+    string pffile("build_index");
     for(i=3;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -120,6 +120,7 @@ int main(int argc, char **argv)
                 break;
             case PMTS:
                 count=build_index<PMTimeSeries>(dfile,indexfile,mdl);
+                break;
             default:
                 cerr << "Coding problem - dtype variable does not match enum"
                     <<endl
