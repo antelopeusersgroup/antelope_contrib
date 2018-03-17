@@ -61,7 +61,7 @@ WulffData::WulffData(double *u)
     }
   }
 }
-void write_Wulffnet_data(PMTimeSeries& d,string outdir)
+int write_Wulffnet_data(PMTimeSeries& d,string outdir)
 {
   try{
     string base_error("pm2wulffne - write_Wulffnet_data procedure:  ");
@@ -78,17 +78,26 @@ void write_Wulffnet_data(PMTimeSeries& d,string outdir)
     }
     /* We dump the entire data vector - tcecut should be used to
     produce reasonable output */
-    int i;
+    int i,count;
     for(i=0;i<d.ns;++i)
     {
-      ParticleMotionEllipse pme=d.ellipse(i);
-      ParticleMotionError pmerr=d.errors(i);
-      double t=d.time(i);
-      /* For now we only save major axis data and theta uncertainty */
-      WulffData wd(pme.major);
-      /* Angles are computed in radians - converted to degrees for output*/
-      ofs << t<<" "<<deg(wd.phi)<<" "<<wd.r<<" "<<deg(pmerr.dtheta_major)<<endl;
+      if(!d.is_gap(i))
+      {
+        ParticleMotionEllipse pme=d.ellipse(i);
+        ParticleMotionError pmerr=d.errors(i);
+        double t=d.time(i);
+        /* For now we only save major axis data and theta uncertainty */
+        WulffData wd(pme.major);
+        /* Angles are computed in radians - converted to degrees for output*/
+        ofs << t<<" "
+            <<deg(wd.phi)<<" "
+            <<wd.r<<" "
+            <<deg(pmerr.dtheta_major)<<" "
+            <<pme.majornrm<<endl;
+        ++count;
+      }
     }
+    return count;
   }catch(...){throw;};
 }
 bool SEISPP::SEISPP_verbose(false);
@@ -146,9 +155,15 @@ int main(int argc, char **argv)
         int n(0);
         while(inp->good())
         {
+            int count;
             d=inp->read();
             try{
-              write_Wulffnet_data(d,outdir);
+              count=write_Wulffnet_data(d,outdir);
+              if(SEISPP_verbose)
+              {
+                cerr << "pm2wulff wrote "<<count
+                    <<" samples for object number "<<n<<endl;
+              }
             } catch(SeisppError& serr)
             {
               cerr << "Error writing data for object number "<<n<<endl
