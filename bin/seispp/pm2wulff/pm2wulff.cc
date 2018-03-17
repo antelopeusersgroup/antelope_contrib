@@ -12,7 +12,7 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "pm2wulff dir < in > out [-v --help -text]"
+    cerr << "pm2wulff dir < in [-v --help -text]"
         <<endl
         << "Reads a file of serialized PMTimeSeries objects and writes"
         << endl
@@ -24,6 +24,8 @@ void usage()
         << endl
         << "WARNING:  this program will generate one file per input PMTimeSeries"
         << " object"<<endl<< "File names are evid_sta_band.mat"<<endl
+        << "Large data sets should be subsetted before running this program"
+        <<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl;
@@ -49,7 +51,7 @@ WulffData::WulffData(double *u)
   else
   {
     phi=atan2(u[0],u[1]);
-    theta=atan2(u[3],rhorizontal);
+    theta=atan2(rhorizontal,u[2]);
     if(theta>=0.0)
         r=cos(theta)/(1.0+sin(theta));
     else
