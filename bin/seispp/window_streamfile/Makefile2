@@ -8,10 +8,10 @@ BIN=window_streamfile
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp 
+ldlibs=-lseispp -lgclgrid -lmwtpp -lmultiwavelet -lgenloc $(DBLIBS) $(TRLIBS) -lseispp -lperf -lboost_serialization
 SUBDIR=/contrib
 
-include $(ANTELOPEMAKE) 
+include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 CXXFLAGS += -I$(BOOSTINCLUDE)
 

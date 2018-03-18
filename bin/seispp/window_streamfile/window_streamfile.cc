@@ -6,6 +6,7 @@
 #include "PMTimeSeries.h"
 #include "seispp.h"
 #include "ThreeComponentSeismogram.h"
+#include "ensemble.h"
 #include "PfStyleMetadata.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
@@ -32,7 +33,7 @@ void usage()
  * to set a list of allowed objects.   This could be a library
  * procedure, but with this one can customize the set of objects
  * supported. */
-enum AllowedObjects {TCS, TCE,  TS, TSE};
+enum AllowedObjects {TCS, TCE,  TS, TSE, PMTS};
 AllowedObjects get_object_type(string otype)
 {
     if(otype=="ThreeComponentSeismogram")
@@ -43,6 +44,8 @@ AllowedObjects get_object_type(string otype)
         return TS;
     else if(otype=="TimeSeriesEnsemble")
         return TSE;
+    else if(otype=="PMTimeSeries")
+        return PMTS;
     else
     {
         cerr << "Do not know how to handle object type="<<otype
@@ -50,6 +53,56 @@ AllowedObjects get_object_type(string otype)
         exit(-1);
     }
 }
+/* PMTimeSeries has not window functin defined.   Futher, because
+the data are private we can't handle the problem the same way.
+We do a different thing here and set a gap for area outside the
+specified window  */
+int window_pmts(TimeWindow cutwin, bool binary_data)
+{
+    try{
+        char form('t');
+        if(binary_data) form='b';
+        StreamObjectReader<PMTimeSeries> inp(form);
+        StreamObjectWriter<PMTimeSeries>  outp(form);
+        int count;
+        PMTimeSeries d;
+        while(inp.good())
+        {
+            d=inp.read();
+            if(d.live)
+            {
+              if(d.tref==relative)
+              {
+                /* In either of these cases we mark the data dead */
+                if( (d.t0>cutwin.end) || (d.endtime()<cutwin.start))
+                   d.live=false;
+                else
+                {
+                  /*In both of these cases we extend teh tap definition
+                  by a sample to avoid roudoff errors */
+                  if(cutwin.start>d.t0)
+                  {
+                    d.add_gap(TimeWindow(d.t0-d.dt,cutwin.start));
+                  }
+                  if(cutwin.end<d.endtime())
+                  {
+                    d.add_gap(TimeWindow(cutwin.end,d.endtime()+d.dt));
+                  }
+                }
+              }
+              else
+              {
+                cerr << "Warning:  file object number "<<count
+                   << " is using absolute time - copied without change"<<endl;
+              }
+            }
+            outp.write(d);
+            ++count;
+        }
+        return count;
+    }catch(...){throw;};
+}
+
 template <typename DataType> int window_objects(TimeWindow cutwin, bool binary_data)
 {
     try{
