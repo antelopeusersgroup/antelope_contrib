@@ -17,7 +17,7 @@ void usage()
         << "Switches input data from absolute to a relative time standard"<<endl
         << "Use -key to change attribute used to define time shift (default arrival.time)"
         <<endl
-        << "Use -objt to change expected object type"<<endl
+        << "Use -t to change expected object type"<<endl
         << "(default ThreeComponentSeismogram.  Alteratives are TimeSeries and PMTimeSeries)"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"
