@@ -86,6 +86,11 @@ int main(int argc, char **argv)
              (new StreamObjectWriter<PMTimeSeries>);
         }
         PfStyleMetadata control=pfread(pffile);
+        /* These would normally use the defaults */
+        double confidence=control.get<double>("error_estimate_confidence_interval");
+        double bsmultiplier=control.get<double>("bootstrap_multiplier");
+        int nsvd=control.get<int>("number_singular_values_to_use");
+        /* The rest of these would usually be altered by the user */
         int avlen=control.get_int("particle_motion_time_average_length");
         int pmdt(1);
         if(avlen>1)
@@ -138,9 +143,10 @@ int main(int argc, char **argv)
             {
               PMTimeSeries pmts;
               if(avlen>1)
-                pmts=PMTimeSeries(dmwt,j,pmdt,avlen);
+                pmts=PMTimeSeries(dmwt,j,pmdt,avlen,confidence,bsmultiplier,
+                        nsvd);
               else
-                pmts=PMTimeSeries(dmwt,j);
+                pmts=PMTimeSeries(dmwt,j,confidence,bsmultiplier);
               pmts.put("band",j);
               if(restore_data_to_relative) 
               {
