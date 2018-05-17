@@ -60,7 +60,7 @@ StaticTable::StaticTable(string fname, string t0sk)
       stringstream ss(inpline);
       int key;
       double val;
-      ifs>>key;  ifs>>val;
+      ss>>key;  ss>>val;
       if(ifs.fail())
       {
         cerr <<base_error<< endl
@@ -206,7 +206,7 @@ int main(int argc, char **argv)
     string statictablefile(argv[1]);
     bool binary_data(true);
     bool dropnull(false);
-    string otype("ThreeComponentSeismogram");
+    string otype("ThreeComponentEnsemble");
     string t0shiftkey("source_static");
     for(i=narg_required+1;i<argc;++i)
     {
