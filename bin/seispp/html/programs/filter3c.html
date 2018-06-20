@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>filter3c</title>
+  </head>
+  <body>
+    <h1>filter3c</h1>
+    <h3>Usage:</h3>
+    <p>filter3c filter_specification &lt; in &gt; out [-v --help
+      -text]<br>
+    </p>
+    <h3>Algorithm:</h3>
+    Applies a time invariant filter to one or more
+    ThreeComponentEnsembles stored in the serialized input file read
+    from stdin.&nbsp; Writes the filtered data to stdout.<br>
+    <br>
+    Filtering is implemented with the Antelope recursive filters as
+    defined in man wffil(3).&nbsp;&nbsp; The required argument,
+    filter_specification, is a string that defines their suite of
+    filters as used by wffil.&nbsp;&nbsp; e.g. INT is integration and
+    "BW 1.0 5 15.0 5" is a Butterworth bandpass filter with 5 poles on
+    each end of the pass band and corner frequencies of 1.0 and 15.0
+    Hz.&nbsp; <br>
+    <h3>Options:</h3>
+    <i>-text</i> - switch to text format input and output (default is binary data)<br>
+    <i>--help</i> - print the usage message<br>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <i>-v</i> - send some messages to stderr<br>
+    <br>
+  </body>
+</html>

@@ -15,7 +15,7 @@ using namespace SEISPP;
 
 void usage()
 {
-    cerr << "agc windlength [-g gainfunction] < infile > outfile"
+    cerr << "agc windlength [-text -g gainfunction] < infile > outfile"
         <<endl
         << "Applies three-component AGC operator of duraction winlength second"
         <<endl
@@ -196,7 +196,7 @@ int main(int argc, char **argv)
     double agcwinlen=atof(argv[1]);
     bool save_gain_function(false);
     string gainfile;
-    bool binary_data(false);
+    bool binary_data(true);
 
     for(i=narg_required+1;i<argc;++i)
     {
@@ -208,8 +208,8 @@ int main(int argc, char **argv)
             gainfile=string(argv[i]);
             save_gain_function=true;
         }
-        if(sarg=="-binary")
-            binary_data=true;
+        if(sarg=="-text")
+            binary_data=false;
         else
             usage();
     }

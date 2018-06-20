@@ -17,8 +17,8 @@ template <class T> class StreamObjectWriter : public BasicObjectWriter<T>
   public:
     /*! \brief Default constructor.
 
-      Default constructor uses boost text serialization to stdout*/
-    StreamObjectWriter(const char format='t');
+      Default constructor uses boost binary serialization to stdout*/
+    StreamObjectWriter(const char format='b');
     /*! \brief Create handle to write to file.
 
       Creates an input handle to write to a file.
@@ -27,7 +27,7 @@ template <class T> class StreamObjectWriter : public BasicObjectWriter<T>
       \exception - throws a SeisppError object if operation fails.  Boost
         constructors may also throw special error object (needs research).
         */
-    StreamObjectWriter(string fname,const char format='t');
+    StreamObjectWriter(string fname,const char format='b');
     /*! Destructor - has to close io channel */
      ~StreamObjectWriter();
     /*! \brief write one object.
@@ -62,28 +62,28 @@ template <class T> void StreamObjectWriter<T>::write(T& d)
       {
         switch(this->format)
         {
-          case 'b':
-            if(output_is_stdio)
-                cout.write(more_data_tag.c_str(),BINARY_TAG_SIZE);
-            else
-                ofs.write(more_data_tag.c_str(),BINARY_TAG_SIZE);
-            break;
           case 't':
-          default:
             if(output_is_stdio)
               cout<<more_data_tag<<endl;
             else
               ofs<<more_data_tag<<endl;
+            break;
+          case 'b':
+          default:
+            if(output_is_stdio)
+                cout.write(more_data_tag.c_str(),BINARY_TAG_SIZE);
+            else
+                ofs.write(more_data_tag.c_str(),BINARY_TAG_SIZE);
         };
       }
       switch(this->format)
       {
-        case 'b':
-          (*bin_ar)<<d;
-          break;
         case 't':
-        default:
           (*txt_ar)<<d;
+          break;
+        case 'b':
+        default:
+          (*bin_ar)<<d;
       };
       ++nobjects;
     }catch(...)
@@ -105,14 +105,14 @@ template <class T> StreamObjectWriter<T>::StreamObjectWriter(const char form)
   ios::sync_with_stdio();
   switch(format)
   {
-    case 'b':
-      bin_ar=new boost::archive::binary_oarchive(std::cout);
-      txt_ar=NULL;
-      break;
     case 't':
-    default:
       bin_ar=NULL;
       txt_ar=new boost::archive::text_oarchive(std::cout);
+      break;
+    case 'b':
+    default:
+      bin_ar=new boost::archive::binary_oarchive(std::cout);
+      txt_ar=NULL;
   };
 }
 template <class T> StreamObjectWriter<T>::StreamObjectWriter(string fname,const char form)
@@ -122,12 +122,12 @@ template <class T> StreamObjectWriter<T>::StreamObjectWriter(string fname,const 
     format=form;
     switch(format)
     {
-      case 'b':
-        ofs.open(fname.c_str(),ios::out | ios::binary | ios::trunc);
-        break;
       case 't':
-      default:
         ofs.open(fname.c_str(),ios::out | ios::trunc);
+        break;
+      case 'b':
+      default:
+        ofs.open(fname.c_str(),ios::out | ios::binary | ios::trunc);
     };
     if(ofs.fail())
     {
@@ -139,14 +139,14 @@ template <class T> StreamObjectWriter<T>::StreamObjectWriter(string fname,const 
     ios::sync_with_stdio();
     switch(format)
     {
-      case 'b':
-        bin_ar=new boost::archive::binary_oarchive(ofs);
-        txt_ar=NULL;
-        break;
       case 't':
-      default:
         bin_ar=NULL;
         txt_ar=new boost::archive::text_oarchive(ofs);
+        break;
+      case 'b':
+      default:
+        bin_ar=new boost::archive::binary_oarchive(ofs);
+        txt_ar=NULL;
     };
   }catch(...){throw;};
 }
@@ -159,22 +159,7 @@ template <class T> StreamObjectWriter<T>::~StreamObjectWriter()
   for(i=0;i<TextIOStreamEOFOffset;++i) buf[i]=' ';
   switch(format)
   {
-    case 'b':
-      if(output_is_stdio)
-      {
-        cout.write(eof_tag.c_str(),BINARY_TAG_SIZE);
-        cout.write((char *)(&nobjects),sizeof(long));
-      }
-      else
-      {
-        ofs.write(eof_tag.c_str(),BINARY_TAG_SIZE);
-        ofs.write((char *)(&nobjects),sizeof(long));
-        ofs.close();
-      }
-      delete bin_ar;
-      break;
     case 't':
-    default:
       buf=new char [TextIOStreamEOFOffset];
       /* Initialize the buffer to all blanks */
       for(i=0;i<TextIOStreamEOFOffset;++i) buf[i]=' ';
@@ -188,6 +173,21 @@ template <class T> StreamObjectWriter<T>::~StreamObjectWriter()
       ofs.close();
       delete txt_ar;
       delete [] buf;
+      break;
+    case 'b':
+    default:
+      if(output_is_stdio)
+      {
+        cout.write(eof_tag.c_str(),BINARY_TAG_SIZE);
+        cout.write((char *)(&nobjects),sizeof(long));
+      }
+      else
+      {
+        ofs.write(eof_tag.c_str(),BINARY_TAG_SIZE);
+        ofs.write((char *)(&nobjects),sizeof(long));
+        ofs.close();
+      }
+      delete bin_ar;
   };
 }
 /*! \brief Generic algorithm to dismember an ensemble into components.

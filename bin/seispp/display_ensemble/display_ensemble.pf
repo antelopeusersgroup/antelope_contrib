@@ -21,7 +21,7 @@ grid1	1
 grid2	1
 gridcolor	blue
 hbox	5000
-initial_active_component	1
+initial_active_component	2
 interpolate	true
 label1	time
 label2	index

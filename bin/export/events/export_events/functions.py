@@ -1,288 +1,233 @@
-"""
+'''
 export_events.functions
 
 Some functions used by event2qml main code
-"""
+'''
+# pylint:disable=logging-not-lazy,broad-except
+from __future__ import (absolute_import, division, print_function)
+from past.builtins import basestring
 
 import math
-from optparse import OptionParser
+import logging
 
-import antelope.stock as stock
-import antelope.datascope as datascope
+try:
+    from antelope import stock
+    from antelope import datascope
+except ImportError as ex:
+    print('Do you have Antelope installed correctly?')
+    print(ex)
 
-from export_events.logging_helper import getLogger
 
-
-
-def simple_table_present(table, dbpointer):
+def table_present(dbpointer, table):
     '''
-    Verify if we have a table before we run the command.
+    Determine if table is present in database.
 
-    Similar to verify_table but without rising exceptions
-    and without returning any objects back. It will only work
-    out a dbpointer and not a database name. The pointer
-    should be verified already.
+    Errors are logged on exceptions; otherwise silent.
     '''
-
-    logging = getLogger()
-
-    # Test if we have an event table first.
-    logging.debug( 'dbTALBE_PRESENT( %s )' % table )
+    logger = logging.getLogger(__name__)
+    if not isinstance(dbpointer, datascope.Dbptr):
+        return False
+    if not isinstance(table, basestring):
+        return False
 
     try:
         view = dbpointer.lookup(table=table)
-    except Exception,e:
-        logging.warning( 'export_events.simple_table_present: %s ' %s )
-        return False
+        is_present = view.query(datascope.dbTABLE_PRESENT)
+        # view.free()
+    except (datascope.DblookupDatabaseError,
+            datascope.DblookupTableError,
+            datascope.DblookupFieldError,
+            datascope.DblookupRecordError,
+            datascope.DbqueryError) as ex:
+        logger.error('While checking for table: ' + table)
+        logger.error(repr(ex))
+        is_present = False
 
-    logging.debug( 'db.query(dbTABLE_PRESENT ) => %s' % \
-            view.query(datascope.dbTABLE_PRESENT))
-
-    if not view.query(datascope.dbTABLE_PRESENT):
-        return False
-
-    return True
+    return is_present
 
 
-def verify_table(table=False, database=False, dbpointer=False):
-    '''
-    Open a database or database pointer and verify a table
-
-    On multiple objects (classes) we perform the same process
-    of verifying the presence of a table before we get to
-    interact with it. This will make that process easy since
-    you can get to that point either from a database name
-    or from a database pointer. The function will return
-    the database pointer that you are responsible for
-    cleaning later. The local view of the table will be
-    freed.
-    '''
-
-    logging = getLogger()
-
-    # Get db ready
-    if not database and not dbpointer:
-        logging.warning( 'export_events.verify_table: Need database or dbpointer' )
-        return False
-
-    if not dbpointer:
-        logging.debug( 'dbopen( %s )' % database )
-        dbpointer = datascope.dbopen( database, "r" )
-
-    if table:
-        # Test if we have some table first.
-        logging.debug( 'db.lookup( %s )' % table )
-        view = dbpointer.lookup(table=table)
-
-        if not view.query(datascope.dbTABLE_PRESENT):
-            logging.warning( 'export_events.verify_table: Missing [%s] table in database' % table )
-            return False
-        else:
-            logging.debug( 'db.query(dbTABLE_PRESENT ) => %s' % \
-                    view.query(datascope.dbTABLE_PRESENT))
-
-    return dbpointer
-
-def is_null( value, null_value):
+def is_null(value, null_value):
     '''
     Verify if our value matches the NULL
     representation of that field.
-
     '''
-    # Try int value
+    # try numeric equality
     try:
         if int(float(value)) == int(float(null_value)):
             return True
-    except:
-        pass
+    except (ValueError, TypeError):
+        # try string equality
+        return str(value) == str(null_value)
 
-    # Now test string representation
-    try:
-        if str(value) == str(null_value):
-            return True
-    except:
-        pass
 
-    return False
-
-def get_all_fields( dbpointer , nulls={}):
+def get_all_fields(dbpointer, nulls=None):
     '''
     At a given database pointer to a particular record query for valid
     table fields and pull all values. Return a dictionary with the values.
     '''
-
-    logging = getLogger()
-
+    logger = logging.getLogger(__name__)
     results = {}
 
-    if not dbpointer:
-        logging.warning('export_events.get_all_fields: Need dbpointer')
+    assert isinstance(dbpointer, datascope.Dbptr)
+    if not dbpointer.query(datascope.dbTABLE_PRESENT):
+        logger.warning('Table not present, returning nothing.')
         return results
 
+    for index in range(dbpointer.query(datascope.dbFIELD_COUNT)):
 
+        dbpointer.field = index
 
-    try:
-        if not dbpointer.query(datascope.dbTABLE_PRESENT):
-            logging.warning('export_events.get_all_fields: No records')
-            return results
-    except Exception,e:
-        logging.warning('export_events.get_all_fields: Error on dbpointer')
-        return results
+        try:
+            table = dbpointer.query(datascope.dbFIELD_BASE_TABLE)
+            field = dbpointer.query(datascope.dbFIELD_NAME)
+        except datascope.DbqueryError as ex:
+            logger.debug('Problem querying field index %d, skipping.', index)
+            logger.error(repr(ex))
+            continue
 
-
-    for x in range( dbpointer.query( datascope.dbFIELD_COUNT )):
-
-        dbpointer.field = x
-
-        table = dbpointer.query( datascope.dbFIELD_BASE_TABLE )
-        field = dbpointer.query( datascope.dbFIELD_NAME )
-
-        test = "%s.%s" % (table,field)
-        #logging.debug( 'Extract field %s' % test )
-
-        value = dbpointer.getv( test )[0]
-
-        # Verify value with NULL options for those fields.
-        if nulls and test in nulls:
-            #logging.debug( 'verify null on: [%s] == [%s] ' % (value,nulls[test]) )
-            if is_null( value, nulls[ test ] ):
-                logging.debug( 'AVOID NULL VALUE: [%s] ' % value )
-                continue
+        table_field = "%s.%s" % (table, field)
+        fields_without_nulls = ['wfmeas.val1', 'wfmeas.val2']
+        if table_field in fields_without_nulls and nulls is None:
+            value = None
         else:
-            #logging.debug( 'Save value for NULL [%s] on %s' % (value,test) )
-            pass
+            try:
+                value = dbpointer.getv(table_field)[0]
+            except datascope.DbgetvError as ex:
+                logger.debug('Problem getting %s for %s, setting to None'
+                             % ('null' if nulls is None else 'value',
+                                table_field))
+                value = None
 
-        results[ test ] = value
+        if nulls is not None and table_field in nulls:
+            if is_null(value, nulls[table_field]):
+                continue
 
-        if nulls:
-            logging.debug( '%s => %s' % ( test, results[test]) )
-
-    #logging.debug( results )
+        results[table_field] = value
 
     return results
 
 
-def open_verify_pf(pf,mttime=False):
+def open_verify_pf(pf, mttime=False):
     '''
     Verify that we can get the file and check
     the value of PF_MTTIME if needed.
     Returns pf_object
     '''
-
-    logging = getLogger()
-
-    logging.debug( 'Look for parameter file: %s' % pf )
+    logger = logging.getLogger(__name__)
+    logger.debug('Look for parameter file: %s' % pf)
 
     if mttime:
-        logging.debug( 'Verify that %s is newer than %s' % (pf,mttime) )
+        logger.debug('Verify that %s is newer than %s' % (pf, mttime))
 
-        PF_STATUS = stock.pfrequire(pf, mttime)
-        if PF_STATUS == stock.PF_MTIME_NOT_FOUND:
-            logging.warning( 'Problems looking for %s. PF_MTTIME_NOT_FOUND.' % pf )
-            logging.error( 'No MTTIME in PF file. Need a new version of the %s file!!!' % pf )
-        elif PF_STATUS == stock.PF_MTIME_OLD:
-            logging.warning( 'Problems looking for %s. PF_MTTIME_OLD.' % pf )
-            logging.error( 'Need a new version of the %s file!!!' % pf )
-        elif PF_STATUS == stock.PF_SYNTAX_ERROR:
-            logging.warning( 'Problems looking for %s. PF_SYNTAX_ERROR.' % pf )
-            logging.error( 'Need a working version of the %s file!!!' % pf )
-        elif PF_STATUS == stock.PF_NOT_FOUND:
-            logging.warning( 'Problems looking for %s. PF_NOT_FOUND.' % pf )
-            logging.error( 'No file  %s found!!!' % pf )
+        pf_status = stock.pfrequire(pf, mttime)
+        if pf_status == stock.PF_MTIME_NOT_FOUND:
+            logger.warning('Problems looking for %s.' % pf +
+                           ' PF_MTTIME_NOT_FOUND.')
+            logger.error('No MTTIME in PF file. '
+                         'Need a new version of the %s file!!!' % pf)
+        elif pf_status == stock.PF_MTIME_OLD:
+            logger.warning('Problems looking for %s. PF_MTTIME_OLD.' % pf)
+            logger.error('Need a new version of the %s file!!!' % pf)
+        elif pf_status == stock.PF_SYNTAX_ERROR:
+            logger.warning('Problems looking for %s. PF_SYNTAX_ERROR.' % pf)
+            logger.error('Need a working version of the %s file!!!' % pf)
+        elif pf_status == stock.PF_NOT_FOUND:
+            logger.warning('Problems looking for %s. PF_NOT_FOUND.' % pf)
+            logger.error('No file  %s found!!!' % pf)
 
-        logging.debug( '%s => PF_MTIME_OK' % pf )
+        logger.debug('%s => PF_MTIME_OK' % pf)
 
     try:
-        return stock.pfread( pf )
-    except Exception,e:
-        logging.error( 'Problem looking for %s => %s' % ( pf, e ) )
+        return stock.pfread(pf)
+    except Exception as ex:
+        logger.error('Problem looking for %s => %s' % (pf, ex))
 
 
-
-
-def safe_pf_get(pf,field,defaultval=False):
+def safe_pf_get(pf, field, defaultval=False):
     '''
     Safe method to extract values from parameter file
     with a default value option.
     '''
-    logging = getLogger()
-
+    logger = logging.getLogger(__name__)
     value = defaultval
-    if pf.has_key(field):
+    if pf.has_key(field):  # noqa
         try:
-            value = pf.get(field,defaultval)
-        except Exception,e:
-            logging.warning('Problems safe_pf_get(%s,%s)' % (field,e))
-            pass
+            value = pf.get(field, defaultval)
+        except Exception as ex:
+            logger.warning('Problem with safe_pf_get(%s, %s)' % (field, ex))
 
-    logging.debug( "pf.get(%s,%s) => %s" % (field,defaultval,value) )
+    logger.debug("pf.get(%s,%s) => %s" % (field, defaultval, value))
 
     return value
 
 
-
-#def _str(item):
-#    """Return a string no matter what"""
-#    if item is not None:
-#        return str(item)
-#    else:
-#        return ''
-#
-
-#def _dict(*args, **kwargs):
-#    """
-#    Return a dict only if at least one value is not None
-#    """
-#    dict_ = Dict(*args, **kwargs)
-#    if dict_.values() == [None] * len(dict_):
-#        return None
-#    return dict_
-
-
-def filter_none( obj ):
-    """
-    Return a dict only if the value for key "value" is not None
-    """
+def filter_none(obj):
+    '''
+    Return a dict only if the value for key "value" is not None.
+    '''
     if obj.get('value') is None:
         return None
     return obj
 
 
-def km2m(dist):
-    """Convert from km to m only if dist is not None"""
-
-    return float(dist) * 1000.0
-
-
-def m2deg_lat(dist):
-    return float(dist) / 110600.0
+def km2m(distance_km):
+    '''Convert distance_km to meters only if not None.'''
+    if distance_km is None:
+        return None
+    else:
+        return float(distance_km) * 1000.
 
 
-def m2deg_lon(dist, lat=0.0):
-    M = 6367449.0
-    return float(dist) / (math.pi / 180.0) / M / math.cos(math.radians(lat))
+EARTH_MEAN_MERIDIONAL_RADIUS_M = 6367449.
+M_PER_DEGREE_LATITUDE = math.pi*EARTH_MEAN_MERIDIONAL_RADIUS_M/180.
+EARTH_MEAN_EQUATORIAL_RADIUS_M = 6378137.
+M_PER_DEGREE_LONGITUDE = math.pi*EARTH_MEAN_EQUATORIAL_RADIUS_M/180.
 
 
-def _eval_ellipse(a, b, angle):
-    return a*b/(math.sqrt((b*math.cos(math.radians(angle)))**2 +
-                          (a*math.sin(math.radians(angle)))**2))
+def m2deg_lat(distance_m):
+    '''Convert distance_m to degrees latitude only if not None.'''
+    if distance_m is None:
+        return None
+    else:
+        return float(distance_m) / M_PER_DEGREE_LATITUDE
 
 
-def get_NE_on_ellipse(A, B, strike):
-    """
-    Return the solution for points N and E on an ellipse
+def m2deg_lon(distance_m, latitude=0.0):
+    '''Convert distance_m to degrees longitude only if not None.'''
+    if distance_m is None:
+        return None
+    else:
+        return (float(distance_m) / M_PER_DEGREE_LONGITUDE /
+                math.cos(math.radians(latitude)))
 
-    A : float of semi major axis
-    B : float of semi minor axis
-    strike : angle of major axis from North
+
+def _eval_ellipse(smajax, sminax, angle):
+    return smajax*sminax/(math.sqrt((sminax*math.cos(math.radians(angle)))**2 +
+                                    (smajax*math.sin(math.radians(angle)))**2))
+
+
+def get_ne_on_ellipse(smajax, sminax, strike):
+    '''
+    Return the solution for points north and east on an ellipse
+
+    Arguments
+    ---------
+    smajax: float
+        semi-major axis
+    sminax: float
+        semi-minor axis
+    strike: float
+        orientation of major axis, angle measured from north
 
     Returns
     -------
-    n, e : floats of ellipse solution at north and east
-    """
-    n = _eval_ellipse(A, B, strike)
-    e = _eval_ellipse(A, B, strike-90)
-    return n, e
+    2-tuple of floats:
+        north, east
+    '''
+    north = _eval_ellipse(smajax, sminax, strike)
+    east = _eval_ellipse(smajax, sminax, strike-90)
+    return north, east
 
 
-if __name__ == "__main__": raise ImportError( "\n\n\tAntelope's qml module. Not to run directly!!!! **\n" )
+if __name__ == "__main__":
+    raise ImportError("\n\n\tAntelope's qml module. Do not run directly! **\n")

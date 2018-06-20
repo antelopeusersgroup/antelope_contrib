@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>sphdiv</title>
+  </head>
+  <body>
+    <h1>sphdiv</h1>
+    <h3>Usage:</h3>
+    <p>sphdiv [-decay power -text --help] &lt; infile &gt;outfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    Applies a constant geometric spreading correction to
+    ThreeComponentSeismogram objects grouped into one or more
+    ThreeComponentEnsemble objects stored in the input file,
+    infile.&nbsp;&nbsp; The algorithm requires each seismogram to set a
+    real-valued header (Metadata) attribute with the tag <i>offset</i>.&nbsp;&nbsp;
+    Each seismogram is scaled by <i>offset^power</i> where <i>power</i>
+    is a variable that can be changed by the -decay argument.&nbsp; If
+    the retrieved offset is zero, the program sets offset to a
+    0.001.&nbsp;&nbsp; That probably should be a parameter, but if you
+    need that it would be easy code or just edit this code for your own
+    use. <br>
+    <br>
+    Important to emphasize that this program computes and applies a
+    constant computed gain for each seismogram.&nbsp;&nbsp; <br>
+    <br>
+    <h3>Options:</h3>
+    <h3> </h3>
+    <i>-decay power<br>
+    </i>Set the decay constant to the value of power.&nbsp; The default
+    is 2.0.<br>
+    <br>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.<br>
+    <br>
+  </body>
+</html>

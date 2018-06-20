@@ -23,17 +23,12 @@
    is derived from continuous data that is a user error but it is 
    unavoidable with shot data.   
 
-   This is my first attempt at a seispp processing unix style
-   filter with boost serialization.   If this works I expect to 
-   use the skeleton of this code to construct a template for 
-   a "module" meshing with that concept.
-
 Author:  Gary L Pavlis
 Written:  Nov 29, 2015
 */
 void usage()
 {
-    cerr << "linearmoveout [-vr v_reduce -t0 timeshift --help] < infile > outfile"
+    cerr << "linearmoveout [-vr v_reduce -t0 timeshift --help -text] < infile > outfile"
         <<endl
         << " -vr sets reducing velocity (default 6000)"<<endl
         << " -t0 applies a time shift to all seismograms (default 0)"<<endl;;
@@ -44,7 +39,7 @@ int main(int argc, char **argv)
 {
     double vreduce(6000.0);   // unit so m/s for this default
     double t0(0.0);
-    bool binary_data(false);
+    bool binary_data(true);
     int i;
     for(i=1;i<argc;++i)
     {
@@ -63,8 +58,8 @@ int main(int argc, char **argv)
         }
         else if(sarg=="--help")
             usage();
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else
             usage();
     }
@@ -94,53 +89,17 @@ int main(int argc, char **argv)
         ThreeComponentEnsemble d;
         while(!ia->eof())
         {
+          d=ia->read();
           int nm=d.member.size();
           for(i=0;i<nm;++i)
           {
             if(d.member[i].live)
             {
-               ThreeComponentSeismogram work(d.member[i]);
-               /* Compute the time shift for this signal as
-                  t0+offset/vreduce  */
-               double tshift=t0;
-               double offset=work.get_double("offset");
+               double tshift;
+               double offset=d.member[i].get_double("offset");
                offset=fabs(offset);
-               tshift -= (offset/vreduce);
-               int ioffset=work.sample_number(tshift);
-               /* a basic sanity check on velocity and t0  */
-               if(abs(ioffset)>work.ns)
-               {
-                   cerr << "linearmoveout(Fatal Error):  irrational time shift"
-                        <<endl;
-                   cerr << "using t0="<<t0<<" and reducing velocity="<<vreduce
-                       << endl
-                       << "This seismogram has offset set as "<<offset
-                       << " which yields a time shift of "<<ioffset<<"samples"
-                       <<endl
-                       << "This exceeds number of data samples ="
-                       <<work.ns<<endl;
-                   exit(-1);
-               }
-               int nsout=work.ns - ioffset;
-               int ncopy=min(work.ns,nsout);
-               work.u=dmatrix(3,nsout);
-               work.u.zero();
-               work.t0+=t0;
-               int lag=work.sample_number(-offset/vreduce);
-               double *ptr;
-               if(lag>=0)
-               {
-                   ptr=work.u.get_address(0,lag);
-                   dcopy(3*ncopy,d.member[i].u.get_address(0,0),1,ptr,1);
-                   work.ns=nsout;
-               }
-               else
-               {
-                   ptr=d.member[i].u.get_address(0,ioffset);
-                   dcopy(3*ncopy,ptr,1,work.u.get_address(0,0),1);
-                   work.ns=nsout;
-               }
-               d.member[i]=work;
+               tshift = (offset/vreduce);
+               d.member[i].t0 -= tshift;
             }
           }
           oa->write(d);

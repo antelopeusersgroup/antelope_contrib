@@ -21,19 +21,25 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "fragment basename [-i infile -dir outdir -binary -dismember -v]"
+    cerr << "fragment basename [-i infile -dir outdir -dismember -namekey type -text -v --help]"
         <<endl
         << "seispp filter fragments file with multiple ensembles into individual files"
         <<endl
-        << "basename is root name for each output ensemble.  Adds a sequence number for each ensemble"
+        << "basename is root name for each output ensemble.  "<<endl
+        << "Default is sequence number added to this name.  Use -namekey to use ensemble metadata as a variable"
         <<endl
         << "-i optional read from file infile (default is stdin)"<<endl
         << "-dir optional write to outdir (default is .)"
         <<endl
-        << "-binary - assume input and outputs should be binary format"
-        << "(Default is text)"<<endl
-        << "-dismember - ungroup ensembles to build output files as a collection of 3C seismograms"<<endl
-        << "(Default is put one ensemble in each output file)"<<endl
+        << "-dismember - ungroup ensembles to build output files as unbundled collection of 3c seismograms"
+        <<endl
+        << "(Default is one ensemble per output file)"<<endl
+        << "-namekey - if this argument appears assume basename is an ensemble metadata key with named type"
+        <<endl
+        << "(type must be either int or string - real number file names a always probematic."<<endl
+        << " file name for ensemble is constructed as basename_value where value is the int or string"<<endl
+        << " fetched with keyword basename.  e.g. evid_22"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
         << "-v verbose output (mostly logs each ensembles gather metadata"
         <<endl
         << "Note:   Only works at present with ThreeComponentEnsemble objects"
@@ -48,8 +54,11 @@ int main(int argc, char **argv)
     if(argc<2) usage();
     string outdir(".");
     string basename(argv[1]);
-    bool binary_data(false);
+    if(basename=="--help") usage();
+    bool binary_data(true);
     bool dismember(false);
+    bool basename_is_key(false);
+    string name_key_type("int");
     for(i=2;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -65,12 +74,26 @@ int main(int argc, char **argv)
                 usage();
             }
         }
-        else if(sarg=="-v")
-            Verbose=true;
-        else if(sarg=="-binary")
-            binary_data=true;
         else if(sarg=="-dismember")
             dismember=true;
+        else if(sarg=="-namekey")
+        {
+            ++i;
+            if(i>=argc) usage();
+            name_key_type=string(argv[i]);
+            basename_is_key=true;
+            if( (name_key_type!="int") && (name_key_type!="string"))
+            {
+                cerr << argv[0]<<" illegal specification of type for -namekey argument"<<endl;
+                usage();
+            }
+        }
+        else if(sarg=="-v")
+            Verbose=true;
+        else if(sarg=="-text")
+            binary_data=false;
+        else if(sarg=="--help")
+            usage();
         else
             usage();
     }
@@ -96,7 +119,23 @@ int main(int argc, char **argv)
             int count;
             d3c=ia->read();
             char fname[128];
-            sprintf(fname,"%s_%d",basename.c_str(),nensembles);
+            if(basename_is_key)
+            {
+                if(name_key_type=="int")
+                {
+                    int ival=d3c.get<int>(basename);
+                    sprintf(fname,"%s_%d",basename.c_str(),ival);
+                }
+                else
+                {
+                    string sval=d3c.get_string(basename);
+                    sprintf(fname,"%s_%s",basename.c_str(),sval.c_str());
+                }
+            }
+            else
+            {
+              sprintf(fname,"%s_%d",basename.c_str(),nensembles);
+            }
             string path;
             path=outdir+"/"+fname;
             if(Verbose)

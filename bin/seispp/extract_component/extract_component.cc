@@ -11,10 +11,11 @@ using namespace SEISPP;
 
 void usage()
 {
-    cerr << "extract_component n < infile > outfile"<<endl
+    cerr << "extract_component n [-text --help]<< infile > outfile"<<endl
         << "Extract component n (must be 0, 1, or 2) from input 3C ensemble"
         <<endl
-        << "Output is boost serialized TimeSeriesEnsemble object"<<endl;
+        << "Output is boost serialized TimeSeriesEnsemble object"<<endl
+        << " -text - switch to text input and output (default is binary)"<<end;
     exit(-1);
 }
 
@@ -24,8 +25,7 @@ int main(int argc, char **argv)
 {
 
     int i;
-    const int narg_required(1);
-    if(argc!=narg_required) usage();
+    if(argc!=2) usage();
     int outchan=atoi(argv[1]);
     if( (outchan<0) || (outchan>2) )
     {
@@ -33,14 +33,14 @@ int main(int argc, char **argv)
         <<outchan<<" specified"<<endl;
       usage();
     }
-    bool binary_data(false);
+    bool binary_data(true);
     for(i=2;i<argc;++i)
     {
         string sarg(argv[i]);
         if(sarg=="--help")
             usage();
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else
             usage();
     }

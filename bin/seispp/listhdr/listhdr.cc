@@ -4,16 +4,17 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "PMTimeSeries.h"
 #include "seispp.h"
+#include "ensemble.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
-#include "ensemble.h"
 //#include "PMTimeSeries.h"
 using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "listhdr [-i infile -csv format_file -t objecttype -binary]  >outfile"
+    cerr << "listhdr [-i infile -csv format_file -t objecttype -text -showfile -showcount]  >outfile"
         <<endl
         << "List metadata components of a stream of serialized objects"
         <<endl
@@ -23,10 +24,12 @@ void usage()
         <<endl
         << "        (default dumps all with operator <<"<<endl
         << " -t - specify the type of object expected"<<endl
-        << "      (Currently accept:  ThreeComponentSeismogram (default), ThreeComponentEnsemble, "<<endl
-        << "and PMTimeSeries)"
+        << "      (Currently accept:  ThreeComponentSeismogram (default), ThreeComponentEnsemble"<<endl
+        << "      TimeSeries, TimeSeriesEnsemble, and PMTimeSeries)"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
+        << " -showfile - prints file name in first column (allowed only with -i option)"
         <<endl
-        << " -binary - assume in and out data are binary (default is ascii text)"
+        << "-showcount - print object count in a file with multiple objects"
         <<endl;
     exit(-1);
 }
@@ -60,7 +63,7 @@ vector<MetadataComponent> parse_csv_format_file(string fname)
         ss >> mdttest;
         if( (mdttest=="double") || (mdttest=="MDreal") || (mdttest=="real") || (mdttest=="float") )
             mc.mdt=MDreal;
-        else if( (mdttest=="int") || (mdttest=="MDint") || (mdttest=="log") )
+        else if( (mdttest=="int") || (mdttest=="MDint") || (mdttest=="long") )
             mc.mdt=MDint;
         else if(mdttest=="boolean")
             mc.mdt=MDboolean;
@@ -139,6 +142,10 @@ AllowedObjects get_object_type(string otype)
         return TCE;
     else if(otype=="PMTimeSeries")
         return PMTS;
+    else if(otype=="TimeSeries")
+        return TS;
+    else if(otype=="TimeSeriesEnsemble")
+        return TSE;
     else
     {
         cerr << "Do not know how to handle object type="<<otype
@@ -148,7 +155,8 @@ AllowedObjects get_object_type(string otype)
 }
 template<class Treader> 
   void listhdr_generic(string infile, bool binary_data, bool use_stdin,
-          bool csv_output, vector<MetadataComponent>& csv_format_info)
+          bool csv_output, vector<MetadataComponent>& csv_format_info,
+          bool showfile, bool showcount)
 {
     StreamObjectReader<Treader> *rptr;
     try {
@@ -162,11 +170,16 @@ template<class Treader>
             Metadata md(dynamic_cast<Metadata&>(d));
             if(csv_output)
             {
+              if(showfile) cout<<infile<<",";
+              if(showcount) cout <<i<<",";
               WriteToCSVFile(md,cout,csv_format_info);
             }
             else
             {
-              cout << "Metadata for file index position="<<i<<endl;
+              if(showfile) 
+                  cout<<"Metadata contents for object in file="<<infile<<endl;
+              if(showcount)
+                  cout << "Metadata at index position="<<i<<endl;
               cout << md;
             }
             ++i;
@@ -186,7 +199,9 @@ int main(int argc, char **argv)
     string otype("ThreeComponentSeismogram");
     string fname_csvo;
     bool use_stdin(true);
-    bool binary_data(false);
+    bool binary_data(true);
+    bool showfile(false);
+    bool showcount(false);
     for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -210,12 +225,23 @@ int main(int argc, char **argv)
             if(i>=argc)usage();
             otype=string(argv[i]);
         }
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
+        else if(sarg=="-showfile")
+            showfile=true;
+        else if(sarg=="-showcount")
+            showcount=true;
         else
             usage();
     }
     try{
+        if(use_stdin && showfile)
+        {
+            cerr << "Illegal argument combination"<<endl
+                << "-showfile options not allowed with input from stdin"
+                <<endl;
+            usage();
+        }
         AllowedObjects dtype=get_object_type(otype);
         vector<MetadataComponent> csv_format_info;
         if(csv_output)
@@ -224,25 +250,28 @@ int main(int argc, char **argv)
         {
             case TCS:
                 listhdr_generic<ThreeComponentSeismogram>(infile,
-                        binary_data,use_stdin,csv_output,csv_format_info);
+                        binary_data,use_stdin,csv_output,csv_format_info,
+                        showfile,showcount);
                 break;
             case TCE:
                 listhdr_generic<ThreeComponentEnsemble>(infile,
-                        binary_data,use_stdin,csv_output,csv_format_info);
+                        binary_data,use_stdin,csv_output,csv_format_info,
+                        showfile,showcount);
                 break;
             case TS:
                 listhdr_generic<TimeSeries>(infile,
-                        binary_data,use_stdin,csv_output,csv_format_info);
+                        binary_data,use_stdin,csv_output,csv_format_info,
+                        showfile,showcount);
                 break;
             case TSE:
                 listhdr_generic<TimeSeriesEnsemble>(infile,
-                        binary_data,use_stdin,csv_output,csv_format_info);
+                        binary_data,use_stdin,csv_output,csv_format_info,
+                        showfile,showcount);
                 break;
             case PMTS:
-                cerr << "PMTimeSeries not yet supported"
-                    <<"Cannot run"<<endl;
-                exit(-1);
-                //fofflist=build_index<PMTimeSeries>(infile);
+                listhdr_generic<PMTimeSeries>(infile,
+                        binary_data,use_stdin,csv_output,csv_format_info,
+                        showfile,showcount);
                 break;
             default:
                 cerr << "Coding problem - dtype variable does not match enum"

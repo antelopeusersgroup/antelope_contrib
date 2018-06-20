@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>set_metadata</title>
+  </head>
+  <body>
+    <h1>set_metadata</h1>
+    <h3>Usage:</h3>
+    <p>set_metadata [-text --help -pf pffile] &lt; infile &gt; outfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    This is a fairly limited program to add metadata (header attributes)
+    to a set of ThreeComponentEnsemble objects contained in a serialized
+    file.&nbsp; Note it really should only be used on files that contain
+    one ensemble unless the metadata to be changed/added should be
+    identical in all ensembles.&nbsp; It has no capability of adding
+    different attributes to different ensembles in a file and all the
+    member seismograms in all files must be directly comparable in
+    number and order.&nbsp;&nbsp;&nbsp; The original program was
+    developed for multichannel shot gather data, which should be viewed
+    as the model for what the input is expected to be.&nbsp;&nbsp; <br>
+    <br>
+    The attributes to be added to the ensemble(s) in the input file and
+    written to output are controlled by the parameter file. The default
+    parameter file is set_metadata.pf, but this can be changed with the
+    -pf option.&nbsp;&nbsp; The required contents of the pf file are
+    described below. <br>
+    <h3>Options:</h3>
+    <h3> </h3>
+    -text - switch to text format input and output (default is binary data)<br>
+    --help - print the usage message<br>
+    -pf pffile - read pf data from pffile instead of the default
+    set_metadata.pf<br>
+    <h3>Parameter File</h3>
+    The parameter file for this program is fairly complex is probably
+    easiest to explain with an example:<br>
+    <hr width="100%" size="2">EnsembleMetadata &amp;Arr{<br>
+    &nbsp; types &amp;Tbl{<br>
+    &nbsp;&nbsp;&nbsp; sx REAL<br>
+    &nbsp;&nbsp;&nbsp; sy REAL<br>
+    &nbsp;&nbsp;&nbsp; selev REAL<br>
+    &nbsp; }<br>
+    &nbsp; values &amp;Tbl{<br>
+    &nbsp;&nbsp;&nbsp; 96 0 131.064<br>
+    &nbsp; }<br>
+    }<br>
+    MemberMetadata &amp;Arr{<br>
+    &nbsp; types &amp;Tbl{<br>
+    &nbsp;&nbsp;&nbsp; sta string<br>
+    &nbsp;&nbsp;&nbsp; rx real<br>
+    &nbsp;&nbsp;&nbsp; ry real<br>
+    &nbsp;&nbsp;&nbsp; relev real<br>
+    &nbsp; }<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; values &amp;Tbl{<br>
+    &nbsp;&nbsp;&nbsp; 1 0 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 2 4 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 3 8 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 4 12 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 5 16 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 6 20 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 7 24 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 8 28 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 9 32 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 10 36 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 11 40 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 12 44 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 13 48 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 14 52 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 15 56 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 16 60 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 17 64 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 18 68 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 19 72 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 20 76 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 21 80 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 22 84 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 23 88 0 131.064<br>
+    &nbsp;&nbsp;&nbsp; 24 92 0 131.064<br>
+    &nbsp; }<br>
+    }<br>
+    <hr width="100%" size="2">Note the two tags for the Arr structure <i>EnsembleMetadata
+    </i>and <i>MemberMetadata.&nbsp; </i>The curly brackets for the
+    two related &amp;Arr surround two &amp;Tbl groups with the tags of <i>types
+    </i>and<i> values.&nbsp;&nbsp; </i>The contents of these two Tbls
+    are similar, but with some different expectations.<br>
+    <br>
+    The <i>types</i> Tbl for both Arr tags should list of set of
+    key-type pairs.&nbsp; The "key" is the name and "type" is the basic
+    data type that will be associated with an entry in the <i>values</i>
+    Tbl that follows.&nbsp;&nbsp; "type" has some flexibility.&nbsp; The
+    table below shows the accepted values:<br>
+    <table width="868" height="140" cellspacing="2" cellpadding="2"
+      border="1">
+      <tbody>
+        <tr>
+          <td valign="top"><i>Attribute Data Type</i><br>
+          </td>
+          <td valign="top"><i>Valid Entries</i><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">real number<br>
+          </td>
+          <td valign="top">real, REAL<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">integer number<br>
+          </td>
+          <td valign="top">int, INT, integer<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">character string<br>
+          </td>
+          <td valign="top">string, STRING<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">boolean (true-false)<br>
+          </td>
+          <td valign="top">boolean, BOOLEAN<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    The order of the pairs in the <i>types</i> Tbl defines the expected
+    order of columns of data in the <i>values&nbsp; </i>Tbl.&nbsp; In
+    the example for the <i>EnsembleMetadata </i>the 96 is converted to
+    a real number and stored with sx as the index.&nbsp; Similarly sy is
+    set 0 and selev is set to 131.064. <br>
+    <br>
+    Although the two Arr section share a common structure there is one
+    important difference.&nbsp;&nbsp; The <i>EnsembleMetadata </i>are
+    set as global for each ensemble and so there must be one and only
+    one line in the <i>values</i> Tbl for it.&nbsp; In contrast, the <i>MemberMetadata</i>
+    must contain one line for each three-component seismogram in the
+    ensemble.&nbsp;&nbsp; The example above is for a 24 element, linear
+    array of three-component geophones spaced at 4 m intervals at a
+    common elevation.&nbsp;&nbsp; The coordinates listed are thus
+    relative to the location of station "1".&nbsp;&nbsp; The sta field
+    is set as a string, but are defined here by sequential
+    numbers.&nbsp;&nbsp; <br>
+  </body>
+</html>

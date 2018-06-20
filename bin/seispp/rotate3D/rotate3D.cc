@@ -1,10 +1,6 @@
-/* This is a special purpose program to rotate 3C data for the dugl
-   experiment at homestake.   Uses a straight line ray approximation
-   that would normally be a dumb idea.  Also has hard wired station
-   list of surface stations that are handled differently.  That is underground
-   sites rotate to P aligned to straight ray, radial perpendicular in the
-   ray vertical plan, and transverse the horizontal perpendicular to that
-   plane.  For surface sites only the horizontals are rotate. */
+/* This is a program to rotate data to a simple form of LQT transformation
+   based on a straight line approximation.   Optionally a constant 
+   transformation can be applied with angles to define the L direction. */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
@@ -17,13 +13,17 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "rotate [-phi x -theta y -binary --help] < infile > outfile"
+    cerr << "rotate [-phi x -theta y -accumulate -text --help] < infile > outfile"
         <<endl
-        << "infile and outfile are a single ThreeComponentEnsemble boost serialization file"<<endl
         << "Default rotates coordinates to LRT defined by computed normal vector between source and receiver"<<endl
         << "(computed from metadaa rx,ry,relev, sx,sy,and selev - local coordinates)"<<endl
         << "To set the angles that define the LRT transformation use the -phi and -theta parameters"<<endl
         << "(phi and theta are spherical coordinate angles in degrees)"<<endl
+        << "-accumulate transforms data without checking current orientation"
+        <<endl <<"(Default forces data to cardinal directions before applying transformation)"
+        << " -text - switch to text input and output (default is binary)"<<endl
+        << "--help will print this usage message"<<endl
+        << "infile and outfile are a ThreeComponentEnsemble boost serialization files"
         <<endl;
     exit(-1);
 }
@@ -32,7 +32,8 @@ int main(int argc, char **argv)
 {
     bool compute_from_coordinates(true);
     double phi(-99999.9),theta(-99999.9);
-    bool binary_data(false);
+    bool binary_data(true);
+    bool accum_mode(false);
     int i;
     for(i=1;i<argc;++i)
     {
@@ -42,17 +43,19 @@ int main(int argc, char **argv)
             ++i;
             if(i>=argc)usage();
             phi=atof(argv[i]);
-            compute_from_coordinates=true;
+            compute_from_coordinates=false;
         }
         else if(sarg=="-theta")
         {
             ++i;
             if(i>=argc)usage();
             theta=atof(argv[i]);
-            compute_from_coordinates=true;
+            compute_from_coordinates=false;
         }
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-accumulate")
+            accum_mode=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else
             usage();
     }
@@ -96,6 +99,11 @@ int main(int argc, char **argv)
         int k;
         for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
         {
+          if(!accum_mode)
+          {
+            if(!dptr->components_are_cardinal) 
+              dptr->rotate_to_standard();
+          }
           if(compute_from_coordinates)
           {
             double r[3],s[3],nu[3];

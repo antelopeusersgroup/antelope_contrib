@@ -531,6 +531,8 @@ void M_estimator_double_n_vector(double *v,
 		weighting formula to use weights 0<w<1 */
 		for(j=0;j<nv;++j) dscal(n,weight[i],residuals+j,1);
 		scale = compute_nvector_scale(residuals,n,nv,row);
+                //DEBUG
+                //fprintf(stderr,"M estimator subroutine debug: iteration count=%d,  scale=%lf\n",iteration,scale);
 		if(scale < fminsc) scale = fminsc;
 		for(i=0;i<n;++i) delta_mean[i] = 0.0;
 		for(j=0,sum_weights=0.0;j<nv;++j)

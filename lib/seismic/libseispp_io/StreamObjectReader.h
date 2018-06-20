@@ -20,7 +20,7 @@ template <typename T>
     /*! \brief Default constructor.
 
       Default constructor uses boost text serialization to stdin*/
-    StreamObjectReader(const char format='t');
+    StreamObjectReader(const char format='b');
     /*! \brief Create handle to read from file.
 
       Creates an input handle to read from a file.
@@ -29,7 +29,7 @@ template <typename T>
       \exception - throws a SeisppError object if operation fails.  Boost
         constructors may also throw special error object (needs research).
         */
-    StreamObjectReader(const string fname,const char format='t');
+    StreamObjectReader(const string fname,const char format='b');
     /*! Destructor - has to close io channel */
      ~StreamObjectReader();
      /*! Read the next object in file. */
@@ -85,13 +85,21 @@ template <typename T>
     /* This little test is probably an unnecessary overhead, but the cost is
     tiny */
     if(!input_is_stdio)
-      if(n_previously_read>=(nobjects-1)) throw SeisppError(base_error
+      if(n_previously_read>=nobjects) throw SeisppError(base_error
         + "Trying to read past end of file - code should test for this condition with at_eof method");
     string tag;
     char tagbuf[BINARY_TAG_SIZE+1];
     switch(this->format)
     {
+      case 't':
+        (*txt_ar)>>d;
+        if(input_is_stdio)
+          cin>>tag;
+        else
+          ifs>>tag;
+        break;
       case 'b':
+      default:
         (*bin_ar)>>d;
         if(input_is_stdio)
             cin.read(tagbuf,BINARY_TAG_SIZE);
@@ -99,14 +107,6 @@ template <typename T>
             ifs.read(tagbuf,BINARY_TAG_SIZE);
         tagbuf[BINARY_TAG_SIZE]='\0';
         tag=string(tagbuf);
-        break;
-      case 't':
-      default:
-        (*txt_ar)>>d;
-        if(input_is_stdio)
-          cin>>tag;
-        else
-          ifs>>tag;
     };
     ++n_previously_read;
     if(tag==more_data_tag)
@@ -140,14 +140,14 @@ template <typename T>
   n_previously_read=0;
   switch(format)
   {
-    case 'b':
-      bin_ar=new boost::archive::binary_iarchive(std::cin);
-      txt_ar=NULL;
-      break;
     case 't':
-    default:
       bin_ar=NULL;
       txt_ar=new boost::archive::text_iarchive(std::cin);
+      break;
+    case 'b':
+    default:
+      bin_ar=new boost::archive::binary_iarchive(std::cin);
+      txt_ar=NULL;
   };
   more_data_available=true;
 }
@@ -159,12 +159,12 @@ template <typename T>
     format=form;
     switch(format)
     {
-      case 'b':
-        ifs.open(fname.c_str(),ios::in | ios::binary);
-        break;
       case 't':
-      default:
         ifs.open(fname.c_str(),ios::in);
+        break;
+      case 'b':
+      default:
+        ifs.open(fname.c_str(),ios::in | ios::binary);
     };
     if(ifs.fail())
     {
@@ -174,35 +174,45 @@ template <typename T>
     input_is_stdio=false;
     n_previously_read=0;
     string magic_test;
-    char tagbuf[BINARY_TAG_SIZE];
+    char tagbuf[BINARY_TAG_SIZE+1];
     switch(format)
     {
-      case 'b':
-        ifs.seekg(ifs.end-BinaryIOStreamEOFOffset);
-        ifs.read(tagbuf,BINARY_TAG_SIZE);
-        magic_test=string(tagbuf);
-        ifs.read((char*)(&(this->nobjects)),sizeof(long));
-        break;
       case 't':
-      default:
-        ifs.seekg(ifs.end-TextIOStreamEOFOffset);
+        ifs.seekg(-(TextIOStreamEOFOffset),ios_base::end);
         ifs >> magic_test;
         ifs >> nobjects;
+        if(ifs.fail())
+        {
+            throw SeisppError(base_error
+              + "Read failed loading global file data (Text mode)");
+        }
+        break;
+      case 'b':
+      default:
+        ifs.seekg(-(BinaryIOStreamEOFOffset),ios_base::end);
+        ifs.read(tagbuf,BINARY_TAG_SIZE);
+        tagbuf[BINARY_TAG_SIZE]='\0';
+        magic_test=string(tagbuf);
+        ifs.read((char*)(&(this->nobjects)),sizeof(long));
+        if(ifs.fail())
+            throw SeisppError(base_error
+                + "Read failed loading global file data (binary mode)");
     };
     if(magic_test!=eof_tag) throw SeisppError(base_error + "File "
         + fname + " does not appear to be a valid seispp boost serialization file");
     this->rewind();
     switch(format)
     {
-      case 'b':
-        bin_ar=new boost::archive::binary_iarchive(ifs);
-        txt_ar=NULL;
-        break;
       case 't':
-      default:
         bin_ar=NULL;
         txt_ar=new boost::archive::text_iarchive(ifs);
+        break;
+      case 'b':
+      default:
+        bin_ar=new boost::archive::binary_iarchive(ifs);
+        txt_ar=NULL;
     };
+    more_data_available=true;
   }catch(...){throw;};
 }
 template <typename T>
@@ -210,12 +220,12 @@ template <typename T>
 {
   switch(format)
   {
-    case 'b':
-      delete bin_ar;
-      break;
     case 't':
-    default:
       delete txt_ar;
+      break;
+    case 'b':
+    default:
+      delete bin_ar;
   };
   if(!input_is_stdio) ifs.close();
 }
@@ -257,7 +267,13 @@ template <typename T>
       + "input is tied to stdin - rewind is not possible for stdin");
   }
   else
-    ifs.seekg(0,ios_base::beg);
+  {
+    /* An oddity of ifstream is this is required to clear EOF flag
+     * which will be set when the constructor reads the last section 
+     * of the file.*/
+    ifs.clear();
+    ifs.seekg(ios::beg);
+  }
 }
 
 }

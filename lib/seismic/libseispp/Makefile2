@@ -13,11 +13,13 @@ INCLUDE=ArrivalUpdater.h \
   FixedFormatTrace.h \
   GenericFileHandle.h \
   HeaderMap.h \
+  HFArray.h \
   Hypocenter.h\
   Metadata.h\
   MultichannelCorrelator.h\
   PfStyleMetadata.h \
   ProcessingQueue.h \
+  RegionalCoordinates.h \
   SacFileHandle.h \
   SeisppError.h\
   SeisppKeywords.h \
@@ -84,11 +86,13 @@ OBJS=ArrivalUpdater.o \
   FixedFormatTrace.o  \
   GenericFileHandle.o \
   HeaderMap.o \
+  HFArray.o \
   Hypocenter.o \
   Metadata.o \
   MultichannelCorrelator.o \
   PfStyleMetadata.o \
   ProcessingQueue.o \
+  RegionalCoordinates.o \
   SacFileHandle.o \
   SignalToNoise.o \
   SimpleWavelets.o \

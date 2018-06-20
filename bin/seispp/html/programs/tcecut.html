@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>tcecut</title>
+  </head>
+  <body>
+    <h1>tcecut</h1>
+    <h3>Usage:</h3>
+    <p>tcecut tmin tmax&nbsp; &lt; in &gt; out [-v --help -text]<br>
+      <br>
+    </p>
+    <h3>Algorithm:</h3>
+    This program can be used to apply a reduced time window to
+    seismograms stored in ThreeComponentEnsemble objects serialized to
+    the input file read from stdin.&nbsp; It is conceptually equivalent
+    to the Seismic Unix program suwind run in time windowing
+    mode.&nbsp;&nbsp; <br>
+    <br>
+    The time interval to extract is defined by the time range
+    tmin&lt;=t&lt;=tmax.&nbsp;&nbsp; For more than a single ensemble
+    this always requires the data be in a relative time
+    standard.&nbsp;&nbsp;&nbsp; The two current examples are
+    multichannel shot gathers where time 0 is the shot time and the
+    arrival time reference used, for example, in dbxcor.&nbsp; It is
+    possible to use epoch times for tmin and tmax, but I can think of no
+    example where this would be appropriate for more than a single
+    ensemble.&nbsp; The only example of this I can conceive is an gather
+    formed from a set of stations that span a common absolute time
+    window.&nbsp;&nbsp; <br>
+    <br>
+    <h3>Options:</h3>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.&nbsp; <br>
+    <br>
+    <i>-v <br>
+    </i>More verbose output to stderr.<br>
+    <br>
+  </body>
+</html>

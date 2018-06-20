@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2" xmlns:q="http://quakeml.org/xmlns/quakeml/1.2" xmlns:catalog="http://anss.org/xmlns/catalog/0.1">
+	<eventParameters publicID="example/dbmoment/example">
+		<comment>
+			<text>Antelope QuakeML conversion using event2qml software.</text>
+		</comment>
+		<event catalog:eventid="2" catalog:eventsource="xx" catalog:datasource="xx" publicID="quakeml:xx.local/event/00000002">
+			<origin catalog:dataid="2" catalog:datasource="xx" publicID="quakeml:xx.local/origin/2">
+				<methodID></methodID>
+				<quality>
+					<usedPhaseCount>0</usedPhaseCount>
+					<associatedPhaseCount>0</associatedPhaseCount>
+					<standardError></standardError>
+				</quality>
+				<evaluationStatus>preliminary</evaluationStatus>
+				<creationInfo>
+					<creationTime>2016-01-21T04:16:48.728Z</creationTime>
+				</creationInfo>
+				<evaluationMode>automatic</evaluationMode>
+				<longitude>
+					<value>-121.464</value>
+				</longitude>
+				<depth>
+					<value>8000.0</value>
+				</depth>
+				<time>
+					<value>1998-08-12T14:10:23.000Z</value>
+				</time>
+				<latitude>
+					<value>36.755</value>
+				</latitude>
+			</origin>
+			<preferredOriginID>quakeml:xx.local/origin/2</preferredOriginID>
+			<creationInfo>
+				<creationTime>2017-02-05T21:52:23.967Z</creationTime>
+			</creationInfo>
+			<certainty></certainty>
+			<type></type>
+		</event>
+		<description>Using ANSS Quakeml Standards https://github.com/usgs/Quakeml/wiki</description>
+		<creationInfo>
+			<creationTime>2017-02-05T21:52:23.948Z</creationTime>
+			<agencyID>xx</agencyID>
+			<author>export_events.css2qml</author>
+		</creationInfo>
+	</eventParameters>
+</q:quakeml>

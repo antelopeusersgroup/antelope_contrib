@@ -1,8 +1,10 @@
 BIN  = editgclgrid
 PF   = $(BIN).pf
 MAN1 = $(BIN).1
+DBG=-g
 
-ldlibs= $(DBLIBS) -lgclgrid -lseispp -ltrvltm $(TRLIBS) -lperf
+cxxflags=$(DBG)
+ldlibs= $(DBG) $(DBLIBS) -lgclgrid -lseispp -ltrvltm $(TRLIBS) -lperf
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)

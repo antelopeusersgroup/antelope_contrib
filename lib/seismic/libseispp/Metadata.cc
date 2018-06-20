@@ -267,8 +267,7 @@ namespace SEISPP
     //
     // These functions get and convert values
     //
-    double Metadata::get_double(string s)
-        throw(MetadataGetError)
+    template<> double Metadata::get(string s) throw(MetadataGetError)
     {
         map<string,double>::iterator iptr;
         iptr=mreal.find(s);
@@ -281,8 +280,7 @@ namespace SEISPP
         string valstring=(*pfstyle).second;
         return (  atof(valstring.c_str()) );
     }
-    int Metadata::get_int(string s)
-        throw(MetadataGetError)
+    template<> int Metadata::get(string s) throw(MetadataGetError)
     {
         try {
             const string base_error("Metadata::get_int:  long to int conversion error ->");
@@ -298,8 +296,7 @@ namespace SEISPP
             return(static_cast<int>(lival));
         } catch (MetadataGetError& mderr){throw mderr;};
     }
-    long Metadata::get_long(string s)
-        throw(MetadataGetError)
+    template<> long Metadata::get(string s) throw(MetadataGetError)
     {
         map<string,long>::iterator iptr;
         iptr=mint.find(s);
@@ -311,8 +308,7 @@ namespace SEISPP
         string valstring=(*pfstyle).second;
         return (  atol(valstring.c_str()) );
     }
-    string Metadata::get_string(string s)
-        throw(MetadataGetError)
+    template<> string Metadata::get(string s) throw(MetadataGetError)
     {
         map<string,string>::iterator iptr;
         iptr=mstring.find(s);
@@ -320,7 +316,7 @@ namespace SEISPP
             throw MetadataGetError("string",s,"");
         return((*iptr).second);
     }
-    bool Metadata::get_bool(string s)
+    template<> bool Metadata::get(string s) throw(MetadataGetError)
     {
         map<string,bool>::iterator iptr;
         iptr=mbool.find(s);
@@ -334,6 +330,59 @@ namespace SEISPP
             return(true);
         return(false);
     }
+/* These specializations extend the original interface */
+template<> float Metadata::get(string key) throw(MetadataGetError)
+{
+  try{
+    double dval;
+    dval=this->get_double(key);
+    return((float)dval);
+  }catch(...){throw;};
+}
+template<> short Metadata::get(string key) throw(MetadataGetError)
+{
+  try{
+    const string base_error("Metadata::get<short> method conversion error:  ");
+    long itmp=this->get_long(key);
+    if(itmp>SHRT_MAX)
+      throw MetadataGetError(string("short int"),key,base_error+"overflow");
+    else if(itmp<SHRT_MIN)
+      throw MetadataGetError(string("short int"),key,base_error+"underflow");
+    return ((short) itmp);
+  }catch(...){throw;};
+}
+    /* Old interface had these explicit names.  These are now just wrappers 
+       for the specialized templates. */
+    double Metadata::get_double(string key) throw(MetadataGetError)
+    {
+      try{
+        return(this->get<double>(key));
+      }catch(...){throw;};
+    }
+    int Metadata::get_int(string key) throw(MetadataGetError)
+    {
+      try{
+        return(this->get<int>(key));
+      }catch(...){throw;};
+    }
+    long Metadata::get_long(string key) throw(MetadataGetError)
+    {
+      try{
+        return(this->get<long>(key));
+      }catch(...){throw;};
+    }
+    string Metadata::get_string(string key) throw(MetadataGetError)
+    {
+      try{
+        return(this->get<string>(key));
+      }catch(...){throw;};
+    }
+    bool Metadata::get_bool(string key) throw(MetadataGetError)
+    {
+      try{
+        return(this->get<bool>(key));
+      }catch(...){throw;};
+    }
 
     //
     // Functions to put things into metadata object
@@ -342,21 +391,33 @@ namespace SEISPP
     {
         mreal[name]=val;
     }
+    void Metadata::put(const char *name, double val)
+    {
+        mreal[string(name)]=val;
+    }
     void Metadata::put(string name, long val)
     {
         mint[name]=val;
     }
+    void Metadata::put(const char *name, long val)
+    {
+        mint[string(name)]=val;
+    }
     void Metadata::put(string name, int val)
     {
         long newval=static_cast<long>(val);
-        mint[name]=val;
+        mint[name]=newval;
+    }
+    void Metadata::put(const char *name, int val)
+    {
+        long newval=static_cast<long>(val);
+        mint[string(name)]=val;
     }
     void Metadata::put(string name, string val)
     {
         mstring[name]=val;
     }
-    // for C style strings, we should not depend on the compiler
-    void Metadata::put(string name, char *val)
+    void Metadata::put(string name, const char *val)
     {
         mstring[name]=string(val);
     }
@@ -364,6 +425,19 @@ namespace SEISPP
     {
         mbool[name]=val;
     }
+    void Metadata::put(const char *key,string val)
+    {
+        mstring[string(key)]=val;
+    }
+    void Metadata::put(const char *key,const char *val)
+    {
+        mstring[string(key)]=string(val);
+    }
+    void Metadata::put(const char *key,bool val)
+    {
+      mbool[string(key)]=val;
+    }
+
     void Metadata::append_string(string key, string separator, string appendage)
     {
         map<string,string>::iterator sptr;
@@ -532,7 +606,7 @@ namespace SEISPP
         {
             MDtype mdtest;
             double r;
-            int iv;
+            long iv;
             string s;
             bool b;
 
@@ -542,19 +616,19 @@ namespace SEISPP
                 switch(mdtest)
                 {
                     case MDreal:
-                        r=mdin.get_double(mdti->tag);
+                        r=mdin.get<double>(mdti->tag);
                         mdout.put(mdti->tag,r);
                         break;
                     case MDint:
-                        iv=mdin.get_int(mdti->tag);
+                        iv=mdin.get<long>(mdti->tag);
                         mdout.put(mdti->tag,iv);
                         break;
                     case MDstring:
-                        s=mdin.get_string(mdti->tag);
+                        s=mdin.get<string>(mdti->tag);
                         mdout.put(mdti->tag,s);
                         break;
                     case MDboolean:
-                        b=mdin.get_bool(mdti->tag);
+                        b=mdin.get<bool>(mdti->tag);
                         mdout.put(mdti->tag,b);
                         break;
                     case MDinvalid:

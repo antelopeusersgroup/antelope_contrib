@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>display_ensemble</title>
+  </head>
+  <body>
+    <h1>display_ensemble</h1>
+    <h3>Usage:</h3>
+    <p>display_ensemble [-text -pf pffile] &lt; infile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    This program is used to make a graphical display of a single
+    ThreeComponentEnsemble object.&nbsp;&nbsp; It is intended strictly
+    as a quick look program.&nbsp; Data are always displayed at true
+    amplitude and for the full duration of the waveform segments in the
+    input ensemble.&nbsp; Use a gain function and/or time windowing to
+    improve graphical display if necessary.&nbsp; <br>
+    <br>
+    The graphical interface is multithreaded so each of the three
+    windows is active.&nbsp;&nbsp; That means each window can be zoomed
+    independently with MB1 in the same manner as suxwigb and
+    dbxcor.&nbsp; Typing X in any of the windows or selecting
+    Control-&gt;Exit Event Loop will make that window no longer
+    active.&nbsp;&nbsp; That same action in the component 2 window will
+    cause the program to exit with all 3 windows destroyed.&nbsp;
+    Alternatively pushing the window destroy button (red button on Mac
+    or an x in the upper right corner of most linux window managers) in
+    any of the 3 windows will force an exit and is harmless.&nbsp; <br>
+    <br>
+    The program has several frozen features that may be addressed with
+    future development:<br>
+    <ol>
+      <li>The display is three separate windows with one window for each
+        component.&nbsp; The title on the top of each window is frozen
+        as:&nbsp; <i>ThreeCEnsemblePicker:&nbsp; component 0</i>, <i>ThreeCEnsemblePicker:&nbsp;
+
+          component 1</i>, and <i>ThreeCEnsemblePicker:&nbsp; component
+          2</i>.&nbsp; That title is bogus as this program cannot be
+        used for picking.&nbsp;&nbsp; The display was simply implemented
+        with a display object with the capability.&nbsp;&nbsp; Limited
+        picking may be added later.</li>
+      <li>An additional consequence of using the picker graphic is that
+        the gui contains a useless menu on the top bar "Pick
+        Times".&nbsp; Selecting anything there will only change which
+        window will invoke a program exit via the X button or
+        Control-&gt;Exit Event Loop. <br>
+      </li>
+      <li>Trace labels are limited to position of each member in the
+        ensemble (i.e. 0, 1, 2, ..., N).&nbsp; <br>
+      </li>
+      <li>The display is implemented with X-windows Motif using the
+        seisw widget.&nbsp; This is the same graphical interface used in
+        the antelope contrib program dbxcor.&nbsp; That means the only
+        display option is shaded a shaded wiggle trace direction
+        comparable to the seismic unix program suxwigb (seisw was
+        derived from the CWP graphics library so the relationship is
+        more than visual).&nbsp; <br>
+      </li>
+    </ol>
+    <h3>Options:</h3>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <i>-pf pffile<br>
+    </i>Use pffile as the parameter file in preference to the default
+    name of display_ensemble.pf. <br>
+    <h3>Pf file:<br>
+    </h3>
+    See the man page for dbxcor for a description of the graphical
+    parameters in the default pf file.&nbsp;&nbsp; In general, I do not
+    recommend changing any of the default parameters other than <i>clip_percent
+
+    </i>which can be used to set the display gain.&nbsp; The display
+    uses the same clip method (odd as it is) as suxwigb.&nbsp; That is,
+    the graphic display gain is set so that 100-<i>clip_percent </i>of
+    the data samples are clipped and not displayed properly.&nbsp;&nbsp;
+    Seismic Unix is the only package I've ever seen use this
+    algorithm.&nbsp;&nbsp; It's use here is a legacy of the seisw
+    widget's origins from CWP libraries.&nbsp; <br>
+  </body>
+</html>

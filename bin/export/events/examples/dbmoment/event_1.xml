@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2" xmlns:q="http://quakeml.org/xmlns/quakeml/1.2" xmlns:catalog="http://anss.org/xmlns/catalog/0.1">
+	<eventParameters publicID="example/dbmoment/example">
+		<comment>
+			<text>Antelope QuakeML conversion using event2qml software.</text>
+		</comment>
+		<event catalog:eventid="1" catalog:eventsource="xx" catalog:datasource="xx" publicID="quakeml:xx.local/event/00000001">
+			<origin catalog:datasource="reyes" publicID="quakeml:xx.local/origin/1">
+				<earthModelID>vmodel/iasp91</earthModelID>
+				<arrival publicID="quakeml:xx.local/arrival/2/1">
+					<earthModelID>quakeml:xx.local/vmodel/iasp91</earthModelID>
+					<distance>0.587</distance>
+					<pickID>quakeml:xx.local/pick/2</pickID>
+					<azimuth>6.74</azimuth>
+					<phase>P</phase>
+					<creationInfo>
+						<creationTime>2015-03-16T02:15:12.808Z</creationTime>
+					</creationInfo>
+					<timeResidual>0.0</timeResidual>
+					<timeWeight>1</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/3/1">
+					<earthModelID>quakeml:xx.local/vmodel/iasp91</earthModelID>
+					<distance>0.624</distance>
+					<pickID>quakeml:xx.local/pick/3</pickID>
+					<azimuth>51.77</azimuth>
+					<phase>P</phase>
+					<creationInfo>
+						<creationTime>2015-03-16T02:15:16.448Z</creationTime>
+					</creationInfo>
+					<timeResidual>-0.001</timeResidual>
+					<timeWeight>1</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/4/1">
+					<earthModelID>quakeml:xx.local/vmodel/iasp91</earthModelID>
+					<distance>0.661</distance>
+					<pickID>quakeml:xx.local/pick/4</pickID>
+					<azimuth>65.38</azimuth>
+					<phase>P</phase>
+					<creationInfo>
+						<creationTime>2015-03-16T02:15:20.288Z</creationTime>
+					</creationInfo>
+					<timeResidual>0.001</timeResidual>
+					<timeWeight>1</timeWeight>
+				</arrival>
+				<methodID>method/locsat</methodID>
+				<quality>
+					<usedPhaseCount>3</usedPhaseCount>
+					<associatedPhaseCount>3</associatedPhaseCount>
+					<standardError></standardError>
+				</quality>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<creationInfo>
+					<creationTime>2016-02-08T05:55:42.866Z</creationTime>
+					<agencyID>XXXX</agencyID>
+					<author>reyes</author>
+				</creationInfo>
+				<evaluationMode>manual</evaluationMode>
+				<longitude>
+					<value>-117.0</value>
+				</longitude>
+				<depth>
+					<value>8000.0</value>
+				</depth>
+				<time>
+					<value>1970-01-01T00:00:00.000Z</value>
+				</time>
+				<latitude>
+					<value>31.0</value>
+				</latitude>
+			</origin>
+			<preferredOriginID>quakeml:xx.local/origin/1</preferredOriginID>
+			<creationInfo>
+				<creationTime>2017-02-05T21:41:43.983Z</creationTime>
+				<agencyID></agencyID>
+				<author>reyes</author>
+			</creationInfo>
+			<certainty></certainty>
+			<pick publicID="quakeml:xx.local/pick/2">
+				<creationInfo>
+					<creationTime>2015-03-16T01:34:32.868Z</creationTime>
+					<author>reyes</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<value>1970-01-01T00:00:05.494Z</value>
+				</time>
+				<waveformID channelCode="Z" locationCode="" networkCode="XX" stationCode="STA1"></waveformID>
+				<backazimuth>
+					<value>6.74</value>
+				</backazimuth>
+				<phaseHint>P</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/3">
+				<creationInfo>
+					<creationTime>2015-03-16T02:12:48.546Z</creationTime>
+					<author>reyes</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<value>1970-01-01T00:10:51.661Z</value>
+				</time>
+				<waveformID channelCode="Z" locationCode="" networkCode="XX" stationCode="STA2"></waveformID>
+				<backazimuth>
+					<value>51.77</value>
+				</backazimuth>
+				<phaseHint>P</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/4">
+				<creationInfo>
+					<creationTime>2015-03-16T02:13:27.055Z</creationTime>
+					<author>reyes</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<value>1970-01-01T00:10:51.681Z</value>
+				</time>
+				<waveformID channelCode="Z" locationCode="" networkCode="XX" stationCode="STA3"></waveformID>
+				<backazimuth>
+					<value>65.38</value>
+				</backazimuth>
+				<phaseHint>P</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<type></type>
+		</event>
+		<description>Using ANSS Quakeml Standards https://github.com/usgs/Quakeml/wiki</description>
+		<creationInfo>
+			<creationTime>2017-02-05T21:41:43.929Z</creationTime>
+			<agencyID>xx</agencyID>
+			<author>export_events.css2qml</author>
+		</creationInfo>
+	</eventParameters>
+</q:quakeml>

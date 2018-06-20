@@ -13,10 +13,10 @@ using namespace std;
 using namespace SEISPP; 
 void usage()
 {
-    cerr << "display_ensemble [-binary -pf pffile] < infile"
+    cerr << "display_ensemble [-text -pf pffile] < infile"
         <<endl
         << "Display a ThreeComponentEnsemble object (typically end of a pipeline)"<<endl
-        << "Use -binary for binary input (default is text format)"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
         << "Use -pf to specify alternative parameter file to default display_ensemble.pf"
         <<endl;
     exit(-1);
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     int i;
     if(argc>3) usage();
     char *pffile=argv[0];
-    bool binary_data(false);
+    bool binary_data(true);
     for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -37,9 +37,9 @@ int main(int argc, char **argv)
             if(i>=argc)usage();
             pffile=argv[i];
         }
-        else if(sarg=="-binary")
+        else if(sarg=="-text")
         {
-            binary_data=true;
+            binary_data=false;
         }
         else
             usage();

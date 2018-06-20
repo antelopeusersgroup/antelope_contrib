@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>export_to_matlab</title>
+  </head>
+  <body>
+    <h1>export_to_matlab</h1>
+    <h3>Usage:</h3>
+    <p>export_to_matlab [-v -text -o outfile] &lt; in <br>
+    </p>
+    <h3>Algorithm:</h3>
+    The purpose of this program is to export a single TimeSeriesObject
+    as a matrix that can be read by the load procedure in matlab. Output
+    matrix has individual time series data in the columns of the matrix.
+    The matrix is a simple text file that can be read in matlab with
+    load(file,'-ascii').&nbsp; The algorithm used requires all data in
+    the ensemble have the same nominal sample rate.&nbsp; It will exit
+    if the range of sample intervals is by more than 0.1 ms.&nbsp;&nbsp;
+    Start and end times can be irregular.&nbsp; When that happens the
+    data will be silently zero padded.&nbsp;&nbsp; The program computes
+    the earliest start time and lastest end time in the ensemble.&nbsp;
+    Any seismogram whose start and end time do not match those times
+    within one sample will be zero padded.&nbsp;&nbsp; The start time
+    computed this way and the size of the output matrices are written to
+    stderr when the -v option is used (otherwise the program is
+    silent).&nbsp; The program avoids extreme blunders by checking the
+    number of samples against a fixed internal wall size (currently 100
+    million samples).&nbsp; It will exit if the computed number of
+    samples exceeds this size, but otherwise it will blunder forward
+    blindly.&nbsp; If you get gigantic output files it likely means the
+    ensemble has a large range of UTC times instead of a small range of
+    times relative to some other time standard (i.e. the implict
+    assumption is that the input ensemble is a fixed time window or
+    something like a common receiver gather with relative times set by
+    something like predicted P arrival times.).<br>
+    <h3>File Format</h3>
+    <p>The output is a text format with the seismograms stored in the
+      colums of the matrix and one input line per time step.&nbsp;&nbsp;
+      This allows the matrix to be read with a variant of this command
+      in matlab:<br>
+      d=load('seismograms.dat','-ascii');<br>
+      <br>
+    </p>
+    <h3>Options:</h3>
+    <h3> </h3>
+    -v <br>
+    Turns on verbose mode.&nbsp; Key thing with this program is that
+    when set the start time of each seismogram will be posted to stdout.<br>
+    <br>
+    -text <br>
+    Input is expected to be a boost serialized text file.&nbsp; Default
+    is binary format.<br>
+    <br>
+    -o outfile<br>
+    Write the results to outfile.&nbsp; By default the output is sent to
+    stdout.&nbsp; <br>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>peak_scaling</title>
+  </head>
+  <body>
+    <h1>peak_scaling</h1>
+    <h3>Usage:</h3>
+    <p>peak_scaling [-help -text] &lt; infile &gt; outfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    This little program scales each member of input
+    ThreeComponentEnsemble objects so that the peak amplitude of each
+    member is constant.&nbsp; That is, every sample of a seismogram is
+    scaled by 1/<i>peak_amplitude</i><i>.&nbsp; </i><i>peak_amplitude</i>
+    is defined in a vector sense as the maximum L2 norm of the vector
+    amplitude of all samples in each seismogram.&nbsp;&nbsp; Relative
+    amplitude of components are thus preserved but the absolute
+    amplitude of all the output seismograms is altered by the computed
+    peak amplitude.&nbsp;&nbsp; The amplitude scale factor applied is
+    preserved in the metadata attribute with the key <i>gain</i>.&nbsp;
+    Note that if <i>gain</i> was already defined in the input it will
+    be changed to <i>gain/peak_amplitude.&nbsp; </i>If <i>gain</i>
+    was not previously assigned the <i>gain</i> attribute will be set
+    to 1.0/<i>peak_amplitude.&nbsp; </i>One can then always restore
+    data to the original amplitudes from the stored <i>gain </i>attribute.
+    <br>
+    <br>
+    Note that this program currently ONLY works with serialized
+    ThreeComponentEnsemble objects. &nbsp; <br>
+    <br>
+    <h3>Options:</h3>
+    <h3> </h3>
+    -text - switch to text format input and output (default is binary data)<br>
+    --help - print the usage message<br>
+    <br>
+  </body>
+</html>

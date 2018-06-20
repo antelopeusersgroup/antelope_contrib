@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>zeropad</title>
+  </head>
+  <body>
+    <h1>zeropad</h1>
+    <h3>Usage:</h3>
+    <p>zeropad [-pad dt -taper dt -text --help] &lt; in &gt; out<br>
+    </p>
+    <h3>Algorithm:</h3>
+    Zero pads the front end of a file of TimeSeriesEnsemble objects
+    (file "in" read through stdin) a specified number of
+    sections.&nbsp;&nbsp; Always applies a linear taper at the front end
+    of the input time series.&nbsp; To turn the taper off just make the
+    length one sample.&nbsp;&nbsp; <br>
+    <br>
+    The program will skip any ensemble where the taper length exceeds
+    half the length of any seismogram in the ensemble.&nbsp;&nbsp; An
+    error message will be posted to stderr when this happens.<br>
+    <br>
+    <h3>Options:</h3>
+    <h3> </h3>
+    <i>-pad dt<br>
+    </i>Change the zero pad length to <i>dt</i> s.&nbsp; Default is 0.1
+    s.<br>
+    <br>
+    <i>-taper dt<br>
+    </i>Change the linear taper length to <i>dt </i>seconds.&nbsp;
+    Default is 0.01 s (effectively no taper for most broadband data).<br>
+    <br>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.&nbsp; <br>
+    <br>
+    <i>-v <br>
+    </i>More verbose output to stderr.<br>
+    <br>
+  </body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>dbactive_reader</title>
+  </head>
+  <body>
+    <br>
+    <h1>dbactive_reader</h1>
+    <h3>Usage:</h3>
+    <p>dbactive_reader db [-g goodtimes -c coords -text -pf pffile]
+      &lt; shottimes &gt; seisppfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    This is a program designed for working with active source data with
+    known shot times.&nbsp; It is very similar in concept to the
+    antelope contrib program called db2segy, but instead of writing segy
+    files as output it writes a boost serialization file of
+    ThreeComponentEnsemble objects for subsequent
+    processing.&nbsp;&nbsp; Waveform data is extracted from continuous
+    data indexed by an antelope database with the base named defined by
+    argument 1 (db).&nbsp; Shot times and locations are read from stdin
+    in a format describe below (identical to db2segy).&nbsp;&nbsp; Like
+    segy the output seismograms are of fixed length controlled by
+    definitions in the parameter file.&nbsp;&nbsp; Most key parameters
+    come through the parameter file.&nbsp; <br>
+    <br>
+    This program has one feature not found in db2segy.&nbsp;&nbsp; The
+    -g option (see below) can be used to select only time periods when
+    visual inspection shows a particular station has acceptable
+    data.&nbsp; This can reduce the volume of debris to be processed,
+    but will make the output gathers irregular (member n of an ensemble
+    cannot be assumed to be the same for all gathers).&nbsp; It uses
+    this feature in preference to the global approach of db2segy where
+    the parameter file specifies which channels are extracted and placed
+    in which segy channel number.&nbsp;&nbsp; Since a
+    ThreeComponentEnsemble has no notion of a channel number as a
+    concept, I elected to use this approach to cut out useless
+    data.&nbsp; For example, to not extract any data for a station known
+    to be too far from a set of shots, just put no entry for that
+    station in the goodtimes file.&nbsp; <br>
+    <br>
+    A strong limitation of this program at present is that metadata
+    loaded with the data is minimal and fixed.&nbsp;&nbsp; Use <a
+      href="dismember.html">dismember</a> and <a href="listhdr.html">listhdr</a>
+    to view what exactly is extracted from the database.&nbsp; <br>
+    <h3>Options:</h3>
+    <h3> </h3>
+    <i>-g goodtimes <br>
+    </i>When defined the program will read the file goodtimes (format
+    defined below) that defines time periods during which a stations
+    data should be treated as "good".&nbsp;&nbsp; Data outside those
+    time intervals for that station will be dropped.&nbsp;&nbsp; A
+    parameter file option allows inversion of the goodtimes file, which
+    means the defined intervals should be viewed as bad instead of
+    good.&nbsp; <br>
+    <br>
+    <i>-c coords<br>
+    </i>This option is useful for defining small array or large arrays
+    where the station density/spacing is too high/small to be compatible
+    with Antelope's css3.0 site table.&nbsp;&nbsp; That is, the antelope
+    site table truncates the precision of latitude and longitude data
+    for seismic stations to a nominal accuracy of around 10 m (defined
+    in the original standard by a single precision of a 32 bit
+    float).&nbsp;&nbsp; The standard specifies a fix with auxiliary
+    dnorth and deast attributes, but this particular program ignores
+    dnorth and deast.&nbsp; For small and/or dense arrays use the coords
+    file with the format described below.&nbsp; <br>
+    <br>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <br>
+    <i>-pf pffile<br>
+    </i>Use pffile as the parameter file in preference to the default
+    name of dbactive_reader.pf. <br>
+    <h3>Parameter File</h3>
+    <p><i>Time Windowing Parameters</i><br>
+    </p>
+    <p>Time windowing in this program is a two stage process. &nbsp; For
+      efficiency the program reads the full shottime file and computes
+      the total time extent defined by that file. &nbsp; It compares
+      that time length to that defined by the parameter <i>maximum_read_window_length</i>.
+      &nbsp; If the computed time window exceeds that duration the
+      program will exit with a message to stderr.&nbsp; In most cases
+      the solution is to break up the shottime file into segments.&nbsp;
+      (Multiple files can be easily merged if desired later but when
+      this happens an intermediate copy of the data is required, which
+      is not optimal for massive data sets.) &nbsp; A related parameter
+      is <i>read_window_pad_length</i>, which defines the number of
+      seconds of additional data before the first shot time and
+      following the last shot time to add to the computed read
+      window.&nbsp; The absolute minimum length for this parameter is
+      the time duration of the desired ensembles. &nbsp;&nbsp; Data for
+      the last shot in the list will be truncated or dropped if the pad
+      length is inadequate. &nbsp; In most cases a much longer pad
+      length is desired to remove filter transients. &nbsp; A rough
+      minimum is two to three times the period of any low pass filter
+      specification (an almost universal requirement when extracting
+      data from broadband sensors).&nbsp; <br>
+    </p>
+    <p>The windowing of individual seismograms is defined by two
+      parameters. &nbsp; Each seismogram extracted is a waveform segment
+      starting at time <i>data_window_start</i> relative to the shot
+      time and ending at <i>data_window_end</i>. &nbsp; Zero time for
+      each output seismogram is time relative to the shot time. &nbsp; <br>
+    </p>
+    <p>An example from the (current) default pf may help understand
+      these relationships<i><br>
+      </i><i> </i></p>
+    <i> </i>
+    <blockquote><i>data_window_start -1.</i>5<br>
+      data_window_end 2.0<br>
+      read_window_pad_length 5.0 <br>
+      maximum_read_window_length 36000.0<br>
+    </blockquote>
+    In this case each seismogram will start 1.5 s before and end 2.0 s
+    after each time defined in the shottimes file.&nbsp;&nbsp; The
+    program will attempt to read a large time window defined by the time
+    span of all the times in shottimes file.&nbsp;&nbsp; 5 s of padding
+    is defined on each end of that window.&nbsp; If that time window
+    exceed 36000 s (10 hrs) the program will abort.&nbsp; <br>
+    <br>
+    <i>Other Parameters<br>
+    </i>Data are always filtered with the BRTT filter library with the
+    filter specified by the parameter <i>BRTT_filter_definition.&nbsp;
+    </i>See Antelope man page for wffilbrtt_filter for all available
+    options.<br>
+    <br>
+    The program uses a seispp library concept of a "<a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_station_channel_map.html">StationChannelMap</a>"
+    to sort out the complexity of modern broadband seismic instruments
+    that almost always have multiple sample rates and sometimes have
+    multiple sensors.&nbsp;&nbsp; A description of how this parameter
+    should be specified can be found in the man page for the Antelope
+    contrib program dbxcor (see parameter file section and search for
+    StationChannelMap - the format here is identical).&nbsp; <br>
+    <h3>Files</h3>
+    <p><i>shottimes file (unix&nbsp; STDIN)<br>
+      </i>The format of this file is identical to that describe in man
+      db2segy, but the description there is a bit muddy because of
+      different features of db2segy compared to this program.&nbsp; Each
+      line of the file will be used to extract one
+      ThreeComponentEnsemble as output.&nbsp;&nbsp; The format of each
+      line is:<br>
+      &nbsp;&nbsp;&nbsp; shot_time field_file_id lat lon elev<br>
+      where<br>
+    </p>
+    <blockquote><i>shot_time </i>- should specify the origin time for
+      the shot.&nbsp; It currently must be specified as an epoch
+      time.&nbsp;&nbsp; <br>
+      <i>field_file_id</i> - is the shot record number.&nbsp;
+      Multichannel systems and SEGY universally use the index of the
+      field file id as a simple index key for raw data.&nbsp; Create a
+      unique sequence number of this id is not supplied.<br>
+      <i>lat</i> - latitude, in degrees, of the source location<br>
+      <i>lon </i>-longitude, in degrees, of the source location<br>
+      <i>elev</i> - elevation, in meters, of the source location<br>
+    </blockquote>
+    <p><i>goodtimes file</i><br>
+      This is the file used to define what a station has "good" data,
+      meaning periods when the data should be
+      extracted.&nbsp;&nbsp;&nbsp;&nbsp; The file is expected to be a
+      simple text file with white space separating data
+      fields.&nbsp;&nbsp;&nbsp; The format of each line is:</p>
+    <p>&nbsp;&nbsp;&nbsp; sta start_time end_time</p>
+    <p>where <br>
+    </p>
+    <blockquote>
+      <p><i>sta </i>is a unique station name that is matched against
+        the sta field in wfdisc&nbsp; <br>
+        <i>start_time</i> and <i>end_time </i>define the absolute time
+        period that defines when the data are "good". &nbsp; &nbsp;
+        Multiple time periods can be specified for each
+        station.&nbsp;&nbsp; Times must be specified as epoch times.<br>
+      </p>
+    </blockquote>
+    <p><i>coords file<br>
+      </i>This is a simple text file with white space separators used to
+      provide station coordinates to higher precision than what is
+      stored in the lat and lon attributes of the css3.0 site
+      table.&nbsp;&nbsp; The files should have one line for each
+      station.&nbsp; If duplicates are present the program will silently
+      use the last one read.&nbsp;&nbsp; The format of each line is:<br>
+    </p>
+    <blockquote>sta lat lon elev<br>
+    </blockquote>
+    where<br>
+    <blockquote><i>sta </i>- is the station name<br>
+      <i>lat </i>- is the station's latitude in degrees <br>
+      <i>lon</i> - is the station's longitude in degrees<br>
+      <i>elev - </i>is the station's elevation in kilometers.&nbsp; <br>
+    </blockquote>
+    Note this mismatch in elevation units between the station
+    (kilometers) and shot files (meters).&nbsp; That was a necessary
+    evil created by the desire to make the input file format identical
+    to db2segy.&nbsp; <br>
+    <blockquote>
+      <p> <br>
+      </p>
+    </blockquote>
+  </body>
+</html>

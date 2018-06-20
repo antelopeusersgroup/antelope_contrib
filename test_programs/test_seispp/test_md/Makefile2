@@ -1,0 +1,13 @@
+BIN=test_md
+ldlibs=-lseispp -ltrvltm -lpfstream -lbrttutil $(TRLIBS) $(DBLIBS) \
+       -lperf -lgclgrid 
+SUBDIR=/contrib
+
+include $(ANTELOPEMAKE)  	
+include $(ANTELOPEMAKELOCAL)
+CXXFLAGS += -I$(BOOSTINCLUDE)
+
+OBJS=test_md.o
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

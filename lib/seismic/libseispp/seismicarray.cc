@@ -107,7 +107,7 @@ SeismicArray::SeismicArray(string fnamebase,string form)
     // lat and lon 
     FILE *fp;
     string fname=fnamebase+".dat";
-    if(fopen(fname.c_str(),"r")==NULL) throw SeisppError(base_error
+    if((fp=fopen(fname.c_str(),"r"))==NULL) throw SeisppError(base_error
                                 + "cannot open file " + fname);
     double lat,lon,elev;
     char stain[20];

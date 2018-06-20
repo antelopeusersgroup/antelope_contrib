@@ -20,11 +20,11 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "dismember [-scalar -binary]"
+    cerr << "dismember [-scalar -text]"
         <<endl
         << "seispp filter separates ensemble into seismogram members"<<endl
         << " Use -scalar for TimeSeriesEnsembles (default is ThreeComponentEnsemble data)"
-        << " Use -binary to read/write binary files"<<endl
+        << " -text - switch to text input and output (default is binary)"<<endl
         <<endl;
     exit(-1);
 }
@@ -33,14 +33,14 @@ int main(int argc, char **argv)
 {
     int i;
     bool scalar_mode(false);
-    bool binary_data(false);
+    bool binary_data(true);
     for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
         if(sarg=="-scalar")
           scalar_mode=true;
-        else if(sarg=="-binary")
-            binary_data=true;
+        else if(sarg=="-text")
+            binary_data=false;
         else
             usage();
     }

@@ -4,9 +4,28 @@
 # When true run in small aperture array mode.  Requires data be
 # event gathers with event data stored in ensemble metdata
   small_aperture_array_mode false
+# Must be one of:  constant, ZRT, LQT, or FST
+# constant applies a constant rotation defined by spherical coordinate angles
+# ZRT - rotate only horizontal
+# LQT - rotate to orthogonal LQT using earth model 
+# FST - free surface transformation applied using Kennett formula
+rotation_type ZRT
+# these are used only when rotation_type is constant
+# IMPORTANT phi is spherical coordinate angle not azimuth
   phi 90.0
   theta 0.0
+# In all but constant we need source and station information to compute
+# angles.   These define metadata keys that are used to extract that data
   station_longitude_key site.lon
   station_latitude_key site.lat
   event_longitude_key origin.lon
   event_latitude_key origin.lat
+  event_depth_key origin.depth
+# These are needed for LQT and FST (surface P and S velocity)
+  vp0 6.2
+  vs0 3.5
+  ttmethod tttaup
+  ttmodel iasp91
+# default uses P slowness to estimate angles for LQT and FST 
+# If this is set true use S slowness for transformation 
+  use_S_slowness false

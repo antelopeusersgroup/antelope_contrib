@@ -1,0 +1,35 @@
+attributes_to_load	&Tbl{
+    evid int
+    orid int
+    origin.lat real
+    origin.lon real
+    origin.depth real
+    origin.time real
+    sta string
+    site.lat real
+    site.lon real
+    site.elev real
+    time real
+    endtime real
+    nsamp int
+    samprate real
+    datatype string
+    dir real
+    dfile real
+    foff int
+    timetype string
+}
+# This is the proper format for the output of extract_events 
+# run to save results as 3c objects.   Note the incantation for
+# the join of site is essential to get things right
+dbprocess_commands	&Tbl{
+    verbose
+    dbopen wfprocess
+    dbjoin evlink
+    dbjoin sclink
+    dbjoin event
+    dbjoin origin
+    dbsubset orid==prefor
+    dbjoin site sta time::endtime\#ondate::offdate
+}
+pf_revision_time	1499162592

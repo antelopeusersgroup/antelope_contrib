@@ -3,7 +3,7 @@
 # used by PGC for the Washington area.
 #
 
-database            pds1
+name                PDS1
 
 decay               6.0
 
@@ -11,7 +11,7 @@ start_frequency     1
 
 end_frequency       512
 
-samplerate           2
+samplerate           4
 
 # Phase velocity window
 cmax    10000

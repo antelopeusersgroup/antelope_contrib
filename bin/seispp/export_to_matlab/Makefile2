@@ -1,9 +1,8 @@
 BIN=export_to_matlab
-PF=export_to_matlab.pf
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization
+ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp 
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE) 
