@@ -3,11 +3,13 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include "PMTimeSeries.h"
 #include "seispp.h"
-#include "ensemble.h"
+#include "ThreeComponentSeismogram.h"
+#include "PfStyleMetadata.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
-using namespace std;   
+using namespace std;
 using namespace SEISPP;
 void usage()
 {
@@ -23,11 +25,11 @@ void usage()
         << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
-/* This procedure parses an input string (normally from argv) 
+/* This procedure parses an input string (normally from argv)
  * to set a list of allowed objects.   This could be a library
  * procedure, but with this one can customize the set of objects
  * supported. */
-enum AllowedObjects {TCS, TCE,  TS, TSE};
+enum AllowedObjects {TCS, TCE,  TS, TSE, PMTS};
 AllowedObjects get_object_type(string otype)
 {
     if(otype=="ThreeComponentSeismogram")
@@ -38,6 +40,8 @@ AllowedObjects get_object_type(string otype)
         return TS;
     else if(otype=="TimeSeriesEnsemble")
         return TSE;
+    else if(otype=="PMTimeSeries")
+        return PMTS;
     else
     {
         cerr << "Do not know how to handle object type="<<otype
@@ -47,7 +51,7 @@ AllowedObjects get_object_type(string otype)
 }
 /* This example only works with input from stdin and output to stdout.
  * Fairly simple changes to work for files - change the arguments
- * and calls to constructors.  Example returns a count of the 
+ * and calls to constructors.  Example returns a count of the
  * number of objects copied. */
 template <typename DataType> int copy_object(bool binary_data)
 {
@@ -56,7 +60,7 @@ template <typename DataType> int copy_object(bool binary_data)
         if(binary_data) form='b';
         StreamObjectReader<DataType> inp(form);
         StreamObjectWriter<DataType>  outp(form);
-        int count;
+        int count(0);
         DataType d;
         while(inp.good())
         {
@@ -114,7 +118,7 @@ int main(int argc, char **argv)
     }
     try{
         /* This approach depends upon the use of a template as
-         * a generic method to implement the algorithm being 
+         * a generic method to implement the algorithm being
          * implemented.   This example does nothing but copy
          * input to output but provides a starting point for
          * algorithms that can be done on multiple object types. */
@@ -134,6 +138,9 @@ int main(int argc, char **argv)
             case TSE:
                 count=copy_object<TimeSeriesEnsemble>(binary_data);
                 break;
+            case PMTS:
+                    count=copy_object<PMTimeSeries>(binary_data);
+                    break;
             default:
                 cerr << "Coding problem - dtype variable does not match enum"
                     <<endl
@@ -151,4 +158,3 @@ int main(int argc, char **argv)
         cerr << stexc.what()<<endl;
     }
 }
-

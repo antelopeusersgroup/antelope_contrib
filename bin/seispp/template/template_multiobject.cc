@@ -60,7 +60,7 @@ template <typename DataType> int copy_object(bool binary_data)
         if(binary_data) form='b';
         StreamObjectReader<DataType> inp(form);
         StreamObjectWriter<DataType>  outp(form);
-        int count;
+        int count(0);
         DataType d;
         while(inp.good())
         {
