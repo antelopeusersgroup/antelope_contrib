@@ -106,11 +106,7 @@ private:
   allow copying */
   shared_ptr<ifstream> dfs;
   shared_ptr<boost::archive::binary_iarchive> data_arptr;
-  /* This vector contains the data index and MUST contain long int attribute
-  defined by OffsetKey.  */
-  vector<Metadata> index;
-  /* The foff data is so critical we cache it */
-  vector<long> foff;
+  StreamObjectFileIndex idx;
   bool cluster_mode;
   /* This is made a pointer to reduce overhead when not running
   in cluster mode.   Perhaps should be a shared_ptr.  Actually for initial
