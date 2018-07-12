@@ -12,6 +12,8 @@ using namespace SEISPP;
 template <typename Tdata> class StreamObjectFileIndex
 {
 public:
+  vector<Metadata> index;
+  vector<long> foff;
   StreamObjectFileIndex(string dfile,MetadataList mdl);
   StreamObjectFileIndex(const StreamObjectFileIndex& parent);
   int writeindex(const string fname);
@@ -22,9 +24,7 @@ public:
   };
   StreamObjectFileIndex& operator=(const StreamObjectFileIndex& parent);
 private:
-  int ndata;   // cached for convenience - size of index and foff vectors
-  vector<Metadata> index;
-  vector<long> foff;
+  int ndata;
   string dfilename;
 };
 template <typename Tdata>
