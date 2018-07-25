@@ -10,10 +10,68 @@
 namespace SEISPP{
 using namespace std;
 using namespace SEISPP;
+/*! \brief Engine to execute a unix pipeline from a calling C++ program.
+
+This is a lower level object used for implementing parallel processing
+in the foreman/worker model.   This engine is used to generate a pipeline
+of unix commands.   This is used in parallel processing as the downstream
+exec from a splitter.   That is a stream of data of common objects is
+split into parallel steams.   This object can be used to execute a pipeline
+on each of the parallel streams.   
+
+The implementation has some complexities in handling the output of the 
+pipeline.   See the description of the primary constructor for details.
+Note like most io handles there is no copy constructor or operator= for
+this beast.   That is especially irrational for this beast since an 
+implict fork is created using the popen function.  
+*/
+
 template <class T> class PipelineProcessor : public BasicObjectWriter<T>
 {
   public:
-    PipelineProcessor(PfStyleMetadata& pf,const char format='b');
+    /*! Default constructor:  if used will only throw an error.*/
+    PipeLineProcessor()
+    {
+      throw SeisppError(string("PipelineProcessor - coding error\n")
+              + "Constructor with no arguments is undefined");
+    };
+    /*! \brief Construct from mix of parameter file data and arguments.
+
+    This is the only constructor defined in this api for this object.
+    It uses a parameter file to define the processing chain.   Lines
+    that define each command of the pipeline are expected to
+    are expected to appear in a newline separated list in an antelope
+    Tbl& section headed by the keyword pipeline_commands.   Note 
+    that the lines must NOT contain the special pipeline symbol ("|"}
+    or input/output redirection symbols used by the unix shell.  
+    Furthermore there is currently no mechanism to implement shell
+    variable subsitution in any of the pipeline command lines.   
+
+    Output of the pipeline is handled by a (perhaps unnecessarily 
+    complicated) algorithm.  The outfile argument is a switch with 
+    two special options.  If outfile is set to UsePf (the default) 
+    the output file name will be extracted from the parameter file
+    with the key "pipeline_output_file".   If set to "none" 
+    the pipeline output will go to stdout.   Note that output to 
+    stdout is nearly guaranteed to create chaos in a parallel job
+    as there is high probability the output will get garbled or the 
+    job may just fail.   Hence, think of none as useful mainly for testing
+    with a scalar job.  
+
+    \param pf - PfStyleMetadata object parsed from an antelope pf file. 
+      See above for required contents. 
+    \param outfile - name of the file to contain stdout written by the 
+      executed pipeline.   (see above for special keywords that influence
+      behavior. Default is UsePf.
+    \param - format switch for stream data.  Must be 't' for text data or
+      'b' for binary data (the default).
+
+    \throw SeisppError for various condition that cause failure.  
+      */
+
+    
+    PipelineProcessor(PfStyleMetadata& pf,const string outfile="UsePf",
+            const char format='b') throw SeisppError(serr&);
     ~PipelineProcessor();
     void write(T& d);
     long number_already_written(){return nobjects;};
@@ -44,7 +102,8 @@ template <class T> class PipelineProcessor : public BasicObjectWriter<T>
     bool ready;
 };
 template <class T>
-  PipelineProcessor<T>::PipelineProcessor(PfStyleMetadata& pf, char form)
+  PipelineProcessor<T>::PipelineProcessor(PfStyleMetadata& pf, 
+          string outfile,char form)
 {
   const string base_error("PipelineProcessor pf contructor:  ");
   ios::sync_with_stdio();
@@ -62,6 +121,16 @@ template <class T>
       pipeline_commands+=(*sptr);
       if(i!=ncommands) pipeline_commands += " | ";
       ++i;
+    }
+    string fname;
+    if(outfile="UsePf")
+      fname=pf.get_string("pipeline_output_file");
+    else
+      fname=outfile;
+    if(fname!="none")
+    {
+        pipeline_commands += " > ";
+        pipeline_commands += outfile;
     }
     pipe=popen(pipeline_commands.c_str(),"w");
     if(pipe==NULL) throw SeisppError(base_error
