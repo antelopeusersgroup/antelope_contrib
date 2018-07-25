@@ -8,8 +8,8 @@
 namespace SEISPP{
 using namespace std;
 using namespace SEISPP;
-const string IndexFileExtension('idx');
-const string FileOffsetKey();
+const string IndexFileExtension("idx");
+const string FileOffsetKey("foff");
 
 template <typename Tdata> class StreamObjectFileIndex
 {
@@ -88,7 +88,7 @@ template <typename Tdata>
       throw SeisppError(string("StreamObjectFileIndex writeindex method:  ")
           +"open filed on output index file="+fname);
     }
-    this->writeindex<Tdata>(ofs);
+    this->writeindex(ofs);
   }catch(...){throw;};
 }
 
