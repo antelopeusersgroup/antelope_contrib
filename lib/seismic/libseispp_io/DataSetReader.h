@@ -1,8 +1,14 @@
+#ifndef _DATASETREADER_H_
+#define _DATASETREADER_H_
+namespace SEISPP{
+using namespace SEISPP;
+
 template <typename Tdata> class DataSetReader : public BasicObjectReader
 {
 public:
   DataSetReader(list<string>fnames,char form='b',bool drop_failed=false);
   DataSetReader(PfStyleMetadata& pf);
+  DataSetReader(const DataSetReader& parent);
   bool good(){return ok;};
   long number_available(){return number_objects;};
   Tdata read();
@@ -105,6 +111,14 @@ template <typename Tdata> DataSetReader::DataSetReader(PfStyleMetadata& pf)
     this->CoreDataSetBuilder(fnames,form,drop);
   }catch(...){throw;};
 }
+template <typename Tdata>
+  DataSetReader::DataSetReader(const DataSetReader& parent)
+    : ranges(parent.ranges),filehandles(parent.filehandles)
+{
+  number_objects=parent.number_object;
+  current_position=parent.current_position;
+  ok=parent.ok;
+}
 template <typename Tdata> Tdata DataSetReader::read(long object_number)
 {
   const string base_error("DataSetReader::read(object_number) method: ")
@@ -136,3 +150,5 @@ template <typename Tdata> Tdata DataSetReader::read()
     return this->read(current_position);
   }catch(...){throw;};
 };
+} //end namespace SEISPP
+#endif
