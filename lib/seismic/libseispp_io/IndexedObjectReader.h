@@ -32,11 +32,8 @@ public:
   object is extended.
 
   \param indexfile is the file containing the index database
-  \param clustermode is a placeholder.   One expected extension of this
-      concept is to develop a foreman daemon that would tell multiple
-      processes which object to read next.   Until implemented if
-      set true the constructor will throw an exception. */
-  IndexedObjectReader(const string indexfile,bool clustermode=false);
+  */
+  IndexedObjectReader(const string indexfile,char form='b');
   /*! \brief Standard copy constructor.
 
   Copying is rational for this object because subset and sort operators
@@ -125,14 +122,9 @@ template <typename Tdata> IndexedObjectReader<Tdata>::IndexedObjectReader(const 
   try{
     const string base_error("IndexedObjectReader constructor:");
     this->format=form;
-    this->clustermode=cm;
     /* Initialize these */
     last_object_read=-1;
     sorting_allowed=true;
-    if(clustermode)
-    {
-      throw SeisppError(base_error+"clustermode not yet supported");
-    }
     ifstream ifs;
     ifs.open(indexfile.c_str(),ios::in);
     if(this->ifs.fail())

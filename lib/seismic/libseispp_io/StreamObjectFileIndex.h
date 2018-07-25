@@ -8,6 +8,8 @@
 namespace SEISPP{
 using namespace std;
 using namespace SEISPP;
+const string IndexFileExtension('idx');
+const string FileOffsetKey();
 
 template <typename Tdata> class StreamObjectFileIndex
 {
@@ -16,6 +18,14 @@ public:
   vector<long> foff;
   StreamObjectFileIndex(string dfile,MetadataList mdl);
   StreamObjectFileIndex(const StreamObjectFileIndex& parent);
+  /*! Save the index as the root file name with a fixed extension.
+
+    Common practice is to link related files with an extension, meaning
+    a set of characters after a period in the file name.   This constructor
+    takes the base file name and adds an extension defined in this include
+    file (idx).  
+    */
+  int writeindex();
   int writeindex(const string fname);
   int writeindex(ofstream& ofs);
   int index_size()
@@ -53,6 +63,21 @@ template <typename Tdata>StreamObjectFileIndex<Tdata>::StreamObjectFileIndex
   ndata=parent.ndata;
 }
 template <typename Tdata>
+   int StreamObjectFileIndex<Tdata>::writeindex()
+{
+  try{
+    string indxfname;
+    std::size_t pos=dfilename.rfind('.');
+    /* if period is not found just set the result to dfilename.
+       Otherwise we use substr to extract what we need */
+    if(pos == std::string::npos)
+      indxfname=dfilename+IndexFileExtension;
+    else
+      indxfname=dfilename.substr(pos) + IndexFileExtension;
+    this->writeindex(indxfname);
+  }catch(...){throw;};
+}
+template <typename Tdata>
    int StreamObjectFileIndex<Tdata>::writeindex(const string fname)
 {
   try{
@@ -63,7 +88,7 @@ template <typename Tdata>
       throw SeisppError(string("StreamObjectFileIndex writeindex method:  ")
           +"open filed on output index file="+fname);
     }
-    this->writedata<Tdata>(ofs);
+    this->writeindex<Tdata>(ofs);
   }catch(...){throw;};
 }
 
@@ -86,7 +111,7 @@ template <typename Tdata>
     for(i=0;i<ndata;++i)
     {
       Metadata md(index[i]);
-      md.put(OffsetKey,foff[i]);
+      md.put(FileOffsetKey,foff[i]);
       ar<<md;
     }
     return ndata;
