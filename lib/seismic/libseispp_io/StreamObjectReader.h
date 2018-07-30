@@ -80,6 +80,9 @@ template <typename T>
     tag string written at the end of each object.  Set true as long
     as the tag is not the eof_tag. */
     bool more_data_available;
+    /* The archive constuctor writes data so a rewind needs to seek 
+     * to this position*/
+    long data0_foff;
 };
 template <typename T>
         T StreamObjectReader<T>::read()
@@ -130,7 +133,7 @@ template <typename T>
   }catch(...)
   {
     throw SeisppError(base_error
-      + "boost text serialization read failed\nCheck that input is a valid boost text serialization file");
+      + "boost serialization read failed\nCheck that input is a valid boost text serialization file");
   }
 }
 template <typename T>
@@ -205,7 +208,7 @@ template <typename T>
     };
     if(magic_test!=eof_tag) throw SeisppError(base_error + "File "
         + fname + " does not appear to be a valid seispp boost serialization file");
-    this->rewind();
+    ifs.seekg(0,ios::beg);
     switch(format)
     {
       case 't':
@@ -217,6 +220,7 @@ template <typename T>
         bin_ar=new boost::archive::binary_iarchive(ifs);
         txt_ar=NULL;
     };
+    data0_foff=ifs.tellg();
     more_data_available=true;
   }catch(...){throw;};
 }
@@ -277,7 +281,7 @@ template <typename T>
      * which will be set when the constructor reads the last section
      * of the file.*/
     ifs.clear();
-    ifs.seekg(ios::beg);
+    ifs.seekg(data0_foff,ios::beg);
   }
 }
 template <typename T>
