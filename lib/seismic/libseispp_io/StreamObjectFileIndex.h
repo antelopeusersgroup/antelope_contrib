@@ -16,6 +16,7 @@ template <typename Tdata> class StreamObjectFileIndex
 public:
   vector<Metadata> index;
   vector<long> foff;
+  StreamObjectFileIndex();
   StreamObjectFileIndex(string dfile,MetadataList mdl);
   StreamObjectFileIndex(const StreamObjectFileIndex& parent);
   /*! Save the index as the root file name with a fixed extension.
@@ -38,6 +39,14 @@ private:
   string dfilename;
 };
 template <typename Tdata>
+   StreamObjectFileIndex<Tdata>::StreamObjectFileIndex()
+{
+    ndata=0;
+    dfilename=string("");
+    index.reserve(0);
+    foff.reserve(0);
+}
+template <typename Tdata>
    StreamObjectFileIndex<Tdata>::StreamObjectFileIndex(string dfile,
      MetadataList mdl) : dfilename(dfile)
 {
@@ -45,14 +54,18 @@ template <typename Tdata>
     StreamObjectReader<Tdata> dfh(dfile,'b');
     Tdata d;
     Metadata mdtmp;
+    long foffnow;
+    foffnow=dfh.foff();
+    foff.push_back(foffnow);
     while(dfh.good())
     {
       d=dfh.read();
-      long foffnow=dfh.foff();
+      foffnow=dfh.foff();
       foff.push_back(foffnow);
       copy_selected_metadata(dynamic_cast<Metadata&>(d),mdtmp,mdl);
       index.push_back(mdtmp);
     }
+    foff.pop_back();   //needed because last entry is eof
     ndata=foff.size();
   }catch(...){throw;};
 }
@@ -73,8 +86,11 @@ template <typename Tdata>
     if(pos == std::string::npos)
       indxfname=dfilename+IndexFileExtension;
     else
-      indxfname=dfilename.substr(pos) + IndexFileExtension;
-    this->writeindex(indxfname);
+      // +1 because of start at 0 in C
+      indxfname=dfilename.substr(0,pos+1) + IndexFileExtension;
+    int count;
+    count=this->writeindex(indxfname);
+    return count;
   }catch(...){throw;};
 }
 template <typename Tdata>
@@ -88,7 +104,10 @@ template <typename Tdata>
       throw SeisppError(string("StreamObjectFileIndex writeindex method:  ")
           +"open filed on output index file="+fname);
     }
-    this->writeindex(ofs);
+    int count;
+    count=this->writeindex(ofs);
+    ofs.close();
+    return count;
   }catch(...){throw;};
 }
 
@@ -97,7 +116,6 @@ template <typename Tdata>
 {
   try{
     string tname(typeid(Tdata).name());
-    boost::archive::text_oarchive ar(ofs);
     ofs<<foff.size()<<endl;
     ofs<<dfilename<<endl;
     ofs<<tname<<endl;
@@ -108,6 +126,7 @@ template <typename Tdata>
       throw SeisppError(string("StreamObjectFileIndex::writeindex method:")
            + "Coding error.\nInternally stored number of objects does not match actual vector size");
     }
+    boost::archive::text_oarchive ar(ofs);
     for(i=0;i<ndata;++i)
     {
       Metadata md(index[i]);
