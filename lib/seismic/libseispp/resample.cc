@@ -438,7 +438,7 @@ TimeSeries ResampleTimeSeries(TimeSeries& ts, ResamplingDefinitions& rd,double d
 			+string("don't know how to resample data with sample interval ")
 			+string(dt_str));
 	}
-	auto_ptr<DecimatedVector> dv( this_ro->second.apply(ts.ns,
+	shared_ptr<DecimatedVector> dv( this_ro->second.apply(ts.ns,
 		&(ts.s[0]),ts.dt,dtout,trim) );
 	// Subtle difference here with gaps.  This won't work
 	//TimeSeries tsout=ts;

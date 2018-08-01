@@ -1833,7 +1833,7 @@ double uflatvel(double v, double z);
 // and treat that quantity as a scalar field.  This function 
 // encapsulates that idea.  Note that it returns a pointer to a newly
 // allocated scalarfield object that the caller must deal with.
-// Use an auto_ptr to contain this pointer of just deal with the
+// Use an shared_ptr to contain this pointer of just deal with the
 // usual rules of handling dynamically allocated objects to avoid
 // memory leaks.  
 //
@@ -1853,7 +1853,7 @@ GCLscalarfield *extract_component(GCLvectorfield& f,int component);
 // and treat that quantity as a scalar field.  This function 
 // encapsulates that idea.  Note that it returns a pointer to a newly
 // allocated scalarfield object that the caller must deal with.
-// Use an auto_ptr to contain this pointer of just deal with the
+// Use an shared_ptr to contain this pointer of just deal with the
 // usual rules of handling dynamically allocated objects to avoid
 // memory leaks.  
 //

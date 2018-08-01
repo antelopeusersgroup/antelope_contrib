@@ -389,7 +389,7 @@ bool GenericFileHandle::keys_match(Metadata& d1, Metadata& d2)
     return(true);
 }
 
-auto_ptr<TimeSeriesEnsemble> GenericFileHandle::GetNextEnsemble()
+shared_ptr<TimeSeriesEnsemble> GenericFileHandle::GetNextEnsemble()
 {
     if(handle_not_ready) 
         throw SeisppError(notreadyerror
@@ -410,7 +410,7 @@ auto_ptr<TimeSeriesEnsemble> GenericFileHandle::GetNextEnsemble()
         // Save this to insulate against changes in behaviour of
         // FixedFormatTrace object
         long last_offset=current_file_position;
-        auto_ptr<TimeSeriesEnsemble> result(new TimeSeriesEnsemble());
+        shared_ptr<TimeSeriesEnsemble> result(new TimeSeriesEnsemble());
         FixedFormatTrace NextSeis(dbuffer,fp,nskey_ext,dtkey_ext,
                 key_is_dt);
         LoadMetadata(NextSeis,dynamic_cast<Metadata&>(*result),
@@ -487,7 +487,7 @@ ThreeComponentSeismogram GenericFileHandle::GetNext3CSeismogram()
     }catch(...){throw;};
 }
 /* This code was derived from GetNextEnsemble (scalar data version) above*/
-auto_ptr<ThreeComponentEnsemble> GenericFileHandle::GetNext3CEnsemble()
+shared_ptr<ThreeComponentEnsemble> GenericFileHandle::GetNext3CEnsemble()
 {
     if(handle_not_ready) 
         throw SeisppError(notreadyerror
@@ -504,7 +504,7 @@ auto_ptr<ThreeComponentEnsemble> GenericFileHandle::GetNext3CEnsemble()
         // Save this to insulate against changes in behaviour of
         // FixedFormatTrace object
         long last_offset=current_file_position;
-        auto_ptr<ThreeComponentEnsemble> result(new ThreeComponentEnsemble());
+        shared_ptr<ThreeComponentEnsemble> result(new ThreeComponentEnsemble());
         FixedFormatTrace NextSeis(dbuffer,fp,nskey_ext,dtkey_ext,
                 key_is_dt);
         LoadMetadata(NextSeis,dynamic_cast<Metadata&>(*result),

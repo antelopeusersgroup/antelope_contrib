@@ -198,9 +198,9 @@ int ThreeCEnsembleTimePicker::plot(ThreeComponentEnsemble& din,
     for(k=0;k<3;++k)
     {
       /* This is a obnoxious collision of an interface issue.   This
-      procedure returns an auto_ptr which collides with the definition of
+      procedure returns an shared_ptr which collides with the definition of
       d */
-      auto_ptr<TimeSeriesEnsemble> ptr;
+      shared_ptr<TimeSeriesEnsemble> ptr;
       ptr=ExtractComponent(d0,k);
       d[k]=TimeSeriesEnsemble(*ptr);
       switch(k)
@@ -487,7 +487,7 @@ void ThreeCEnsembleTimePicker::reset()
     }
     for(k=0;k<3;++k)
     {
-      auto_ptr<TimeSeriesEnsemble> ptr;
+      shared_ptr<TimeSeriesEnsemble> ptr;
       ptr=ExtractComponent(d0,k);
       d[k]=(*ptr);
       switch(k)

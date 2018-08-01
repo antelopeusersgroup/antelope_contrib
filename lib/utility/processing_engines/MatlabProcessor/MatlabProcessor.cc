@@ -194,7 +194,7 @@ void MatlabProcessor::load(TimeSeriesEnsemble& d,string name)
 void MatlabProcessor::load(ThreeComponentEnsemble& d,string name[3])
 {
 	try {
-		auto_ptr<TimeSeriesEnsemble> compens;
+		shared_ptr<TimeSeriesEnsemble> compens;
 		for(int i=0;i<3;++i)
 		{
 			d.member[i].put(EnsembleIndexKeyword,i);
@@ -269,7 +269,7 @@ vector<double> MatlabProcessor::retrieve_vector(string name)
 	return(result);
 }
 	
-auto_ptr<dmatrix> MatlabProcessor::retrieve_matrix(string name)
+shared_ptr<dmatrix> MatlabProcessor::retrieve_matrix(string name)
 {
 	string base_error("MatlabProcessor::retrieve_matrix:  ");
 	int nrow,ncol;
@@ -286,7 +286,7 @@ auto_ptr<dmatrix> MatlabProcessor::retrieve_matrix(string name)
 
 	nrow=mxGetM(mp);
 	ncol=mxGetN(mp);
-	auto_ptr<dmatrix> result(new dmatrix(nrow,ncol));
+	shared_ptr<dmatrix> result(new dmatrix(nrow,ncol));
 	double *mpptr=mxGetPr(mp);
 	dcopy(nrow*ncol,mpptr,1,result->get_address(0,0),1);
 	mxDestroyArray(mp);

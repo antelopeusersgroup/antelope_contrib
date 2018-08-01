@@ -147,9 +147,9 @@ ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow
 //  ensembles.
 
 export template <class T>
-auto_ptr<T>WindowData(T& parent, TimeWindow& tw)
+shared_ptr<T>WindowData(T& parent, TimeWindow& tw)
 {
-	auto_ptr<T> result=new T(parent);
+	shared_ptr<T> result=new T(parent);
 	try{
 		for(int i=0;i<parent.member.size();++i)
                 	result->member[i]=WindowData(parent.member[i],tw);
