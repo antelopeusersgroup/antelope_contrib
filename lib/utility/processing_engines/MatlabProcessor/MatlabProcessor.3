@@ -25,7 +25,7 @@ public:
 	void process(char *s);
 	void process(ifstream& strm); 
 	vector<double> retrieve_vector(string name);
-	auto_ptr<dmatrix> retrieve_matrix(string name);
+	shared_ptr<dmatrix> retrieve_matrix(string name);
 	void run_interactive();
 };
 }
@@ -85,7 +85,7 @@ int main(int argc,void **argv)
                 m(i+1,i)=5.0;
         p.load(m,string("m"));
         p.process(string("figure;\\nimagesc(m);"));
-        auto_ptr<dmatrix> mrptr=p.retrieve_matrix(string("m"));
+        shared_ptr<dmatrix> mrptr=p.retrieve_matrix(string("m"));
         cout << *mrptr;
 	// enter an interactive loop.
         p.run_interactive();

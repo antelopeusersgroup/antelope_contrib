@@ -785,11 +785,11 @@ to yield a scalar (TimeSeriesEnsemble) result.  This procedure does this.
 \param tcs input ensemble
 \param component is data component to extract.  Must be 0,1, or 2 or the procedure
 	will throw an exception.
-\return auto_ptr to ensemble containing requested component
+\return shared_ptr to ensemble containing requested component
 
 \exception SeisppError is throw if result is empty of component number is illegal.
 */
-auto_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int component);
+shared_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int component);
 #ifndef NO_ANTELOPE
 /*! \brief Bundle scalar data to produce an ensemble of three-component data.
 

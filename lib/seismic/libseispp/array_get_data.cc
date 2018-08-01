@@ -103,7 +103,7 @@ TimeWindow StationTimeRange(StationTime& times)
 //@returns a pointer to a newly allocated TimeSeriesEnsemble containing all 
 //   data requested.  Since this is effectively a constructor this means
 //   the caller is responsible for handling this memory block.  Save the
-//   result in an auto_ptr or make sure you manage this memory carefully
+//   result in an shared_ptr or make sure you manage this memory carefully
 //   as this object can easily get huge.  This is why we return a pointer
 //   instead of the object itself.
 //@throws SeisppError object for one of several possible unrecoverable
@@ -276,7 +276,7 @@ TimeSeriesEnsemble *AlignAndResample(TimeSeriesEnsemble& raw,
 			}
 		}
 		try {
-			auto_ptr<TimeSeries> newtrace(ArrivalTimeReference(raw_data_trace,
+			shared_ptr<TimeSeries> newtrace(ArrivalTimeReference(raw_data_trace,
 						align_mdkey,result_twin));
 			result->member.push_back(*newtrace);
 		} catch (SeisppError& serr)
