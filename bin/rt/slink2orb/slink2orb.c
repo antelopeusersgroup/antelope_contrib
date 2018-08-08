@@ -18,7 +18,7 @@
 
 #include "mseed2orbpkt.h"
 
-static char   *version     = "4.2 (2015.187)";
+static char   *version     = "4.3 (2018.219)";
 static char   *package     = "slink2orb";
 static char    verbose     = 0;
 static char    remap       = 0;      /* remap sta and chan from SEED tables */
@@ -31,11 +31,14 @@ static char   *mappingdb   = 0;      /* the database for SEED name mapping */
 static char   *calibdb     = 0;      /* the database for calibration info */
 static char   *selectors   = 0;      /* default SeedLink selectors */
 static int     stateint    = 100;    /* interval to save the state file (pkts) */
+static int     matchBOint  = 0;      /* enforce that integer-encoded data matches byte order of header */
 
 static SLCD   *slconn;
 
 static void packet_handler (char *msrecord, int packet_type,
 			    int seqnum, int packet_size);
+static int  swap_integer_payload (char *msrecord, SLMSrecord *msr,
+                                  int headerswapflag);
 static int  parameter_proc(int argcount, char **argvec);
 static void report_environ();
 static void dummy_handler(int sig);
@@ -141,6 +144,17 @@ main(int argc, char **argv)
   return 0;
 }				/* End of main() */
 
+/***************************************************************************
+ * local_bigendianhost: Run time test for endianess.
+ *
+ * Returns 0 if the host is little endian, otherwise 1.
+ ***************************************************************************/
+static inline int
+local_bigendianhost (void)
+{
+  const uint16_t endian = 256;
+  return *(const uint8_t *)&endian;
+}
 
 /***************************************************************************
  * packet_handler():
@@ -149,17 +163,50 @@ main(int argc, char **argv)
 static void
 packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
 {
-  double time;
+  static SLMSrecord *msr = NULL;
   static char *packet;
   static int bufsize = 0;
+  int headerswapflag = 0;
+  int   dataswapflag = 0;
   int       mseedret = 0;
   int         nbytes = 0;
 
+  double time;
   char srcname[ORBSRCNAME_SIZE];
 
   /* Process regular miniSEED records and send them on */
   if ( packet_type >= SLDATA && packet_type <= SLNUM )
     {
+      /* Enforce that byte order of integer encoded data matches that of header */
+      if (matchBOint)
+      {
+        if (sl_msr_parse (slconn->log, msrecord, &msr, 1, 0) == NULL)
+        {
+          sl_log (1, 0, "sl_msr_parse() failed\n");
+          return;
+        }
+
+        /* Determine byte swapping need for header, compare the raw year to the the parsed year.
+         * The start year in the FSDH is a 2-byte quantity at byte offset 20. */
+        if (msr->fsdh.start_time.year != *((uint16_t*)(msrecord + 20)))
+          headerswapflag = 1;
+
+        /* Determine byte swapping need for data, compare B1000 order to host order */
+        if (msr->Blkt1000 && msr->Blkt1000->word_swap != local_bigendianhost())
+          dataswapflag = 1;
+
+        if (msr->Blkt1000 &&
+            headerswapflag != dataswapflag &&
+            (msr->Blkt1000->encoding == 1 || msr->Blkt1000->encoding == 3))
+        {
+          if (swap_integer_payload (msrecord, msr, headerswapflag))
+          {
+            sl_log (1, 0, "swap_integer_payload() failed\n");
+            return;
+          }
+        }
+      }
+
       mseedret = mseed2orbpkt(msrecord, packet_size, calibdb, mappingdb,
 			      remap, srcname, &time, &packet, &nbytes,
 			      &bufsize);
@@ -185,6 +232,96 @@ packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
     }
 }				/* End of packet_handler() */
 
+
+/***************************************************************************
+ * swap_integer_payload():
+ *
+ * Byte swap data payload encoded as integers (16 or 32-bit) and reverse
+ * the byte order flag in the Blockette 1000.
+ *
+ * Return 0 on success and non-zero on error.
+ ***************************************************************************/
+static int
+swap_integer_payload (char *msrecord, SLMSrecord *msr, int headerswapflag)
+{
+  struct sl_blkt_head_s blkt_head;
+  uint16_t begin_blockette;
+  int reclen;
+  int datalength;
+
+  int sampidx;
+  uint16_t *data16 = NULL;
+  uint32_t *data32 = NULL;
+
+  if (!msrecord || !msr || !msr->Blkt1000)
+    return -1;
+
+  if (msr->Blkt1000->encoding != 1 && msr->Blkt1000->encoding != 3)
+    return -1;
+
+  /* Calculate record size in bytes as 2^(Blkt1000->rec_len) */
+  reclen = (unsigned int)1 << msr->Blkt1000->rec_len;
+
+  datalength = msr->fsdh.num_samples * ((msr->Blkt1000->encoding == 1) ? 2 : 4);
+
+  /* Sanity check, data payload must:
+     - start after fixed header + blockette 1000 (48 + 8)
+     - not extend beyond record length */
+  if (msr->fsdh.begin_data < 56 ||
+      (msr->fsdh.begin_data + datalength) > reclen)
+    return -1;
+
+  /* Loop through blockettes as long as number is non-zero and viable */
+  begin_blockette = msr->fsdh.begin_blockette;
+
+  while ((begin_blockette != 0) &&
+         (begin_blockette <= reclen))
+  {
+    memcpy (&blkt_head, msrecord + begin_blockette, sizeof (struct sl_blkt_head_s));
+
+    if (headerswapflag)
+    {
+      sl_gswap2 (&blkt_head.blkt_type);
+      sl_gswap2 (&blkt_head.next_blkt);
+    }
+
+    /* Reverse the byte order flag in Blockette 1000.
+       The byte order flag is at byte offset 5 in the blockette. */
+    if (blkt_head.blkt_type == 1000)
+    {
+      if (*((uint8_t *)(msrecord + begin_blockette + 5)) == 1)
+        *((uint8_t *)(msrecord + begin_blockette + 5)) = 0;
+      else
+        *((uint8_t *)(msrecord + begin_blockette + 5)) = 1;
+    }
+
+    /* Point to the next blockette */
+    begin_blockette = blkt_head.next_blkt;
+  }
+
+  /* Byte swap 16-bit integer data */
+  if (msr->Blkt1000->encoding == 1)
+  {
+    data16 = (uint16_t *)(msrecord + msr->fsdh.begin_data);
+
+    for (sampidx = 0; sampidx < msr->fsdh.num_samples; sampidx++)
+    {
+      sl_gswap2 (data16 + sampidx);
+    }
+  }
+  /* Byte swap 32-bit integer data */
+  else if (msr->Blkt1000->encoding == 3)
+  {
+    data32 = (uint32_t *)(msrecord + msr->fsdh.begin_data);
+
+    for (sampidx = 0; sampidx < msr->fsdh.num_samples; sampidx++)
+    {
+      sl_gswap4 (data32 + sampidx);
+    }
+  }
+
+  return 0;
+} /* End of swap_integer_payload() */
 
 /***************************************************************************
  * parameter_proc():
@@ -247,6 +384,10 @@ parameter_proc(int argcount, char **argvec)
       else if (strcmp(argvec[optind], "-dm") == 0)
 	{
 	  mappingdb = argvec[++optind];
+	}
+      else if (strcmp(argvec[optind], "-mbi") == 0)
+	{
+	  matchBOint = 1;
 	}
       else if (strcmp(argvec[optind], "-r") == 0)
 	{
@@ -540,7 +681,7 @@ usage(void)
   printf("\n"
 	 "Usage: slink2orb [-dc database] [-dm database] [-nd delay] [-nt timeout]\n"
 	 "                 [-k interval] [-pf parameterfile] [-S statefile]\n"
-	 "                 [-r] [-v] SeedLink ORB\n"
+	 "                 [-mbi] [-r] [-v] SeedLink ORB\n"
 	 "\n"
 	 "Antelope Contributed Software\n"
 	 "\n"
