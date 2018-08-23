@@ -1,52 +1,35 @@
 
-Installation instructions for libslink: the SeedLink client library.
+The library requires that C99 integer types are available on the
+target computer.  Specifically the int8_t, int16_t, int32_t, int64_t
+and their unsigned counterpart types.  If these data types are not
+available guesses are made in lmplatform.h.
 
--- Building --
+-- Unix --
 
-Unix/Linux: The easiest way to compile the library is to simply run
-'make'.  The included Makefile should work for most Unix-like
-environments with GNU's gcc.  The Makefile will need to be edited to
-use a different compiler (e.g. the Sun compiler), instructions are
-included in the Makefile.  By default a statically linked version of
-the library is built 'libslink.a'.  Using gcc it is possible to build
-a shared library with 'make shared'.
+A simple 'make' on most Unix-like systems should build the library.
 
-Windows: On a WIN32 platform the library can be compiled by using the
+The included Makefile should work for most Unix-like environments and
+most make variants; it is know to work with GNU make.
+
+The CC and CFLAGS environment variables can be set to control the build.
+
+By default a statically linked version of the library is built: 'libslink.a'.
+
+With GCC, clang or compatible build tools it is possible to build a shared
+library with 'make shared'.
+
+-- macOS --
+
+A static library can be compiled using the above Unix instructions,
+just run 'make'.
+
+Using GCC, clang or compatible build tools it is possible to build a dynamic
+library with 'make dynamic'.
+
+-- Windows (Win32) --
+
+On a WIN32 platform the library can be compiled by using the
 Nmake compatible Makefile.win (e.g. 'nmake -f Makefile.win') or Open
 Watcom's Wmake with Makefile.wat (e.g. 'wmake -f Makefile.wat'). The
 default target is a static library 'libslink.lib'.  The library has
-been tested with Microsoft Visual Studio 6 and Open Watcom 1.1.
-
-For non-WIN32 platforms the POSIX nanosleep() function is used.  This
-function may not be implemented on older Solaris or Linux platforms.
-It is known to be available under Solaris 8 or later and recent
-versions of Glibc2.
-
--- Installing --
-
-For installation into the system development environment simply copy
-the library (libslink.a and/or libslink.so) into a system library
-directory and copy the associated libslink.h into a system include
-directory.  Otherwise the library and include file can be used
-directly from the build directory.
-
-The 'example' directory includes an example SeedLink client that uses
-libslink.
-
-The 'doc' directory includes all associated documentation including
-a Users Guide and man pages for library functions.
-
--- Threading --
-
-The library is thread-safe under Unix-like environments with the
-condition that each connection descriptor (SLCD) is handled by a
-single thread.  Thread independent logging schemes are possible.
-Under WIN32 the library is not thread-safe.
-
--- Pronounciation --
-
-lib = 'l' + [eye] + 'b'  (as in library, long 'i')
-s = [es]   (like the beginning of 'esta' in como esta?)
-link = link   (rhymes with the color pink)
-
-all together: 'l' [eye] 'b' [es] link
+been tested with Open Watcom 1.8.
