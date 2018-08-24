@@ -38,7 +38,12 @@ DATA= \
     range_vel \
     sh \
     sh_vel \
-    wr1_vel
+    wr1_vel \
+    README_KMI_appnote39F.pdf \
+    coefA3-60 \
+    coefB2-60 \
+    coefB2C-60
+
                                
 include $(ANTELOPEMAKE)  	
 DIRS=
