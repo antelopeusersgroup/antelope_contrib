@@ -37,6 +37,10 @@ class DbMoment(Station):
         self.select = options.select
         self.reject = options.reject
 
+        # Overwrites to PF files
+        self.mindistance_overwrite = options.mindistance
+        self.maxdistance_overwrite = options.maxdistance
+
         self.model = model
 
         '''
@@ -209,7 +213,7 @@ class DbMoment(Station):
 
 
         # Verify we have a valid event
-        if self.my_event.depth > self.depth_min and self.my_event.depth < self.depth_max:
+        if self.my_event.depth >= self.depth_min and self.my_event.depth <= self.depth_max:
             self.logging.info("Event depth [%s] within our limits." % (self.my_event.depth))
         else:
             self.logging.error("Event depth [%s] out of limits.[%s,%s]" % \
@@ -222,6 +226,11 @@ class DbMoment(Station):
         self.time_window = int(temp_config[ 'time_window' ])
         self.distance_max = int(temp_config[ 'distance_max' ])
         self.distance_min = int(temp_config[ 'distance_min' ])
+
+        if self.maxdistance_overwrite:
+            self.distance_max = int( self.maxdistance_overwrite )
+        if self.mindistance_overwrite:
+            self.distance_min = int( self.mindistance_overwrite )
 
         # Verify filter
         if not self.my_event.filter:

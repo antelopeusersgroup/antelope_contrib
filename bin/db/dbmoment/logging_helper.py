@@ -106,12 +106,8 @@ def getLogger(name='', loglevel=False):
             self.log(50, niceprint(message), *args, **kws)
 
         def newerror(self, message, *args, **kws):
-            self.log(40, '***')
-            self.log(40, '***')
             self.log(40, niceprint(message), *args, **kws)
-            self.log(40, '***')
-            self.log(40, '***')
-            sys.exit( niceprint(message) )
+            sys.exit( 2 )
 
         def newnotify(self, message, *args, **kws):
             self.log(35, niceprint(message), *args, **kws)
@@ -126,12 +122,8 @@ def getLogger(name='', loglevel=False):
             self.log(10, niceprint(message), *args, **kws)
 
         def newkill(self, message, *args, **kws):
-            self.log(50, '***')
-            self.log(50, '***')
             self.log(50, niceprint(message), *args, **kws)
-            self.log(50, '***')
-            self.log(50, '***')
-            sys.exit( niceprint(message) )
+            sys.exit( 3 )
 
         logging.Logger.critical = newcritical
         logging.Logger.error = newerror

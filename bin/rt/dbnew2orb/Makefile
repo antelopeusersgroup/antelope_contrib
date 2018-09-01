@@ -6,8 +6,3 @@ ldlibs = -lbrttutil $(ORBLIBS)
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
-
-OBJS= $(BIN).o
-$(BIN) : $(OBJS)
-	$(RM) $@
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

@@ -185,7 +185,8 @@ class Waveforms():
             try:
                 tr.trfilter( bw_filter )
             except Exception,e:
-                self.logging.error('Problems with the filter %s => %s' % (bw_filter,e))
+                self.logging.warning('Problems with the filter %s => %s' % (bw_filter,e))
+                return False
 
             if debug_plot:
                 plot_tr_object( tr, 'filtered', style='g', fig=fig)
@@ -204,7 +205,6 @@ class Waveforms():
             tr.record = datascope.dbALL
 
             #Verify if we need rotation. Example 1 was alredy on TRZ format.
-            #if not channame in ['R','T','Z']:
             if not channame in self.seismic_channels:
                 self.logging.debug( 'Rotate to esaz:%s' %  esaz )
 
@@ -212,8 +212,11 @@ class Waveforms():
                 """
                 Now we need to rotate the horizontal channels.
                 """
-                #tr.trrotate(  float(esaz), 0, ('T','R','Z') )
-                tr.trrotate(  float(esaz), 0, self.seismic_channels )
+                try:
+                    tr.trrotate(  float(esaz), 0, self.seismic_channels )
+                except Exception,e:
+                    self.logging.warning('Problems with trrotate %s => %s' % (Exception,e))
+                    return False
 
                 self.logging.debug('Number of traces for %s: %s' % (sta, tr.record_count))
             else:

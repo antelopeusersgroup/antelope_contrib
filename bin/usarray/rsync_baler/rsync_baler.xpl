@@ -1739,7 +1739,7 @@ sub fix_local {
         #
         # Verify file name is for this station
         #
-        if ( $file !~ /(${sta}|EXMP)/ or $file !~ /($pf{regex_for_files})/ ) {
+        if ( $file !~ /(${sta}|EXMP)/ ) {
             fork_complain("filename failed regex match "
                 ."for station: remove(): $file") ;
             fork_complain("remove record $unique: "

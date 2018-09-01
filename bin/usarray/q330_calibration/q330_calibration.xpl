@@ -10,7 +10,7 @@
     use utilfunct ;
     use orb ;
 
-    our ($opt_v,$opt_V,$opt_d,$opt_i,$opt_m,$opt_N,$opt_n,$opt_o,$opt_p,$opt_t,$opt_2,$opt_3);
+    our ($opt_x,$opt_v,$opt_V,$opt_d,$opt_i,$opt_m,$opt_N,$opt_n,$opt_o,$opt_p,$opt_t,$opt_2,$opt_3);
     our ($offset,$temp_file,$pgm,$host);
     our (@problems, %pf,%q330);
     our (%sta_0x2, %sta_0x4, @rows, @sta_list, @sta_temp);
@@ -30,11 +30,11 @@
     $cmd = "\n$0 @ARGV" ;
 
     $usage    =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n]  [-2] [-3]  \n" ;
-    $usage   .=  "	[-i] [-N [-d no_calib_days]]\n" ;
+    $usage   .=  "	[-i] [-N [-d no_calib_days]] [-x reject_regex]\n" ;
     $usage   .=  "	[-o duration_offset_fraction] [-t start_time]  [-p pf] [-m mail_to] \n" ;
     $usage   .=  "	cmdorb db sta_regex [sta_regex1 [sta_regex2 [...]]] \n\n"  ;
 
-    if (  ! getopts('nvVd:im:No:p:t:23') || @ARGV < 3 ) {
+    if (  ! getopts('x:nvVd:im:No:p:t:23') || @ARGV < 3 ) {
         unless ( ($opt_i || $opt_N) && @ARGV == 2) {
             elog_notify ( $cmd ) ;
             elog_die    ( $usage ) ;
@@ -113,7 +113,17 @@
     #
     if (@ARGV) {
         $subset = "sta =~ /" . join('|',@ARGV) . "/" ;
+
         elog_notify( "subsetting station list by - $subset" ) if $opt_v ;
+        @dbstaq330 = dbsubset(@dbstaq330, $subset) ;
+    }
+
+    #
+    # In case that we have a regex reject then we remove those sites
+    #
+    if ($opt_x) {
+        $subset = "sta !~ /$opt_x/" ;
+        elog_notify( "rejecting station - $subset" ) if $opt_v ;
         @dbstaq330 = dbsubset(@dbstaq330, $subset) ;
     }
 

@@ -15,3 +15,33 @@ suspicious_phase_codes &Tbl{
 	S							# P should be on this list, 
 	X							# otherwise all P's will be left unchanged...
 }
+
+dont_change_to &Tbl{
+	PbPb
+	Pb
+	pPb
+	sPb
+	PgPg
+	pPg
+	sPg
+	PnPn
+	pPn
+	sPn
+	sb
+}
+simplify &Arr{
+	P'P'ab 		P'P'
+	P'P'bc 		P'P'
+	P'P'df 		P'P'
+	PKKPab		PKKP
+	PKKPbc		PKKP
+	PKKPadf		PKKP
+	SKSac		SKS
+	SKSdf		SKS
+	SKPab		SKP
+	SKPbc		SKP
+	SKPdf		SKP
+	pPKPab		pPKP
+	pPKPbc		pPKP
+	pPKPdf		pPKP
+}

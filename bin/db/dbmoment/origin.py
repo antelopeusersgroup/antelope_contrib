@@ -136,8 +136,19 @@ class Origin():
                         temp.getv('orid','time','lat','lon','depth','ml','mb','ms')
 
                 self.logging.debug( "orid=%s" % orid )
-                depth = int(float(depth))
-                self.logging.debug( "fixing to int => depth:%s" % depth )
+
+                self.logging.debug( "Raw depth:%s" % depth )
+
+                try:
+                    if depth > 1:
+                        depth = int(float(depth))
+                    else:
+                        depth = 1
+                except:
+                    depth = 1
+
+                self.logging.debug( "Final depth:%s" % depth )
+
                 self.logging.debug( "time:%s (%s,%s)" % (time,lat,lon) )
                 self.orid = orid
                 self.depth = depth
