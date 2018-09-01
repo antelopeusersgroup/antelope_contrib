@@ -104,7 +104,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 	dbfree_untangle(records);
 	freePkt(pkt);
 	if (verbose) {
-		elog_notify(0, "%s: %ld packet(s) sent with sourcename: %s\n", s = strtime(now()), nrecords, srcname);
+		elog_notify(0, "%s: %ld packet(s) sent with sourcename: %s\n", s = strtime(std_now()), nrecords, srcname);
 		free(s);
 	}
 	return (0);
@@ -116,7 +116,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 int
 main(int argc, char **argv)
 {
-	double          modified_after =now() , last_lddate, last_mtime, mtime;
+	double          modified_after =std_now() , last_lddate, last_mtime, mtime;
 	char           *orbname = NULL;
 	char           *dbname = NULL;
 	int             orb;
@@ -460,7 +460,7 @@ main(int argc, char **argv)
 		if (statefilename) {
 			double          nowtime;
 
-			nowtime = now();
+			nowtime = std_now();
 			if (nowtime - lastburytime > 600.0) {
 				lastburytime = nowtime;
 				bury();

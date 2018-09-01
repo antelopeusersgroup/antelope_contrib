@@ -1333,7 +1333,7 @@ int davisSetTime () {
 
     flushOutput(&iConnectionHandle);
 
-    iUTCTime=now();
+    iUTCTime=std_now();
 
     /* Build the "stDavisGetSetTime" structure */
     if (oConfig.sTimeZone)
@@ -1794,7 +1794,7 @@ int StatPacket(int *iHandle)
 	  return RESULT_FAILURE;
 	}
 
-      timeskewtime=now();
+      timeskewtime=std_now();
       skewlog=(int)davistime-timeskewtime;
       skewlogvalid=1;
       
@@ -1857,7 +1857,7 @@ int StatPacket(int *iHandle)
       
       }
 
-      battchecktime=now();
+      battchecktime=std_now();
 
       if (davisWakeUp()==RESULT_FAILURE)
       {
@@ -1868,7 +1868,7 @@ int StatPacket(int *iHandle)
       /* Get the RXCheck data from the Davis */
       if (davisGetRXCheck(&oRXCheckData) == RESULT_SUCCESS) 
       {
-	  rxchecktime=now();
+	  rxchecktime=std_now();
 	  orbpkt->time=rxchecktime;
 	  
 	  /* Send the data to the ORB */
@@ -4354,14 +4354,14 @@ int main (int iArgCount, char *aArgList []) {
 	else if (iRecordCount == 0 && zerodata_current == FALSE)
 	  {
 	    zerodata_current=TRUE;
-	    time_firstzerodata_download=now();
+	    time_firstzerodata_download=std_now();
 	  }
 
-	if (oConfig.bAutoProgramDavis == TRUE && zerodata_current == TRUE && (time_firstzerodata_download < now()-24*3600))
+	if (oConfig.bAutoProgramDavis == TRUE && zerodata_current == TRUE && (time_firstzerodata_download < std_now()-24*3600))
 	  {
 	    elog_complain(0,"We have been unable to retrieve data from the davis for greater than 24 hrs. Attempting to reinitialize the davis.\n");
 
-	    time_firstzerodata_download=now(); 
+	    time_firstzerodata_download=std_now(); 
 	    /* reset this so we don't try to reprogram the davis 
 	       more than once per 24 hr period */
 	    bReprogramDavisNow=TRUE;
@@ -4421,13 +4421,13 @@ int main (int iArgCount, char *aArgList []) {
 		  if (oConfig.bAutoAdjustSleepFlag==TRUE)
 		    {
 		      if (oConfig.bVerboseModeFlag == TRUE)
-			elog_notify(0,"AutoAdjusting Sleep Interval will sleep %d seconds (%f %d %d %f)\n",(int)(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-now()),lastdownloadtimestamp,oConfig.iDavisSampleInterval*60,skewlog,now());
+			elog_notify(0,"AutoAdjusting Sleep Interval will sleep %d seconds (%f %d %d %f)\n",(int)(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-std_now()),lastdownloadtimestamp,oConfig.iDavisSampleInterval*60,skewlog,std_now());
 
-		      if ((int)(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-now())>0 && ((int)(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-now())<oConfig.iRepeatInterval*2 || (int)(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-now())<2*oConfig.iDavisSampleInterval))
+		      if ((int)(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-std_now())>0 && ((int)(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-std_now())<oConfig.iRepeatInterval*2 || (int)(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-std_now())<2*oConfig.iDavisSampleInterval))
 			{
-			  sleep(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-now());
+			  sleep(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-std_now());
 			}
-		      else if ((int)(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-now())<=0)
+		      else if ((int)(lastdownloadtimestamp+oConfig.iDavisSampleInterval*60+5-skewlog-std_now())<=0)
 		      {
 			  elog_notify(0,"Since sleep would have been less than zero, we are going to sleep %d seconds to avoid an infinite loop.\n",oConfig.iRepeatInterval);
 			  sleep(oConfig.iRepeatInterval);
@@ -4441,12 +4441,12 @@ int main (int iArgCount, char *aArgList []) {
 		  else if (previous_start>0)
 		    {
 		      if (oConfig.bVerboseModeFlag == TRUE)
-			elog_notify (0, "main (): Sleeping for %d second(s).\n", (int)(oConfig.iRepeatInterval-now()+previous_start));
-		      if (oConfig.iRepeatInterval-now()+previous_start >= 1)
-			sleep (oConfig.iRepeatInterval-now()+previous_start);
+			elog_notify (0, "main (): Sleeping for %d second(s).\n", (int)(oConfig.iRepeatInterval-std_now()+previous_start));
+		      if (oConfig.iRepeatInterval-std_now()+previous_start >= 1)
+			sleep (oConfig.iRepeatInterval-std_now()+previous_start);
 		      else 
 			{
-			  elog_notify(0,"Whoops. We planned to sleep %d seconds. I'm going to sleep %d seconds instead.\n",(int)(oConfig.iRepeatInterval-now()+previous_start),oConfig.iRepeatInterval);
+			  elog_notify(0,"Whoops. We planned to sleep %d seconds. I'm going to sleep %d seconds instead.\n",(int)(oConfig.iRepeatInterval-std_now()+previous_start),oConfig.iRepeatInterval);
 			  sleep(oConfig.iRepeatInterval);
 			}
 		      
@@ -4458,7 +4458,7 @@ int main (int iArgCount, char *aArgList []) {
 		      sleep (oConfig.iRepeatInterval);	    
 		    }
 		}
-	      previous_start=now();
+	      previous_start=std_now();
 	      
 	      if (oConfig.bVerboseModeFlag == TRUE)
 		elog_notify (0, "main (): Done sleeping; waking up.\n");

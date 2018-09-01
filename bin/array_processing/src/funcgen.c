@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
   if (strcmp(type,"noise"    ) == 0) itype = 7;
 
 /*Generate a zero-mean, unit rms, random noise series, whether used or not.*/
-  irand = now()-1200000000;
+  irand = std_now()-1200000000;
   srand(irand);        /* sets the RNG with a random start integer*/
   for (i=0;i<nsamp;i++)
   {

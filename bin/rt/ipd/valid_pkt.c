@@ -38,7 +38,7 @@ int hdrtype;
 
     if( length > 0 ) Par.packet.size = length; 
     if( !(*psize = hdr2packet( (char **) data, Par.hdrtype,  srcname )) )  {
-	timnow = now();
+	timnow = std_now();
 	if( timnow - check_time > chrate )  {
 	    newpf( pffile );
             if( !(*psize = hdr2packet( (char **) data, Par.hdrtype,  srcname )) )  {

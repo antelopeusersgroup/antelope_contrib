@@ -158,7 +158,7 @@ long save_origin(Dbptr dbi, long is, long ie, int depth_fixed,
 		strcpy(dtype,"f");
 	}
 	my_username(auth);
-	lddate = now();
+	lddate = std_now();
 	orid = dbnextid(dbo,"orid");
 	if(dbaddv(dbo,0,
                 "lat",h.lat,
@@ -232,7 +232,7 @@ long save_event(Dbptr dbi, long is, long ie, long orid, Dbptr dbo)
 	}
 	prefor = orid;
 	my_username(auth);
-	lddate = now();
+	lddate = std_now();
 	if(dbaddv(dbo,0,
                 "evid",evid,
 		"evname",evname,
@@ -275,7 +275,7 @@ void save_origerr(long orid, Hypocenter h, double **C, Dbptr dbo)
 	sdobs = sswr/ndgf */
 
 	sdobs = h.rms_raw;
-	lddate = now();
+	lddate = std_now();
 	if(dbaddv(dbo,0,
 		"orid",orid,
                 "sxx",C[0][0],
@@ -358,7 +358,7 @@ void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
 	double duphi;
 
 	dbo = dblookup(dbo,0,"assoc",0,0);
-	lddate = now();
+	lddate = std_now();
 
 	/* We build an associate array for the residual tbl keying
 	each entry with a sta/phase/type key  where type is 

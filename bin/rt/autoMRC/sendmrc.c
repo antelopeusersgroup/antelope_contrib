@@ -61,7 +61,7 @@ int sendmrc( int dasid, int timeout, int rep )
 		}
             }
             elog_complain( 0, "%s: send %s to %d on %s\n", 
-	              s=strtime(now()), buffer, dasid, iport );
+	              s=strtime(std_now()), buffer, dasid, iport );
             free(s);
 
         } else { 

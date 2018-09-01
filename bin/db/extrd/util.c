@@ -73,7 +73,7 @@ int new_db( SegData *segment )
     double epoch;
 
 
-    epoch = now();
+    epoch = std_now();
  
    
      dbout.record = dbaddnull( dbout );

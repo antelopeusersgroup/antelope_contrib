@@ -143,7 +143,7 @@ sub bulletin {
     } else { 
 	push(@result, "DATA_TYPE BULLETIN IMS1.0:short") ;
 	my $title = pfget($Pf, "bulletin_title") ;
-	$title = epoch2str(now(), $title) ; 
+	$title = epoch2str(std_now(), $title) ; 
 	push(@result, $title) ;
 
 	my @db = dbopen ( $database, "r" ) ; 
