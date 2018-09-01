@@ -1,0 +1,88 @@
+metadata_cross_reference &Tbl{
+tracl lineSeq integer
+tracr reelSeq integer
+fldr event_number integer
+tracf channel_number integer
+ep energySourcePt integer
+cdp cdpEns integer
+cdpt traceInEnsemble integer
+trid traceId integer
+nvs vertSum integer
+nhs horSum integer
+duse dataUse integer
+offset sourceToRecDist real
+gelev recElevation real
+selev sourceSurfaceElevation real
+sdepth sourceDepth real
+gdel datumElevRec real
+sdel datumElevSource real
+rwdep recWaterDepth real
+swdep sourceWaterDepth real
+scalel elevationScale real
+scalco coordScale real
+sx sourceLongOrX real
+sy sourceLatOrY real
+rx recLongOrX real
+ry recLatOrY real
+counit coordUnits integer
+welev weatheringVelocity real
+swevel subWeatheringVelocity real
+sut sourceUpholeTime real
+gut recUpholeTime real
+sstat sourceStaticCor real
+gstat recStaticCor real
+tstat totalStatic real
+laga lagTimeA real
+lagb lagTimeB real
+delay delay real
+muts muteStart real
+mute muteEnd real
+nsamp sampleLength integer
+dt deltaSample real
+gain gainType integer
+igc gainConst integer
+igi initialGain integer
+corr correlated boolean
+sfs sweepStart real
+sfe sweepEnd real
+slen sweepLength real
+styp sweepType real
+stas sweepTaperAtStart real
+stae sweepTaperAtEned real
+tatyp taperType real
+afilf aliasFreq real
+afils aliasSlope real
+nofilf notchFreq real
+nofils notchSlope real
+lcf lowCutFreq real
+hcf hiCutFreq real
+lcs lowCutSlope real
+hcs hiCutSlope real
+year year integer
+day day integer
+hour hour integer
+minute minute integer
+sec second real
+timbas timeBasisCode integer
+trwf traceWeightingFactor real
+grnors  phoneRollPos1 integer
+grnofr phoneFirstTrace integer
+grnlof phoneLastTrace integer
+gaps gapSize integer
+otrav taperOvertravel integer
+}
+output_metadata_list &Tbl{
+tracl
+tracr
+tracf
+ep
+fldr
+scalco
+rx
+ry
+sx
+sy
+nsamp
+dt
+duse
+}

@@ -1,7 +1,11 @@
+.dbmoment
 greens_db
-example_1.netmag
-example_1.mt
-example_1.lastid
+synthetics_db
+dbmoment_images
+run_dbmoment_example
+*.netmag
+*.mt
+*.lastid
 dbmoment
 example2wfdisc
 fromHelm
@@ -10,8 +14,12 @@ window
 sac2bin
 bin2sac
 tdmt_invc
+tdmt_inv
 fortran_fkrprog
 wvint9
 putmt
 *.o
 *.a
+test_rotation.py
+dbmoment_run_example
+trigd.mod

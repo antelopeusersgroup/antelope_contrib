@@ -1,0 +1,17 @@
+BIN=dbrevise_source_data
+PF=dbrevise_source_data.pf
+
+cxxflags=-g
+ldflags=-L$(ANTELOPE)/contrib/static
+ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp 
+SUBDIR=/contrib
+
+include $(ANTELOPEMAKE) 
+include $(ANTELOPEMAKELOCAL)
+CXXFLAGS += -I$(BOOSTINCLUDE)
+
+OBJS=dbrevise_source_data.o
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+LDFLAGS += -L$(BOOSTLIB)

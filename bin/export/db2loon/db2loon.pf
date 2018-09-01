@@ -13,7 +13,8 @@ attach_dbtables	1
 
 # Saving pickfiles:
 
-pickfile_name_pattern /data/cnsn/%Y%m/%Y%m%d%H%M%S.%{suffix}
+#pickfile_name_pattern /home/tmulder/data_cnsn/%Y%m/%Y%m%d%H%M%S.%{suffix}
+pickfile_name_pattern pickfiles/%Y%m%d%H%M%S.%{suffix}
 auth_suffixes &Tbl{
 	PGC:mulder	tm
 	PGC:bentkows	wb
@@ -22,22 +23,59 @@ auth_suffixes &Tbl{
 	PGC:mkoessle	mk
 	PGC:meighan	lm
 	PGC:brillon	cb
+	PGC:vollo	tv
+	PGC:sapalmer	sp
 	PGC:.*		xx
+	GSC:mkolaj.*	mk
+	GSC:nackerle.*	na
+	GSC:tmulder.*	tm
+	GSC:vpeci.*	vp
 	orbassoc.*	auto
+	oa.*		auto
 }
 auth_suffix_default 	xx
 
 auth_agencies &Arr{
 	PGC:.*		PGC
-	orbassoc.*	PGC
+	GSC:.*		GSC
+	dbevproc	GSC
+	orbassoc.*	AUTO
+	oa.*		AUTO
+	db.*:mulder.*	PGC
+	db.*:bentkows.*	PGC
+	db.*:bird.*	PGC
+	db.*malwhite.*	PGC
+	db.*:mkoessle.*	PGC
+	db.*:meighan.*	PGC
+	db.*:brillon.*	PGC
+	db.*:vollo.*	PGC
+	db.*:saplamer.*	PGC
+	db.*:mkolaj.*	GSC
+	db.*:nackerle.*	GSC
+	db.*:vpeci.*	GSC
 	QED.*		NEIC
 	NEIC.*		NEIC
 	AEIC.*		AEIC
 	PDE.*		NEIC
 	PNSN.*		SEA
 	MTECH.*		BUT
+	LCSN		NEIC
+	NESN		NEIC
+	USGS:us.*	NEIC
+	USGS:US.*	NEIC
+	USGS:at.*	ATWC
+	USGS:uw.*	SEA
+	USGS:ak.*	AEIC
+	USGS:AK.*	AEIC
+	USGS:ci.*	NEIC
+	USGS:hv.*	NEIC
+	USGS:ismp.*	NEIC
+	USGS:ld.*	LDEO
+	USGS:nc.*	NEIC
+	USGS:uu.*	NEIC
+	USGS:UU.*	NEIC
 }
-auth_agency_default	PGC
+auth_agency_default	???
 
 # Formatting pickfiles:
 primary_agency PGC
@@ -61,6 +99,7 @@ correct_magtype_codes &Arr{
 	ms		MS
 	mb		mb
 	mb(lg)		mb(Lg)
+	mn		MN
 	ml		ML
 	ml(sn)		ML(Sn)
 	md		Md
@@ -74,25 +113,36 @@ magtype_priorities &Arr{
 	ms		3
 	mb		4
 	mb(lg)		5
-	ml		6
-	ml(sn)		7
-	md		8
-	mc		9
-	m		10
+	mn		6
+	ml		7
+	ml(sn)		8
+	md		9
+	mc		10
+	m		11
 }
 
 bulletin_paths &Arr{
-	#path to bulletin catalogue					authoring agency
-	/marmot/rt/rtsystems/bulletins/catalogs/aeic			AEIC
-	/marmot/rt/rtsystems/bulletins/catalogs/mtech			BUT
-	/marmot/rt/rtsystems/bulletins/catalogs/pde			NEIC
-	/marmot/rt/rtsystems/bulletins/catalogs/pnsn			SEA
-	/marmot/rt/rtsystems/bulletins/catalogs/qed			NEIC
-	/marmot/rt/rtsystems/bulletins/catalogs/qed_mines		NEIC
-	/marmot/rt/rtsystems/bulletins/catalogs/qed_weekly		NEIC
+	#path to bulletin catalogue				authoring agency
+	/antelope/rtsystems/bulletins/catalogs/combined		NEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/aeic		AEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/comcat		NEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/cube		NEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/mtech		BUT
+	/marmot/rt/rtsystems/bulletins/catalogs/pde		PDE
+	/marmot/rt/rtsystems/bulletins/catalogs/pnsn		SEA
+	/marmot/rt/rtsystems/bulletins/catalogs/qed		NEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/qed_mines	NEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/qed_weekly	NEIC
 }
 
-# Extracting raw info from database for pickfiles:
+event_types &Arr{
+	eq	L
+	me	B
+	qb	B
+}
+
+# Extracting raw info from database for pickfiles.
+# Required tables are event, origin, origerr, netmag;
 
 dbprocess_commands &Tbl{
 	dbopen event

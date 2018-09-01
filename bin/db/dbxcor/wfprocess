@@ -36,6 +36,7 @@ Relation wfprocess
 	Fields ( pwfid time endtime timetype dir dfile foff datatype samprate nsamp 
 algorithm lddate )
 	Primary ( pwfid )
+        Defines pwfid
 	Description ( "Core processed waveform table" )
 	Detail {
 		The antelope trace library is designed to work exclusively

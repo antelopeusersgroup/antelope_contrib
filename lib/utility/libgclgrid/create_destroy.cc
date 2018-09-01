@@ -954,7 +954,8 @@ GCLvectorfield3d::GCLvectorfield3d(GCLgrid3d& g, int n4)
 					val[i][j][k][l]=0.0;
 }
 /* File based constructors for field objects */
-GCLscalarfield::GCLscalarfield(string fname, string format)
+GCLscalarfield::GCLscalarfield(string fname, string format,
+        bool enforce_object_type)
     : GCLgrid(fname,format)
 {
     const string base_error("GCLscalarfield file constructor:  ");
@@ -965,6 +966,8 @@ GCLscalarfield::GCLscalarfield(string fname, string format)
                Inefficent but assumption is large number of these
                objects are not going to be created by this mechanism. */
             Metadata params=pfload_GCLmetadata(fname);
+            if(enforce_object_type)
+            {
             string otype=params.get_string("object_type");
             string otypethis=string(typeid(*this).name());
             if(otype!=otypethis)
@@ -972,6 +975,7 @@ GCLscalarfield::GCLscalarfield(string fname, string format)
                + "Object type mismatch.  "
                + "Called GCLscalarfield constructor on a file with object_type="
                + otype);
+            }
             string dfile=fname+"."+dfileext;
             FILE *fp=fopen(dfile.c_str(),"r");
             if(fp==NULL)
@@ -1054,7 +1058,8 @@ GCLscalarfield3d::GCLscalarfield3d(string fname, string format)
 
     }catch(...){throw;};
 }
-GCLvectorfield::GCLvectorfield(string fname, string format)
+GCLvectorfield::GCLvectorfield(string fname, string format,
+        bool enforce_object_type)
     : GCLgrid(fname,format)
 {
     const string base_error("GCLvectorfield file constructor:  ");
@@ -1062,6 +1067,8 @@ GCLvectorfield::GCLvectorfield(string fname, string format)
         if(format==default_output_format)
         {
             Metadata params=pfload_GCLmetadata(fname);
+            if(enforce_object_type)
+            {
             string otype=params.get_string("object_type");
             string otypethis=string(typeid(*this).name());
             if(otype!=otypethis)
@@ -1069,6 +1076,7 @@ GCLvectorfield::GCLvectorfield(string fname, string format)
                + "Object type mismatch.  "
                + "Called GCLvectorfield constructor on a file with object_type="
                + otype);
+            }
             /* nv has to be handled specially.  attribute name maintenance
                issue here */
             nv=params.get_int("nv");

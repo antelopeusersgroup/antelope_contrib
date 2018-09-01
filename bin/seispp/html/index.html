@@ -1,0 +1,383 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Three-Component Unix Filter Library</title>
+  </head>
+  <body>
+    <h1 align="center">Three-Component Seismogram Unix Filter Library</h1>
+    <h2 align="center"><i>Gary L. Pavlis, Indiana University<br>
+      </i></h2>
+    <h2>Concepts</h2>
+    <p>This library was developed as a response to my frustration with
+      poor and archaic support of all existing seismology applications
+      for three-component seismograms.&nbsp; A decade earlier I had
+      started writing analysis code in C++.&nbsp;&nbsp; During that
+      process I developed a series of basic seismology data objects
+      including:&nbsp;&nbsp;<a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_time_series.html">TimeSeries</a>,&nbsp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_three_component_seismogram.html">ThreeComponentSeismograms</a>,
+      <a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_time_series_ensemble.html">ThreeComponentEnsemble,</a>
+      and <a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_time_series_ensemble.html">TimeSeriesEnsemble</a>
+      C++ classes.&nbsp;&nbsp; These were components of an open source
+      library I developed over the next decade distributed through the <a
+        href="http://www.antelopeusersgroup.org/repository/">antelope
+        user's group</a> as a library I called libseispp (seismic
+      C-plus-plus).&nbsp; In late 2015 I discovered an elegant library
+      in the&nbsp;<a href="http://www.boost.org/">boost</a> suite of C++
+      software for serialization. &nbsp; Serialization is an abstraction
+      that allows very complex objects to be written and restored to
+      storage with a simple constract, which in the case of boost
+      serialization are overloads of the &gt;&gt; and &lt;&lt; operators
+      respectively. &nbsp; (python progammers will recognize
+      serialization by the standard module called <a
+        href="https://wiki.python.org/moin/UsingPickle">pickle</a>).<br>
+    </p>
+    <p>A second key concept behind this package is the general idea of a
+      unix filter and the application of that more general concept in
+      the package called <a href="http://www.cwp.mines.edu/cwpcodes/">seismic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        unix</a>.&nbsp; In many respects this package should be thought
+      of as a three-component seismogram version of seismic unix with
+      boost serialization as the core external format instead of the
+      seismic unix format, which is a variant of <a
+href="http://www.seg.org/Portals/0/SEG/News%20and%20Resources/Technical%20Standards/seg_y_rev1.pdf">SEGY</a>.&nbsp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      That means it shares the intrinsic scalability limitations of unix
+      pipelines in modern massively parallel systems, but is vastly
+      superior to data handling in <a
+        href="http://ds.iris.edu/files/sac-manual/">Seismic Analysis
+        Code (SAC)</a> and <a href="https://docs.obspy.org/">ObsPy</a>
+      that tend to fragment data sets into overwhelming numbers of files
+      (one file per time series for SAC and one file per ensemble the
+      stock best cast for ObsPy).&nbsp;&nbsp; On the other hand, the
+      boost serialization framework on which this library is based,
+      which is defined in a template library called seispp_io.h, was
+      designed to be extendible to an abstraction of the MPI
+      foreman/worker model for cluster processing.&nbsp; Time will tell
+      if that is ever developed, so I took the perspective to make it
+      work before you make it fast.&nbsp; I thus decided to begin with
+      the tried and true idea of unix pipelines.&nbsp; <br>
+    </p>
+    <p>The C++ classes on which the programs in this package are based
+      all make use of a generic "header" interface made part of the
+      seismic data object by inheritance of the C++ class <a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_metadata.html">SEISPP::Metadata</a>.&nbsp;&nbsp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      This Metadata class is a generic way to store attributes indexed
+      as key-value pairs.&nbsp;&nbsp; At present the atributes can only
+      be stock, standard, data type:&nbsp; integers (always stored as C
+      long int), real numbers (always stored as C double), strings
+      (always stored as std::string objects), and booleans.&nbsp;&nbsp;
+      There are get and put template methods that can be used to handle
+      variants of these basic types (e.g. put&lt;short int&gt; and
+      put&lt;char *&gt;), but if you elect to extend this package avoid
+      anything but the internal data types.&nbsp;&nbsp; There are
+      currently minimal tools to validate attributes in a large data
+      file because future developments are at a design stage to utilize
+      a database to handle that generic problem more efficiently. <br>
+    </p>
+    <p>Finally, it is worth noting the seispp library has a concept any
+      user of this package must understand.&nbsp; I consider some type
+      of time series related object as atomic. &nbsp; The seispp library
+      implements three:&nbsp; TimeSeries, ThreeComponentSeismogram, and
+      ComplexTimeSeries classes.&nbsp; I have a more exotic extension
+      under developement I call a PMTimeSeries (Particle Motion Time
+      Series) object that defines instantaneous particle motion ellipses
+      at equal time steps. &nbsp; All are children of the virtual base
+      class&nbsp;<a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_basic_time_series.html">BasicTimeSeries</a>.
+      &nbsp; These atomic objects are used to define what I call an <i><u>ensemble</u></i>.&nbsp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      The core version for this set of modules is a&nbsp;<a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_three_component_ensemble.html">ThreeComponentEnsemble</a>
+      which define a generic collection of (atomic)
+      ThreeComponentSeismogram objects managed in this implementation
+      with and std::vector container. &nbsp; I violate textbook advice
+      on object design and make this container part of the public
+      interface.&nbsp; That was done intentionally to improve
+      efficiency, but has an undeniable dark side.&nbsp; Browse the
+      source code for this group of programs,&nbsp;<a
+href="https://github.com/antelopeusersgroup/antelope_contrib/tree/master/bin/seispp">which
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        can be found at this url</a>, to see examples of how to
+      manipulate data in a ThreeComponentEnsemble object.&nbsp; A key
+      point is that the use of a vector container means the natural
+      index to members of the ensemble is an integer. &nbsp;&nbsp; <br>
+    </p>
+    <h2>File Format</h2>
+    <p>A key point of the serialization concept is that the details of
+      the format is something the end user does not need to know at
+      all.&nbsp;&nbsp; This is a general concept that has formed a core
+      concept in computer science since the earliest days of computer
+      programming.&nbsp;&nbsp; e.g. even in ancient FORTRAN a statement
+      like read(5,1000) x,y,z&nbsp; hides a lot of details from the
+      programmer.&nbsp;&nbsp; A more modern example is a command like
+      this in matlab: (1) save 'mydata.mat'&nbsp; to write matlab data,
+      and (2) load 'mydata.mat' to read that data back in.&nbsp;&nbsp;
+      boost's serialization library is simply a more generic way to
+      accomplish the same concept for C++ objects.&nbsp; <br>
+    </p>
+    <p>A limitation of the current implementation of boost's
+      serialization library, however, is that it seems to have been
+      written with the concept of one object being stored to one file or
+      a suite of objects always being written in a fixed
+      format.&nbsp;&nbsp; I say that because it has no clean way to
+      define end of information in a boost serialization
+      stream.&nbsp;&nbsp; In an early prototypes of this package I
+      handled this with a exception handler, but I considered it both
+      dangerous and intrinsically wrong to handle an end of file
+      condition on a read as an exception.&nbsp;&nbsp; A key design
+      concept was an extensible file format that could range in scale
+      from one object to billions or more.&nbsp; To do that I used a
+      tried and true method of a line sentinel.&nbsp;&nbsp; That is the
+      files used by these modules are not pure boost serialization
+      files, but individual objects in the file are separate by magic
+      string sentinels that tell a reader that more data is available of
+      this is the end of the file.&nbsp;&nbsp; That allows generic read
+      loops like the following:<br>
+    </p>
+    <blockquote>StreamObjectReader&lt;ThreeComponentEnsemble&gt; inpfs;<br>
+      StreamObjectWriter&lt;ThreeComponentEnsemble&gt; outfs;<br>
+      ThreeComponentEnsemble d;<br>
+      while(inpsf.good())<br>
+      {<br>
+      &nbsp;&nbsp; d=inpfs.read();<br>
+      &nbsp; -- algorithm to alter d here --<br>
+      &nbsp; outfs.write(d);<br>
+      }<br>
+    </blockquote>
+    This is a simplified version of the code in the <a
+href="https://github.com/antelopeusersgroup/antelope_contrib/blob/master/bin/seispp/template/template.cc">template</a>
+    module that shows how to read one of these files from stdin and
+    write the results to stdout.&nbsp; This is an example the modern
+    computer science concept of using an API to abstracts access to data
+    (i.e. like save and load in matlab). &nbsp;&nbsp; &nbsp; <br>
+    <br>
+    The full description of this API can be found in the doxygen pages
+    for the seispp_io library (This is the&nbsp;<a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_stream_object_reader.html">reader</a>.&nbsp;
+
+
+    This is the&nbsp;<a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_stream_object_writer.html">writer.</a>)
+    &nbsp; The default serialization is a binary format.&nbsp;&nbsp;
+    This was found important for efficiency as the text format is at
+    least and order of magnitude slower for reading and writing than the
+    binary version.&nbsp;&nbsp; Text format files could be useful for
+    transport between machines, but this will require implementing a
+    feature in the library to allow this.&nbsp;&nbsp; Hence, use the
+    binary format unless you need to try debug the file format.<br>
+    <br>
+    A final very important point is that a StreamObject file, which is
+    the abstraction used here,&nbsp; can contain only one type of of
+    object.&nbsp;&nbsp; A file made up of an unspecified number of
+    something would make no sense if the somethings changed.&nbsp;&nbsp;
+    To do so would have required additional baggage that I viewed as
+    only adding unnecessary complications and overhead.<br>
+    <h2>Extensibility</h2>
+    <p>My hope is that others will be able to extend this package by
+      adding new modules.&nbsp;&nbsp; The unix filter concept is
+      familiar to almost all seismologists, but C++ is a foreign
+      language to most.&nbsp;&nbsp; To make this more approachable the
+      package includes a <a
+href="https://github.com/antelopeusersgroup/antelope_contrib/blob/master/bin/seispp/template/template.cc">template</a>
+      module.&nbsp;&nbsp; The actual code, template.cc, does nothing but
+      count the number of ensembles in a file.&nbsp;&nbsp; Comments in
+      the template.cc code and the makefiles should allow anyone with a
+      knowledge of C to implement an alternative algorithm.&nbsp;&nbsp;
+      <br>
+    </p>
+    <h2>Modules</h2>
+    <p><a href="programs/agc.html">agc</a> - automatic gain control
+      function for ThreeComponentEnsemble data.<br>
+      <a href="./programs/ator.html">ator</a> - convert from an absolute
+      time frame (UTC) to relative time (e.g. origin time = 0)<br>
+      <a href="programs/db2seispp.html">db2seispp</a> - creates a file
+      of serialized ThreeComponentSeismogram objects from the output of
+      extract_events.<br>
+      <a href="programs/dbactive_reader.html">dbactive_reader</a> -
+      create a file of ThreeComponentEnsembles from continuous data
+      index with an Antelope data and driven by a list of shot times <br>
+      <a href="programs/dbloadhdr.html">dbloadhdr</a> - loads attributes
+      from a Datascope database to generic trace headers used in seispp
+      programs<br>
+      <a href="programs/dbxcor_import.html">dbxcor_import</a> - use
+      output tables of dbxcor to build ensembles of original data and a
+      reconstructed beam (stack) over a specified time window<br>
+      <a href="programs/dismember.html">dismember</a> - take a
+      ThreeComponentEnsemble file apart and reduce it to an output of
+      serialized ThreeComponentSeismogram objects.<br>
+      <a href="programs/display_ensemble.html">display_ensemble</a> -
+      graphic display of a ThreeComponentEnsemble.&nbsp;&nbsp; <br>
+      <a href="./programs/export_to_matlab.html">export_to_matlab</a> -
+      export a TimeSeriesEnsemble as a matrix that ce read into matlab
+      with the load procedure<br>
+      e<a href="programs/export_to_matlab_3C.html">xport_to_matlab_3C</a>
+      - export a ThreeComponentEnsemble as three matrices that can be
+      read into matlab with load<br>
+      <a href="programs/export_to_su.html">export_to_su</a> - export a
+      suite of TimeSerieEnsemble objects to a seismic unix
+      file.&nbsp;&nbsp; <br>
+      <a href="programs/extract_component.html">extract_component</a>&nbsp;
+
+
+
+
+
+
+
+      - reduce a file ThreeComponentEnsemble object to a stream of
+      TimeSeriesEnsemble objects containing one of the three components.<br>
+      <a href="programs/filter3c.html">filter3c</a> - apply time
+      invariant filtering to 3C data<br>
+      <a href="programs/fragment.html">fragment</a> - take apart a
+      stream file with multiple ensembles and write one file per
+      ensemble into a specified directory<br>
+      <a href="programs/gather.html">gather </a>- group a file of
+      ThreeComponentSeismgram objects into ensembles defined by changes
+      in one or more keys <br>
+      <a href="programs/linearmoveout.html">linearmoveout </a>- apply a
+      tau-p/plane wave moveout correct to a 3C ensemble<br>
+      <a href="programs/listhdr.html">listhdr</a> - fairly flexible tool
+      to list header (metadata) attributes<br>
+      <a href="programs/peak_scaling.html">peak_scaling</a> - scale each
+      3C seismogram by the largest vector magnitude amplitude<br>
+      <a href="./programs/rename_attributes.html">rename_attributes </a>-
+      limited functionality attrribute editor to rename (optional copy)
+      of one or more attributes<br>
+      <a href="programs/rotate.html">rotate</a> - apply a rotation of 3C
+      data limited to the horizonals<br>
+      rotate3D - apply a full 3D transformation <br>
+      <a href="programs/seispp_format_converters.html">seispp_b2t</a> -
+      convert a binary file to a text file<br>
+      <a href="programs/seispp_format_converters.html">seispp_t2b</a> -
+      convert a text file to a binary file<br>
+      <a href="programs/set_metadata.html">set_metadata</a> - set one or
+      more header (metadata) attributes<br>
+      <a href="programs/sort1.html">sort1</a> - sort by one attribute
+      key <br>
+      <a href="programs/sphdiv.html">sphdiv</a> - scale data with
+      spherical divergence correction with a specified exponent<br>
+      <a href="programs/subset_streamfile.html">subset_streamfile </a>-
+      pass a subset of objects based the value of one key
+      attribute.&nbsp;&nbsp; <br>
+      <a href="programs/tcecut.html">tcecut</a> - time window a
+      ThreeComponentEnsemble<br>
+      <a href="programs/zeropad.html">zeropad</a> - zero pad 3C data<br>
+      <br>
+    </p>
+    <h2>Acknowledgements:</h2>
+    <p>This software was developed over the past 15 years by a series of
+      grants from the Geophysics and Earthscope Programs of EAR division
+      of the National Science Foundation.&nbsp; <br>
+    </p>
+    <p> </p>
+  </body>
+</html>

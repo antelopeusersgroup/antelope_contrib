@@ -1,6 +1,5 @@
 # Moment Tensor Code
 
-
 #################################
 ##                              #
 ##  DBMOMENT CODE LIMITATIONS   #
@@ -8,52 +7,52 @@
 #################################
 
 The dbmoment tool implementation included in the distribution is
-the core component of the more complex TDMT_INV toolbox that is in
-use by other networks. We completed this first step of mapping the
-source data and the final results values to Antelope but many steps in the
-middle are out of our control and in need of evaluation. This first
-version lacks the capability of correctly resampling the data to match
-the synthetics and deconvolve the instrument response from the traces.
+the core component of the more complex TDMT_INV_ISO toolbox that
+is in use by multiple seismic networks. We completed the process
+of mapping the source information and the final results values
+to Antelope.
 
-The example dataset included on the distribution is already preprocessed
-to those requirements and the dbmoment code can produce good results with
-it. At this time if the tool is used to evaluate any external dataset the
-user is responsible for the preprocessing of the data. The data should be
-resampled to 1Hz and all instrument responses removed from it. Then we
-need new wfdisc records tracking those new files. We also need an event for
-those traces and arrivals associated with those traces. The system should be able
-to correctly analyze the event and produce a valid result. In any other
-condition the tool will most like output a core file and crash.
+All data gets evaluated as velocity at 1Hz before inversion. The
+instrument response will be convolved into the synthetic trace
+instead of deconvolving the real trace from the station.
 
+Inversion will have the same limitations as the original Dreger's
+code and users should be familiar with Dreger's documentation.
 
 
 ### CODE DEPENDENCY:
-The demo code will make some shell calls to SAC. The SAC software
-is distributed for free by IRIS but you need to request a copy
-by hand on their website. http://ds.iris.edu/ds/nodes/dmc/forms/sac/
-For development I'm including a copy of the code on the subfolder
-NOT_TO_DISTRIBUTE tha you can install on your computer before running
-the demo code.
-
+-NONE-
+We removed all external dependencies to SAC and all data processing
+is perform in Antelope.
 
 
 ### Building from source
-You need to have $ANTELOPE defined in your environment. Then run...
+You need to have $ANTELOPE defined in your environment. Then run in
+this directory...
 
+    make clean;
     make;
     make install;
 
 ### Running the demo code
-The Dreger's source code is included in the distribution
-and we include a full example to work on the original
-code. The data needed for the example is located on
-the folder "EXAMPLE".
+The Dreger's inversion source code is included in the distribution
+and we include 2 full examples from the original distribution.
+The data needed for the example is located on folders "EXAMPLE_1" and
+"EXAMPLE_2". You can process the example database with the script
+*dbmoment_run_example* to automate the 2 events.
 
-For this you have to:
+Run this in terminal:
 
-    make; make install;
-    dbmoment -d EXAMPLE/example_1 1
+    dbmoment_run_example
 
+This will go to the example folder "$ANTELOPE/contrib/example/dbmoment/" and
+will run both examples. You will see several new folders.
 
+    .dbmoment       => Temp folder for calculations.
+    synthetics_db   => Includes all databases for synthetics.
+    dbmoment_images => Default folder to save the results in PNG files.
+    mt db tables    => Results will go into a new 'mt' table.
 
-And you will see a new "mt" table on that TESTDB used.
+There is an option to define an argument to the script that will run the
+example in that directory if possible. This is useful for installations
+with no write access to the Antelope distribution.

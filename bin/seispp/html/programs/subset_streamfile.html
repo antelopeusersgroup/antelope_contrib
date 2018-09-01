@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>template</title>
+  </head>
+  <body>
+    <h1>subset_streamfile<br>
+    </h1>
+    <h3>Usage:</h3>
+    <p>subset_streamfile key:type ( -eq val | -range minval maxval |
+      -min minval -max maxval ) [-objt object_type --help -text] &lt;
+      infile &gt; outfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    This program will subset a seispp serialized stream file of all
+    supported types using a range or equality test against an attribute
+    the program assumes is stored in each object's Metadata (header)
+    space.&nbsp; This program can be viewed as a functional equivalent
+    to the seismic unix program suwind.&nbsp; It is, however, more
+    general in some ways and more restricted in others.&nbsp;&nbsp; The
+    output file will contains a reduced set of objects that satisfy the
+    subset condition.<br>
+    <br>
+    <div align="right">The program support integer, real, and string
+      keys.&nbsp;&nbsp; You can specify a pure equality test (sensible,
+      of course, only for integer or string keys) or a range
+      test.&nbsp;&nbsp; Use the <i>-eq</i> argument to specify an
+      equality test.&nbsp; Use <i>-min </i>to select data greater than
+      <i>minval</i>.&nbsp; Similarly use<i> -max </i>arguments to
+      specify data less than <i>maxval</i>.&nbsp;&nbsp; To specify an
+      interval use the <i>-range</i> argument.&nbsp; Subset for <i>-range</i>&nbsp;
+      is minval&lt;key&lt;maxval.<br>
+    </div>
+    <br>
+    The type of the key is specified by a special syntax for argument 1
+    borrowed from GMT.&nbsp; Accepted values of the type field are
+    defined by the following table:<br>
+    <table width="50%" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td valign="top">Data type<br>
+          </td>
+          <td valign="top">Allowed values<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">integer<br>
+          </td>
+          <td valign="top">int, INT, long<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">real<br>
+          </td>
+          <td valign="top">real, float, double <br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">string<br>
+          </td>
+          <td valign="top">string, STRING<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <h3>Options:</h3>
+    <p><i>-objt object_type<br>
+      </i>Set the type of objects the input file is expected to
+      contain.&nbsp;&nbsp; Allowed options are:&nbsp;
+      ThreeComponentSeismogram (default), ThreeComponentEnsemble,
+      TimeSeries, TimeSeriesEnsemble, and PMTimeSeries.&nbsp;&nbsp; Note
+      that for ensembles the test is applied to the ensemble metadata
+      not the single seismogram metadata.&nbsp; <br>
+    </p>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.&nbsp; <br>
+  </body>
+</html>

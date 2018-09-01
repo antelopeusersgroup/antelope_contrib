@@ -109,5 +109,29 @@ void AttributeCrossReference::put(string i, string e)
     itoe.insert(pair<string,string>(i,e));
     etoi.insert(pair<string,string>(e,i));
 }
+/* These two methods could use either the etoi or the itoe containers
+   to fetch the appropriate keys, but we always use fetch the 
+   first of the pair as that will always yield a unique set that 
+   exactly matches the originating map. */
+set<string> AttributeCrossReference::internal_names()
+{
+  map<string,string>::iterator mptr;
+  set<string> keys;
+  for(mptr=itoe.begin();mptr!=itoe.end();++mptr)
+  {
+    keys.insert(mptr->first);
+  }
+  return keys;
+}
+set<string> AttributeCrossReference::external_names()
+{
+  map<string,string>::iterator mptr;
+  set<string> keys;
+  for(mptr=etoi.begin();mptr!=etoi.end();++mptr)
+  {
+    keys.insert(mptr->first);
+  }
+  return keys;
+}
 
 } // end SEISPP namespace encapsulation

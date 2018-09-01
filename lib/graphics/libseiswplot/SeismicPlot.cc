@@ -107,14 +107,17 @@ void continue_callback(Widget w, XtPointer client_data, XtPointer call_data)
 void SeismicPlot::initialize_widgets(Metadata& md)
 {
     try{
+        char *initargs[1];
+        int nargs;
         ThreeComponentMode=md.get_bool("ThreeComponentMode");
         comp0=NULL;  comp1=NULL;  comp2=NULL;
-        argc=1;
-        argv[0]=strdup("SeismicPlotWidget");
+        string wintitle=md.get_string("windowtitle");
+        initargs[0]=strdup(wintitle.c_str());
+        nargs=1;
         XtSetLanguageProc(NULL, NULL, NULL);
         XtToolkitThreadInitialize();
         toplevel = XtVaAppInitialize(&AppContext, (char *)"seismicplot",NULL,0,
-                                &argc,argv, NULL,NULL);
+                                &nargs,initargs, NULL,NULL);
         main_w=XmCreateForm(toplevel,(char *) "seismicplot",NULL,0);
         EventLoopIsActive=false;
         menu_bar=XmCreateMenuBar(main_w,(char *)"menuBar",NULL,0);
@@ -185,7 +188,7 @@ standard antelope parameter file location under a frozen name
 (SeismicPlot.pf).  */
 SeismicPlot::SeismicPlot()
 {
-    cerr << "Entered default constructor"<<endl;
+    //cerr << "Entered default constructor"<<endl;
     Pf *pf;
     const string pfglobal_name("SeismicPlot");
     if(pfread(const_cast<char *>(pfglobal_name.c_str()),&pf))
@@ -193,6 +196,9 @@ SeismicPlot::SeismicPlot()
                 + pfglobal_name);
     try {
 	Metadata md(pf);
+        *this=Metadata::operator=(md);
+        //DEBUG
+        //cerr << md;
 	pffree(pf);
         this->initialize_widgets(md);
         EventLoopIsActive=false;
@@ -211,7 +217,7 @@ SeismicPlot::SeismicPlot(Metadata& md) : Metadata(md)
 /* Destructor  is not trivial here */
 SeismicPlot::~SeismicPlot()
 {
-    cerr << "Entering destructor"<<endl;
+    //cerr << "Entering destructor"<<endl;
     /* This may not be necessary, but probably prudent to avoid a deadlock */
     if(EventLoopIsActive) this->ExitDisplay();
     if(comp0!=NULL) delete comp0;
@@ -250,9 +256,11 @@ void SeismicPlot::plot(TimeSeriesEnsemble& d,bool block_for_event)
             block_till_exit_pushed=true;
         else
             block_till_exit_pushed=false;
-        cerr <<"starting event handler"<<endl;
+        //DEBUG
+        //cerr <<"starting event handler"<<endl;
         if(!EventLoopIsActive) 
             this->launch_Xevent_thread_handler();
+        XmUpdateDisplay(this->toplevel);
     }
     catch(...){throw;}
 }
@@ -303,6 +311,11 @@ void SeismicPlot::plot(ThreeComponentEnsemble& d,bool block_for_event)
 {
     try {
         const string base_error("SeismicPlot::plot method:  ");
+        if(!ThreeComponentMode)
+            throw SeisppError(base_error
+              + "Coding Error:  called plot method for ThreeComponentEnsemble "
+              + "with object defined in scalar mode");
+
         /* The Seisw widget only works with relative time.   Abort
            if any seismograms are on an absolute time base */
         for(int i=0;i<d.member.size();++i)
@@ -313,7 +326,7 @@ void SeismicPlot::plot(ThreeComponentEnsemble& d,bool block_for_event)
                         + "Convert all times to relative with ator");
         if(!ThreeComponentMode) throw SeisppError(base_error
                 + "Trying to plot 3c mode with ThreeComponentMode not set.  Fix pf");
-        cerr << "Entering 3c plot method"<<endl;
+        //cerr << "Entering 3c plot method"<<endl;
         int k;
 	XtAppLock(AppContext);
         for(k=0;k<3;++k)
@@ -356,6 +369,7 @@ void SeismicPlot::plot(ThreeComponentEnsemble& d,bool block_for_event)
             block_till_exit_pushed=false;
         if(!EventLoopIsActive) 
             this->launch_Xevent_thread_handler();
+        XmUpdateDisplay(this->toplevel);
     }catch(...){throw;}
 }
 void EventHandler(SeismicPlot *plot_handle)

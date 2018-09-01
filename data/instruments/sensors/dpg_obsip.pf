@@ -20,7 +20,7 @@ info &Literal{
 category    OBSIP
 configuration   DPG_OBSIP_SIO
 
-description Differential Pressure Gauge OBSIP-SIO
+description DPG OBSIP-SIO
 dfile       DPG_OBSIP_SIO
 
 rsptype     H   # hydroacoustic instrument

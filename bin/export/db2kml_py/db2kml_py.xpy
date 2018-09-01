@@ -22,6 +22,18 @@ from optparse import OptionParser
 import antelope.datascope as datascope
 import antelope.stock as stock
 
+
+def parseepoch( t ):
+    '''
+    Parse epoch and covert to day only with no hours.
+    '''
+    if not int( t ) or t > stock.now():
+        t = stock.now()
+
+    return stock.str2epoch( stock.strdate( t ) )
+
+
+
 def configure():
     """Gather command line
     options"""
@@ -52,7 +64,7 @@ def configure():
     if verbose:
         print "- Read configuration parameter file (pf): %s" % options.pf
 
-    pf = stock.pfupdate(options.pf)
+    pf = stock.pfread(options.pf)
 
     #if not options.pf:
     #    pfs_tuple = list(stock.pffiles('db2kml_py'))
@@ -212,8 +224,14 @@ def get_orig_records(database, pf, verbosity=0):
 def create_site(meta_dict_site, visibility, style):
     """Create KML for site icons
     """
+    # Convert to XML standard time
+
     siteplace = ["\t\t<Placemark>\n\t\t\t<name>%s</name>\n" % meta_dict_site['sta']]
     siteplace.append("\t\t\t<visibility>%s</visibility>\n" % visibility)
+    siteplace.append("\t\t\t<TimeSpan>\n")
+    siteplace.append("\t\t\t\t<begin>%s</begin>\n" % meta_dict_site['time_xml'])
+    siteplace.append("\t\t\t\t<end>%s</end>\n" % meta_dict_site['endtime_xml'])
+    siteplace.append("\t\t\t</TimeSpan>\n")
     siteplace.append("\t\t\t<description>\n")
     siteplace.append("\t\t\t\t<![CDATA[\n")
     siteplace.append("<p><strong>%s_%s</strong></p>\n" % (meta_dict_site['snet'],meta_dict_site['sta']))
@@ -231,7 +249,6 @@ def create_site(meta_dict_site, visibility, style):
     siteplace.append("\t\t\t\t]]>\n")
     siteplace.append("\t\t\t</description>\n")
     siteplace.append("\t\t\t<styleUrl>#%s</styleUrl>\n" % style)
-    siteplace.append("\t\t\t<Style><IconStyle><scale>0.7</scale><color>FFFFFFFF</color></IconStyle></Style>\n")
     siteplace.append("\t\t\t<Point>\n\t\t\t\t<altitudeMode>absolute</altitudeMode>\n")
     siteplace.append("\t\t\t\t<coordinates>%s,%s,%s</coordinates>\n" % (meta_dict_site['lon'], meta_dict_site['lat'], meta_dict_site['elev']))
     siteplace.append("\t\t\t</Point>\n\t\t</Placemark>\n")
@@ -250,20 +267,10 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
         sys.exit( "* Cannot open database '%s'" % dbmaster )
 
 
-    dbm = db.lookup(table='site')
-    if not dbm.query('dbTABLE_PRESENT'):
-        sys.exit( "* Cannot open site table '%s'" % dbmaster )
-
-
-    test_net = db.lookup(table='snetsta')
-    if test_net.query('dbTABLE_PRESENT'):
-        if verbosity > 1:
-            print " - Join snetsta table"
-        dbm = dbm.join('snetsta', outer=True)
-    else:
-        if verbosity > 1:
-            print " * NOTE: Cannot join 'snetsta' table"
-
+    dbm = db.lookup(table='deployment')
+    dbm = dbm.join('site', outer=True)
+    dbm = dbm.join('snetsta', outer=True)
+    dbm = dbm.sort( ['snet','sta'] )
 
     for nex in staexpr:
         if nex:
@@ -272,7 +279,7 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
     if not stock.yesno(inactive):
         if verbosity > 0:
             print "- Subsetting database '%s' for active stations" % dbmaster
-        dbm = dbm.subset('offdate == NULL || offdate > %s' % stock.yearday(stock.now()) )
+        dbm = dbm.subset('endtime == NULL || endtime > %s' % stock.now() )
 
 
     if dbm.query('dbRECORD_COUNT') < 1:
@@ -282,34 +289,63 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
             print "* ERROR: Dbmaster database (%s) generated view contains no records." % dbmaster
         sys.exit(1)
 
-    sitestr = ["\t<Folder>"]
-    sitestr.append("\t\t<visibility>%s</visibility>" % visibility)
-    sitestr.append("\t\t<name>Stations</name>")
 
+
+    sitestr = []
+    openfolder = False
+    activenet = ''
+    nownet = ''
     for i in range(dbm.query('dbRECORD_COUNT')):
         dbm.record = i
         per_sta_info = {}
-        for f in fields:
-            per_sta_info[f] = dbm.getv(f)[0]
-            if f == 'elev':
-                per_sta_info[f] = per_sta_info[f] * 1000 # convert km to meters for correct GE rendering
 
-            if f == 'snet':
-                if per_sta_info[f] in stylestation:
-                    stastyle = per_sta_info[f]
-                else:
-                    stastyle = 'others'
+        per_sta_info['lat'] = dbm.getv('lat')[0]
+        per_sta_info['lon'] = dbm.getv('lon')[0]
+        per_sta_info['elev'] = dbm.getv('elev')[0]
 
-        #if inactive:
-        #    if dbm.getv('offdate')[0] < 0: # dbNULL value is -1
-        #        stastyle = 'activeStation'
-        #    else:
-        #        stastyle = 'inactiveStation'
-        #else:
-        #    stastyle = 'activeStation'
+        time = parseepoch( dbm.getv('time')[0] )
+        if time < 0: continue
+
+        per_sta_info['time'] = time
+        per_sta_info['time_xml'] = stock.epoch2str(time, "%Y-%m-%dT%H:%M:%SZ")
+
+
+        endtime = parseepoch( dbm.getv('endtime')[0] )
+        if not int(endtime) or stock.now() < endtime:
+            endtime = stock.now()
+        per_sta_info['endtime'] = endtime
+        per_sta_info['endtime_xml'] = stock.epoch2str(endtime, "%Y-%m-%dT%H:%M:%SZ")
+
+        nownet = dbm.getv('snet')[0]
+        per_sta_info['snet'] = nownet
+        per_sta_info['sta'] = dbm.getv('sta')[0]
+        if nownet in stylestation:
+            stastyle = nownet
+        else:
+            stastyle = 'others'
+
         # Lets color them by network...
 
+        if nownet != activenet and openfolder:
+            sitestr.append("\t</Folder>")
+            openfolder = False
+            activenet = ''
+
+        try:
+            fullname = "%s: %s" % (nownet,stylestation[nownet]['name'])
+        except:
+            fullname = "%s: - " % nownet
+
+        if not openfolder:
+            openfolder = True
+            activenet = nownet
+            sitestr.append("\t<Folder>")
+            sitestr.append("\t\t<visibility>%s</visibility>" % visibility)
+            sitestr.append("\t\t<name>%s</name>" % fullname )
+            sitestr.append("\t\t<styleUrl>#%s</styleUrl>\n" % nownet)
+
         sitestr.append(create_site(per_sta_info, visibility, stastyle))
+
     sitestr.append("\t</Folder>")
 
 
@@ -427,6 +463,10 @@ def kml_styles(pf_result, verbosity=0):
         for key in sorted(my_styles.iterkeys()):
             style_id = my_styles[key]['id']
             style_scale = my_styles[key]['scale']
+            try:
+                icon_style_scale = my_styles[key]['iconscale']
+            except:
+                icon_style_scale = my_styles[key]['scale']
             style_href = pf_result['styles']['imagepath'] + my_styles[key]['href']
             styleout = '''
             <Style id="%s">
@@ -436,11 +476,15 @@ def kml_styles(pf_result, verbosity=0):
                 <BalloonStyle><text>$[description]</text><bgColor>ffffffff</bgColor><textColor>ff000000</textColor></BalloonStyle>
             </Style>
             '''
-            style_list.append(styleout % (style_id, style_href, style_scale, style_href, style_scale))
+            style_list.append(styleout % (style_id, style_href, icon_style_scale, style_href, style_scale))
     if not pf_result['config']['subset'] or pf_result['config']['subset'] == 'stations':
         for key in sorted(my_sta_styles.iterkeys()):
             style_id = my_sta_styles[key]['id']
             style_scale = my_sta_styles[key]['scale']
+            try:
+                icon_style_scale = my_sta_styles[key]['iconscale']
+            except:
+                icon_style_scale = my_sta_styles[key]['scale']
             style_href = pf_result['styles']['imagepath'] + my_sta_styles[key]['href']
             sta_styleout = '''
             <Style id="%s">
@@ -450,7 +494,7 @@ def kml_styles(pf_result, verbosity=0):
                 <BalloonStyle><text>$[description]</text><bgColor>ffffffff</bgColor><textColor>ff000000</textColor></BalloonStyle>
             </Style>
             '''
-            style_list.append(sta_styleout % (style_id, style_href, style_scale, style_href, style_scale))
+            style_list.append(sta_styleout % (style_id, style_href, icon_style_scale, style_href, style_scale))
     return ''.join(style_list)
 
 def main():

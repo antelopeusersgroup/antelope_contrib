@@ -5,6 +5,7 @@ DATA= 	qx80-90.pf \
     Passcal_q330_linear_b100.pf \
     q330_linear.pf \
     q330_linear_ANF.pf \
+    q330_linear_ANF_soh_only.pf \
     q330_linear_below_100.pf \
     q330_linear_below_100_ANF.pf \
     q330_linear_below_20.pf \

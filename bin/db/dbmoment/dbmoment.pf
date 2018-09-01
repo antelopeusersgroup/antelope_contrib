@@ -1,91 +1,144 @@
 # parameter file for dbmoment
+
+time_window     250
+
+# Maximum number of stations to use in the inversion
+sta_max 15
+
+# Minimum number of stations to use in the inversion
+sta_min 3
+
+depth_min       0       # in Km
+
+depth_max       400     # in Km
+
+stations_arrivals_only     False
+
+recursive_analysis         True
+
+min_variance     50
+
+min_quality     1
+
+allowed_segtype  &Tbl{
+    D
+    V
+    A
+}
+
+# channel search list to use in MT-inversion. Use the first regex
+# that brigs 3 channels back. The data is downsampled to 1 Hz.
+chan_to_use &Tbl{
+    HN.
+    HN._.*
+    HH.
+    HH._.*
+    BH.
+    BH._.*
+    LH.
+    LH._.*
+    .*
+}
+
+# The high_pass and low_pass filter corners are
+# given in hertz. An acausal (two pass), 4th
+# order butterworth filter is applied
+filter &Tbl{
+    BW 0.02 4 0.1 4
+    BW 0.02 4 0.05 4
+    BW 0.01 4 0.05 4
+    #BW 0.005 4 0.02 4
+}
+
+# Name of the model parameter file
+model_path  &Tbl{
+    &{antelope}/contrib/data/dbmoment_models/
+    ~/dbmoment_models/
+    ./
+}
+model_files  &Tbl{
+    #SCAK_MODEL.pf
+    #ALEUT_MODEL.pf
+    #PDS1_MODEL.pf
+    #gil7_model.pf
+    SOCAL_MODEL.pf
+}
+
 # In this version of the parameter file
 # we are going to replace the provided Python
-# libreries with a version that will prepare
+# libraries with a version that will prepare
 # the parameter for us to run the original code
 # compiled in Dreger's distribution. The data for
 # the event is included as an example and we just
 # need to load it into a wfdisc table with the
 # included script in the EXAMPLE directory.
 
+antelope        &env(ANTELOPE)
 
-tmp_folder      /tmp/dbmoment/
 
-clean_tmp       False
+# Save logs to this file if running
+# with this variable set. Keep the logs of
+# the last x number of runs.
+#log_folder      dbmoment_logs
+#log_max_count   3
+
+
+tmp_folder      .dbmoment
+image_folder    dbmoment_images
+
+clean_tmp       True
+
+# Set to True if we want to plot every solution
+# for all models tested. False will only plot the
+# selected final result. Only one plot will display
+# if False. Overwrite to True if running in DEBUG mode.
+plot_all        False
+
 
 # Waveform database if different form main database
 #wave_db    /opt/antelope/data/db/demo/demo
 
-# Response database if different from main database
-#resp_db    /opt/antelope/data/db/demo/demo
+# Synthetics functions database folder. Database name
+# will be created by the program.
+synth_db_folder    synthetics_db/
 
-# Green's functions database
-# Should be different than main database since we
-# need a dedicated wfdisc table.
-green_db    greens_db/green
+# Set names of Python modules to use for:
+synth_lib synthetics    # for Synthetic Function class
+inv_lib inversion       # for Inversion class
+data_lib data           # for Data class
+event_lib origin        # for Event class
 
-# Name of the library to use
-# for Green'sFunction class
-gf_lib green
-
-# Name of the library to use
-# for Inversion class
-inv_lib inversion
-
-# Name of the library to use
-# for Data class
-data_lib data
-
-# Name of the library to use
-# for Event class
-event_lib event
-
-# channel to use in MT-inversion, default is LH. If higher sample rate channels are chosen, 
-# the data is downsampled to 1 Hz.
-chan_to_use .*
-
-# Name of the model parameter file
-model_name SOCAL_MODEL
-
-# Maximum number of stations to use in the inversion
-#     - Minimum of eight, one for each division 
-#       of the cardinal and intercardinal directions
-sta_max 12
-
-sta_min 3
-
-depth_min       1
-
-depth_max       400
-
-distance_min    1
-
-distance_max    200
-
-
-allowed_segtype  &Tbl{
-    D
-    #    V  # not working for Velocity traces #
+# Set beachball color depending on quality of result. *
+# * ONLY IF OBSPY IS CONFIGURED IN SYSTEM.
+beachball_colors &Arr{
+    0 000000
+    1 FF0000
+    2 FFD700
+    3 008000
+    4 4169E1
 }
 
-
-# The high_pass and low_pass filter corners are
-# given in hertz. An acausal (two pass), 4th
-# order butterworth filter is applied
-filter_high_pass   0.02
-filter_low_pass    0.1
-
-
-# Test for some executables neened for the example code
+# Test for some executables needed for the example code
 find_executables     &Tbl{
-    sac
+    fortran_fkrprog
     fromHelm
     window
-    bin2sac
     sac2bin
     mkHelm
     mv
     rm
     wvint9
-    tdmt_invc
+    tdmt_inv
 }
+
+acknowledgement &Literal{
+    The tdmt_invc_iso moment tensor package was provided by
+    Douglas Dreger and Sean Ford.
+    Berkeley Seismological Laboratory,
+    University of California, Berkeley
+
+    Antelope's implementation of code:
+        Juan Reyes <juan@reyescode.com>
+}
+
+pf_revision_time 1500940800

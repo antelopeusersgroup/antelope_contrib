@@ -1,0 +1,5 @@
+# copper real-time database descriptor file
+schema css3.0
+dbpath ./{reno}
+dblocks
+dbidserver

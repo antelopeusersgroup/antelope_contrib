@@ -198,7 +198,7 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
 	line=(char *)gettbl(t,i);
 	string sline(line);
 	/* skip any leading white space */
-	if(current=sline.find_first_not_of(white,0) != 0)
+	if((current=sline.find_first_not_of(white,0)) != 0)
 	{
 		sline.erase(0,current);
 		current=0;

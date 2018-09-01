@@ -44,15 +44,15 @@ Parameter file name.  Default is q330logs2db.pf.
 .IP "-q"
 Quietly skip writing dlevent database.  Only valid if \fI-X\fP option is used. 
 When this option is used the \fIdb\fP argument on the command line can be skipped.
-If it is used, it will be ignored and no database output. 
+If a \fIdb\fP is specified on the command line, it will be ignored and no database output
+when this option is used. 
 .IP "-s {OLDEST|time}"
 Where to start in the ORB.  Use either \fIOLDEST\fP or a time string.  This is 
 an optional argument.  If not used, \fBq330logs2db\fP starts with the next 
-new packet in the orb.  If used with -S, and the \fIstatefile\fP exists, this
-option is ignored.
+new packet in the orb.  If used with -S, this option is ignored.
 .IP "-S statefile" 
 Specify a \fIstatefile\fP used for saving and restoring the position of \fBq330logs2db\fP 
-when it is started and stopped.  
+when it is started and stopped.  If the \fIstatefile\fP does not exist, it is created.
 .IP "-v"
 Verbose output.
 .IP "-V"

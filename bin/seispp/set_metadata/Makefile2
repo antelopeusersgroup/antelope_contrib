@@ -1,0 +1,17 @@
+BIN=set_metadata
+PF=set_metadata.pf
+
+cxxflags=-g
+ldflags=-L$(ANTELOPE)/contrib/static
+ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization
+SUBDIR=/contrib
+
+include $(ANTELOPEMAKE) 
+include $(ANTELOPEMAKELOCAL)
+CXXFLAGS += -I$(BOOSTINCLUDE)
+
+OBJS=set_metadata.o
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+LDFLAGS += -L$(BOOSTLIB)

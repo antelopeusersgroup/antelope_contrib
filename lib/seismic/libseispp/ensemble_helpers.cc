@@ -97,18 +97,24 @@ auto_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int co
 		TimeSeriesEnsemble(dynamic_cast<Metadata&>(tcs),tcs.member.size()));
 	for(tcsp=tcs.member.begin();tcsp!=tcs.member.end();++tcsp)
 	{
-		// silently skip anything that throws an exception.  
-		// sanity test at end to throw an exception if the result is empty
 		try {
 			
 			x=ExtractComponent(*tcsp,component);
 			result->member.push_back(*x);
 			delete x;
-		} catch(...){};
+		} catch(SeisppError& serr)
+                {
+                    if(SEISPP_verbose)
+                        serr.log_error();
+                }
+                catch(...){
+                    cerr << "ExtractComponent:  "
+                        <<"Something threw an undefined exception"<<endl;
+                }
 	}
 	if(result->member.size()<=0)
 		throw SeisppError(
-			string("SEISPP::ExtractComponent ThreComponentEnsemble procedure: ")
+			string("SEISPP::ExtractComponent ThreeComponentEnsemble procedure: ")
 			+ string("Output TimeSeriesEnsemble is empty."));
 	return(result);
 }
@@ -147,6 +153,9 @@ void BundleChannels(TimeSeriesEnsemble& rawdata, ThreeComponentEnsemble& dtcs,
     int i,j;
     int rawsize=rawdata.member.size();
     try{
+        if(SEISPP_verbose)
+            cerr << "BundleChannels procedure:  attempting to assemble "
+                << rawdata.member.size()<<" channels into 3C bundles"<<endl;
         /* Sort the data by sta chan for the algorithm here to work */
         StaChanSort(rawdata);
         //initialize before loop - assumes rawdata not empty 
@@ -172,7 +181,7 @@ void BundleChannels(TimeSeriesEnsemble& rawdata, ThreeComponentEnsemble& dtcs,
                   serr.log_error();
                 }
             }
-            else if( (nextsta!=current_sta) || (i>=rawsize-1) )
+            if( (nextsta!=current_sta) || (i>=rawsize-1) )
             {
                 try {
                 /*Always dangerous to decement a loop counter but
@@ -265,6 +274,10 @@ void BundleChannels(TimeSeriesEnsemble& rawdata, ThreeComponentEnsemble& dtcs,
                 current_sta=nextsta;
             }
         }
+        if(SEISPP_verbose)
+            cerr << "BundleChannels procedure:  "
+                << "ensemble number of 3C stations assembled="
+                << dtcs.member.size()<<endl;
     }catch(...){throw;};
 }
 #endif

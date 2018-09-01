@@ -32,6 +32,7 @@ X	CEUSN/1N4
 accepted_comm_types &Tbl{
 DSL
 WiFi
+BGAN
 cable
 cell modem
 no comms
@@ -49,6 +50,7 @@ Cal_Ore tel
 DSL Frontier
 DoE
 Eaglecap
+GCI
 HPWERN
 Hughes
 InMarSat
@@ -63,8 +65,6 @@ Volcano Telco
 Wild Blue
 alltel
 bell
-bgan
-BGAN
 charter
 edge
 hosted

@@ -1,0 +1,23 @@
+# must be ricker, gaussian, or general
+wavelet_type ricker
+# These are used by both ricker and gaussian
+number_samples 100
+dt 0.01
+# used only by ricker
+nu 4.0
+# used only by gaussian
+sigma 0.03
+# This is referenced only when wavelet_type is general
+# contains wavelet samples.   ns is overwridden by the
+# size of the contents of this Tbl
+wavelet_samples &Tbl{
+0.1
+0.2
+0.3
+0.4
+0.5
+0.4
+0.3
+0.2
+0.1
+}

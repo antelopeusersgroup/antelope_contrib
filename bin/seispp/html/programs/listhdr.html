@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>listhdr</title>
+  </head>
+  <body>
+    <h1>listhdr</h1>
+    <h3>Usage:</h3>
+    <p>listhdr [-i infile -csv format_file -t objecttype -text]&nbsp;
+      &gt;&nbsp; outfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    In traditional seismic processing auxiliary attributes of the data
+    that are not the time series samples themselves are commonly stored
+    in a "header" preceding the times series sample data stored
+    (usually) as a vector of numbers following the header.&nbsp;&nbsp;
+    The SEISPP library generalizes this concept with an open ended data
+    structure that stores such attributes as key-value pairs that are
+    accessible through the object's API (implemented by inheritance of
+    the <a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_metadata.html">Metadata</a>
+    object). &nbsp; Most algorithms require auxiliary attributes stored
+    with the data object they are handling (e.g. source and receiver
+    coordinates).&nbsp;&nbsp; This program is an important tool to
+    validate that all data to be processed have required attributes
+    loaded.&nbsp; The intent is that output of the program can be used
+    to validate that the actual values stored are sensible.&nbsp; (e.g.
+    matlab can be used to easily build custom plots of selected
+    attributes).<br>
+    <br>
+    The output can be structured in two basic ways.&nbsp; The default is
+    a verbose dump of all stored attributes.&nbsp;&nbsp; That output was
+    designed to be relatively easy for a human to read, but is difficult
+    to parse with computer code.&nbsp; The -csv option (described below)
+    can be used to output a selected list of attributes that are more
+    easy to handle as input for downstream processing.&nbsp; For
+    example, both matlab and python have standard procedures to handle
+    csv files and Exel can directly parse csv files. &nbsp;&nbsp; <br>
+    <h3>Options:</h3>
+    <h3> </h3>
+    <i>-i infile<br>
+    </i>Read for file <i>infile</i> directly.&nbsp; Default is to take
+    input from stdin.<br>
+    <br>
+    <i>-csv format_file<br>
+    </i>When the -csv flag appears the program switches output from a
+    verbose dump of all data attributes to a comma separated list (csv)
+    format text file.&nbsp;&nbsp; In csv mode there is one line of
+    output for each object processed.&nbsp;&nbsp; The format of the line
+    is controlled by a description in <i>format_file</i>.&nbsp;&nbsp;
+    Each line of <i>format_file</i> is expected to have three entries
+    separated by standard unix white space:<br>
+    <blockquote>key type default_value<br>
+    </blockquote>
+    where "key" is the string used to define the attribute of interest,
+    "type" is a string describing the expected numeric type of the
+    attribute, and "default_value" is the value to output if the
+    attribute is not actually defined for an object (should normally be
+    set to a unique value that can be easily detected graphically or
+    with something like awk or grep).&nbsp; The "type" field accepts
+    several variants shown in the following table:<br>
+    <table width="340" height="132" cellspacing="2" cellpadding="2"
+      border="1">
+      <tbody>
+        <tr>
+          <td valign="top"><i>Type</i><br>
+          </td>
+          <td valign="top"><i>Acceptable Values</i><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">integer<br>
+          </td>
+          <td valign="top">int, MDint, integer<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">real<br>
+          </td>
+          <td valign="top">double, MDreal, float, real<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">string<br>
+          </td>
+          <td valign="top">string, String, MDstring<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">boolean<br>
+          </td>
+          <td valign="top">boolean<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    Here is an example:<br>
+    <blockquote>sta string BADSTA<br>
+      chan string BADCHAN<br>
+      site.lat real -999.9<br>
+      site.lon real -999.9<br>
+      pwfid int -99999<br>
+    </blockquote>
+    <i>-t objecttype<br>
+    </i>Controls type of object expected from input.&nbsp;&nbsp; Default
+    is ThreeComponentSeismogram.&nbsp;&nbsp; The only accepted
+    alternatively currently is "ThreeComponentEnemble".<br>
+    <br>
+    <i>-text<br>
+    </i>Switch to text input mode.&nbsp; Default is binary serialized
+    data.&nbsp;&nbsp; The output is always an ascii file (verbose dump
+    or a csv file).<br>
+    <br>
+  </body>
+</html>

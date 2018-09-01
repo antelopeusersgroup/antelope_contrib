@@ -475,7 +475,7 @@ MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
    if(noisetw.length()<0.0)
    {
     ensemble_SNR_rms<TimeSeriesEnsemble,TimeSeries>(waveform_ensemble,analysis_setting.beam_tw,snr_keyword);
-    cout << "WARNING:  reverting to unpadded noise estimate.  May give misleading SNR results with filtering"
+    cerr << "WARNING:  reverting to unpadded noise estimate.  May give misleading SNR results with filtering"
         <<endl;
    }
    else
@@ -991,7 +991,7 @@ void XcorProcessingEngine::prep_gather()
 	/* Load arrival times if requested */
 	if(load_arrivals)
 	{
-                if(SEISPP_verbose) cout << "XcorProcessingEngine:  "
+                if(SEISPP_verbose) cerr << "XcorProcessingEngine:  "
                     << "Calling LoadEventArrivals for phase "
                         <<analysis_setting.phase_for_analysis<<endl
                         << "Using predicted time metadata key="
@@ -1146,12 +1146,12 @@ void XcorProcessingEngine::prep_gather()
 	{
 		waveform_ensemble=*regular_gather;
 	}
-        if(SEISPP_verbose) cout << "XcorProcessingEngine:  filtering ensemble"
+        if(SEISPP_verbose) cerr << "XcorProcessingEngine:  filtering ensemble"
             <<endl;
 	FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
 	if(autoscale_initial)
 	{
-                if(SEISPP_verbose) cout << "XcorProcessingEngine:  "
+                if(SEISPP_verbose) cerr << "XcorProcessingEngine:  "
                     <<"Autoscaling data to have constant peak amplitude"<<endl;
 		MeasureEnsemblePeakAmplitudes<TimeSeriesEnsemble,TimeSeries>
 			(waveform_ensemble,gain_keyword);
@@ -1216,13 +1216,13 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 				+ string(" Illegal channel code specified.")
 				+ string(" Must be Z,N,E,L,R, or T") );
 		}
-                if(SEISPP_verbose) cout << base_error
+                if(SEISPP_verbose) cerr << base_error
                     <<" Calling read routine that requires three component data"
                     <<endl;
 		ThreeComponentEnsemble *tcse;
 		tcse=new ThreeComponentEnsemble(dbh,
 			trace_mdl, ensemble_mdl, am);
-                if(SEISPP_verbose) cout << base_error
+                if(SEISPP_verbose) cerr << base_error
                     <<" Extracting component with tag ="
                     <<analysis_setting.component_name<<endl;
 		tse=auto_ptr<TimeSeriesEnsemble>(Convert3CGenericEnsemble(tcse,
@@ -1236,7 +1236,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 		tse=auto_ptr<TimeSeriesEnsemble>
 		   (new TimeSeriesEnsemble(dbh,trace_mdl, ensemble_mdl, am));
 	}
-        if(SEISPP_verbose) cout << base_error
+        if(SEISPP_verbose) cerr << base_error
             << "Loading geometry and phase timing metdata"
             <<endl;
 	if(processing_mode==EventGathers)
@@ -1276,7 +1276,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 				<< "Run in verbose mode for more details"<<endl;
 
 	}
-        if(SEISPP_verbose) cout << base_error
+        if(SEISPP_verbose) cerr << base_error
             << "Building regular gather"<<endl;
 	/* Warning:  we assume if arrival alignment is turned off that
 	the data are multichannel in flavor and all have the same
@@ -1299,7 +1299,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	throw SeisppError(base_message
 		+ string("Coding error.  Wrong method called."));
     try {
-        if(SEISPP_verbose) cout << base_message
+        if(SEISPP_verbose) cerr << base_message
             <<"Starting to read data"<<endl;
 	// It is necessary to clear the contents of mcc in
 	// some situations.  In particular, in the gui dbxcor
@@ -1325,7 +1325,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	auto_ptr<TimeSeriesEnsemble> tse;
 	if(RequireThreeComponents)
 	{
-                if(SEISPP_verbose) cout << base_message
+                if(SEISPP_verbose) cerr << base_message
                     <<"Using RequireThreeComponents read method"
                         <<endl;
 		string chan_allowed("ZNELRT");
@@ -1370,7 +1370,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	}
 	else
 	{
-                if(SEISPP_verbose) cout << base_message
+                if(SEISPP_verbose) cerr << base_message
                     <<"Using scalar data read method"
                         <<endl;
 		tse=auto_ptr<TimeSeriesEnsemble>(array_get_data(
@@ -1385,7 +1385,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
                            trace_mdl,
                            am));
 	}
-        if(SEISPP_verbose) cout << base_message
+        if(SEISPP_verbose) cerr << base_message
             <<"Data loaded.  Forming working gather"<<endl;
 	StationTime predarr=ArrayPredictedArrivals(stations,h,
 		analysis_setting.phase_for_analysis);
@@ -1403,7 +1403,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	regular_gather->put("source_lon",deg(h.lon));
 	regular_gather->put("source_depth",deg(h.z));
 	regular_gather->put("source_time",deg(h.time));
-        if(SEISPP_verbose) cout << base_message
+        if(SEISPP_verbose) cerr << base_message
             <<"Doing Housecleaning work"<<endl;
 	this->prep_gather();
     }

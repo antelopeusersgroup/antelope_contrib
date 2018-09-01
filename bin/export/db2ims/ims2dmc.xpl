@@ -5,28 +5,28 @@
 #
 #
 
-# J.Eakins 1/2008
-
 use Getopt::Std ;
 use Datascope;
 use rtmail;
 use File::Path;
 use Cwd;
 
+use File::Temp ;
+
 use strict ;
 
 # debug
-# use diagnostics; 
+# use diagnostics;
 
 our ($opt_C, $opt_f, $opt_m, $opt_o, $opt_s, $opt_v, $opt_V);
 our ($now, $t, $year, $month, $day) ;
-our ($mycwd, $file, $database) ;
+our ($file, $database) ;
 our ($subject, $mail_list, $from, $orb, $rtmail) ;
 our (@db, @dbdmcbull, @dmcfiles, @bull_record, @dmcfiles_record) ;
 our ($fullpath, $dir, $afile, $suffix, $dfile, $reldir) ;
 our (@evdates, $evdate, $nor, $nev, $nph, $start, $end, $auth, $comment, $time) ;
-our ($pfname, $pfstring, $pftmp) ;
-our ($xfile, $orbxfer, @tmpfiles, $cmd) ;
+our ($pfobject, $pfstring, $pffile, $pftmp) ;
+our ($xfile, $orbxfer, $cmd) ;
 
 
 elog_init ( $0, @ARGV) ;
@@ -43,24 +43,20 @@ elog_notify(0,"\nStarting program at: $t");
 my $pgm = $0 ;
 $pgm =~ s".*/"" ;
 
-  if ( ! getopts('C:f:m:o:s:vV') || @ARGV < 2 ) { 
-	&usage;
+  if ( ! getopts('C:f:m:o:s:vV') || @ARGV < 2 ) {
+    &usage;
   }
 
-  $mycwd = getcwd();
-
-  elog_notify(0,"Current working directory: $mycwd\n") if $opt_v;
-
-  $file		=  $ARGV[0];
-  $database	=  $ARGV[1];
+  $file     =  $ARGV[0];
+  $database =  $ARGV[1];
 
   elog_notify(0,"\ndatabase is:$database\n") if $opt_v;
   elog_notify(0,"\nbulletin file is:$file\n") if $opt_v;
 
 # test relpath and abspath
-#  $fullpath	 = abspath($file) ;
-#  ($dir,$afile,$suffix)	 = parsepath($file) ; 
-#  $reldir 	= relpath($opt_C,$dir) ; 
+#  $fullpath     = abspath($file) ;
+#  ($dir,$afile,$suffix)     = parsepath($file) ;
+#  $reldir  = relpath($opt_C,$dir) ;
 #
 #  print STDERR "File name is: $file\n" if $opt_v;
 #  print STDERR "abspath is: $fullpath\n" if $opt_v;
@@ -82,59 +78,59 @@ $pgm =~ s".*/"" ;
 
 # get variables set up with getopts
    if ($opt_v) {
-	$opt_v = "-v" ;
+    $opt_v = "-v" ;
    }
 
    if ($opt_s) {
-	$subject  = "$opt_s";
+    $subject  = "$opt_s";
    } else {
-	$subject  = "PICKS";
+    $subject  = "PICKS";
    }
 
    if ($opt_m && $opt_o) {
-	elog_die("Must use either -m mail_list, or -o orb\n"); 
-	&usage;
+    elog_die("Must use either -m mail_list, or -o orb\n");
+    &usage;
    } elsif (!$opt_m && !$opt_o) {
-	elog_die("Must use either -m mail_list, or -o orb\n"); 
-	&usage;
+    elog_die("Must use either -m mail_list, or -o orb\n");
+    &usage;
    } elsif ($opt_m) {
-	$mail_list = $opt_m ; 
-	$orb = "email" ;
+    $mail_list = $opt_m ;
+    $orb = "email" ;
    } else {
-	$orb = $opt_o ;
+    $orb = $opt_o ;
    }
 
    if ($opt_f) {
-	$from = $opt_f;
-   } 
+    $from = $opt_f;
+   }
 
 #
 # open up database and lookup tables
 #
-   @db 		= dbopen ( $database, "r+") ; 
-   @dbdmcbull	= dblookup(@db,"","dmcbull","","") ;
+   @db      = dbopen ( $database, "r+") ;
+   @dbdmcbull   = dblookup(@db,"","dmcbull","","") ;
 
    if (!dbquery (@dbdmcbull,"dbRECORD_COUNT")) {
-	elog_notify(0,"No records in dmcbull table\n");
-   } 
+    elog_notify(0,"No records in dmcbull table\n");
+   }
 
 #
 # track file transfer in dmcfiles table when using orbxfer or email
 #
 
-   @dmcfiles	= dblookup(@db,"","dmcfiles","","") ; 
+   @dmcfiles    = dblookup(@db,"","dmcfiles","","") ;
 
 #
 #  get proper path and file name
 #
 
-   $fullpath	 = abspath($file) ;
-   ($dir,$afile,$suffix)	 = parsepath($file) ; 
+   $fullpath     = abspath($file) ;
+   ($dir,$afile,$suffix)     = parsepath($file) ;
    if ($suffix) {
-       $dfile	= "$afile".".$suffix" ;
+       $dfile   = "$afile".".$suffix" ;
    } else {
-       $dfile	= "$afile" ;
-   }	
+       $dfile   = "$afile" ;
+   }
 #
 # open up file to be sent and get start/end times (ARGH!)
 #
@@ -143,68 +139,68 @@ $pgm =~ s".*/"" ;
    while (<BULL>) {
         elog_notify(0,"Line is: $_\n") if ($opt_V) ;
         if (/^\d{4}/) {                    # get date if line begins with 4 digit number
-	    $evdate       = substr($_, 0,22);
-	    push(@evdates,$evdate);
-	    $nor++ ;
-            next; 
-	} elsif (/^EVENT/) {
-	    $nev++ ;
+        $evdate       = substr($_, 0,22);
+        push(@evdates,$evdate);
+        $nor++ ;
+            next;
+    } elsif (/^EVENT/) {
+        $nev++ ;
         } elsif (/IRIS FDSNNETWORKCODE/) {
-	    # this works because of the hokey format requirements
-	    $nph++ ;
+        # this works because of the hokey format requirements
+        $nph++ ;
         } else {
             next;
-	}
+    }
    }
 
    close(BULL);
 
-   $start 	= $evdates[0];
-   $end		= $evdates[$#evdates]; 
+   $start   = $evdates[0];
+   $end     = $evdates[$#evdates];
 
    @bull_record = ();
-   $auth	= "ims2dmc:".getpwuid($<) ;
+   $auth    = "ims2dmc:".getpwuid($<) ;
 
-   push(@bull_record,    
-			"data_start",	$start ,
-			"data_end", 	$end ,
-			"time",		&strydtime($now),
-			"nev",		$nev,
-			"nor",		$nor,
-			"nph",		$nph,
-			"dir",		$dir,
-			"dfile",	$dfile,
-			"auth",		$auth
-	) ;
-		
+   push(@bull_record,
+            "data_start",   $start ,
+            "data_end", $end ,
+            "time",     &strydtime($now),
+            "nev",      $nev,
+            "nor",      $nor,
+            "nph",      $nph,
+            "dir",      $dir,
+            "dfile",    $dfile,
+            "auth",     $auth
+    ) ;
+
    eval { dbaddv(@dbdmcbull,@bull_record) } ;
         if ($@) {
               warn $@;
-              elog_complain("Problem adding record:  $start, $end, " .  &strydtime($now) . " matches.\n")  ; 
-              elog_complaint("No record added!\n"); 
+              elog_complain("Problem adding record:  $start, $end, " .  &strydtime($now) . " matches.\n")  ;
+              elog_complaint("No record added!\n");
         } else {
-              elog_notify("Added dmcbull record to database: $database \n")  ; 
-	}	
+              elog_notify("Added dmcbull record to database: $database \n")  ;
+    }
 
    @dmcfiles_record = ();
    $comment = "DMC phase picks for $nev events from $start to $end" ;
-   push(@dmcfiles_record,    
-		"time",		&strydtime($now),
-		"comment",	$comment,
-		"dir",		$dir,
-		"dfile",	$dfile,
-		"orb",		$orb,
-		"auth",		$auth
+   push(@dmcfiles_record,
+        "time",     &strydtime($now),
+        "comment",  $comment,
+        "dir",      $dir,
+        "dfile",    $dfile,
+        "orb",      $orb,
+        "auth",     $auth
    );
-	
+
    eval { dbaddv(@dmcfiles,@dmcfiles_record) } ;
             if ($@) {
               warn $@;
-              elog_complain("Problem adding record:  $time, $comment, $dfile matches.\n")  ; 
-              elog_complain("No record added!\n"); 
+              elog_complain("Problem adding record:  $time, $comment, $dfile matches.\n")  ;
+              elog_complain("No record added!\n");
             } else {
-              elog_notify("Added dmcfiles record to database: $database \n")  ; 
-	    }	
+              elog_notify("Added dmcfiles record to database: $database \n")  ;
+        }
 
 dbclose @db;
 
@@ -213,63 +209,53 @@ dbclose @db;
 #
 
 if ($opt_m) {
-   $rtmail = "rtmail -s '$subject' $mail_list < $file" ; 
+   $rtmail = "rtmail -s '$subject' $mail_list < $file" ;
    system ( $rtmail ) ;
 
    if ($?) {
        elog_complatin("Attempt to send mail failed: $?  \n");
    } else {
        elog_notify("Sending phase pick mail to: $mail_list \n");
-   }	
+   }
 } elsif ($opt_o) {
-   $reldir 	= relpath($opt_C,$dir) ; 
-   $xfile	= $reldir . "/" . $dfile ;
+   $reldir  = relpath($opt_C,$dir) ;
+   $xfile   = $reldir . "/" . $dfile ;
 
    if ($opt_C) {
       # need to preserve orbxfer2.pf before changing dirs
-      $pfstring		= pf2string('orbxfer2.pf');
-      $pfname		= "/tmp/foo_orbxfer2.pf" ; 
-      $pftmp		= "/tmp/orbxfer2_tmp.pf" ; 
-      pfnew($pfname);
-      pfcompile($pfstring,$pfname);
-      pfwrite($pftmp,$pfname);
-      $orbxfer	= "orbxfer2 $opt_v -p $pftmp $xfile $orb";
-      @tmpfiles = ($pfname, $pftmp);
+      $pfstring = pf2string('orbxfer2.pf') ;
+      $pfobject = "/tmp/foo_orbxfer2.pf" ;
+      $pftmp    = File::Temp->new( TEMPLATE=>'orbxfer2_XXXX', DIR=>'/tmp/', SUFFIX=>'.pf' ) ;
+      $pffile   = $pftmp->filename ;
+
+      pfnew($pfobject);
+      pfcompile($pfstring,$pfobject);
+      pfwrite($pffile,$pfobject);
+      $orbxfer  = "orbxfer2 $opt_v -p $pffile $xfile $orb";
    } else {
-      $orbxfer	= "orbxfer2 $opt_v $xfile $orb";
+      $orbxfer  = "orbxfer2 $opt_v $xfile $orb";
    }
 
-   elog_notify("orbxfer2 command: $orbxfer\n") if $opt_v ; 
+   elog_notify("orbxfer2 command: $orbxfer\n") if $opt_v ;
    chdir $opt_C if ($opt_C) ;
    run ( $orbxfer ) ;
    if ($?) {
        elog_complain("Attempt to send file to orb failed: $?  \n");
    } else {
        elog_notify("Sending phase pick file to: $orb\n");
-   }	
-   chdir $mycwd if ($opt_C);
-   &rm_tmp(@tmpfiles)  ;
-
-}
-
-exit ;
-	
-# subs below here 
-
-sub rm_tmp {
-
-   foreach $t (@tmpfiles) {
-     if (-e $t) {
-	$cmd = "/usr/bin/rm -r $t" ;
-	&run($cmd);
-     }
    }
 
 }
 
+exit ;
+
+
 sub run {               # run system cmds safely
     my ( $cmd ) = @_ ;
-    system ( $cmd ) ;   
+
+    elog_notify("RUN: [$cmd] \n");
+
+    system ( $cmd ) ;
     if ($?) {
         elog_complain(0, "$cmd error $? \n") ;
         exit(1);
@@ -277,8 +263,8 @@ sub run {               # run system cmds safely
 }
 
 sub usage{
-	print STDERR <<ENDIT ;
-\nUSAGE: \t$0 [-v] [-s subject] { -m email1,email2,... | -o orb } -C product_dir file database 
+    print STDERR <<ENDIT ;
+\nUSAGE: \t$0 [-v] [-s subject] { -m email1,email2,... | -o orb } -C product_dir file database
 
 ENDIT
 exit;

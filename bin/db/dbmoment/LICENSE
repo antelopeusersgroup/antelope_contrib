@@ -1,0 +1,57 @@
+# LICENSING DISCLAIMER:
+
+Licensing for different parts of the dbmoment framework will
+vary in rights and limitations, covering a spectrum of conditions,
+from Public Domain to Free Use. The source code is divided in
+folders containing source code with similar or identical
+licensing restrictions. Special attention to the restrictions
+should be given in case of modifications to the framework. USE
+OF THE FRAMEWORK OR ANY PART OF IT, INDIVIDUALLY OR AS A GROUP,
+SHOULD CONSIDER THE RESTRICTIONS APPLICABLE TO ALL PARTS OF THE
+DISTRIBUTION that might not have an obvious relation or
+dependency to the code in question.
+
+Each software or source code file is covered by ONLY ONE
+LICENSE file located in the same directory as the code and in
+some instances with an explicit mention of the files. Other
+files will include the license statement on the top of the
+source code.
+
+--------------------------------------------------------------
+
+# DBMOEMENT FRAMEWORK
+
+For the source code on the top level folder of this distribution
+there is a FREE USE LICENSE (1).  Limited to the following source code:
+
+    mt(py)
+    dbmoment(xpy)
+    origin(py)
+    functions(py)
+    data(py)
+    inversion(py)
+    run_dbmoment_example(xpl)
+    synthetics(py)
+
+
+(1) License for dbmoment framework:
+    Copyright (c) 2016 Boulder Real Time Technologies, Inc.
+
+    Written by Juan Reyes
+
+    This software may be used freely in any way as long as
+    the copyright statement above is not removed.
+
+
+--------------------------------------------------------------
+
+# TDMT_INV MODULE
+
+Original TDMT_INV code by Douglas Dreger (Berkeley Seismological Lab.).
+Original Green's function computed with code by Chandan Saikia (URS).
+Original acknowledgement statement:
+    Moment tensor computed using the mtpackagev3.0 package developed by
+    Douglas Dreger and Sean Ford  of the Berkeley Seismological
+    Laboratory, and Green’s functions were computed using the
+    FKRPROG software developed by Chandan Saikia.
+

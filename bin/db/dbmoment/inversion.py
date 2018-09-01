@@ -1,3 +1,11 @@
+#   Copyright (c) 2016 Boulder Real Time Technologies, Inc.
+#
+#   Written by Juan Reyes
+#
+#   This software may be used freely in any way as long as
+#   the copyright statement above is not removed.
+
+
 from __main__ import *      # Get all the libraries from parent
 
 class MomentTensor():
@@ -6,37 +14,27 @@ class MomentTensor():
 
     """
 
-    def __init__(self, depth, tmp_folder='/tmp/dbmoment'):
+    def __init__(self, depth=0, tmp_folder='/tmp/dbmoment'):
         """Initialize"""
+
         self.station_cache = {}
-        self.event_cache = None
         self.tmp_folder = tmp_folder
         self.depth = depth
         self.results = {
-            'Depth':None,
             'zcor':{},
-            'acc':{},
-            'Mxx':None,
-            'Mxy':None,
-            'Mxz':None,
-            'Myy':None,
-            'Myz':None,
-            'Mzz':None,
-            'Mo':None,
-            'Mw':None,
+            'variance':{},
             'Strike':[],
             'Rake':[],
-            'Dip':[],
-            'Pdc':None,
-            'Pclvd':None,
-            'Piso':None,
-            'Variance':None,
-            'VarRed':None,
-            'Var/Pdc':None,
-            'Quality':None
+            'Dip':[]
         }
 
-    def invert(self, sta_cache, event_cache):
+    def set_depth(self, depth):
+        self.depth = depth
+
+    def set_folder(self, folder):
+        self.tmp_folder = folder
+
+    def invert(self, sta_cache, ignore_sta=None):
         """
         To run the original code from Dreger's we need to
         prepare a file like this...
@@ -59,62 +57,98 @@ class MomentTensor():
         """
 
         self.sta_cache = sta_cache
-        self.event_cache = event_cache
         destination = '%s/mt_inv.in' % self.tmp_folder
         green = ''
         data = ''
         total = 0
+        valid = False
 
         for sta in self.sta_cache:
+            if not self.sta_cache[sta]: continue
+            if ignore_sta and sta == ignore_sta : continue
+
             self.station_cache["%s" % total] = sta
             total += 1
 
-            log('Work on station: %s' % sta)
-            log('\tData: %s' % self.sta_cache[sta].real_file )
-            log('\tSynth: %s' % self.sta_cache[sta].synth_file )
-            real_file = self.sta_cache[sta].real_file
-            synth_file = self.sta_cache[sta].synth_file
-            distance = int(float(self.sta_cache[sta].distance))
-            azimuth = int(float(self.sta_cache[sta].azimuth))
+            elog.debug('Work on station: %s' % sta)
+            elog.debug('\tData: %s' % self.sta_cache[sta].real_file)
+            elog.debug('\tSynth: %s' % self.sta_cache[sta].synth_file)
+            real_file = self.sta_cache[sta].real_file_name
+            synth_file = self.sta_cache[sta].synth_file_name
 
-            data += "%s %s %s 0 120\n" % ( real_file, distance, azimuth)
-            green += "%s 0 120\n" % ( synth_file)
+            real_samples = self.sta_cache[sta].real_samples
+            synth_samples = self.sta_cache[sta].synth_samples
 
-        output = '%s %s 1 0\n' % ( total, self.depth )
+            distance = float(self.sta_cache[sta].realdistance)
+            azimuth = float(self.sta_cache[sta].azimuth)
+            zcor = int(float(self.sta_cache[sta].zcor))
+
+            data += "%s %s %s %s %s\n" % ( real_file, distance, azimuth, zcor, real_samples)
+            green += "%s 0 %s\n" % ( synth_file, synth_samples)
+
+        output = '%s %s 1 6 0\n' % ( total, self.depth )
         output += data
         output += green
+
+        try:
+            # Remove file if present
+            if os.path.exists(destination):
+                    os.remove(destination)
+        except:
+            elog.error('Cannot remove previous copy of %s %s'% (destination,e))
 
         try:
             f = open(destination, 'w')
             f.write(output)
             f.close()
         except Exception,e:
-            error('Cannot create new file %s %s'% (destination,e))
+            elog.error('Cannot create new file %s %s'% (destination,e))
 
-        log('new file %s' % destination)
+        elog.debug('new file %s' % destination)
 
-
-        #try:
-        #    os.chdir(self.tmp_folder)
-        #except Exception,e:
-        #    error('Cannot change directory to [%s]' % self.tmp_folder)
+        #elog.debug(output)
 
         try:
-            os.remove( "%s/mt_inv_redi.out" % self.tmp_folder )
+            os.remove( "%s/mt_inv.out" % self.tmp_folder )
         except Exception,e:
             pass
 
-        cmd = 'tdmt_invc'
-        for line in run(cmd, self.tmp_folder):
-            debug(line)
-            match_acc = re.match("^Station\((.+)\)=(\S+) +(\S+)$",line)
-            if match_acc:
-                sta = self.station_cache[match_acc.group(1)]
-                log('Got station %s =%s %s' % \
-                        (sta,match_acc.group(2),match_acc.group(3)) )
-                self.results['acc'][sta] = match_acc.group(2)
+        try:
+            os.remove( "%s/tdmt.results" % self.tmp_folder )
+        except Exception,e:
+            pass
 
-        outputfile = open( "%s/mt_inv_redi.out" % self.tmp_folder )
+        # Clean variables
+        self.results = {
+            'zcor':{},
+            'variance':{},
+            'Strike':[],
+            'Rake':[],
+            'Dip':[]
+        }
+
+        temp_results = run('tdmt_inv', directory=self.tmp_folder, ignore_error=True )
+
+        if not temp_results:
+            return False
+
+        for line in temp_results:
+            valid = True
+            elog.debug(line)
+            match_variance = re.match("^Station\((.+)\)=(\S+) +(\S+)$",line)
+            if match_variance:
+                sta = self.station_cache[match_variance.group(1)]
+                elog.debug('Got station %s =%s %s' % \
+                        (sta,match_variance.group(2),match_variance.group(3)) )
+                self.results['variance'][sta] = float(match_variance.group(2))
+                elog.debug('station variance reduction %s' % \
+                                    self.results['variance'][sta])
+
+
+        if not valid:
+            return False
+
+        outputfile = open( "%s/mt_inv.out" % self.tmp_folder )
         self._parse_output(outputfile.read())
         outputfile.close()
 
@@ -125,71 +159,65 @@ class MomentTensor():
         code we need to extract the results
         from the log.
 
-        Exampel:
-        Depth=8
-        Station Information
-        Station(0): datasta2  R=100.0km  AZI=0.0  W=1.000  Zcor=5
-        Station(1): datasta3  R=100.0km  AZI=0.0  W=1.000  Zcor=0
-        Station(2): datasta1  R=100.0km  AZI=0.0  W=1.000  Zcor=5
-        Mo=7.56446e+19
-        Mw=2.6
-        Strike=352 ; 258
-        Rake=58 ; 175
-        Dip=88; 33
-        Pdc=93
-        Pclvd=7
-        Piso=0
-        Station(0)=44.824974  1.7449e-11
-        Station(1)=-44.040012  1.35435e-11
-        Station(2)=63.666492  2.93047e-11
-        VAR=3.70419e-14
-        VR=34.02  (UNWEIGHTED)
-        VR=34.02  (WEIGHTED)
-        Var/Pdc=3.981e-16
-        Quality=1
-
         """
+        elog.debug('Raw inversion output:')
+        #elog.debug( '\n' + string )
 
+        elog.debug('Parse output:')
 
         for line in string.split('\n'):
 
             line = line.strip()
-            debug('line: [%s]' % line )
+            #elog.debug(line )
 
             match_zcor = re.match("^Station\((.+)\):.*Zcor=(.+)$",line)
-            #match_acc = re.match("^Station\((.+)\)=(\d+) +(\d+)$",line)
+            #match_variance = re.match("^Station\((.+)\)=(\d+) +(\d+)$",line)
             strike = re.match("^Strike=(-?\d+) +; +(-?\d+)$",line)
             rake = re.match("^Rake=(-?\d+) +; +(-?\d+)$",line)
             dip = re.match("^Dip=(-?\d+) +; +(-?\d+)$",line)
+            varred = re.match("^VarRed=(.+)$",line)
+            quality = re.match("^Quality=(.+)$",line)
+            mw = re.match("^Mw=(.+)$",line)
             if match_zcor :
                 sta = self.station_cache[match_zcor.group(1)]
-                log('Got station %s zcor=%s' % \
+                elog.debug('Got station %s zcor=%s' % \
                         (sta,match_zcor.group(2)) )
-                self.results['zcor'][sta] = match_zcor.group(2)
-            #elif match_acc:
-            #    sta = self.station_cache[match_acc.group(1)]
-            #    log('Got station %s =%s %s' % \
-            #            (sta,match_acc.group(2),match_acc.group(3)) )
-            #    self.results['acc'][sta] = match_acc.group(2)
+                self.results['zcor'][sta] = int(float(match_zcor.group(2)))
+            #elif match_variance:
+            #    sta = self.station_cache[match_variance.group(1)]
+            #    elog.debug('Got station %s =%s %s' % \
+            #            (sta,match_variance.group(2),match_variance.group(3)) )
+            #    self.results['variance'][sta] = match_variance.group(2)
             elif strike:
-                log('Got strike %s %s' % (strike.group(1),strike.group(2) ))
-                self.results['Strike'] = [ strike.group(1), strike.group(2) ]
+                elog.debug('Got strike %s %s' % (strike.group(1),strike.group(2) ))
+                self.results['Strike'] = [ int(strike.group(1)), int(strike.group(2)) ]
             elif rake:
-                log('Got rake %s %s' % (rake.group(1),rake.group(2) ))
-                self.results['Rake'] = [ rake.group(1), rake.group(2) ]
+                elog.debug('Got rake %s %s' % (rake.group(1),rake.group(2) ))
+                self.results['Rake'] = [ int(rake.group(1)), int(rake.group(2)) ]
             elif dip:
-                log('Got dip %s %s' % (dip.group(1),dip.group(2) ))
-                self.results['Dip'] = [ dip.group(1), dip.group(2) ]
+                elog.debug('Got dip %s %s' % (dip.group(1),dip.group(2) ))
+                self.results['Dip'] = [ int(dip.group(1)), int(dip.group(2)) ]
+            elif varred:
+                elog.debug('Got VarRed %s' % varred.group(1))
+                self.results['VarRed'] = float(varred.group(1))
+            elif quality:
+                elog.debug('Got Quality %s' % quality.group(1))
+                self.results['Quality'] = int(quality.group(1))
+            elif mw:
+                elog.debug('Got Mw %s' % mw.group(1))
+                self.results['Mw'] = float(mw.group(1))
             else:
                 parts = line.split('=')
                 if len(parts) == 2:
                     key = parts[0].strip()
                     value = parts[1].strip()
-                    if key in self.results:
-                        log('New value: [%s]:[%s]' % (key,value) )
-                        self.results[ key ] = value
-                    else:
-                        warning('UNKNOWN value: [%s]:[%s]' % (key,value) )
+                    self.results[ key ] = value
+                    elog.debug('New value: [%s]:[%s]' % (key,value) )
+                    #if key in self.results:
+                    #    elog.debug('New value: [%s]:[%s]' % (key,value) )
+                    #    self.results[ key ] = value
+                    #else:
+                    #    elog.warning('UNKNOWN value: [%s]:[%s]' % (key,value) )
 
         # Source parameters and moment-tensor solutions
         #Author: Gunter Bock, Formerly GeoForschungsZentrum Potsdam, Germany
@@ -206,9 +234,11 @@ class MomentTensor():
         #       Mtp = -Mxy
         self.results['Mtt'] = float(self.results['Mxx'])
         self.results['Mtp'] = -1 * float(self.results['Mxy'])
+        #self.results['Mtp'] =  float(self.results['Mxy'])
         self.results['Mrt'] = float(self.results['Mxz'])
         self.results['Mpp'] = float(self.results['Myy'])
         self.results['Mrp'] = -1 * float(self.results['Myz'])
+        #self.results['Mrp'] =  float(self.results['Myz'])
         self.results['Mrr'] = float(self.results['Mzz'])
 
 
@@ -233,19 +263,15 @@ class MomentTensor():
         #     "dip2", "rake2", "drdepth", "drtime", "drlat", "drlon", "drmag", "drmagt",
         #     "estatus", "rstatus", "utime", "auth"]
 
-        self.results['drlat'] = self.event_cache.lat
-        self.results['drlon'] = self.event_cache.lon
-        self.results['drtime'] = self.event_cache.time
 
         # mt table apparently uses N-m whereas Dregers code really
-        # looks like dyne-cm so you will have to divide it by 10^7
+        # looks like dyne-cm so we will have to divide it by 10^7
         #self.results['Mo'] = float(self.results['Mo']) / 10**7
         # Update scm instead
         self.results['scm'] = self.results['Mo']
         self.results['scm'] = float(self.results['scm']) / 10**7
 
 
-        #self.results['auth'] = self.results['Pdc']
         self.results['pdc'] = self.results['Pdc']
         self.results['tmtt'] = self.results['Mtt'] * self.results['scm']
         self.results['tmtp'] = self.results['Mtp'] * self.results['scm']
@@ -261,15 +287,7 @@ class MomentTensor():
         self.results['rake2'] = self.results['Rake'][1]
         self.results['drmag'] = self.results['Mw']
         self.results['drmagt'] = 'Mw'
-        self.results['drdepth'] = self.results['Depth']
         self.results['estatus'] = "Quality: %s" % self.results['Quality']
 
 
-
-
-if __name__ == "__main__":
-    """ If we call this script directly, then output error  """
-
-    print "\n\t** Not to run directly!!!! **\n"
-    print "\n\nNo BRTT support."
-    print "Juan Reyes <reyes@ucsd.edu>\n\n"
+if __name__ == "__main__": raise ImportError( "\n\n\tAntelope's dbmoment module. Not to run directly!!!! **\n" )

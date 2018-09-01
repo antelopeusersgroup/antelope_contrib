@@ -1,0 +1,17 @@
+BIN=export_to_matlab_3C
+PF=export_to_matlab_3C.pf
+
+cxxflags=-g
+ldflags=-L$(ANTELOPE)/contrib/static
+ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization
+SUBDIR=/contrib
+
+include $(ANTELOPEMAKE) 
+include $(ANTELOPEMAKELOCAL)
+CXXFLAGS += -I$(BOOSTINCLUDE)
+
+OBJS=export_to_matlab_3C.o
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+LDFLAGS += -L$(BOOSTLIB)

@@ -1,0 +1,10 @@
+#!/bin/csh
+if($#argv != 1) then
+  echo Usage:  new_seispp_module modname
+  exit(-1)
+endif
+mkdir $1
+set modname=$1
+cp template/Makefile $modname
+sed s/template/${modname}/ < template/Makefile2 > ${modname}/Makefile2
+cp template/template_plain.cc ${modname}/${modname}.cc

@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>rename_attributes</title>
+  </head>
+  <body>
+    <h1>rename_attributes</h1>
+    <h3>Usage:</h3>
+    <p>rename_attributes &lt; in &gt; out [-t object_type -v --help
+      -text -pf pffile]<br>
+    </p>
+    <h3>Algorithm:</h3>
+    A novel feature of the seispp library is that the namespace used for
+    defining header (Metadata) attributes is not fixed.&nbsp;&nbsp; The
+    keys used to access any attribute related to a data object can be
+    anything the user wants it to be.&nbsp;&nbsp; Although general that
+    complicates the problem of mapping to an external namespace such as
+    that used by seismic unix required for a program like export_to_su.
+    &nbsp; The purpose of this program is to provide a map one namespace
+    to another. &nbsp; (e.g. rename_attributes &lt; infile |
+    rename_attributes | export_to_su outfile.su).&nbsp; <br>
+    <br>
+    Attributes can be either copied so the original name tag is
+    retained, or moved (renamed). &nbsp; <br>
+    <br>
+    This program will throw an error message to stderr and blunder on if
+    a requested attribute is not found in the header of an object in the
+    input file. &nbsp;&nbsp; To avoid awkward two pass processing with
+    tons of error messages on one pass or the other, always set
+    attributes to be copied&nbsp; (not renamed) unless you are sure
+    every single object has an attribute defined. &nbsp; &nbsp; For this
+    reason the general guidance is to normally copy any attribute rather
+    than rename it as the increase in file size for copying is
+    negligible unless the edit definition is large. <br>
+    <h3>Options:</h3>
+    <p><i>-t objt<br>
+      </i>Set the object type of data file to process.&nbsp; Default is
+      ThreeComponentSeismogram.&nbsp;&nbsp; Supported type are:&nbsp;
+      TimeSeries, TimeSeriesEnsemble,&nbsp; and
+      ThreeComponentEnsemble.&nbsp; Note that for ensembles the edits
+      are made to the ensemble metadata, NOT individual seismogram
+      inside the ensmble.<br>
+    </p>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <br>
+    <i>-v<br>
+    </i>Be more verbose.&nbsp; Note all log information goes to stderr
+    so it is best to use this option only for debugging problems.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.&nbsp; <br>
+    <br>
+    <i>-pf pffile<br>
+    </i>Use pffile instead of default rename_attributes.pf.<br>
+    <br>
+    <h3>Parameter file:</h3>
+    What attributes are changed in the processing is completely
+    controlled by the parameter file. The parameter file requires only a
+    single &amp;Tbl entry with the tag <i>edit_list</i>.&nbsp;&nbsp;
+    Each line of the <i>edit_list</i> Tbl&amp; is assumed to hold three
+    string tokens separated by white space:<br>
+    <blockquote>mode&nbsp; oldname newname type<br>
+    </blockquote>
+    The <i>mode</i> entry must be either <i>copy</i> or <i>rename</i>.&nbsp;
+    The program will exit with an error message if this token is
+    anything else.&nbsp;&nbsp; If mode is set to <i>rename</i> the
+    original entry with the old key is deleted.&nbsp; In <i>copy</i>
+    mode a second copy of the attribute is posted to the object. <br>
+    <br>
+    <i>oldname</i> and <i>newname </i>are the old and new keys used to
+    defined the requested attribute.&nbsp;&nbsp; In copy mode the output
+    will have two copies of the attribute accessible with both oldname
+    and newname.&nbsp; In rename mode only newname will be present in
+    the output.&nbsp;&nbsp; <br>
+    <br>
+    The <i>type</i> token defines the data type of the associated
+    attribute.&nbsp;&nbsp; Only basic data types are
+    allowed.&nbsp;&nbsp; For integer attributes this field must be one
+    of the following:&nbsp; int, INT, or integer.&nbsp; For floating
+    point attributes this field must be one of the following:&nbsp; real
+    REAL, float or double. &nbsp; For strings&nbsp; this field must be
+    one of the following:&nbsp; string or STRING.&nbsp;&nbsp; Boolean
+    attributes are defined by one of the following:&nbsp; bool, boolean,
+    or BOOL.&nbsp; <br>
+  </body>
+</html>

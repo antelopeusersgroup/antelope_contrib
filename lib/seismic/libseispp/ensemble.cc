@@ -46,7 +46,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 		// Will throw an exception if this isn't a group pointer
 		DBBundle ensemble_bundle=dbh.get_range();
 		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
-                if(SEISPP_verbose) cout << this_function_base_message
+                if(SEISPP_verbose) cerr << this_function_base_message
                     <<":  Attempting to read an ensemble with "
                         << nsta << " seismograms"<<endl;
 		// We need a copy of this pointer 
@@ -105,7 +105,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 			member.push_back(*d);
 			delete d;
 		}
-                if(SEISPP_verbose) cout <<this_function_base_message
+                if(SEISPP_verbose) cerr <<this_function_base_message
                     << ":  Number of seismograms loaded="
                         <<member.size()<<endl;;
 
@@ -247,7 +247,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 	else
 		ir=0;
 	Dbptr dbsc,dbscgr;
-        if(SEISPP_verbose) cout << base_error_message
+        if(SEISPP_verbose) cerr << base_error_message
             << "Attempting to load data in time interval "
                 << strtime(twin.start) << " to "
                 << strtime(twin.end)<<endl;
@@ -282,6 +282,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 		clear_register(1);   
 		free(sta_expr);
 		free(chan_expr);
+                trdestroy(&dbtr);
 		throw SeisppError(base_error_message
 			+string("grdb_sc_create procedure failed\n"));
 	}
@@ -299,7 +300,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 	}
         else if (SEISPP_verbose)
         {
-            cout << base_error_message
+            cerr << base_error_message
                 <<"Successfully read "<<ntraces<<" seismograms"<<endl;
         }
 	try {
@@ -459,6 +460,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			}
 			if(require_response)
 			{
+                            trdestroy(&dbtr);
 				cerr << base_error_message
 					<<" WARNING "
 					<< "  request to load response information ignored."
@@ -488,7 +490,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			}
 			else
 			{
-                                if(SEISPP_verbose) cout << base_error_message
+                                if(SEISPP_verbose) cerr << base_error_message
                                     << "(Warning) seismogram number "
                                     << irec <<" of this ensemble has a data gap"
                                     << endl;
@@ -519,7 +521,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 								twin.start,
 								t0_this_segment));
                                                         if(SEISPP_verbose)
-                                                            cout << "Gap is at start of seismogram"
+                                                            cerr << "Gap is at start of seismogram"
                                                                 <<endl;
 						}
 					}
@@ -537,7 +539,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 								etime_this_segment,
 								twin.end));
                                                         if(SEISPP_verbose)
-                                                            cout << "Gap is at end of seismogram"
+                                                            cerr << "Gap is at end of seismogram"
                                                                 <<endl;
 						}
 					}
@@ -547,7 +549,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 							etime_last_segment,
 							t0_this_segment));
                                                 if(SEISPP_verbose)
-                                                  cout << "Gap is in middle of seismogram"
+                                                  cerr << "Gap is in middle of seismogram"
                                                                 <<endl;
 					}
 					// In all cases we just copy into
@@ -666,7 +668,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 		// Will throw an exception if this isn't a group pointer
 		DBBundle ensemble_bundle=dbh.get_range();
 		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
-                if(SEISPP_verbose) cout << this_function_base_message
+                if(SEISPP_verbose) cerr << this_function_base_message
                     <<":  Attempting to read an ensemble with "
                         << nsta << " 3C seismograms"<<endl;
 		// We need a copy of this pointer 
@@ -725,7 +727,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 			member.push_back(*data3c);
 			delete data3c;
 		}
-                if(SEISPP_verbose) cout <<this_function_base_message
+                if(SEISPP_verbose) cerr <<this_function_base_message
                     << ":  Number of seismograms loaded="
                         <<member.size()<<endl;;
 
@@ -829,25 +831,6 @@ double PeakAmplitude(ThreeComponentSeismogram *p)
 	amp=max_element(ampvec.begin(),ampvec.end());
 	return(*amp);
 }
-#ifndef NO_ANTELOPE
-double PeakAmplitude(ComplexTimeSeries *p)
-{
-	if(!(p->live) || ((p->ns)<=0)) return(0.0);
-	vector<double> ampvec;
-	ampvec.resize(p->s.size());
-	double ampval;
-	// This might be a bit faster if done with an iterator,
-	// but this is clearer I think. 
-	for(int j=0;j<p->s.size();++j)
-	{
-		ampval=abs(p->s[j]);
-		ampvec.push_back(ampval);
-	}
-	vector<double>::iterator amp;
-	amp=max_element(ampvec.begin(),ampvec.end());
-	return(*amp);
-}
-#endif
 void ScaleMember(TimeSeries *p,double scale)
 {
 	if(!(p->live) || ((p->ns)<=0)) return;
@@ -865,18 +848,4 @@ void ScaleMember(ThreeComponentSeismogram *p,double scale)
 	// Using the blas for efficiency
 	dscal(size,scale,p->u.get_address(0,0),1);
 }
-#ifndef NO_ANTELOPE
-void ScaleMember(ComplexTimeSeries *p,double scale)
-{
-	if(!(p->live) || ((p->ns)<=0)) return;
-	// This algorithm could maybe be done with the blas cscal, but
-	// am not sure a vector<Complex> would work correctly with cscal.
-	// We'll use this stl iterator version instead and depend on 
-	// the use of operator *= which is defined in C++ for complex.
-	vector<Complex>::iterator siter;
-	for(siter=p->s.begin();siter!=p->s.end();++siter)
-		*siter *= scale;
-
-}
-#endif
 } // Termination of namespace SEISPP definitions

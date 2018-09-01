@@ -1,0 +1,20 @@
+BIN=display_ensemble
+PF=display_ensemble.pf
+
+cxxflags=-g -I$(ANTELOPE)/contrib/include -I$(XMOTIFINCLUDE)
+ldflags=-L$(ANTELOPE)/contrib/static
+ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) \
+       -L$(XMOTIFLIB) $(X11LIBS) -lseisppplot -lXm -lXt -lseisw \
+       -lboost_thread -lboost_system \
+       -lperf -lboost_serialization
+SUBDIR=/contrib
+
+include $(ANTELOPEMAKE) 
+include $(ANTELOPEMAKELOCAL)
+CXXFLAGS += -I$(BOOSTINCLUDE)
+
+OBJS=display_ensemble.o
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+LDFLAGS += -L$(BOOSTLIB)

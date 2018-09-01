@@ -16,11 +16,13 @@
 #  11/16/2015
 
     use strict ;
+#    use diagnostics ;
     use Datascope ;
     use archive;
     use orb;
     use Cwd;
     use File::Find;
+    use File::Basename; 
     use Getopt::Std ;
 
     elog_init ( $0, @ARGV) ;
@@ -67,9 +69,13 @@ if (!$opt_q && (@ARGV < 2)) {
 $prog_name = $0 ;
 $prog_name =~ s".*/"";
 
-if ($opt_S) {
-   $statefile = $opt_S ; 
-   elog_notify("Using statefile: $statefile\n")  ;
+$statefile = $opt_S ? $opt_S : "state/q330logs2db" ;
+elog_notify("Using statefile: $statefile\n")  if $opt_v ;;
+
+if (! -e $statefile ) {
+  my  $cmd = sprintf "mkdir -p %s", dirname($statefile) ;
+  run ($cmd) ;
+  run ("touch $statefile") ; 
 }
 
 $now     = time();
@@ -114,7 +120,7 @@ if ($orb == -1) {
 # if state file exists, override $opt_s
 #
 
-elog_notify("Positioning orb\n") if $opt_V ;
+elog_notify("Positioning orb\n") if $opt_v ;
 
 if ( $opt_s && ( ! $opt_S || ! -e $statefile ) ) {
    elog_notify("opt_s is: $opt_s\n") if ($opt_v || $opt_V) ;
@@ -129,6 +135,7 @@ if ( $opt_s && ( ! $opt_S || ! -e $statefile ) ) {
 
 } elsif ($opt_S) {	# implies there is an $opt_S too
    elog_complain("Using state file for first pktid\n");
+   elog_complain("State file overrides -s $opt_s \n") if $opt_s ;
 
    $stop = 0;
    $pktid = 0;
@@ -312,10 +319,13 @@ sub cmdline { # &cmdline();
 
     
     $cmdline = "command line:	$0 " ;
+    $cmdline = $cmdline . " -p $opt_p " if $opt_p;
     $cmdline = $cmdline . " -v " if $opt_v;
     $cmdline = $cmdline . " -V " if $opt_V;
+    $cmdline = $cmdline . " -q " if $opt_q;
+    $cmdline = $cmdline . " -X " if $opt_X;
     $cmdline = $cmdline . " -l '$opt_l' " if $opt_l;
-    $cmdline = $cmdline . " -p $opt_p " if $opt_p;
+    $cmdline = $cmdline . " -S $opt_S " if $opt_S;
     $cmdline = $cmdline . " -s $opt_s " if $opt_s;
     $cmdline = $cmdline . " @ARGV \n" ;
 
@@ -393,8 +403,8 @@ sub post2slack {
 
 # must use "open" to get rid of "ok" response when a message posts to Slack
    open (FH, "$mycmd |") || die "Failed: $!\n";
-   sleep 2; 	# attempt to bypass "(23) Failed writing body"
-   close (FH)  || die "can't close: $?" ; 
+   sleep 10; 	# attempt to bypass "(23) Failed writing body"
+   close (FH)  || elog_complain "Curl command did not exit properly: $?" ; 
 }
 
 sub usage { 

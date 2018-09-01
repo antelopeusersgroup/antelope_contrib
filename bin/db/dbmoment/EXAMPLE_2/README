@@ -1,0 +1,10 @@
+# NOTES
+There should be no need to modify this database. The only
+difference from the original distribution is the addition
+of the dataless file to the archive and the database
+that is produced with that file.
+
+Got the file directly from IRIS and it includes all BK sites.
+BK-dataless.267109.dataless
+
+
