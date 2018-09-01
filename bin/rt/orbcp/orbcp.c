@@ -212,7 +212,7 @@ char **argv;
 			lastpkt_age = 0;
 			lastpkt_pktid = pktid;
 			lastpkt_time = time;
-			lastpkt_ltime = now ();
+			lastpkt_ltime = std_now ();
 			break;
 		case ORB_INCOMPLETE : 	/* Incomplete packet */
 			ready = 0;
@@ -409,7 +409,7 @@ myputmsg (int orb, Dbptr db, char *prog, char *msg)
 
 	db = dblookup (db, 0, "remark", 0, "dbSCRATCH");
 	gethostname (name, 512);
-	sprintf (string, "%s(%s:%d): %s %s", prog, name, getpid(), strtime(now()), msg);
+	sprintf (string, "%s(%s:%d): %s %s", prog, name, getpid(), strtime(std_now()), msg);
 	elog_complain(0, "%s\n", string);
 	dbputv (db, 0, "remark", string, 0);
 	db2orbpkt (db, orb);

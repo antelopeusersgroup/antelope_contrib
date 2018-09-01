@@ -173,7 +173,7 @@ char          **argv;
     }
 
     err = 0;
-    loctime = now();
+    loctime = std_now();
 
     while(1) {
 
@@ -195,7 +195,7 @@ char          **argv;
 	     err = 0;
 
              if( pkttime - loctime > 86400.0 )  {
-                 loctime = now();
+                 loctime = std_now();
                  if( pkttime - loctime > 86400.0 ) {
                    elog_complain( 0, "%s: pkttime is too big - %s.\nWill drop %s packet\n",
                       s= strtime(loctime), s1=strtime(pkttime), srcname);

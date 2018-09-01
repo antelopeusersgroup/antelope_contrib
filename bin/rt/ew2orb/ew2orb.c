@@ -918,7 +918,7 @@ buf_intake( ImportThread *it )
 					     it->name );
 			  } else {
 
-				s = strtdelta( now() -
+				s = strtdelta( std_now() -
 					       it->last_heartbeat_received );
 
 				elog_notify( 0,
@@ -929,7 +929,7 @@ buf_intake( ImportThread *it )
 			  }
 			}
 
-			it->last_heartbeat_received = now();
+			it->last_heartbeat_received = std_now();
 		}
 
 		free_Ew2orbPacket( e2opkt );
@@ -1503,7 +1503,7 @@ send_heartbeat( ImportThread *it )
 	char	nul = 0;
 	int	msglen;
 
-	if( now() - it->last_heartbeat_sent < it->send_heartbeat_sec ) {
+	if( std_now() - it->last_heartbeat_sent < it->send_heartbeat_sec ) {
 
 		return;
 	}
@@ -1529,7 +1529,7 @@ send_heartbeat( ImportThread *it )
 
 	bnsflush( it->bnsout );
 
-	it->last_heartbeat_sent = now();
+	it->last_heartbeat_sent = std_now();
 
 	return;
 }

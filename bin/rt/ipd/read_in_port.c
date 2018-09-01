@@ -308,7 +308,7 @@ int timeout;
     }
 
     timeout *= 1000;
-    prev_time = now();
+    prev_time = std_now();
 
     for (;;) {
 	switch  ( fdready( Ls, timeout )  ) {
@@ -491,7 +491,7 @@ int timeout;
 				} else {
 				        cansend = 1;
 					if( fabs( epoch - prev_time) > 86400.0 )  {
-					    prev_time = now();
+					    prev_time = std_now();
 					    if( fabs( epoch - prev_time) > 86400.0 )  {
 						sp = ( ushort_t * ) &newbuffer[0];
 						hdrsiz = *sp;
