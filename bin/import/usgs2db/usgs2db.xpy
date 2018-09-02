@@ -16,12 +16,14 @@ import codecs
 import urllib2
 import json
 import pprint
+import tempfile as tf
 
 def usage():
-    print sys.argv[0], "[-v] [-a auth] [-k keydb] [-u url] dbname" 
+    print sys.argv[0], "[-v] [-c] [-a auth] [-k keydb] [-u url] dbname" 
 
 def main():    
-    BASE_URL="http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
+    #BASE_URL="http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
+    BASE_URL="https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
     verbose=0
     archive=0
     opts = []
@@ -29,8 +31,9 @@ def main():
     keydbname='keydb'
     keyschema='idmatch1.0'
     auth='NEIC'
+    use_curl=False
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'a:k:u:v', '')
+        opts, args = getopt.getopt(sys.argv[1:], 'a:ck:u:v', '')
     except getopt.GetoptError:
         print "illegal option"
         usage()
@@ -41,6 +44,8 @@ def main():
             verbose = 1
         elif o == '-a':	
             auth = a
+        elif o=='-c':
+            use_curl=True
         elif o == '-u':	
             BASE_URL = a
         elif o == '-k':
@@ -82,9 +87,24 @@ def main():
     
 
     #proxies={'http':'http://138.22.156.44:3128'}
-    url=urllib2.urlopen(BASE_URL)
-    gj_string=url.read()
-    obj=json.loads(gj_string)
+    if use_curl:
+        try:
+            fname=tmp.mktemp()
+            op=subprocess.check_output(['curl','-o',fname,BASE_URL])
+            print op
+        except Exception as e:
+            
+            return(-1)
+        with open(fname,'r') as f:
+            gj_string=f.read()
+        obj=json.loads(gj_string)
+        os.remove(fname)
+            
+
+    else:
+        url=urllib2.urlopen(BASE_URL)
+        gj_string=url.read()
+        obj=json.loads(gj_string)
     data=obj['features']    
     i=len(data)    
     for index in range(i):
