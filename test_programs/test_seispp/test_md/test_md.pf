@@ -18,8 +18,6 @@ time real
 endtime real
 nsamp int
 samprate real
-file string
-directory string
 }
 simple_real_parameter 2.0
 simple_int_parameter 3

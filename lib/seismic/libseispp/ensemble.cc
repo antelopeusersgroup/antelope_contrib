@@ -320,7 +320,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 		MetadataList ensemble_mdl=BuildEnsembleMDL();
 		Metadata mdens(dynamic_cast<DatabaseHandle&>(dbtr_handle),
 			ensemble_mdl,am);
-		// This maybe should be an auto_ptr but I've had confusing results with Sun's compilere
+		// This maybe should be an shared_ptr but I've had confusing results with Sun's compilere
 		
 		dbtr_handle.lookup("trace");
 		dbtr_handle.rewind();
@@ -470,7 +470,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 
 
 			// This loads attributes but not data
-			auto_ptr<TimeSeries> seis(new TimeSeries(trattributes,false));
+			shared_ptr<TimeSeries> seis(new TimeSeries(trattributes,false));
 			seis->ns=static_cast<int>((twin.end-twin.start)/seis->dt) + 1;
 			seis->s.reserve(seis->ns);
 			Trsample *tdata;

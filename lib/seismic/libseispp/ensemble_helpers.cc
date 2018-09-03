@@ -11,7 +11,7 @@ namespace SEISPP{
 // generate a generalized sort or subset method, but for now
 // it will be built up in stages with the most common uses
 // built first.  All the functions in this file should return
-// an auto_ptr to a new Ensemble object (scalar or 3c time
+// an shared_ptr to a new Ensemble object (scalar or 3c time
 // series) derived from a parent.  
 */
 
@@ -27,7 +27,7 @@ namespace SEISPP{
 //
 //@author Gary L. Pavlis
 //@}
-auto_ptr<TimeSeriesEnsemble> StaChanRegExSubset(TimeSeriesEnsemble& parent,
+shared_ptr<TimeSeriesEnsemble> StaChanRegExSubset(TimeSeriesEnsemble& parent,
 	string sta_expr, string chan_expr)
 {
 	int i;
@@ -39,7 +39,7 @@ auto_ptr<TimeSeriesEnsemble> StaChanRegExSubset(TimeSeriesEnsemble& parent,
 	// for data members.  Since we have no way of knowing the
 	// output size this is a good use of the automatic resizing
 	// ability of the stl vector
-	auto_ptr<TimeSeriesEnsemble> result( new TimeSeriesEnsemble(
+	shared_ptr<TimeSeriesEnsemble> result( new TimeSeriesEnsemble(
 				dynamic_cast<Metadata&>(parent),0));
 
 	for(i=0;i<parent.member.size();++i)
@@ -63,11 +63,11 @@ auto_ptr<TimeSeriesEnsemble> StaChanRegExSubset(TimeSeriesEnsemble& parent,
 	}
 	return(result);
 }
-auto_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
+shared_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
                 			SeismicArray& sa)
 {
 	int expected_size=sa.array.size();
-	auto_ptr<TimeSeriesEnsemble> result(new TimeSeriesEnsemble(dynamic_cast<Metadata&>(parent),
+	shared_ptr<TimeSeriesEnsemble> result(new TimeSeriesEnsemble(dynamic_cast<Metadata&>(parent),
 						expected_size));
 	string sta;
 	map<string,SeismicStationLocation>::iterator aptr,aptr_end;
@@ -89,11 +89,11 @@ auto_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
 }
 #endif
 /*  Extract a single component from an ensemble to produce a scalar ensemble. */
-auto_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int component)
+shared_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int component)
 {
 	vector<ThreeComponentSeismogram>::iterator tcsp;
 	TimeSeries *x;
-	auto_ptr<TimeSeriesEnsemble> result(new 
+	shared_ptr<TimeSeriesEnsemble> result(new 
 		TimeSeriesEnsemble(dynamic_cast<Metadata&>(tcs),tcs.member.size()));
 	for(tcsp=tcs.member.begin();tcsp!=tcs.member.end();++tcsp)
 	{

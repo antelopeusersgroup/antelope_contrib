@@ -374,7 +374,7 @@ int main(int argc, char **argv)
       }
       /* Now we cut each seismogram to a constant time window around the
       the arrival times found in arrivals.   Only keep those that have arrivals */
-      auto_ptr<ThreeComponentSeismogram> dcut;
+      shared_ptr<ThreeComponentSeismogram> dcut;
       string atimekey("xcoratime");  // used for ArrivalTimeReference
       vector<ThreeComponentSeismogram>::iterator rgptr;
       for(rgptr=rawgather.member.begin();rgptr!=rawgather.member.end();++rgptr)

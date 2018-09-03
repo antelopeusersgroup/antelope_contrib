@@ -109,7 +109,7 @@ class GenericFileHandle
           to avoid closing the file prematurely. */
         GenericFileHandle(const GenericFileHandle& parent);
         ~GenericFileHandle();
-        auto_ptr<TimeSeriesEnsemble> GetNextEnsemble();
+        shared_ptr<TimeSeriesEnsemble> GetNextEnsemble();
         TimeSeries GetNextSeismogram();
         /* \brief Test for end of file during reading.
 
@@ -183,7 +183,7 @@ class GenericFileHandle
 
            \exception can throw a SeisppError object for a range of
            possible problems. */
-        auto_ptr<ThreeComponentEnsemble> GetNext3CEnsemble();
+        shared_ptr<ThreeComponentEnsemble> GetNext3CEnsemble();
         /* \brief read and load one ThreeComponentSeismogram object.
 
 

@@ -121,7 +121,7 @@ DatascopeHandle::DatascopeHandle(string dbname,
 	}
 	close_on_destruction=true;
 	retain_parent=retain_all_views;
-	// Probably needs to be an auto_ptr so pffree can be called
+	// Probably needs to be an shared_ptr so pffree can be called
 	// Maybe should use a Metadata object
 	Pf *pf;
 	if(pfread(const_cast<char*>(pfname.c_str()),&pf))

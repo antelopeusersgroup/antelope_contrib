@@ -426,6 +426,7 @@ int main(int argc, char **argv)
       TimeSeries derr;
       while(inp.good())
       {
+        int number_saved;
         d=inp.read();
         /* We time shift the PMTimeSeries data then the TimeSeries
          * used for output will also be shifted. */
@@ -495,7 +496,21 @@ int main(int argc, char **argv)
          {
              /*This creates the file name */
              string fname=build_filename(d,pmat);
-             atw.write(fname,dout,derr);
+             number_saved=atw.write(fname,dout,derr);
+             if(number_saved<=0)
+             {
+                 cerr << "extract_pm_attributes:  no data saved for file="
+                     <<fname<<endl
+                     <<"All samples were marked as gaps"<<endl
+                     << "If you ran mask_pm_snr likely means low snr"
+                     <<endl;
+             }
+             else if(SEISPP_verbose)
+             {
+                 cerr << "extract_pm_attributes:  wrote "<<number_saved
+                     <<" particle motion attribute estimates to file "
+                     <<fname<<endl;
+             }
          }
       }
     }catch(SeisppError& serr)
