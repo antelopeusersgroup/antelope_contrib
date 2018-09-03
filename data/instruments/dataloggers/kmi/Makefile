@@ -11,7 +11,13 @@ DATA=     etna.pf \
     rock_acausal_5.pf \
     rock_causal_10.pf \
     rock_causal_40.pf \
-    rock_causal_5.pf
+    rock_causal_5.pf \
+    obsidian_acausal_5.pf \
+    obsidian_acausal_10.pf \
+    obsidian_acausal_40.pf \
+    obsidian_causal_5.pf \
+    obsidian_causal_10.pf \
+    obsidian_causal_40.pf
 
 
 SUBDIR=/contrib
