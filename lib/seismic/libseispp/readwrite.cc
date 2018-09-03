@@ -494,21 +494,21 @@ long dbsave(ThreeComponentSeismogram& tcs,
 	int irec;
 	try {
 		if(output_as_standard) tcs.rotate_to_standard();
-		auto_ptr<TimeSeries>x1(ExtractComponent(tcs,0));
+		shared_ptr<TimeSeries>x1(ExtractComponent(tcs,0));
 		if(output_as_standard)
 		{
 			x1->put("vang",90.0);
 			x1->put("hang",0.0);
 		}
 		x1->put("chan",chanmap[0]);
-		auto_ptr<TimeSeries>x2(ExtractComponent(tcs,1));
+		shared_ptr<TimeSeries>x2(ExtractComponent(tcs,1));
 		if(output_as_standard)
 		{
 			x2->put("vang",90.0);
 			x2->put("hang",90.0);
 		}
 		x2->put("chan",chanmap[1]);
-		auto_ptr<TimeSeries>x3(ExtractComponent(tcs,2));
+		shared_ptr<TimeSeries>x3(ExtractComponent(tcs,2));
 		if(output_as_standard)
 		{
 			x3->put("vang",0.0);
@@ -519,7 +519,7 @@ long dbsave(ThreeComponentSeismogram& tcs,
 		irec=dbsave(*x2,db,table,mdl,am);
 		irec=dbsave(*x3,db,table,mdl,am);
 		return(irec);
-		// delete not needed because of auto_ptr
+		// delete not needed because of shared_ptr
 	// catch all exceptions and just rethrow them
 	} catch (...)
 	{ throw;}

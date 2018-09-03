@@ -1035,10 +1035,10 @@ def plot_results( results, bb_colors={},
     # Name of file for image
     database_name = os.path.basename(event.database)
     if prelim:
-        filename = "%s/dbmoment_%s_%s_%s-PRELIMINARY-RESULT.png" % ( folder, database_name, event.orid,
+        filename = "%s/dbmoment_%s_%s_%s-PRELIMINARY-RESULT.jpg" % ( folder, database_name, event.orid,
                 event.model )
     else:
-        filename = "%s/dbmoment_%s_%s_%s.png" % ( folder, database_name, event.orid,
+        filename = "%s/dbmoment_%s_%s_%s.jpg" % ( folder, database_name, event.orid,
                 event.model )
 
     if os.path.isfile( filename ):

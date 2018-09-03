@@ -76,7 +76,7 @@ int main(int argc, char **argv)
         while(!ia->eof())
         {
             d=ia->read();
-            auto_ptr<TimeSeriesEnsemble> dscalar=ExtractComponent(d,outchan);
+            shared_ptr<TimeSeriesEnsemble> dscalar=ExtractComponent(d,outchan);
             oa->write(*dscalar);
         }
     }catch(SeisppError& serr)

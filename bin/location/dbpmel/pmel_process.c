@@ -78,7 +78,6 @@ enum FREEZE_METHOD get_freeze_method(Pf *pf)
 }
 
 
-#define EVIDGRP "evidgroup"
 /* this is the main processing routine for dbpmel.  It takes an input
 list of grid point, which are defined by integers gridid that are
 passed through gridid_list, and processes data associated with each
@@ -251,10 +250,12 @@ option which is know to cause problems\nrecenter set off\n");
 	a given gridid.*/
 	grptbl = strtbl("gridid","evid",NULL );
 	grdidtbl = strtbl("gridid",NULL );  /* used below */
-	dbevid_grp = dbgroup(db,grptbl,EVIDGRP,1);
+	dbevid_grp = dbgroup(db,grptbl,0,1);
 	if(dbevid_grp.record == dbINVALID)
 		elog_die(0,"dbgroup failed on gridid:evid bundling\n");
-	dbgs = dblookup(db,0,EVIDGRP,0,0);
+  char *tblname;
+  dbquery(dbevid_grp, dbTABLE_NAME, &tblname);
+	dbgs = dblookup(db,0,tblname,0,0);
 	dbgs.record = dbSCRATCH;
 
 	dbcs = dblookup(db,0,"gridstat",0,0);

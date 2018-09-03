@@ -16,7 +16,7 @@ void usage()
         <<endl
         << "Switches input data from absolute to a relative time standard"<<endl
         <<endl
-        << "Use -objt to change expected object type"<<endl
+        << "Use -t to change expected object type"<<endl
         << "(default ThreeComponentSeismogram.  Alteratives are TimeSeries and PMTimeSeries)"<<endl
         << " -t0shift - force shift of xxx to each start time"<<endl
         << "  When applied sets attribute rtoa_t0shift to this value in output"

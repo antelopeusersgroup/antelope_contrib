@@ -755,14 +755,14 @@ DatabaseHandle *XcorProcessingEngine::get_db(string dbmember)
 component as L,T, or R, hypocenter metadata just be loaded with each station's
 data.   This is required for using this code for common receiver gathers in
 source cluster processing. */
-auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tcse,
+shared_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tcse,
 	string compname,string phase,string ttmethod,string ttmodel)
 {
 	int i;
 	TimeSeries *x;
 	double slat,slon,sz,stime;
 	const double vp0def(6.0),vs0def(3.5);
-	auto_ptr<TimeSeriesEnsemble> result(new
+	shared_ptr<TimeSeriesEnsemble> result(new
 		TimeSeriesEnsemble(dynamic_cast<Metadata&> (*tcse),
 				tcse->member.size()));
 	if(compname.find_first_of("ZNE")!=string::npos)
@@ -879,7 +879,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tc
 // Local function to extract a particular component from a 3c ensemble
 // returning a scalar time series ensemble that can be passed downstream
 // for processing by this program.
-auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
+shared_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 			string compname,Hypocenter hypo,string phase,
 				string ttmethod,string ttmodel)
 {
@@ -887,7 +887,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 	TimeSeries *x;
 	// Hard wired for now.  May be a parameter eventually
 	const double vp0def(6.0),vs0def(3.5);
-	auto_ptr<TimeSeriesEnsemble> result(new
+	shared_ptr<TimeSeriesEnsemble> result(new
 		TimeSeriesEnsemble(dynamic_cast<Metadata&> (*tcse),
 				tcse->member.size()));
 
@@ -1121,7 +1121,7 @@ void XcorProcessingEngine::prep_gather()
 	if(use_subarrays)
 	{
 		int nsubs=stations.number_subarrays();
-		auto_ptr<TimeSeriesEnsemble> csub;
+		shared_ptr<TimeSeriesEnsemble> csub;
 		for(current_subarray=0;current_subarray<nsubs;
 				++current_subarray)
 		{
@@ -1192,7 +1192,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
     /* This depends on a trick that is a bit dangerous.  That is, a static is initialized the first
     time a function is called but not on later calls. */
     static bool first_pass(true);
-    auto_ptr<TimeSeriesEnsemble> tse;
+    shared_ptr<TimeSeriesEnsemble> tse;
     try {
 	/* First we need to deal with the queue.*/
 	if(first_pass)
@@ -1225,7 +1225,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
                 if(SEISPP_verbose) cerr << base_error
                     <<" Extracting component with tag ="
                     <<analysis_setting.component_name<<endl;
-		tse=auto_ptr<TimeSeriesEnsemble>(Convert3CGenericEnsemble(tcse,
+		tse=shared_ptr<TimeSeriesEnsemble>(Convert3CGenericEnsemble(tcse,
 			analysis_setting.component_name,analysis_setting.phase_for_analysis,
 			ttmethod,ttmodel) );
 
@@ -1233,7 +1233,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 	}
 	else
 	{
-		tse=auto_ptr<TimeSeriesEnsemble>
+		tse=shared_ptr<TimeSeriesEnsemble>
 		   (new TimeSeriesEnsemble(dbh,trace_mdl, ensemble_mdl, am));
 	}
         if(SEISPP_verbose) cerr << base_error
@@ -1283,10 +1283,10 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 	sample rate.  Probably should test for this condition here, but
 	will leave this as only a warning for now. */
 	if(time_align_key=="none")
-	    regular_gather=auto_ptr<TimeSeriesEnsemble>
+	    regular_gather=shared_ptr<TimeSeriesEnsemble>
 				(new TimeSeriesEnsemble(*tse));
 	else
-	    regular_gather=auto_ptr<TimeSeriesEnsemble>(AlignAndResample(*tse,
+	    regular_gather=shared_ptr<TimeSeriesEnsemble>(AlignAndResample(*tse,
 		time_align_key,analysis_setting.gather_twin,target_dt,rdef,true));
 	this->prep_gather();
 	return(0);
@@ -1318,11 +1318,11 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	current_data_window=TimeWindow(h.time+raw_data_twin.start,
 		h.time+raw_data_twin.end);
 	UpdateGeometry(current_data_window);
-	// Read raw data.  Using an auto_ptr as good practice
+	// Read raw data.  Using an shared_ptr as good practice
 	// 3c mode can work for either cardinal directions or
 	// applying transformations.  In either case we use
-	// the temporary auto_ptr to hold the data read in
-	auto_ptr<TimeSeriesEnsemble> tse;
+	// the temporary shared_ptr to hold the data read in
+	shared_ptr<TimeSeriesEnsemble> tse;
 	if(RequireThreeComponents)
 	{
                 if(SEISPP_verbose) cerr << base_message
@@ -1362,7 +1362,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		// This specialized function could be generalized, but
 		// done in one pass here for efficiency.  Local function
 		// to this file found above
-		tse=auto_ptr<TimeSeriesEnsemble>(Convert3CEnsemble(tcse,
+		tse=shared_ptr<TimeSeriesEnsemble>(Convert3CEnsemble(tcse,
 			analysis_setting.component_name,h,
 			analysis_setting.phase_for_analysis,
 			ttmethod,ttmodel));
@@ -1373,7 +1373,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
                 if(SEISPP_verbose) cerr << base_message
                     <<"Using scalar data read method"
                         <<endl;
-		tse=auto_ptr<TimeSeriesEnsemble>(array_get_data(
+		tse=shared_ptr<TimeSeriesEnsemble>(array_get_data(
   			   stations,
                            h,
 			   analysis_setting.phase_for_analysis,
@@ -1391,9 +1391,9 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		analysis_setting.phase_for_analysis);
 
 	// Following not needed because regular_gather is now
-	// stored as an auto_ptr.
+	// stored as an shared_ptr.
 	//if (regular_gather != NULL) { delete regular_gather; regular_gather=NULL;}
-	regular_gather=auto_ptr<TimeSeriesEnsemble>
+	regular_gather=shared_ptr<TimeSeriesEnsemble>
 			(AssembleRegularGather(*tse,predarr,
 			analysis_setting.phase_for_analysis,
             		analysis_setting.gather_twin,target_dt,rdef,true));
@@ -1852,7 +1852,7 @@ void XcorProcessingEngine::restore_original_ensemble()
 	if(use_subarrays)
 	{
 		SeismicArray subnet=stations.subset(current_subarray);
-		auto_ptr<TimeSeriesEnsemble> csub(ArraySubset(*regular_gather,subnet));
+		shared_ptr<TimeSeriesEnsemble> csub(ArraySubset(*regular_gather,subnet));
 		waveform_ensemble=*csub;
 	}
 	else
@@ -1882,7 +1882,7 @@ void XcorProcessingEngine::next_subarray()
 		++current_subarray;
 		SeismicArray ss=stations.subset(current_subarray);
 		current_subarray_name=ss.name;
-		auto_ptr<TimeSeriesEnsemble> csub(ArraySubset(*regular_gather,ss));
+		shared_ptr<TimeSeriesEnsemble> csub(ArraySubset(*regular_gather,ss));
 		waveform_ensemble=*csub;
 		FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
 		if(autoscale_initial)
@@ -1955,7 +1955,7 @@ int XcorProcessingEngine::clear_already_processed()
 		}
 	}
 	/* overwrite regular_ensemble with waveform_ensemble.  It will be the new master */
-	regular_gather=auto_ptr<TimeSeriesEnsemble>(new TimeSeriesEnsemble(waveform_ensemble));
+	regular_gather=shared_ptr<TimeSeriesEnsemble>(new TimeSeriesEnsemble(waveform_ensemble));
 	/* The working copy (waveform_ensemble) now must be preprocessed
 	with initial filter and initialize the amplitude factors.  Note
 	this is a complete duplicate of code in prep_gather.  Watch out

@@ -1,4 +1,4 @@
-.TH SLINK2ORB 1 2012/08/31
+.TH SLINK2ORB 1 2018/08/07
 .SH NAME
 slink2orb \- SeedLink to Antelope ORB module
 .SH SYNOPSIS
@@ -57,6 +57,10 @@ and configure the SeedLink server to start with the next packet, if
 possible.  Intermediate state saves can be enabled and controlled
 with the \fIstateint\fR value in the parameter file (see below).
 
+.IP "-mbi"
+Match the byte order of integer-encoded data (16 and 32-bit) to the
+same order as the header, swapping the data payload if needed.
+
 .IP "-r"
 Use either the database specified with the -dm option or the local
 foreignkeys database to remap input net, sta, chan, and loc codes
@@ -65,11 +69,11 @@ this data with programs that do not recognize the loc code in the
 source name.
 
 .IP "-v"
-Be more verbose.  This flag can be used multiple times ("-v -v" or 
+Be more verbose.  This flag can be used multiple times ("-v -v" or
 "-vv") for more verbosity.
 
 .IP "\fISeedLink\fR"
-A required argument.  Specifies the location of the SeedLink server 
+A required argument.  Specifies the location of the SeedLink server
 in [host]:port format.  If 'host' is omitted 'localhost' is assumed.
 
 .IP "\fIORB\fR"
@@ -138,7 +142,7 @@ Equivalent to the command line version.  Any value given on the command
 line takes precedence.
 
 .IP "\fIstateint\fR"
-If this value and a \fIstatefile\fR are specified, this is the interval (in 
+If this value and a \fIstatefile\fR are specified, this is the interval (in
 seconds) at which the module will save the last valid SeedLink sequence
 number.  This can be used to protect against abnormal (power failure)
 program exits.  The default value is 0, which disables this feature.

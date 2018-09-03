@@ -33,7 +33,7 @@ void ThreeCPlot::plot(ThreeComponentEnsemble& d,bool block)
     TimeSeriesEnsemble dtmp[3];
     for(k=0;k<3;++k)
     {
-      auto_ptr<TimeSeriesEnsemble> ptr;
+      shared_ptr<TimeSeriesEnsemble> ptr;
       ptr=ExtractComponent(d,k);
       /*SeismicPlot copies the data so we don't bother to make a copy here
       and just recycle ptr for each component */
