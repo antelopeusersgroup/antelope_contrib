@@ -94,10 +94,10 @@ void TransferMCAttributes(MultichannelCorrelator& mc,ThreeComponentEnsemble& d,
         }
       }
       /* Note we always post the numbers even if we kill the data member */
-      d.put(ampkey,mc.amplitude_static[i]);
-      d.put(lagkey,mc.lag[i]);
-      d.put(wtkey,mc.weight[i]);
-      d.put(pxcorkey,mc.peakxcor[i]);
+      d.member[i].put(ampkey,mc.amplitude_static[i]);
+      d.member[i].put(lagkey,mc.lag[i]);
+      d.member[i].put(wtkey,mc.weight[i]);
+      d.member[i].put(pxcorkey,mc.peakxcor[i]);
     }
   }catch(...){throw;};
 }
@@ -111,7 +111,12 @@ void ApplyLags(ThreeComponentEnsemble& d)
       if(dptr->live)
       {
         lag=dptr->get<double>(lagkey);
+        /* This is how this should work, but current library throws
+         * an error in this condition with active source data 
         dptr->shift(lag);
+        --this is a brutal solution that permanently alters the time base--
+        */
+        dptr->t0 -= lag;
       }
     }
   }catch(...){throw;};
@@ -123,7 +128,7 @@ int main(int argc, char **argv)
     if(argc>1)
       if(string(argv[1])=="--help") usage();
     int comp(2);
-    string pffile("correlate_gather");
+    string pffile("correlate_gather.pf");
     bool kill_data_beyond_cutoff(false);
     bool timeshift_data(false);
     bool binary_data(true);
@@ -188,7 +193,7 @@ int main(int argc, char **argv)
           out=shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
              (new StreamObjectWriter<ThreeComponentEnsemble>);
         }
-        PfStyleMetadata control;
+        PfStyleMetadata control=pfread(pffile);
         TimeWindow bw=pfget_tw(control,"beam_window");
         TimeWindow rw=pfget_tw(control,"robust_window");
         /* Reference trace in this program is set by signal with largest
@@ -216,7 +221,11 @@ int main(int argc, char **argv)
             parallel vectors */
             TransferMCAttributes(mc,d,tcutoff, xcor_cutoff,kill_data_beyond_cutoff);
             /* This applies time shifts */
-            if(timeshift_data) ApplyLags(d);
+            if(timeshift_data) 
+            {
+                cerr << "correlate_gahter:   using -s option.  Warning - output data have t0 altered. "<<endl;
+                ApplyLags(d);
+            }
             out->write(d);
             ++n;
         }
