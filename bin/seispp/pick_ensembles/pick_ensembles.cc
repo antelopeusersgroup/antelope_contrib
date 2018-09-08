@@ -14,7 +14,7 @@ using namespace SEISPP;
 
 void usage()
 {
-    cerr << "pick_ensembles infile outfile < in > out [-pf pffile -v --help -text]"
+    cerr << "pick_ensembles infile outfile [-pf pffile -v --help -text]"
         <<endl
         << "Pick a file of ThreeComponentEnsembles to align all members to zero time."<<endl
         << "The program is agnostic about what alignment should be, but typically alignment is seismic phase"<<endl
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     string infile(argv[1]);
     string outfile(argv[2]);
     bool binary_data(true);
-    string pffile("pick_ensemble.pf");
+    string pffile("pick_ensembles.pf");
     for(i=3;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -97,10 +97,7 @@ int main(int argc, char **argv)
           {
             win.plot(d);
           }
-          else
-          {
-            win.refine_picks();
-          }
+          win.pick();
           win.align();
           cout << "Are picks ok?  Enter:"<<endl
             << "y - to accept these picks and save results"<<endl
