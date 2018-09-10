@@ -14,18 +14,51 @@ using namespace SEISPP;
 
 void usage()
 {
-    cerr << "pick_ensembles infile outfile [-pf pffile -v --help -text]"
+    cerr << "pick_ensembles infile outfile [-noalign -pf pffile -v --help -text]"
         <<endl
         << "Pick a file of ThreeComponentEnsembles to align all members to zero time."<<endl
         << "The program is agnostic about what alignment should be, but typically alignment is seismic phase"<<endl
         << "The program is a mix of GUI and command line type in responses through stdin and stdout.  "<<endl
         << "Because of the stdin/stdout driven responses program reads from infile"<<endl
         << "and writes aligned data to outfile"<<endl
+        << " -noalign - when this flag appears in arg list the display will"<<endl
+        << "   show time shifts but output will not be shifted with picks only defined by header field pickedtime"<<endl
+        << "   (Default will align the output with picks so pick times define 0 relative time"
+        <<endl
         << " -pf read from alternative pf file pffile (default is pick_ensemble.pf)"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
+}
+/* Takes output of picker defined with the map container picks 
+ * and loads the time shifts into the headers (metadata) of matching
+ * seismograms.   Since not all seismograms have to be picked we 
+ * return the number of picks actually set. If the boolean align is
+ * true the seismograms are shifted by the picked lag to match the
+ * align method.  Warning - that will permanently alter t0 of each 
+ * seismogram */
+int load_picks(ThreeComponentEnsemble& d, IndexTimes& picks, bool align)
+{
+    try{
+        int nset(0);
+        /* Now set only picks that are defined */
+        IndexTimes::iterator pptr;
+        for(nset=0,pptr=picks.begin();pptr!=picks.end();++pptr,++nset)
+        {
+            int imem=pptr->first;
+            double atime=pptr->second;
+            /* The picker always converts pick times to absolute 
+             * times.   To compute shift we need to compute the lag
+             * this way. */
+            d.member[imem].put(TCPICKKEY,atime);
+            double t0s=d.member[imem].time_reference();
+            double lag=atime-t0s;
+            d.member[imem].put("picked_lag",lag);
+            if(align) d.member[imem].shift(lag);
+        }
+        return nset;
+    }catch(...){throw;};
 }
 bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
@@ -37,6 +70,7 @@ int main(int argc, char **argv)
     string infile(argv[1]);
     string outfile(argv[2]);
     bool binary_data(true);
+    bool align_output(true);
     string pffile("pick_ensembles.pf");
     for(i=3;i<argc;++i)
     {
@@ -50,6 +84,10 @@ int main(int argc, char **argv)
           ++i;
           if(i>=argc) usage();
           pffile=string(argv[i]);
+        }
+        else if(sarg=="-noalign")
+        {
+            align_output=false;
         }
         else if(sarg=="-text")
         {
@@ -90,6 +128,12 @@ int main(int argc, char **argv)
       while(!inp->eof())
       {
         d=inp->read();
+        /* first clear any older picks and make sure all seismograms
+         * have the key field here defined.  This is fixes an
+         * inadequacy (bug) in the picker object. */
+        vector<ThreeComponentSeismogram>::iterator dptr;
+        for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
+            dptr->put(TCPICKKEY,0.0);
         pass=1;
         string ques;
         do{
@@ -109,6 +153,13 @@ int main(int argc, char **argv)
           else
             ++pass;
         }while(ques!="y");
+        IndexTimes picks;
+        picks=win.get_member_times();
+        int npicks;
+        npicks=load_picks(d,picks,align_output);
+        cout << "Writing data after setting "<<npicks<<" picks"<<endl;
+        if(align_output) cout << "Note:  the output data were shifted by pick times"
+                            <<endl;
         out->write(d);
       }
     }catch(SeisppError& serr)
