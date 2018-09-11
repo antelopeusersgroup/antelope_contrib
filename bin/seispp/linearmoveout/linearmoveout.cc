@@ -30,10 +30,15 @@ void usage()
 {
     cerr << "linearmoveout [-vr v_reduce -t0 timeshift --help -text] < infile > outfile"
         <<endl
+        << " Applies a constant wavespeed time shift to data based on offset"
+        << " header value"<<endl
+        << " Lag applid is posted to header with key linearmoveout"<<endl
+        << " Input must be ThreeComponentEnsemble objects" <<endl
         << " -vr sets reducing velocity (default 6000)"<<endl
         << " -t0 applies a time shift to all seismograms (default 0)"<<endl;;
     exit(-1);
 }
+const string lagkey("linearmoveout");
 bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
@@ -99,6 +104,8 @@ int main(int argc, char **argv)
                double offset=d.member[i].get_double("offset");
                offset=fabs(offset);
                tshift = (offset/vreduce);
+               tshift += t0;
+               d.member[i].put(lagkey,tshift);
                d.member[i].t0 -= tshift;
             }
           }
