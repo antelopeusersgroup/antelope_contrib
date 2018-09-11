@@ -6,9 +6,13 @@
 #  3.  If the program has multiple source files edit the OBJ line
 BIN=edit_ensembles
 
-cxxflags=-g
+cxxflags=-g -I$(ANTELOPE)/contrib/include -I$(XMOTIFINCLUDE)
 ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp 
+ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) \
+      -L$(XMOTIFLIB) $(X11LIBS) -lseisppplot -lXm -lXt -lseisw \
+       -lboost_thread -lboost_system \
+        -lperf -lboost_serialization
+
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE) 

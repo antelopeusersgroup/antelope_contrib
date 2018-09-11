@@ -124,7 +124,7 @@ int main(int argc, char **argv)
         switch (dtype)
         {
             case TCE:
-                count=edit_enembles<ThreeComponentEnsemble>(win,binary_data);
+                count=edit_ensembles<ThreeComponentEnsemble>(win,binary_data);
                 break;
             case TSE:
                 count=edit_ensembles<TimeSeriesEnsemble>(win,binary_data);
