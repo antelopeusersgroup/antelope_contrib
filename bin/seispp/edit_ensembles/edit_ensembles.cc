@@ -53,16 +53,24 @@ template <typename DataType> int edit_ensembles(TraceEditPlot& win,bool binary_d
             d=inp.read();
             win.plot(d);
             if(SEISPP_verbose)
-            {
               cerr << "Edit completed for ensemble number "<<count<<endl;
-              set<int> kills;
-              kills=win.report_kills();
+            set<int> kills;
+            kills=win.report_kills();
+            set<int>::iterator kptr;
+            if(kills.size()>0)
+            {
+                for(kptr=kills.begin();kptr!=kills.end();++kptr)
+                {
+                    d.member[*kptr].live=false;
+                }
+            }
+            if(SEISPP_verbose)
+            {
               if(kills.size()<=0)
                 cerr << "No seismograms were killed"<<endl;
               else
               {
                 cerr << "Members killed: ";
-                set<int>::iterator kptr;
                 for(kptr=kills.begin();kptr!=kills.end();++kptr)
                 {
                   cerr << *kptr<<", ";
@@ -119,6 +127,9 @@ int main(int argc, char **argv)
     try{
         AllowedObjects dtype=get_object_type(otype);
         PfStyleMetadata control=pfread(pffile);
+        /* This is a serious hack.  Assumes default is to have this 
+         * boolean parameter true */
+        if(dtype==TSE) control.put("ThreeComponentMode",false);
         TraceEditPlot win(control);
         int count;
         switch (dtype)
@@ -135,8 +146,8 @@ int main(int argc, char **argv)
                     << "Fatal error - bug fix required. "<<endl;
                 exit(-1);
         };
-        cerr << "template:  copied "<<count<<" objects from stdin to stdout"
-            <<endl;
+        if(SEISPP_verbose) cerr << "edit_ensembles:  processed "
+            << count<< " ensembles"<<endl;
     }catch(SeisppError& serr)
     {
         serr.log_error();
