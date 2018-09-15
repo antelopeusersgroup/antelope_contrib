@@ -1,6 +1,8 @@
 BIN=mwpm
+PF=mwpm.pf
 
 cxxflags=-g
+#cxxflags=-O2
 ldflags=-L$(ANTELOPE)/contrib/static
 ldlibs=-lmwtpp -lmultiwavelet -lgenloc -lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp
 SUBDIR=/contrib

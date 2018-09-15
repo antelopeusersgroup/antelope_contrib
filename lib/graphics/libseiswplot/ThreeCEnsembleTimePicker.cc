@@ -135,7 +135,7 @@ ThreeCEnsembleTimePicker::ThreeCEnsembleTimePicker(Metadata md)
 ThreeCEnsembleTimePicker::~ThreeCEnsembleTimePicker()
 {
     //DEBUG
-    cerr << "In Destructor for ThreeCEnsembleTimePicker"<<endl;
+    //cerr << "In Destructor for ThreeCEnsembleTimePicker"<<endl;
     comp0.ExitDisplay();
     comp1.ExitDisplay();
     comp2.ExitDisplay();
@@ -508,7 +508,7 @@ vector<SeismicPick>  ThreeCEnsembleTimePicker::run_picker()
 {
     try{
         //DEBUG
-        cerr<<"Entered ThreeCEnsembleTimePicker::run_picker()"<<endl;
+        //cerr<<"Entered ThreeCEnsembleTimePicker::run_picker()"<<endl;
         vector<SeismicPick> result;
         switch(active_component)
         {

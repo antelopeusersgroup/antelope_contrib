@@ -14,7 +14,7 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "correlate_gather < in > out [-c n -k -s -v --help -text -pf pffile]"
+    cerr << "correlate_gather < in > out [-c n -k -s -x xcorfile -v --help -text -pf pffile]"
         <<endl
         << "Aligns a ThreeComponentEnsemble using the robust multichannel "<<endl
         << "cross correlation method used in dbxcor (SEISPP::MultichannelCorrelator object)"<<endl
@@ -25,6 +25,7 @@ void usage()
         << " -k when defined kill all data exceeding correlation or time shift cutoff values"<<endl
         << "    (Default retains all data just posting xcor and shift data to headers)"<<endl
         << " -s when defined shift traces by lag to align (default simply posts computed lag)"<<endl
+        << "  -x save cross-correlation functions to file named xcorfile"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl
@@ -132,6 +133,8 @@ int main(int argc, char **argv)
     bool kill_data_beyond_cutoff(false);
     bool timeshift_data(false);
     bool binary_data(true);
+    bool save_xcordata(false);
+    string xcorfile;
     for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -150,6 +153,13 @@ int main(int argc, char **argv)
                 << "Must be 0, 1, or 2"<<endl;
               usage();
             }
+        }
+        else if(sarg=="-x")
+        {
+            ++i;
+            if(i>=argc)usage();
+            xcorfile=string(argv[i]);
+            save_xcordata=true;
         }
         else if(sarg=="-pf")
         {
@@ -193,6 +203,12 @@ int main(int argc, char **argv)
           out=shared_ptr<StreamObjectWriter<ThreeComponentEnsemble>>
              (new StreamObjectWriter<ThreeComponentEnsemble>);
         }
+        shared_ptr<StreamObjectWriter<TimeSeriesEnsemble>> xcorout;
+        if(save_xcordata)
+        {
+          xcorout=shared_ptr<StreamObjectWriter<TimeSeriesEnsemble>>
+            (new StreamObjectWriter<TimeSeriesEnsemble>(xcorfile,'b'));
+        }
         PfStyleMetadata control=pfread(pffile);
         TimeWindow bw=pfget_tw(control,"beam_window");
         TimeWindow rw=pfget_tw(control,"robust_window");
@@ -227,6 +243,7 @@ int main(int argc, char **argv)
                 ApplyLags(d);
             }
             out->write(d);
+            if(save_xcordata) xcorout->write(mc.xcor);
             ++n;
         }
         if(SEISPP_verbose) cerr << "correlate_gather:  number of ensembles processed ="<<n<<endl;
