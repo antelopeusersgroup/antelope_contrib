@@ -63,7 +63,10 @@ int TailMute::apply(ThreeComponentSeismogram& d)
   for(t=t1+d.dt,i=d.sample_number(t+d.dt)+1;t<te&&i<d.ns;t+=d.dt,++i)
   {
     double w;
-    w=(t-t0)*dwdt;
+    if(t>=t0)
+        w=0.0;
+    else
+        w=1.0-(t-t1)*dwdt;
     for(k=0;k<3;++k) d.u(k,i)*=w;
     ++n;
   }
