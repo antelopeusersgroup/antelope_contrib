@@ -19,6 +19,7 @@ DATA = \
 	staq330 \
 	wfoffset \
 	wfsrb \
+	windturbine \
 	tortrk
 
 DATADIR = schemas/css3.0.ext
