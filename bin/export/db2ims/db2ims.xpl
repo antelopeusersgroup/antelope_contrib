@@ -398,7 +398,10 @@ sub build_dbj { # ( $filename, $refj, $refj_event, $refnetmag, $refstamag ) = &b
     } 
 
 # check to make sure corrected filename does not exceed 32 characters (max length of dfile)
-    elog_die ("Filename, $filename, exceeds 32 characters!\n") if (length($filename) > 32 ) ;   
+#    elog_die ("Filename, $filename, exceeds 32 characters!\n") if (length($filename) > 32 ) ;   
+# need to truncate so you are not looking at path before filename
+    my ($fdir,$fbase,$fsuffix) = parsepath($filename);
+    elog_die ("Filename, $filename, exceeds 32 characters!\n") if (length($fbase) > 32 ) ;   
 
 
 #
