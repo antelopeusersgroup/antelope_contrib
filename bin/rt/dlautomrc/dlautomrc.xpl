@@ -22,11 +22,10 @@
     our (%dl_mv, %sensor_mv);
     our (%dl_snname);
     my (@dl_mv);
-    my ($pfsource,$orbname,$orb,$corb,$pf,$mv,$out_of_range,$pfmass,$pfobj,$nomrcd);
+    my ($pfsource,$orbname,$orb,$pf,$mv,$out_of_range,$pfmass,$pfobj,$nomrcd);
     my ($chan, $chansub); 
     our ($lead, %lead_map) ;
-    our ($cmdorb,$con);
-    my ($target,$statorb,$dl,$dlname,$targetsrc);
+    my ($target,$cmdorb,$statorb,$dl,$dlname,$targetsrc);
     my ($when,$subject,$cmd,$prob,$n,$nmax,$complete);
     my ($dltype,$delay_interval,$mrc_delay,$ref);
     my ($prog_name,$mailtmp,$host,$Problems,$Success,$Neutral);
@@ -189,20 +188,7 @@
     }
 
 #
-# check cmd orb is writable
-#
-   
-    $corb = orbopen($cmdorb,"w");
-
-    if ( $corb < 0 ) {
-        $Problems++;
-        printf "\nProblem #$Problems\n" ;
-        print STDERR "Failed to open orb '$cmdorb' for writing\n" ;
-    }
-    
-
-#
-#  open status orb 
+#  open input orb 
 #
 
     $orb = orbopen($statorb,"r");
@@ -281,16 +267,11 @@
             $cmd  = "dlcmd $cmdorb $target $dl $dlname massrecenter -duration 8 " if $opt_v;
             print STDERR "$cmd\n";
             $prob = $Problems;
-# maybe add dlcmq packet write HERE?  if con != yes?
-            if ($con !~ /yes/) {
-		&create_dlcmq if ($con !~ /yes/);
-	    } else {
-              $Problems = &run($cmd,$Problems) unless $opt_n;
-              print STDERR "\*\*\*   No MRC done - TEST MODE \*\*\*\n\n" if $opt_n;
-              print STDERR "Sleep $mrc_delay between massrecenters...\n" if $opt_v;
-              sleep $mrc_delay unless $opt_n;
-              $Success++ if ($prob == $Problems);		
-	    }
+            $Problems = &run($cmd,$Problems) unless $opt_n;
+            print STDERR "\*\*\*   No MRC done - TEST MODE \*\*\*\n\n" if $opt_n;
+            print STDERR "Sleep $mrc_delay between massrecenters...\n" if $opt_v;
+            sleep $mrc_delay unless $opt_n;
+            $Success++ if ($prob == $Problems);		
         }
         last if ($opt_f);
     }
@@ -408,9 +389,7 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
 #
     my ($pf,$mv,$srcname) = @_ ;
     my ($ref,$dlsta,$sta) ;
-    our ($con); 
-#    my ($m0,$m1,$m2,$m3,$m4,$m5,$mc,$con,$masspo);
-    my ($m0,$m1,$m2,$m3,$m4,$m5,$mc,$masspo);
+    my ($m0,$m1,$m2,$m3,$m4,$m5,$mc,$con,$masspo);
     my (@dlsta,@mc,@recenter,@xclude,@dataloggers) ;
     our ($lead, %lead_map) ;
     our ($snname) ;
@@ -458,10 +437,7 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
 #                printf "%s	%s	%s	%s	%s	%s	%s	\n", $dlsta, $m0, $m1, $m2, $m3, $m4, $m5 if $opt_v;
 #               printf "\n%s	%s	%s	%s	%s	%s	%s	%s	\n", $dlsta, $m0, $m1, $m2, $m3, $m4, $m5, $con ;
                
-# HERE HERE HERE 
-# if con is not yes then need to add command information into new targetname/pf/dlcmq packet 
-
-#        next if ($con !~ /yes/);
+        next if ($con !~ /yes/);
 
 # assume that calibration.lead is filled in and then only check the appropriate masspos
 #  This works around 6ch Q330 case where default/dead sensor reports mass of 2.0 V
@@ -499,42 +475,6 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
         }
     }
     return;
-}
-
-sub create_dlcmq {
-
-    our ($cmdorb,$dlname,$pkt_dlcmq);
-    our ($dlcmqpkt,$pkttime_dlcmq,$nbytes_dlcmq);
-
-    &build_packet ;
-
-    $dlcmqpkt = "$dlname/pf/dlcmq";
-    $pkttime_dlcmq = now();
-    $nbytes_dlcmq = length($pkt_dlcmq)+1;
-    orbput($cmdorb,$dlcmqpkt,$pkttime_dlcmq,$pkt_dlcmq,$nbytes_dlcmq);
-    printf "$dlcmqpkt %6d bytes %s\n",
-        strtime($pkttime_dlcmq), $nbytes_dlcmq if $opt_v ;
-
-}
-
-sub build_packet {              # build_packet (@dllist) ;
-
-  our (@mrcd,$dlname);
-  our ($pkt_dlcmq,$prog_name,$cmd) ;
-
-  $pkt_dlcmq = sprintf "cmds &Arr{\n" ;
-    foreach $dlname (@mrcd) {
-	$pkt_dlcmq = sprintf "%s  &Arr{\n", $dlname;
-	$pkt_dlcmq = $pkt_dlcmq . sprintf "%s  %s/n","time",now();
-	$pkt_dlcmq = $pkt_dlcmq . sprintf "%s  %s/n","program",$prog_name;
-	$pkt_dlcmq = $pkt_dlcmq . sprintf "%s  %s/n","command",$cmd;
-	$pkt_dlcmq = $pkt_dlcmq . "}\n" ;
-    }
-
-    $pkt_dlcmq = $pkt_dlcmq . "}\n" ;
-
-    return ; 
-
 }
 
 sub get_masspos {#  &get_masspos($mv,$orb,@sources);
