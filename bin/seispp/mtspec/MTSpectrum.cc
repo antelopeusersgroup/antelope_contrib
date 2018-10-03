@@ -8,12 +8,12 @@ using namespace std;
 using namespace SEISPP;
 MTSpectrum::MTSpectrum()
 {
-  tbp=4;
+  tbp=4.0;
   try{
     matlab = shared_ptr<MatlabProcessor>(new MatlabProcessor);
   }catch(...){throw;};
 }
-MTSpectrum::MTSpectrum(int time_bandwidth_product)
+MTSpectrum::MTSpectrum(double time_bandwidth_product)
 {
   tbp=time_bandwidth_product;
   try{
@@ -110,10 +110,11 @@ ThreeComponentSeismogram MTSpectrum::spectrum(ThreeComponentSeismogram d)
     dmatrix ut=SEISPP::tr(d.u);
     matlab->load(d,mname);
     matlab->process(commands);
-    shared_ptr<dmatrix> u,f;
+    shared_ptr<dmatrix> u;
+    vector<double> f;
     u=matlab->retrieve_matrix(specname);
-    f=matlab->retrieve_matrix(freqname);
-    double df=(*f)(1,0)-(*f)(0,0); // Weird construct for shared_ptr
+    f=matlab->retrieve_vector(freqname);
+    double df=f[1]-f[0];
     /* We modify the copy of d to hold the power spectrum estimate*/
     d.u=SEISPP::tr(u);
     d.ns=u.rows();
