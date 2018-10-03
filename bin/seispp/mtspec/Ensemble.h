@@ -1,6 +1,9 @@
 #include <vector>
 #include "Metadata.h"
-template typename<Tdata> Ensemble : public Metadata
+#include "TimeSeries.h"
+#include "ThreeComponentSeismogram.h"
+using namespace SEISPP;
+template <typename Tdata> class Ensemble : public Metadata
 {
 public:
   vector<Tdata> member;
@@ -15,19 +18,18 @@ private:
     ar & member;
   };
 };
-typedef TimeSeriesEnsemble Ensemble<TimeSeries>;
-typedef ThreeComponentEnsemble Ensemble<ThreeComponentEnsemble>;
-template<Tdata>
+template <typename Tdata>
   Ensemble<Tdata>::Ensemble(Metadata& md, int nmembers) : Metadata(md)
 {
   member.reserve(nmembers);
 }
-template<Tdata>
-  Ensemble<Tdata>::Ensemble(const Ensemble& parent) : Metadata(md)
+template <typename Tdata>
+  Ensemble<Tdata>::Ensemble(const Ensemble& parent)
+      : Metadata(dynamic_cast<Metadata&> parent)
 {
   member=parent.member;
 }
-template<Tdata>
+template <typename Tdata>
   Ensemble<Tdata>::operator=(const Ensemble& parent)
 {
   if(this!=(&parent))
@@ -37,3 +39,5 @@ template<Tdata>
   }
   return *this;
 }
+typedef  Ensemble<TimeSeries> TimeSeriesEnsemble;
+typedef Ensemble<ThreeComponentEnsemble> ThreeComponentEnsemble;
