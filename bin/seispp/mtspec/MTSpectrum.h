@@ -5,7 +5,7 @@ template typename<Tens,Tdata> class MTSpectrum
 {
 public:
   MTSpectrum();
-  MTSpectrum(int time_bandwidth_product);
+  MTSpectrum(double time_bandwidth_product);
   MTSpectrum(const MTSpectrum& parent);
   TimeSeries spectrum(Metadata& md, vector<double>& d);
   TimeSeries spectrum(Metadata& md, double *d, int nd);
@@ -25,10 +25,10 @@ public:
   When this is used the dmatrix is passed directly */
   TimeSeriesEnsemble spectrum(TimeSeriesEnsemble d);
   ThreeComponentEnsemble spectrum(ThreeComponentEnsemble d);
-  int time_bandwidth_product(){return tbp;};
+  double time_bandwidth_product(){return tbp;};
   MTSpectrum& operator=(const MTSpectrum& parent);
 private:
-  int tbp;
+  double tbp;
   /* We make this a shared ptr to allow copying although  it complicates
   the constructors */
   shared_ptr<MatlabProcessor> matlab;
