@@ -6,7 +6,9 @@
 #include "SeisppError.h"
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
-#include "Ensemble.h"
+/* At one point I was using this program to test this new generic
+ * ensemble implementation.   */
+//#include "Ensemble.h"
 #include "MTSpectrum.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
@@ -63,7 +65,7 @@ template <typename DataType> int mtspec(int tbp, bool binary_data)
         if(binary_data) form='b';
         StreamObjectReader<DataType> inp(form);
         StreamObjectWriter<DataType>  outp(form);
-        MMSpectrum processor;
+        MTSpectrum processor;
         int count(0);
         DataType d;
         while(inp.good())

@@ -1,7 +1,9 @@
 #include <vector>
-#include "dmatrix.h"
+#include "TimeSeries.h"
+#include "ThreeComponentSeismogram.h"
 #include "MatlabProcessor.h"
-template typename<Tens,Tdata> class MTSpectrum
+using namespace SEISPP;
+class MTSpectrum
 {
 public:
   MTSpectrum();
@@ -18,13 +20,13 @@ public:
   The dmatrix returned in this case contains the spectra in the columnes
   of thematrix.  Note that is the transpose of the data matrix */
   ThreeComponentSeismogram spectrum(ThreeComponentSeismogram d);
-  /* Ensembles are made templates here to eliminate repetitious code. */
-  template typename<Tens,Tdata> Tens spectrum(Tens d);
+  TimeSeriesEnsemble spectrum(TimeSeriesEnsemble d);
+  ThreeComponentEnsemble spectrum(ThreeComponentEnsemble d);
   /* This method is actually called by the above.  The distinction is that
   in a 3c seismogram the matrix has to be transposed to match matlab.
   When this is used the dmatrix is passed directly */
-  TimeSeriesEnsemble spectrum(TimeSeriesEnsemble d);
-  ThreeComponentEnsemble spectrum(ThreeComponentEnsemble d);
+  //`TimeSeriesEnsemble spectrum(TimeSeriesEnsemble d);
+  //ThreeComponentEnsemble spectrum(ThreeComponentEnsemble d);
   double time_bandwidth_product(){return tbp;};
   MTSpectrum& operator=(const MTSpectrum& parent);
 private:
@@ -33,17 +35,3 @@ private:
   the constructors */
   shared_ptr<MatlabProcessor> matlab;
 };
-
-template typename<Tens,Tdata> Tens MTSpectrum::spectrum(Tens d)
-{
-  try{
-    int i;
-    for(i=0;i<d.member.size();++i)
-    {
-      Tdata spec;
-      spec=this->spectrum(d.member[i]);
-      d.member[i]=spec;
-    }
-    return d;
-  }catch(...){throw;};
-}
