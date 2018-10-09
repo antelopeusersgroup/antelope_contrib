@@ -191,7 +191,7 @@ private:
 	*  always required and always updated */
 	
 	ArrivalUpdater arru;
-	auto_ptr<TimeSeriesEnsemble> regular_gather;
+	shared_ptr<TimeSeriesEnsemble> regular_gather;
 	//TimeSeriesEnsemble *regular_gather;
 	// This holds the working data.  
 	TimeSeriesEnsemble waveform_ensemble;

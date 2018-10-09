@@ -151,7 +151,7 @@ ThreeComponentEnsemble *BuildRegularGather(ThreeComponentEnsemble& raw,
 	//fractional sample rate tolerance
 	const double samprate_tolerance(0.01);  
 	int nmembers=raw.member.size();
-	auto_ptr<TimeSeries> x1,x2,x3;
+	shared_ptr<TimeSeries> x1,x2,x3;
 	ThreeComponentEnsemble *result;
 	result = new ThreeComponentEnsemble(raw);
 	// An inefficiency here, but this allow us to discard dead
@@ -192,10 +192,10 @@ ThreeComponentEnsemble *BuildRegularGather(ThreeComponentEnsemble& raw,
 			d.rotate_to_standard();	
 			// partial clone used to hold result
 			ThreeComponentSeismogram d3c(d);  
-			x1=auto_ptr<TimeSeries>(ExtractComponent(d,0));
-			x2=auto_ptr<TimeSeries>(ExtractComponent(d,1));
-			x3=auto_ptr<TimeSeries>(ExtractComponent(d,2));
-			// resample if necessary.  Using auto_ptr to avoid temporary pointer
+			x1=shared_ptr<TimeSeries>(ExtractComponent(d,0));
+			x2=shared_ptr<TimeSeries>(ExtractComponent(d,1));
+			x3=shared_ptr<TimeSeries>(ExtractComponent(d,2));
+			// resample if necessary.  Using shared_ptr to avoid temporary pointer
 			// and as good practice to avoid memory leaks
 			if( ( (abs( (d.dt)-target_dt)/target_dt) > samprate_tolerance) 
 				&& do_resampling)
@@ -204,7 +204,7 @@ ThreeComponentEnsemble *BuildRegularGather(ThreeComponentEnsemble& raw,
 				*x2=ResampleTimeSeries(*x2,rdef,target_dt,false);
 				*x3=ResampleTimeSeries(*x3,rdef,target_dt,false);
 			}
-			// This procedure returns an auto_ptr.  An inconsistency in
+			// This procedure returns an shared_ptr.  An inconsistency in
 			// SEISPP due to evolutionary development
 			x1=ArrivalTimeReference(*x1,arrival_keyword,processing_window);
 			x2=ArrivalTimeReference(*x2,arrival_keyword,processing_window);

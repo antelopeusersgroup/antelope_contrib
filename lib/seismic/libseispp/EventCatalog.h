@@ -242,10 +242,10 @@ public:
 
 	\param pred predicate function object to apply to define subset condition.  Must return
 		true if the Hypocenter is to be included in the subset.
-	\return auto_ptr to new EventCatalog containing the subset.  The current pointer of 
+	\return shared_ptr to new EventCatalog containing the subset.  The current pointer of 
 		subset is set to first event in the new catalog (time order).
 	*/
-	template<class Predicate> auto_ptr<EventCatalog> subset(Predicate pred);
+	template<class Predicate> shared_ptr<EventCatalog> subset(Predicate pred);
 	/*! \brief Return the count of current number of Hypocenters in the catalog.*/
 	int size();
 	/*! \brief Standard assignment operator.*/
@@ -265,10 +265,10 @@ private:
 };
 
 template <class Predicate>
-auto_ptr<EventCatalog> EventCatalog::subset(Predicate pred)
+shared_ptr<EventCatalog> EventCatalog::subset(Predicate pred)
 {
 	map<Hypocenter,Metadata,SpaceTimeCompare>::iterator cptr;
-	auto_ptr<EventCatalog> result(new EventCatalog());
+	shared_ptr<EventCatalog> result(new EventCatalog());
 	for(cptr=catalog.begin();cptr!=catalog.end();++cptr)
 	{
 		if(pred(cptr->first)) result->catalog.insert(*cptr);

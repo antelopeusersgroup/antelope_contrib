@@ -1,4 +1,4 @@
-antelope_contrib
+antelope\_contrib
 ================
 
 Contributed software for use with the Antelope Environmental Monitoring
@@ -18,7 +18,6 @@ Inclusion in Antelope
 BRTT includes compiled versions of the software in this repository with every
 release of Antelope, subject to some basic quality control guidelines. The
 [Contributing](#contributing) section below contains some guidelines.
-
 
 Layout of the antelope\_contrib Git repository
 -------------------------
@@ -66,13 +65,13 @@ You may also choose to check out the contributed code to another location than
 
 ### For Bourne shells:
 
-    . /opt/antelope/5.5/setup.sh
+    . /opt/antelope/5.6/setup.sh
     cd $ANTELOPE
     git clone https://github.com/antelopeusersgroup/antelope_contrib.git src
 
 ### For C shells:
 
-    source /opt/antelope/5.5/setup.csh
+    source /opt/antelope/5.6/setup.csh
     cd $ANTELOPE
     git clone https://github.com/antelopeusersgroup/antelope_contrib.git src
 
@@ -94,10 +93,8 @@ these macros. Basic boot-strapping for `localmake` looks like this:
     make Include; make; make install
     cd ../../
 
-
     # Run localmake_config to define the paths to various third-party software
     localmake_config
-
 
 Compilation
 -----------
@@ -158,6 +155,7 @@ lends itself to inclusion in commercial packages. *Generally speaking,
 and LGPL are not.*
 
 For more information on [BRTT][brtt]'s rules for code contribution with Antelope, please see
+
 BRTT's [contrib licensing page][contrib-lic].
 
   [contrib-lic]: http://www.brtt.com/contrib_software.html

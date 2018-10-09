@@ -1,3 +1,10 @@
+7 August 2018
+  - Update to libslink to 2.6.
+  - Add -mbi option to match byte order of integer encoded data to
+      the same byte order as the miniSEED header, swapping the data
+      payload if needed.
+  - version 4.3.
+
 6 July 2015
   - Update to libslink to 2.4b.
   - Small fix to logging shim functions to avoid compiler warnings.

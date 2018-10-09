@@ -28,6 +28,8 @@ const string eof_tag("ENDF");
    number of objects written */
 const int TextIOStreamEOFOffset(64);
 const int BinaryIOStreamEOFOffset(BINARY_TAG_SIZE+sizeof(long));
+/* This is used for indexed files */
+const string OffsetKey("foff");
 /*! Legacy writer for archive connected to stdout - original seispp_filters */
 template <class OutputObject> void write_object(OutputObject& d,
         boost::archive::text_oarchive& oa)

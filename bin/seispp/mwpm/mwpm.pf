@@ -1,3 +1,8 @@
+# This group of parameters should not usually be changed by the user 
+error_estimate_confidence_interval 0.95
+bootstrap_multiplier 100
+number_singular_values_to_use 3
+# These will usually be changed by the user depending on the data
 f0	0.100000
 fw	0.100000
 nsamples	80

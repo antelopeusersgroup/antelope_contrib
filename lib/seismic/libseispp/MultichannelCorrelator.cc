@@ -483,7 +483,7 @@ MultichannelCorrelator:: MultichannelCorrelator(ThreeComponentEnsemble data,
 									bool parallel)
 {
     try {
-		auto_ptr<TimeSeriesEnsemble>comp(ExtractComponent(data,component));
+		shared_ptr<TimeSeriesEnsemble>comp(ExtractComponent(data,component));
 		*this = MultichannelCorrelator(*comp,method,beam_window,robust_window,
 				lag_cutoff, stacktype,initial_beam,reference_member,normalize,parallel,false,false);
 	}catch(...) {

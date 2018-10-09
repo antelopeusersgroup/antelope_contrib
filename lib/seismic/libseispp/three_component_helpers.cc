@@ -33,7 +33,7 @@ Arguments:
 
 */
 
-auto_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram& tcsi,
+shared_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram& tcsi,
 	string arrival_time_key,
 		TimeWindow tw)
 {
@@ -59,7 +59,7 @@ auto_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram
 			+ string("Cannot proceed as timing is ambiguous"));
 
 	// start with a clone of the original
-	auto_ptr<ThreeComponentSeismogram> tcso(new ThreeComponentSeismogram(tcsi));
+	shared_ptr<ThreeComponentSeismogram> tcso(new ThreeComponentSeismogram(tcsi));
 	tcso->ator(atime);  // shifts to arrival time relative time reference
         // Simply return a copy of traces marked dead
         if(!(tcso->live)) return(tcso);
@@ -117,14 +117,14 @@ auto_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram
 special thing it does is handle exceptions.  When the single object
 processing function throws an exception the error is printed and the 
 object is simply not copied to the output ensemble */
-auto_ptr<ThreeComponentEnsemble> ArrivalTimeReference(ThreeComponentEnsemble& tcei,
+shared_ptr<ThreeComponentEnsemble> ArrivalTimeReference(ThreeComponentEnsemble& tcei,
 	string arrival_time_key,
 		TimeWindow tw)
 {
 	int nmembers=tcei.member.size();
 	// use the special constructor to only clone the metadata and 
 	// set aside slots for the new ensemble.
-	auto_ptr<ThreeComponentEnsemble> 
+	shared_ptr<ThreeComponentEnsemble> 
 		tceo(new ThreeComponentEnsemble(dynamic_cast<Metadata&>(tcei),
 			nmembers));
 	tceo->member.reserve(nmembers);  // reserve this many slots for efficiency
@@ -134,7 +134,7 @@ auto_ptr<ThreeComponentEnsemble> ArrivalTimeReference(ThreeComponentEnsemble& tc
 	for(indata=tcei.member.begin();indata!=tcei.member.end();++indata)
 	{
 		try {
-			auto_ptr<ThreeComponentSeismogram> 
+			shared_ptr<ThreeComponentSeismogram> 
 			tcs(ArrivalTimeReference(*indata,arrival_time_key,tw));
 			tceo->member.push_back(*tcs);
 		} catch ( SeisppError& serr)

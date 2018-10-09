@@ -13,7 +13,7 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "BasicTimeSeriesAttribures < in > out [-objt object_type -v --help -text]"
+    cerr << "BasicTimeSeriesAttribures < in > out [-t object_type -v --help -text]"
         <<endl
         << "Most SEISPP data objects are children of BasicTimeSeries"<<endl
         << "The attibute defined in BasicTimeSeries are not Metadata and "
@@ -22,7 +22,7 @@ void usage()
         <<endl
         << "Input is assumed to be a stream file of the requested objects"<<endl
         << "The result is a verbose text file meant to be read by humans"<<endl
-        << " Use -objt to select object type expected for input. "<<endl
+        << " Use -t to select object type expected for input. "<<endl
         << " (Allowed options=ThreeComponentEnsemble (default),"
            << "ThreeComponentSeismogram, TimeSeries, PMTimeSeries,"
            << "and TimeSeriesEnsemble)"<<endl
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
           SEISPP_verbose=true;
         else if(sarg=="-text")
             binary_data=false;
-        else if(sarg=="-objt")
+        else if(sarg=="-t")
         {
             ++i;
             if(i>=argc)usage();

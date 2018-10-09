@@ -149,7 +149,7 @@ char *argv[];
   /* Print current settings  */
 
   fprintf( stderr, "\nmrc was started at %s with the following parameters:\n\n",
-           s=strtime(now()) );
+           s=strtime(std_now()) );
 	   free(s);
 
   fprintf( stderr, "    ORBNAME:\t\t %s\n", orbname );

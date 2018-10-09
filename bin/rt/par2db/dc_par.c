@@ -106,7 +106,7 @@ int dc_par( uchar_t *packet, struct Packet **Pkt )
 
    /* record LAST COMMAND  */
 
-   ytime = now();
+   ytime = std_now();
    e2h( ytime, &year, &day, &hour, &min, &sec);
    ytime = epoch( year * 1000 );
    off = DCCMD_TIM +  hdr->prehdr.hdrsiz;

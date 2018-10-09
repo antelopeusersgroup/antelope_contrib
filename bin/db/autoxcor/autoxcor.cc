@@ -623,9 +623,9 @@ int main(int argc, char **argv)
 						continue;
 					}
 					ThreeComponentSeismogram d3c(d);
-					auto_ptr<TimeSeries> beam;
-					auto_ptr<TimeSeries> beampre;
-					beam=auto_ptr<TimeSeries>(ExtractComponent(d,2));
+					shared_ptr<TimeSeries> beam;
+					shared_ptr<TimeSeries> beampre;
+					beam=shared_ptr<TimeSeries>(ExtractComponent(d,2));
 					if(beam->ns<=0)
 					{
 						cout<<"Number of samples is less than 1 for event: "

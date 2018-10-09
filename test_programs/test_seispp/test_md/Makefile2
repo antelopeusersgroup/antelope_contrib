@@ -1,6 +1,7 @@
 BIN=test_md
 ldlibs=-lseispp -ltrvltm -lpfstream -lbrttutil $(TRLIBS) $(DBLIBS) \
        -lperf -lgclgrid 
+cxxflags=-g
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE)  	

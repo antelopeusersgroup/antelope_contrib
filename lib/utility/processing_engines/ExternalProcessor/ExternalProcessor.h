@@ -128,7 +128,7 @@ public:
 	/*! \brief Retrieve a matrix of data from an external processor.
 	\param name is a symbolic name used to refer to a specific matrix member.
 	*/  
-	virtual auto_ptr<dmatrix> retrieve_matrix(string name)=0;
+	virtual shared_ptr<dmatrix> retrieve_matrix(string name)=0;
 };
 
 } // End SEISPP namespace declaration

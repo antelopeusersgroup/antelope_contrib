@@ -94,7 +94,7 @@ int save_tcorr( Dset *bset, Dset *gset, double tcorr)
 	   "bsta", bset->sta, 
 	   "bchan", bset->chan,
 	   "bsrate", bset->srate,
-	   "lddate", now(), 0);
+	   "lddate", std_now(), 0);
 
     return 1 ;
 

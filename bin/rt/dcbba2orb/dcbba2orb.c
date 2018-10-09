@@ -147,14 +147,14 @@ int main(int iArgCount, char *aArgList[]) {
 		/* Connect to Data Concentrator's Data read port */
 		if (dcDataConnect(oConfig.iConnectionType, oConfig.sDCConnectionParams)
 				== RESULT_SUCCESS) {
-			dPrevTime = now();
+			dPrevTime = std_now();
 
 			/*** BEGIN MAIN LOOP ***/
 			while (readFromDC(&oPktInfo, aBBAPkt) == RESULT_SUCCESS) {
 				bOKToSend = TRUE;
 				/* Check the packet age */
 				/*if (fabs(oPktInfo.dPktTime - dPrevTime) > 86400.0) {
-				 dPrevTime = now();
+				 dPrevTime = std_now();
 				 if (fabs(oPktInfo.dPktTime - dPrevTime) > 86400.0) {
 				 elog_complain(
 				 0,
@@ -1219,7 +1219,7 @@ static int parseBBAPacket(uint8_t *aBBAPkt, struct stBBAPacketInfo* oPktInfo) {
 	}
 
 	/* Get packet time */
-	dYTime = now();
+	dYTime = std_now();
 	e2h(dYTime, &iYear, &iDay, &iHour, &iMin, &dSec);
 	dPTime = epoch(iYear * 1000);
 

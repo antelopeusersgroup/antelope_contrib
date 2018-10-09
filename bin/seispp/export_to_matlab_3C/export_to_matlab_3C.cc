@@ -14,14 +14,18 @@ using namespace SEISPP;
 
 void usage()
 {
-    cerr << "export_to_matlab [-x1 x1f -x2 x2f -x3 x3f -pf pffile] < in  "
+    cerr << "export_to_matlab [-x1 x1f -x2 x2f -x3 x3f -time tfile -pf pffile] < in  "
         <<endl
         << "Exports serialized seispp 3C ensemble to 3 matlab matrices in 3 files"<<endl
         << "Use -x1, -x2, or -x3 to set file names for components 1, 2, 3"<<endl
         << "Default files are x1=T.dat, x2=R.dat, and x3=L.dat"<<endl
         << "Default names can also be changed by editing default pf file "
         << "export_to_matlab.pf"<<endl
-        << "(Accepts only text format input)"<<endl;
+        << "-time is optional.  When found a matrix of times will saved in tfile"
+        <<endl
+        << "(Note:  tfile cannot be set with pf - only through command line"
+        <<endl
+        << "(Accepts only binary format input)"<<endl;
     exit(-1);
 }
 vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
@@ -94,7 +98,22 @@ vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
   }
   return work;
 }
-
+/* This routine builds the optional time matrix.   It is simpler
+ * because all it has to handle is variable start times. We include
+ * nrows assuming it was handled by the routine above. */
+dmatrix time_matrix(ThreeComponentEnsemble& d,int nrows)
+{
+    try{
+        int i,j;
+        int nsta=d.member.size();
+        dmatrix tmat(nrows,nsta);
+        for(i=0;i<nsta;++i)
+        {
+            for(j=0;j<nrows;++j) tmat(j,i)=d.member[i].time(j);
+        }
+        return tmat;
+    }catch(...){throw;};
+}
 
 bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
@@ -102,6 +121,8 @@ int main(int argc, char **argv)
 
     int i;
     char *pffile=strdup("export_to_matlab");
+    bool save_time_matrix(false);
+    string timefile("");
 
     /* We have to pass through the arg list twice - the first pass 
        is just to set alterntive pf if requested */
@@ -153,6 +174,14 @@ int main(int argc, char **argv)
             if(i>=argc)usage();
             x3file=string(argv[i]);
           }
+          else if(sarg=="-time")
+          {
+            ++i;
+            if(i>=argc)usage();
+
+            save_time_matrix=true;
+            timefile=string(argv[i]);
+          }
           else
             usage();
         }
@@ -170,6 +199,13 @@ int main(int argc, char **argv)
         ofs.open(x3file.c_str(),ios::out);
         ofs<<dmat[2];
         ofs.close();
+        if(save_time_matrix)
+        {
+            dmatrix t=time_matrix(d,dmat[0].rows());
+            ofs.open(timefile.c_str(),ios::out);
+            ofs<<t;
+            ofs.close();
+        }
     }catch(SeisppError& serr)
     {
         serr.log_error();

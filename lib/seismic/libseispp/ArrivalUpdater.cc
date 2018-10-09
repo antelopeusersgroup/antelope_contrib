@@ -90,7 +90,7 @@ ArrivalUpdater::ArrivalUpdater(DatabaseHandle& dbhraw, MetadataList& mdl1,
 			grpmatchkeys.push_back("evid");
 			eogroup=DatascopeMatchHandle(dbgrp,empty,grpmatchkeys,am);
 		}
-		timestamp=now();
+		timestamp=std_now();
 		current_evid=-1;
 	}
 	catch (...) {throw;};
@@ -286,14 +286,14 @@ int ArrivalUpdater::update(Metadata& md)
 			throw SeisppError(base_error
 			 + string(" failure in fetching assoc pointer from view"));
 		/* Must update lddate */
-		dbputv(db,0,"lddate",now(),NULL );
+		dbputv(db,0,"lddate",std_now(),NULL );
 		err+=put_attributes_to_db(md,db,mdlassoc,am);
 		dbgetv(aaview.db,0,"arrival",&db,NULL);
 		if(db.table==dbINVALID)
 			throw SeisppError(base_error
 			 + string(" failure in fetching arrival pointer from view"));
 		err+=put_attributes_to_db(md,db,mdlarrival,am);
-		dbputv(db,0,"lddate",now(),NULL );
+		dbputv(db,0,"lddate",std_now(),NULL );
 	}
 	if(nrow>1)
 	{
