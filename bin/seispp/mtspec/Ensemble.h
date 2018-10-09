@@ -25,12 +25,12 @@ template <typename Tdata>
 }
 template <typename Tdata>
   Ensemble<Tdata>::Ensemble(const Ensemble& parent)
-      : Metadata(dynamic_cast<Metadata&> parent)
+      : Metadata(dynamic_cast<Metadata&>( parent))
 {
   member=parent.member;
 }
 template <typename Tdata>
-  Ensemble<Tdata>::operator=(const Ensemble& parent)
+  Ensemble<Tdata>& Ensemble<Tdata>::operator=(const Ensemble& parent)
 {
   if(this!=(&parent))
   {
@@ -40,4 +40,4 @@ template <typename Tdata>
   return *this;
 }
 typedef  Ensemble<TimeSeries> TimeSeriesEnsemble;
-typedef Ensemble<ThreeComponentEnsemble> ThreeComponentEnsemble;
+typedef Ensemble<ThreeComponentSeismogram> ThreeComponentEnsemble;
