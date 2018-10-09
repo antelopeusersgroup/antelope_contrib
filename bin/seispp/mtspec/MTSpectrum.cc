@@ -49,9 +49,6 @@ string build_process_commands(string dname, double tbp, int N, double fs)
   stringstream ss;
   ss << "["<<specname <<",f]"
     << "=pmtm("<<dname<<","<<tbp<<","<<N<<","<<fs<<")"<<endl;
-  //DEBUG
-  cerr << "Process script sent to matlab"<<endl
-      << ss.str()<<endl;
   return(ss.str());
 }
 TimeSeries MTSpectrum::spectrum(Metadata& md, double *d, int nd)
