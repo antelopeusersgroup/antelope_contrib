@@ -71,9 +71,15 @@ template <typename DataType> int mtspec(int tbp, bool binary_data)
         while(inp.good())
         {
             d=inp.read();
-            d=processor.spectrum(d);
-            outp.write(d);
-            ++count;
+            try {
+              d=processor.spectrum(d);
+              outp.write(d);
+              ++count;
+            }catch(SeisppError& serr)
+            {
+                cerr << "Error was thrown by spectrum calculator.  Message follows:"<<endl;
+                serr.log_error();
+            }
         }
         return count;
     }catch(...){throw;};
