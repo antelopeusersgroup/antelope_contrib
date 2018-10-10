@@ -5,6 +5,9 @@
 #include "MTSpectrum.h"
 using namespace std;
 using namespace SEISPP;
+/* This is presently in a local file but might b moved to a library
+ * some day. */
+int getfftlength(int N);
 MTSpectrum::MTSpectrum()
 {
   tbp=4.0;
@@ -47,8 +50,10 @@ fs - sampling frequncy in Hz
 string build_process_commands(string dname, double tbp, int N, double fs)
 {
   stringstream ss;
+  int nfft;
+  nfft=getfftlength(N);
   ss << "["<<specname <<",f]"
-    << "=pmtm("<<dname<<","<<tbp<<","<<N<<","<<fs<<")"<<endl;
+    << "=pmtm("<<dname<<","<<tbp<<","<<nfft<<","<<fs<<")"<<endl;
   return(ss.str());
 }
 TimeSeries MTSpectrum::spectrum(Metadata& md, double *d, int nd)
