@@ -72,6 +72,8 @@ template <typename DataType> int mtspec(int tbp, bool binary_data)
         {
             d=inp.read();
             try {
+              if(SEISPP_verbose)
+                  cerr << "mtspec:  working on object number "<<count<<endl;
               d=processor.spectrum(d);
               outp.write(d);
               ++count;
