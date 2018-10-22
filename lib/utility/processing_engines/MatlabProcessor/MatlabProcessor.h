@@ -5,6 +5,9 @@
 #include <fstream>
 #include <sstream>
 
+// needed for blas - could use other versions
+#include "perf.h"
+
 // SEISPP includes
 #include "ExternalProcessor.h"
 #include "dmatrix.h"
