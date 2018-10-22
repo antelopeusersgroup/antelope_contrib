@@ -8,8 +8,13 @@ SUBDIR=/contrib
 include $(ANTELOPEMAKE) 
 include $(ANTELOPEMAKELOCAL)
 CXXFLAGS += -I$(BOOSTINCLUDE)
+# Fix for now to handle matlab
+CXXFLAGS += -I/gpfs/hps/soft/rhel6/matlab/2018a/extern/include
+#LDLIBS += -L/gpfs/hps/soft/rhel6/matlab/2018a/bin/maci64 -leng -lmx -lut -lmat
+LDLIBS += -L/gpfs/hps/soft/rhel6/matlab/2018a/bin/glnxa64 -lmatlabprocessor -leng -lmx -lut -lmat
 
-OBJS=mtspec.o MTSpectrum.o
+
+OBJS=mtspec.o MTSpectrum.o getfftlength.o
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

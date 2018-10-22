@@ -25,7 +25,7 @@ void usage()
         << "Use -drop to discard unmatched data to statics table"
         << " (Default copies unmatched data with no change)"
         << " Use -t to select object type expected for input. "<<endl
-        << " (Allowed options=ThreeComponentEnsemble (default),ThreeComponentSeismogram, TimeSeries, and TimeSeriesEnsemble)"<<endl
+        << " (Allowed options=ThreeComponentEnsemble,ThreeComponentSeismogram (default), TimeSeries, and TimeSeriesEnsemble)"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl;
@@ -206,7 +206,7 @@ int main(int argc, char **argv)
     string statictablefile(argv[1]);
     bool binary_data(true);
     bool dropnull(false);
-    string otype("ThreeComponentEnsemble");
+    string otype("ThreeComponentSeismgram");
     string t0shiftkey("source_static");
     for(i=narg_required+1;i<argc;++i)
     {
