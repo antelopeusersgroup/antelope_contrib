@@ -34,6 +34,9 @@ use strict 'vars' ;
 # debug
 #use diagnostics;
 
+no if $] >= 5.018, warnings => qw( experimental::smartmatch );
+
+
 our ( $opt_a, $opt_d, $opt_t, $opt_s, $opt_e, $opt_l, $opt_p, $opt_P, $opt_v, $opt_V, $opt_y);
 our ( $host, $pgm, $usage) ;
 our ( %pf ) ;
