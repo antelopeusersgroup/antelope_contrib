@@ -169,7 +169,7 @@ ostream& operator<<(ostream& os,BasicTimeSeries& y)
             os << "t0shift_is_valid is true"<<endl
                 << "t0shift value="<< setprecision(13)<<y.t0shift<<endl;
         else
-            os << "t0shift_is_valid is set false - time must be relative"<<endl;
+            os << "t0shift_is_valid is set false time should be absolute"<<endl;
 	set<TimeWindow,TimeWindowCmp>::iterator g;
 	for(g=y.gaps.begin();g!=y.gaps.end();++g)
 	{
