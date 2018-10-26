@@ -165,6 +165,11 @@ ostream& operator<<(ostream& os,BasicTimeSeries& y)
 	else
 		os << "Data time standard is UTC (absolute)"<<endl
 			<< "t0="<<strtime(y.t0)<<endl;
+        if(y.t0shift_is_valid)
+            os << "t0shift_is_valid is true"<<endl
+                << "t0shift value="<< setprecision(13)<<y.t0shift<<endl;
+        else
+            os << "t0shift_is_valid is set false - time must be relative"<<endl;
 	set<TimeWindow,TimeWindowCmp>::iterator g;
 	for(g=y.gaps.begin();g!=y.gaps.end();++g)
 	{
