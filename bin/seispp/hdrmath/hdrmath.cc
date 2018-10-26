@@ -198,10 +198,27 @@ HdrmathArg arg_compute(Metadata d, pair<Args,Ops>& mathlist)
       lhs=HdrmathArg(d,lhs.key,lhs.mdt);
     else
     {
+      /* We first have to set the metadata for this object for all args
+       * defined as variables linked to metadata.  Note we don't set the
+       * first. */
+      aptr=a.begin();
+      ++aptr;
+      for(;aptr!=a.end();++aptr)
+      {
+          if(aptr->IsMetadata)
+          {
+              aptr->SetMetadata(d);
+          }
+      }
+      //reset aptr to beginning
+      aptr=a.begin();
       Args::iterator ap2(aptr);
       ++ap2;
       switch((*optr))
       {
+        case EQ:
+          lhs=(*ap2);
+          break;
         case PEQ:
           lhs += (*ap2);
           break;
@@ -280,9 +297,13 @@ template <typename DataType> pair<int,int> hdrmath(pair<Args,Ops>& mathlist,bool
     {
       ++totalcount;
       d=inp.read();
-      HdrmathArg math_result;
       try{
-        math_result=arg_compute(dynamic_cast<Metadata&>(d),mathlist);
+          /* Because of the oddity of the way I chose to implement 
+           * operator= we cannot do assigment here, but we need to 
+           * use the copy constructor.   Problem is operator= will think
+           * the result of the computation needs to be extracted from d. */
+        HdrmathArg math_result(arg_compute(dynamic_cast<Metadata&>(d),
+                    mathlist));
         if(math_result.mdt == MDint)
         d.put(math_result.key,math_result.get_long());
         else if(math_result.mdt == MDreal)
