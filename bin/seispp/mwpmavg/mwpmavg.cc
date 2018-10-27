@@ -8,6 +8,7 @@
 #include "PMTimeSeries.h"
 #include "seispp.h"
 #include "ensemble.h"
+#include "PfStyleMetadata.h"
 #include "StreamObjectReader.h"
 #include "StreamObjectWriter.h"
 #include "VectorStatistics.h"
@@ -22,15 +23,20 @@ void usage()
         << "in a time window relative to time of a specified seismic phase"<<endl
         << "Results are a csv file defined by argument 1. "<<endl
         << "To get related attributes run listhdr with -csv option to build a parallel matrix of metadata"<<endl
+        << "Auxiliary attributes to write to output file are defined by parameter file"<<endl
         << " -avglimit flag sets the maximum number of nongap samples to average to n"<<endl
         << "This is useful to limit averaging to only early part of the signal"
         <<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl
-        << " -pf - read parameters from pffile instead of defaul mwpmavg.pf"<<endl;
+        << " -pf - read parameters from pffile instead of default mwpmavg"<<endl
+        << "       (Warning - do not include trailing .pf for alternate name)"<<endl;
     exit(-1);
 }
+/* This procedure is in mdutils.cc in this directory.   It might one day be
+a library routine. */
+int WriteToCSVFile(Metadata& d,MetadataList& mdl, ostream& ofs);
 /* Small helper procedure.  Truncates a 3xn matrix stored with extra
  * columns to n.  Returns the 3xn result. */
 dmatrix truncate_cols(dmatrix& d, int n)
@@ -62,14 +68,14 @@ public:
   int count;  // number of non-gap time steps averaged for this estimate
   /*! \brief primary constructor
 
-    \param d - input data 
+    \param d - input data
     \param phase_time_key - used to fetch arrival time
-    \param twin - time window to average (time relative to arrival time 
+    \param twin - time window to average (time relative to arrival time
        defined by phase_time_key
     \param maxavg - maximum number of samples to average for estimate.
       Used to allow longer twin but limit estimate to earliest part of
       the signal.  If less than 0 set to number of samples in win */
-  PMAverageData(PMTimeSeries d, string phase_time_key, 
+  PMAverageData(PMTimeSeries d, string phase_time_key,
           TimeWindow twin, int maxavg);
   friend ostream& operator<<(ostream& os,PMAverageData& d);
 };
@@ -175,7 +181,7 @@ PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win)
 
     const double conf(0.95),sampmultiplier(100);
     int numtrials=(this->count)*sampmultiplier;
-    int count_floor(4);   
+    int count_floor(4);
     vector<double> vtmp;
     if((this->count)==1)
     {
@@ -379,7 +385,23 @@ PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win,
     }
   }catch(...){throw;};
 }
-
+/* This small procedure writes a set of keyword names to make it
+easier to read the output file. */
+void WriteHeaderLines(const string keyname, MetadataList& OutMD,ofstream& ofs)
+{
+  ofs<<keyname<<",";
+  ofs<<"majornrm,dmajornrm,majoraz,dmajoraz,majorinc,dmajorinc,"
+    <<"minornrm,dminornrm,minoraz,dminoraz,minorinc,dminorinc,"
+    << "rectilinearity,drect,"
+    <<"major_x,major_y,major_z,dtheta_major,"
+    <<"minor_x,minor_y,minor_z,dtheta_minor,"
+    <<"count";  // Intentionally omit , here to allow logic of next loop
+  MetadataList::iterator mptr;
+  for(mptr=OutMD.begin();mptr!=OutMD.end();++mptr)
+  {
+    ofs<<","<<mptr->tag;
+  }
+}
 ostream& operator<<(ostream& os,PMAverageData& d)
 {
     /* Note we convert all angle terms to degrees as
@@ -464,7 +486,7 @@ int main(int argc, char **argv)
          << "Appending these results to this file - beware of duplicates"<<endl;
     }
     bool binary_data(true);
-    string pffile("mwpmavg.pf");
+    string pffile("mwpmavg");
     int windowlimit(-1); // negative signals to turn this feature off
     for(i=2;i<argc;++i)
     {
@@ -494,16 +516,8 @@ int main(int argc, char **argv)
         else
             usage();
     }
-    Pf *pf;
-    char pfchr[32];
-    strcpy(pfchr,pffile.c_str());
-    if(pfread(pfchr,&pf))
-    {
-      cerr << "pfread failed on file="<<pffile<<endl;
-      usage();
-    }
     try{
-        Metadata control(pf);
+        PfStyleMetadata control(pffile);
         string phase=control.get_string("phase");
         string phase_time_key=control.get_string("phase_time_key");
         double ts,te;
@@ -515,6 +529,9 @@ int main(int argc, char **argv)
         string key_type=control.get_string("name_key_type");
         allowed_key_types kt;
         kt=parse_key_name(key_type);
+        /* This list defines other metadata attributes posted to the right
+        of the output of this program.   */
+        MetadataList OutMD=get_mdlist(control,"AuxiliaryOutputMetadata");
         ofstream ofs(outfile.c_str(),std::ios::out | std::ios::app);
         if(ofs.fail())
         {
@@ -532,6 +549,7 @@ int main(int argc, char **argv)
           inp=shared_ptr<StreamObjectReader<PMTimeSeries>>
              (new StreamObjectReader<PMTimeSeries>);
         }
+        WriteHeaderLines(name_key,OutMD,ofs);
         int nd(0);
         PMTimeSeries d;
         while(inp->good())
@@ -560,7 +578,9 @@ int main(int argc, char **argv)
             if(avg.live)
             {
               ofs << nametag<<","<<band<<","
-                  <<avg<<endl;
+                  <<avg<<",";
+              WriteToCSVFile(dynamic_cast<Metadata&>(d),OutMD,ofs);
+              ofs<<endl;
               ++nd;
             }
         }
