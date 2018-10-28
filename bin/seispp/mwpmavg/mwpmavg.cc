@@ -401,6 +401,7 @@ void WriteHeaderLines(const string keyname, MetadataList& OutMD,ofstream& ofs)
   {
     ofs<<","<<mptr->tag;
   }
+  ofs<<endl;
 }
 ostream& operator<<(ostream& os,PMAverageData& d)
 {
