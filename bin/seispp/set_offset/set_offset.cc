@@ -85,7 +85,10 @@ template <class T> pair<int,int> set_offset(bool binary_data, bool use_cartesian
           ry=d.get_double(receiver_y);
           offset=sqrt((sx-rx)*(sx-rx) + (sy-ry)*(sy-ry));
           d.put(cartesian_offset,offset);
-          az=atan2(sy-ry,sx-rx);
+          /* Warning before Oct 29 2018, this was incorrectly computed
+           * as phi of polar coordinates NOT azimuth */
+          //az=atan2(sy-ry,sx-rx);
+          az=atan2(sx-rx,sy-ry);
           d.put(baz,deg(az));
         }
         else
