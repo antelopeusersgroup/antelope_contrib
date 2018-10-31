@@ -327,6 +327,9 @@ PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win,
         }
         Vector3DBootstrapError majerr(majsamples,conf,numtrials);
         Vector3DBootstrapError minerr(minsamples,conf,numtrials);
+        dtheta_major_axes=majerr.angle_error();
+        dtheta_minor_axes=minerr.angle_error();
+
         vtmp=majerr.mean_vector();
         for(k=0;k<3;++k) this->major[k]=vtmp[k];
         majoraz=M_PI_2 - atan2(vtmp[1],vtmp[0]);
