@@ -114,6 +114,8 @@ int main(int argc, char **argv)
              * this situation.   */
             bool restore_data_to_relative=false;
             double t0shift; // need this below to restore to absolute if needed
+            //Drop any data not marked live 
+            if(!d.live) continue;
             if(d.tref == relative) 
             {
                 restore_data_to_relative=true;
