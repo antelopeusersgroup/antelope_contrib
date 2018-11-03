@@ -392,7 +392,7 @@ PMAverageData::PMAverageData(PMTimeSeries d, string key, TimeWindow win,
 easier to read the output file. */
 void WriteHeaderLines(const string keyname, MetadataList& OutMD,ofstream& ofs)
 {
-  ofs<<keyname<<",";
+  ofs<<keyname<<","<<"band,";
   ofs<<"majornrm,dmajornrm,majoraz,dmajoraz,majorinc,dmajorinc,"
     <<"minornrm,dminornrm,minoraz,dminoraz,minorinc,dminorinc,"
     << "rectilinearity,drect,"
