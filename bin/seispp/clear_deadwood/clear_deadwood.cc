@@ -72,7 +72,8 @@ template <typename Tens, typename Tdata> ProcessCount clear_deadwood(bool binary
           is copying will, on average, be faster than using erase*/
           bool needs_editing(false);
           typename std::vector<Tdata>::iterator dptr;
-          for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
+          int i;
+          for(dptr=d.member.begin(),i=0;dptr!=d.member.end();++dptr,++i)
           {
             if(!dptr->live)
             {
@@ -83,11 +84,19 @@ template <typename Tens, typename Tdata> ProcessCount clear_deadwood(bool binary
           if(needs_editing)
           {
             Tens dedit(dynamic_cast<Metadata&>(d),d.member.size());
+            /* The above constructor creates empty slots.  We need to clear
+             * them or the algorithm below won't work */
+            dedit.member.clear(); 
             for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
             {
               if(dptr->live)
               {
                 dedit.member.push_back(*dptr);
+              }
+              else if(SEISPP_verbose)
+              {
+                cerr << "clear_deadwood:  clearing member "<<i
+                  << " of ensemble "<<total_count<<endl;
               }
             }
             /* If the result is totally empty delete it from output */
@@ -152,7 +161,7 @@ int main(int argc, char **argv)
     double example_real(0.0);
     bool example_boolean(false);
     bool binary_data(true);
-    string otype("ThreeComponentSeismogram");
+    string otype("ThreeComponentEnsemble");
 
     for(i=narg_required+1;i<argc;++i)
     {
