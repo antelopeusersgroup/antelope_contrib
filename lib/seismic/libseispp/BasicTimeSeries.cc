@@ -211,6 +211,17 @@ double BasicTimeSeries::time_reference()
         throw SeisppError(base_error
                 + "cannot return time reference as it is marked invalid");
 }
-
+/* This used to be in the include file as a trivial insert.  Found it useful
+ * to silently do nothing if the the window was less than one sample in length */
+void BasicTimeSeries::add_gap(TimeWindow tw)
+{
+  double tlen;
+  tlen=tw.end-tw.start;
+  /* this also does nothing if the above resolves negatibe.  That case maybe
+   * should throw an error.  The main idea is to do nothing if the window 
+   * is less than one sample */
+  if(tlen>(this->dt))
+      gaps.insert(tw);
+}
 
 }  // end SEISPP namespace encapsulation
