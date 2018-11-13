@@ -128,7 +128,7 @@ public:
 // or a constructor).
 // This function provides a common mechanism to define such a gap in the data.
 **/
-	void add_gap(TimeWindow tw){gaps.insert(tw);};
+	void add_gap(TimeWindow tw);
 /*!
 //  \brief Clear gaps.
 //
