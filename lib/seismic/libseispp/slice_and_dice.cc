@@ -127,12 +127,17 @@ ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow
 	for(i=0;i<result.ns;++i)
 	{
 		double t;
+                int is;
 		if(result.is_gap(i)) 
                         for(j=0;j<3;++j) result.u(j,i)=0.0;
 		else
 		{
 			t=result.time(i);
-			for(j=0;j<3;++j) result.u(j,i)=parent.u(j,parent.sample_number(t));
+                        is=parent.sample_number(t);  
+                        if( (is<0) || (is>=result.ns) )
+                            for(j=0;j<3;++j) result.u(j,i)=0.0;
+                        else
+			    for(j=0;j<3;++j) result.u(j,i)=parent.u(j,parent.sample_number(t));
 		}
 	}
 	return(result);
