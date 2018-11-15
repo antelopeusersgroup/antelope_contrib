@@ -1,8 +1,17 @@
 noise_window_start_time -5.0
 noise_window_end_time -1.0
 force_mask_time_before_noise_window true
+# This is used to define noise floor when enough samples of noise are found
 snr_floor 3.0
+# If the number of noise samples is less than this parameter the absolute_snr_floor
+# is used to define the noise floor as peak_amplitude*absolute_snr_floor
+minimum_noise_samples 20
+absolute_snr_floor 10
 noise_level_key noise_level
 # Any section with a low snr with fewer samples than this will no be marked
 minimum_samples_per_gap 4
-
+# This parameter enables test to mask hard zeros sections
+scan_for_zeros true
+# When scan_for_zeros is true this defines the level RELATIVE to the
+# largest amplitude in the data that defines zero
+floor_to_define_zero 0.0000001
