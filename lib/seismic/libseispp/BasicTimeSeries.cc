@@ -215,13 +215,52 @@ double BasicTimeSeries::time_reference()
  * to silently do nothing if the the window was less than one sample in length */
 void BasicTimeSeries::add_gap(TimeWindow tw)
 {
+  const string base_error("BasicTimeSeries::add_gap:  ");
+  /* This complicated construct is required as return code for set insert
+   * method.   We need it to test for failed insertions that happen with 
+   * TimeWindowCmp when a new time window overlaps with an existing one. */
+  pair<set<TimeWindow,TimeWindowCmp>::iterator,bool> ret;
   double tlen;
   tlen=tw.end-tw.start;
   /* this also does nothing if the above resolves negatibe.  That case maybe
    * should throw an error.  The main idea is to do nothing if the window 
    * is less than one sample */
   if(tlen>(this->dt))
-      gaps.insert(tw);
+  {
+      ret=gaps.insert(tw);
+      if(ret.second) return;   //boolean is set true if insert succeeded
+      set<TimeWindow,TimeWindowCmp>::iterator gptr;
+      gptr=gaps.find(tw);
+      // This error should not happen, but chaos would happen if it did
+      if(gptr==gaps.end()) throw (base_error
+               + "Coding problem with set find method.   Contact author");
+      /* Create the new time window to replace this one as the range
+       * define by both.   Fudge the ends by 1/2 sample to be sure the 
+       * insert succeed with a unique interval */
+      TimeWindow fullgap;
+      fullgap.start=min(tw.start,(gptr->start));
+      fullgap.end=max(tw.end,(gptr->end));
+      fullgap.start -= ((this->dt)/2.0);
+      fullgap.end += ((this->dt)/2.0);
+      /* Testing shows we have to erase the old window we are replacing */
+      gaps.erase(gptr);
+      ret=gaps.insert(fullgap);
+      /* This could probably be done through recursion, but will only 
+       * allow two levels.  Found this was secondary scan was sometimes
+       * necessary. */
+      if(ret.second) return;
+      gptr=gaps.find(fullgap);
+      /* The 1/4 sample interval pad is artirary - want to avoid floating
+       * point equal compares */
+      if((gptr->start)<fullgap.start) 
+          fullgap.start=(gptr->start)-((this->dt)/4.0);
+      if((gptr->end)>fullgap.end) 
+          fullgap.end=(gptr->end)+((this->dt)/4.0);
+      gaps.erase(gptr);
+      ret=gaps.insert(fullgap);
+      if(!ret.second) throw SeisppError(base_error
+              + "Coding problem with set insert method.  Contact author.");
+  }
 }
 
 }  // end SEISPP namespace encapsulation
