@@ -126,7 +126,7 @@ int mask_zero_data(PMTimeSeries& d,double floor, int minsamples)
     }
     double dfloor=maxamp*floor;
     bool in_zero_section(false);
-    bool gaps_is_small(true);
+    bool gap_is_small(true);
     int nsamp_this_gap(0);
     /* First we need to handle an existing gap defined at the start of the data */
     int is;
@@ -149,7 +149,7 @@ int mask_zero_data(PMTimeSeries& d,double floor, int minsamples)
         if(in_zero_section)
         {
           ++nsamp_this_gap;
-          if(nsamp_this_gap>=minsamples) gaps_is_small=false;
+          if(nsamp_this_gap>=minsamples) gap_is_small=false;
           continue;
         }
         else
@@ -158,7 +158,7 @@ int mask_zero_data(PMTimeSeries& d,double floor, int minsamples)
           /* avoid round off error issues for start */\
           if(i==0)gw.start -= (d.dt)/2.0;
           in_zero_section=true;
-          gaps_is_small=true;
+          gap_is_small=true;
         }
       }
       else
@@ -170,11 +170,12 @@ int mask_zero_data(PMTimeSeries& d,double floor, int minsamples)
         else
         {
           /* Only add the gap if it is not too short */
-          if(!gaps_is_small)
+          if(!gap_is_small)
           {
             gw.end=d.time(i);
             d.add_gap(gw);
           }
+          nsamp_this_gap=0;
           in_zero_section=false;
           ++gapcount;
         }
@@ -200,7 +201,7 @@ void set_data_gaps(PMTimeSeries& d, double snr_floor, TimeWindow nw, int minsamp
     /* This may not be necessary  but better to always initialize */
     gw=TimeWindow(d.time(is),d.time(is+1));
     bool in_low_snr_section(false);
-    bool gaps_is_small(true);
+    bool gap_is_small(true);
     int i;
     int nsamp_this_gap(0);
     for(i=is;i<d.ns;++i)
@@ -213,7 +214,7 @@ void set_data_gaps(PMTimeSeries& d, double snr_floor, TimeWindow nw, int minsamp
         if(in_low_snr_section)
         {
           ++nsamp_this_gap;
-          if(nsamp_this_gap>=minsamp) gaps_is_small=false;
+          if(nsamp_this_gap>=minsamp) gap_is_small=false;
           continue;
         }
         else
@@ -242,11 +243,14 @@ void set_data_gaps(PMTimeSeries& d, double snr_floor, TimeWindow nw, int minsamp
           {
             /* Land here when a low snr section ends and we exceed the
             gap threshold */
-            if(!gaps_is_small)
+            if(!gap_is_small)
             {
               gw.end=d.time(i);
               d.add_gap(gw);
+              if(SEISPP_verbose) cerr << "mask_pm_snr:  low snr gap set for time "
+                  << gw.start<<" to "<<gw.end<<endl;
             }
+            nsamp_this_gap=0;
             in_low_snr_section=false;
           }
         }
@@ -316,6 +320,7 @@ int main(int argc, char **argv)
         play only when the noise window is found insufficiently long to extablish
         a stable level - defined by the min_noise_samples parameter */
         double absolute_snr_floor=control.get<double>("absolute_snr_floor");
+        bool force_abssnr=control.get_bool("force_absolute_snr_floor");
         int min_noise_samples=control.get<int>("minimum_noise_samples");
         int minsamp=control.get<int>("minimum_samples_per_gap");
         /* New option added Nov 2018 to maks hard zeros */
@@ -381,8 +386,9 @@ int main(int argc, char **argv)
               try{
                 noise_level=median_noise(d,nwin,min_noise_samples);
                 /* negative numbers flag an invalid estimate of noise level. when
-                that happens use the absolute floor.*/
-                if(noise_level<=0.0)
+                that happens use the absolute floor.   Note we can also 
+                force this with force_abssnr*/
+                if((noise_level<=0.0) || force_abssnr)
                 {
                   double dmaxamp=d.get<double>(maxampkey);
                   noise_level=dmaxamp/absolute_snr_floor;
@@ -413,6 +419,20 @@ int main(int argc, char **argv)
               double snrlimit=noise_level*snr_floor;
               set_data_gaps(d,snrlimit,nwin,minsamp);
             }
+            int nvalid;
+            nvalid=number_valid_samples(d);
+            if(nvalid<=0)
+            {
+              if(SEISPP_verbose) cerr << "mask_pm_snr:  object number "
+                  <<count<<" had all samples marked as gaps"<<endl
+                  << "Data for that object will be dropped from output"
+                  <<endl;
+              continue;
+            }
+            else if(SEISPP_verbose)
+                cerr << "mask_pm_snr:  object number "<<count
+                    << " was written with "<<nvalid<<" valid samples"
+                    <<endl;
             /* Perhaps should automatically drop data not marked live
             but for now copy such data */
             out->write(d);

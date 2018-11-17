@@ -7,6 +7,9 @@ snr_floor 3.0
 # is used to define the noise floor as peak_amplitude*absolute_snr_floor
 minimum_noise_samples 20
 absolute_snr_floor 10
+# When true we don't try to estimate noise level but use this level
+# relative to peak amplitude 
+force_absolute_snr_floor true
 noise_level_key noise_level
 # Any section with a low snr with fewer samples than this will no be marked
 minimum_samples_per_gap 4
