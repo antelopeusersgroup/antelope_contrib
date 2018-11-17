@@ -262,5 +262,28 @@ void BasicTimeSeries::add_gap(TimeWindow tw)
               + "Coding problem with set insert method.  Contact author.");
   }
 }
+/* Useful procedure for any object inheriting BasicTimeSeries.  
+ * It checks for a situation where all samples in a time series
+ * are inside a gap.   It returns the number of samples samples
+ * not flagged as a gap.  Be warned the process is not cheap 
+ * as we have to test full ns range */
+int number_valid_samples(BasicTimeSeries& d)
+{
+    /* First test to see if there are any gaps defined an return 
+     * ns if there are none. */
+    if(d.has_gap()<=0)
+    {
+        return d.ns;
+    }
+    else
+    {
+        int i,nvalid;
+        for(i=0,nvalid=0;i<d.ns;++i)
+        {
+            if(!d.is_gap(i)) ++nvalid;
+        }
+        return nvalid;
+    }
+}
 
 }  // end SEISPP namespace encapsulation

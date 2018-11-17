@@ -281,5 +281,21 @@ template <class T> SampleRange get_sample_range(T& d, TimeWindow win)
 	return(SampleRange(nstart,nend));
 }
 
+/* Function prototypes are here. */
+
+/*! \brief Get number of valid samples in a time series object.
+ 
+  Time series objects inheriting BasicTimeSeries can have gaps 
+  defind through this component.   This procedure returns the
+  number of valid samples meaning those not defined as gaps.   
+  A stock test should be that if the return of this procedure is 
+  number of samples (this->ns) there are not gaps.  Don't use this
+  procedure to do that, however, as it can be an expensive test.
+  A more important use of this procedure is to makes sure a set 
+  of time series data has any valid samples in its range.   i.e.
+  the caller should normally trap the condition of a return 
+  of 0 and mark live false or discard the data. */
+int number_valid_samples(BasicTimeSeries& d);
+
 } // End namespace declaration SEISPP
 #endif
