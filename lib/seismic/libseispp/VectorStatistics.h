@@ -1,6 +1,6 @@
 #include <vector>
 #include <algorithm>
-#include "seispp.h"
+#include "SeisppError.h"
 namespace SEISPP 
 {
 using namespace std;
