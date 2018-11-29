@@ -35,7 +35,6 @@ public:
   \param d - is the input vector of delete one mean esimates to use for computation
   \param mean0 - mean computed from all samples
 
-  \return std::pair containing jackknife mean as first and stdev as second.
   */
   D1Jackknife(vector<T>& pseudovalues,T mean0);
   T mean(){return avg;};
@@ -120,7 +119,6 @@ template <typename T> D1Jackknife<T>::D1Jackknife(vector<T>& d,T mean0)
     avg=SimpleStatistics::mean<T>(pseudovalues);
     /* and this the jackknife variance */
     var=SimpleStatistics::variance<T>(pseudovalues,mean0);
-    return(pair<T,T>(mean,sqrt(var)));
   }catch(...){throw;};
 }
 /*! \brief Specialization for UnitVectors for particle motion analysis.
