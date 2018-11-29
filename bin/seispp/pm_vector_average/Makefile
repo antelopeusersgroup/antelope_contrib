@@ -1,0 +1,15 @@
+BIN=pm_vector_average
+
+cxxflags=-g
+ldflags=-L$(ANTELOPE)/contrib/static
+ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp
+SUBDIR=/contrib
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+OBJS=pm_vector_average.o pm_wt_avg.o penalty_function.o UnitVector.o
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+LDFLAGS += -L$(BOOSTLIB)
