@@ -25,7 +25,7 @@ public:
 
   */
   D1Jackknife(vector<T>& d);
-  /*! Construct from precoputd vctor of mean of all data.
+  /*! Construct from precomputed vctor of mean of all data.
 
   Sometims it is more convenient to precompute the vector of delete one mean
   values and the mean of all data.   The defnitive example here is the
@@ -36,7 +36,7 @@ public:
   \param mean0 - mean computed from all samples
 
   */
-  D1Jackknife(vector<T>& pseudovalues,T mean0);
+  D1Jackknife(vector<T>& d,T mean0);
   T mean(){return avg;};
   T variance(){return var;};
 private:
@@ -57,7 +57,10 @@ template <class T> T mean(vector<T>& d)
   }
   return (result/d.size());
 }
-template <class T> T variance(vector<T>& d,double d0)
+/* This is called jkvariance because the formula is different from the 
+ * normal variance formula.   Assume d is the vector of pseudovalues and
+ * d0 is the jackknife mean (mean of pseudovalues). */
+template <class T> T jkvariance(vector<T>& d,double d0)
 {
   T result;
   result=0;
@@ -67,7 +70,10 @@ template <class T> T variance(vector<T>& d,double d0)
     sq=(d[i]-d0)*(d[i]-d0);
     result += sq;
   }
-  return (result/(d.size()-1));
+  double Nf=static_cast<double>(d.size());
+  result /= (Nf-1.0);
+  result /= Nf;
+  return result;
 }
 }
 
@@ -79,6 +85,7 @@ template <typename T> D1Jackknife<T>::D1Jackknife(vector<T>& d)
     vector<T> pseudovalues;
     vector<T> work;
     int N(d.size());
+    double Nf(static_cast<double>(N));
     pseudovalues.reserve(N);
     work.reserve(N-1);
     /* First we compute mean of all data - theta0*/
@@ -93,12 +100,13 @@ template <typename T> D1Jackknife<T>::D1Jackknife(vector<T>& d)
         if(ii!=i) work.push_back(d[ii]);
       }
       mtmp=SimpleStatistics::mean<T>(work);
+      mtmp = Nf*mean0 - (Nf-1.0)*mtmp;
       pseudovalues.push_back(mtmp);
     }
     /* This will be the jackknife mean */
     avg=SimpleStatistics::mean<T>(pseudovalues);
     /* and this the jackknife variance */
-    var=SimpleStatistics::variance<T>(pseudovalues,mean0);
+    var=SimpleStatistics::jkvariance<T>(pseudovalues,avg);
   }catch(...){throw;};
 }
 
@@ -118,7 +126,7 @@ template <typename T> D1Jackknife<T>::D1Jackknife(vector<T>& d,T mean0)
     /* This will be the jackknife mean */
     avg=SimpleStatistics::mean<T>(pseudovalues);
     /* and this the jackknife variance */
-    var=SimpleStatistics::variance<T>(pseudovalues,mean0);
+    var=SimpleStatistics::jkvariance<T>(pseudovalues,avg);
   }catch(...){throw;};
 }
 /*! \brief Specialization for UnitVectors for particle motion analysis.
@@ -138,27 +146,29 @@ template<> D1Jackknife<UnitVector>::D1Jackknife(vector<UnitVector>& d, UnitVecto
     int i,k;
     int N(d.size());
     double Nf(static_cast<double>(N));
+    double phi[3];
     vector<UnitVector> pseudovalues;
     pseudovalues.reserve(N);
     for(i=0;i<N;++i)
     {
-      UnitVector vtmp;
-      for(k=0;k<3;++k) vtmp.n[k] = Nf*mean0.n[k] - (Nf-1.0)*d[i].n[k];
-      pseudovalues.push_back(vtmp);
+      for(k=0;k<3;++k) phi[k] = Nf*mean0.n[k] - (Nf-1.0)*d[i].n[k];
+      pseudovalues.push_back(UnitVector(phi));
     }
     /* This is the mean calculation.   Chose to not implement a operator+
     for the UnitVector object due to the confusion of normalization required
     of unit vectors.  Hence the mean and variance are both computed with
     loops over k */
-    for(k=0;k<3;++k)avg.n[k]=0.0;
+    for(k=0;k<3;++k)phi[k]=0.0;
     for(i=0;i<N;++i)
     {
       for(k=0;k<3;++k)
       {
-        avg.n[k] += d[i].n[k];
+        phi[k] += pseudovalues[i].n[k];
       }
     }
-    for(k=0;k<3;++k) avg.n[k]/=Nf;
+    /* This isn't necessary but best to be clear at a trivial cost */
+    for(k=0;k<3;++k) phi[k]/=Nf;
+    avg=UnitVector(phi);
     /* now variance - as noted odd because it reduces to angles.   To mesh
     with this template we place that number in n[0] of the var variable.
     Definitely a design problem, but don't see an alternative without

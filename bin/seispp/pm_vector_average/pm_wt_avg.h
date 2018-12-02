@@ -27,10 +27,15 @@ public:
   \param pen - sets the penalty function to use for robust averaging.
     Allowed choices are BISQUARE and HUBER.   Use NONE for simple
     average.   Robust averages are m-estimators using a median as
-    an initial estimate.
+    an initial estimate.  Default is NONE.
+  \param mrwtr controls an exit condition for unstable robust weighting.
+    When the ratio of the sum of residual weights (weights are always 
+    near one when the scaled residual is small) to the total number of
+    data points falls below this value the constructor will throw a 
+    SeisppError exception with a diagnostic message.   Default is 0.25.
   */
-  pm_wt_avg(vector<UnitVector>& d, vector<double> e, double scale,
-      SupportedPenaltyFunctions pen=NONE);
+  pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
+      SupportedPenaltyFunctions pen=NONE,double mrwtr=0.25);
   pm_wt_avg(const pm_wt_avg& parent);
   pm_wt_avg& operator=(const pm_wt_avg& parent);
   UnitVector average(){return avg;};
@@ -42,4 +47,9 @@ private:
   x_estimated \dot x_true where x_true is the (unknowable) true unit
   vector.  */
   double err;
+  /* This parameter controls exit condition for unstable robust weighting.
+   * When the ratio of the sum residual weights (normally near one) divided
+   * by the number of data points drops below this number the constructor
+   * will throw an exception. */
+  double min_rwt_ratio;
 };

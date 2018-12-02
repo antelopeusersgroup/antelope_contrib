@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include "coords.h"
 #include "SeisppError.h"
 #include "pm_wt_avg.h"
 #include "D1Jackknife.h"
@@ -51,7 +52,7 @@ int main(int argc, char **argv)
     if(argc>1)
       if(string(argv[1])=="--help") usage();
     string pftype("huber");
-    double error_scale;
+    double error_scale(1.0);
     for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -86,6 +87,8 @@ int main(int argc, char **argv)
       {
         UnitVector u(d);
         x.push_back(u);
+        /* assume input is degrees - internally we do everything in radians */
+        ework = rad(ework);
         errors.push_back(ework);
         tags.push_back(other);
       }
@@ -104,6 +107,7 @@ int main(int argc, char **argv)
       for(i=0;i<N;++i)
       {
         xd1.clear();
+        ed1.clear();
         for(ii=0;ii<N;++ii)
         {
           if(ii!=i)
@@ -122,7 +126,8 @@ int main(int argc, char **argv)
       to put the variance estimate for the theta angles in the 0 component
       of the unit vector.  */
       double theta_std=sqrt(jktmp.n[0]);
-      cout << jkmean.n[0]<<" "<<jkmean.n[1]<<" "<<jkmean.n[2]<<" "<<theta_std<<endl;
+      cout << jkmean.n[0]<<" "<<jkmean.n[1]<<" "<<jkmean.n[2]<<" "
+          <<deg(sqrt(theta_std))<<endl;
     }
     catch(SeisppError& serr){
         serr.log_error();
