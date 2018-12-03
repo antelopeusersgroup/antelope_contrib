@@ -90,11 +90,11 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
       do{
         double sumrwt;  //We compute this to avoid divide by zeros - sum of robust weights
       //DEBUG
-      cout << "pm_wt_avg - starting iteration "<<niterations<<endl;
+      //cout << "pm_wt_avg - starting iteration "<<niterations<<endl;
         theta.clear();
         rwt.clear();
         //DEBUG
-        cout << "i rwt total_weight"<<endl;
+        //cout << "i rwt total_weight"<<endl;
         for(i=0;i<d.size();++i)
         {
           /* Compute the vector or robust weights*/
@@ -107,7 +107,7 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
           if(angle>M_PI_2) angle=M_PI-angle;
           scaled_angle=angle/(scale*e[i]);
           //DEBUG
-          cout << "angle (deg)="<<deg(angle)<<" scaled angle="<<scaled_angle<<endl;
+          //cout << "angle (deg)="<<deg(angle)<<" scaled angle="<<scaled_angle<<endl;
           switch(pfunc)
           {
             case BISQUARE:
@@ -124,7 +124,7 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
           {
             weight=rwt[i]/(scale*e[i]);
             //DEBUG
-             cout << i<<" "<<rwt[i]<<" "<<weight<<endl;
+             //cout << i<<" "<<rwt[i]<<" "<<weight<<endl;
             for(k=0;k<3;++k)
             {
               dwtsum[k]+=d[i].n[k]*weight;
@@ -132,17 +132,18 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
             sumwt+=weight;
             sumrwt += rwt[i];
           }
-        cout << "Unscaled sum of weighted vectors:  ";
+        /*cout << "Unscaled sum of weighted vectors:  ";
         for(k=0;k<3;++k) cout << dwtsum[k]<<" ";
         cout <<endl;
+        */
         for(k=0;k<3;++k)dwtsum[k]/=sumwt;
-        cout << "sumwt="<<sumwt<<endl;
+        //cout << "sumwt="<<sumwt<<endl;
         if(sumrwt<min_rwt_ratio) throw SeisppError(base_error
                 + "convergence error in robust estimation loop\n"
                 + "Residual weight sum dropped below min_rwt_ration threshold");
         UnitVector avgnow(dwtsum);
           //DEBUG
-          cout << "Weighted average iteration "<<niterations<<"="<< avg.n[0]<<" "<<avg.n[1]<<" "<<avg.n[2]<<endl;
+          //cout << "Weighted average iteration "<<niterations<<"="<< avg.n[0]<<" "<<avg.n[1]<<" "<<avg.n[2]<<endl;
         for(k=0,deltvec=0.0;k<3;++k)
         {
             double dvsq;
@@ -151,13 +152,13 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
         }
         deltvec=sqrt(deltvec);
           //DEBUG
-          cout << "deltvect="<<deltvec<<endl;
+          //cout << "deltvect="<<deltvec<<endl;
         avg_last=avgnow;
         avg=avgnow;
         ++niterations;
       }while(deltvec>FLT_EPSILON && (niterations<MAXITERATIONS));
       //DEBUG
-      cout << "Exited robust iteration with iteration count="<<niterations<<endl;
+      //cout << "Exited robust iteration with iteration count="<<niterations<<endl;
       /* This calculates the predicted uncertainty of theta angles.  As
       above it requires a theoretical check */
       for(i=0,sumsigsq=0.0;i<d.size();++i)
