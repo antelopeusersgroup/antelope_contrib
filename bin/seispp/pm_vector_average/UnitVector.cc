@@ -30,6 +30,7 @@ UnitVector& UnitVector::operator=(const UnitVector& parent)
   {
     for(int k=0;k<3;++k) n[k]=parent.n[k];
   }
+  return *this;
 }
 double UnitVector::theta(UnitVector& other)
 {
