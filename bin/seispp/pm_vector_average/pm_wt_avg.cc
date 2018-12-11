@@ -44,6 +44,21 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
     we are converting this to a unit vector the scale factor sumwt will
     be absorbed in the normalization */
     avg=UnitVector(dwtsum);
+    ssq_avg=0.0;
+    chisq_avg=0.0;
+    for(i=0;i<d.size();++i)
+    {
+      double dtheta;
+      dtheta=d[i].theta(avg);
+      ssq_avg += dtheta*dtheta;
+      chisq_avg += dtheta*dtheta/(e[i]*e[i]);   //note we don't apply the scale here 
+    }
+    ssq_avg/=(Nreal-1.0);   
+    chisq_avg /= (Nreal-1.0);
+    /* We initialize these here to zero as we exit below for straight average
+       or median. This assures they are at least initialized to 0 */
+    ssq_robust=0.0;
+    chisq_robust=0.0;
     /* This formula copied from matlab script weighted_mean_azbin.m.  The
     script says it may be wrong.  Needs some theoretical checking before
     final use.
@@ -168,6 +183,22 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
         sumsigsq += esq*rwt[i]*rwt[i];
       }
       err=sumsigsq/sqrt(sumwt);
+      /* We could put this initialization in the loop but broken out for clarity since
+         these are private attributes of this object.  These are misfit measures stored
+         as private attributes */
+       ssq_robust=0.0;
+       chisq_robust=0.0;
+       for(i=0;i<d.size();++i)
+       {
+         double dtheta;
+         dtheta=d[i].theta(avg);
+         ssq_robust += dtheta*dtheta;
+         double totalw;
+         totalw=rwt[i]/e[i];
+         chisq_robust += totalw*totalw*dtheta*dtheta;
+       }
+       ssq_robust /= (Nreal-1.0);
+       chisq_robust /= (Nreal-1.0);
     }
   }catch(...){throw;};
 }

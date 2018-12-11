@@ -32,14 +32,18 @@ public:
     When the ratio of the sum of residual weights (weights are always 
     near one when the scaled residual is small) to the total number of
     data points falls below this value the constructor will throw a 
-    SeisppError exception with a diagnostic message.   Default is 0.25.
+    SeisppError exception with a diagnostic message.   Default is 0.10
   */
   pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
-      SupportedPenaltyFunctions pen=NONE,double mrwtr=0.25);
+      SupportedPenaltyFunctions pen=NONE,double mrwtr=0.1);
   pm_wt_avg(const pm_wt_avg& parent);
   pm_wt_avg& operator=(const pm_wt_avg& parent);
   UnitVector average(){return avg;};
   double sigma(){return err;};
+  double average_ssq(){return deg(sqrt(ssq_avg));};
+  double average_chisq(){return chisq_avg;};
+  double robust_rms(){return deg(sqrt(ssq_robust));};
+  double robust_chisq(){return chisq_robust;};
 private:
   UnitVector avg;
   /*! This is estimated error (in radians) of unit vector estimate on the
@@ -52,4 +56,12 @@ private:
    * by the number of data points drops below this number the constructor
    * will throw an exception. */
   double min_rwt_ratio;
+  /* These are computed from data.  The _avg values are computed from
+     arthmetic mean.   The _robust values are computed from robust 
+     estimate using robust weights.   chisq values are scaled by 
+     input sigma values while rms values have radian square units. */
+  double ssq_avg;
+  double chisq_avg;
+  double ssq_robust;
+  double chisq_robust;
 };
