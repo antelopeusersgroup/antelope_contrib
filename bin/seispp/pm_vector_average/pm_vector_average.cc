@@ -2,17 +2,19 @@
 #include <stdio.h>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <vector>
 #include "coords.h"
 #include "SeisppError.h"
 #include "pm_wt_avg.h"
 #include "D1Jackknife.h"
+#include "VectorStatistics.h"
 using namespace std;
 using SEISPP::SeisppError;
 void usage()
 {
-    cerr << "pm_vector_average < in > out [ -wt (huber | bisquare | none) -escale x --help]"
+    cerr << "pm_vector_average < in > out [ -wt (huber | bisquare | none) -escale x -extra --help]"
         <<endl
         << "computes an average of a set of particle motion vectors"<<endl
         << "Normal operation is a robust m-estimator with the huber penalty function"<<endl
@@ -53,6 +55,7 @@ int main(int argc, char **argv)
       if(string(argv[1])=="--help") usage();
     string pftype("huber");
     double error_scale(1.0);
+    bool extra_col(false);
     for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -72,6 +75,8 @@ int main(int argc, char **argv)
             if(i>=argc)usage();
             error_scale=atof(argv[i]);
         }
+        else if(sarg=="-extra")
+          extra_col=true;
         else
             usage();
     }
@@ -79,18 +84,34 @@ int main(int argc, char **argv)
       SupportedPenaltyFunctions pfunc=get_pfunc_type(pftype);
       vector<double> errors;
       vector<UnitVector> x;
-      vector<double> tags;
+      vector<double> extra;
       double d[3];
       double ework;
       double other;
-      while(fscanf(stdin,"%lf%lf%lf%lf%lf",&d[0],&d[1],&d[2],&ework,&other)==5)
+      char indat[128];
+      while(cin.getline(indat,128))
       {
+        stringstream ss(indat);
+        ss>>d[0];  ss>>d[1]; ss>>d[2]; ss>>ework;
+        if(extra_col)
+        {
+          ss>>other;
+          extra.push_back(other);
+        }
         UnitVector u(d);
         x.push_back(u);
         /* assume input is degrees - internally we do everything in radians */
         ework = rad(ework);
         errors.push_back(ework);
-        tags.push_back(other);
+      }
+      /* We go ahead and compute the median of the data in the
+         extra column right away.  It would typically be something
+         like back azimuth.  */
+      double medextra;
+      if(extra_col)
+      {
+        SEISPP::VectorStatistics<double> xex(extra);
+        medextra=xex.median();
       }
       /* First we compute mean from all the data */
       pm_wt_avg pmbar0(x,errors,error_scale,pfunc);
@@ -126,8 +147,16 @@ int main(int argc, char **argv)
       to put the variance estimate for the theta angles in the 0 component
       of the unit vector.  */
       double theta_std=sqrt(jktmp.n[0]);
-      cout << jkmean.n[0]<<" "<<jkmean.n[1]<<" "<<jkmean.n[2]<<" "
-          <<deg(sqrt(theta_std))<<endl;
+      cout << jkmean.n[0]<<" "<<jkmean.n[1]<<" "<<jkmean.n[2]
+         <<" "<<deg(theta_std);
+      if(extra_col)
+      {
+        cout << " "<<medextra<<endl;
+      }
+      else
+      {
+        cout << endl;
+      }
     }
     catch(SeisppError& serr){
         serr.log_error();
