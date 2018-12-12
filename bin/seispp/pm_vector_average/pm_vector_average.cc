@@ -110,6 +110,12 @@ int main(int argc, char **argv)
         ework = rad(ework);
         errors.push_back(ework);
       }
+      if(x.size()<=0) 
+      {
+        cerr << "pm_vector_average:   no input data to prorcess"<<endl;
+        exit(-1);
+      }
+
       /* We go ahead and compute the median of the data in the
          extra column right away.  It would typically be something
          like back azimuth.  */
@@ -123,6 +129,37 @@ int main(int argc, char **argv)
       pm_wt_avg pmbar0(x,errors,error_scale,pfunc);
       UnitVector ubar;
       ubar=pmbar0.average();
+      /* We stop here if the size of the data vector is below 
+         this threshold defined in pm_wt_avg.h */
+      if(x.size()<robust_lower_limit)
+      {
+        double ubar_error;
+        ubar_error=pmbar0.sigma();
+        /* this is repetitious but created in laziness.  I did
+           not initially implement this out for low degree of 
+           freedom data sets. */
+        if(verbose)
+        {
+          cout << "x1 x2 x3 sigma theta(deg) theta/sigma"<<endl;
+          for(i=0;i<x.size();++i)
+          {
+            cout << x[i].n[0]<<" "<< x[i].n[1]<<" "<< x[i].n[2]<<" "<<deg(errors[i])<<" "
+              <<deg(x[i].theta(ubar))<<" "<< x[i].theta(ubar)/errors[i] <<endl;
+          }
+          cout << "regular mean vector and theta error estimate"<<endl;
+        }
+        cout << ubar.n[0]<<" "<<ubar.n[1]<<" "<<ubar.n[2]
+         <<" "<<deg(ubar_error);
+        if(extra_col)
+        {
+          cout << " "<<medextra<<endl;
+        }
+        else
+        {
+          cout << endl;
+        }
+        exit(0);
+      }
       /* Now we compute the vector of delete one means */
       int N;
       N=x.size();

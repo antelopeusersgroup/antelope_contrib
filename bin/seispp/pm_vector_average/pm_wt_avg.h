@@ -2,6 +2,9 @@
 #include "UnitVector.h"
 enum SupportedPenaltyFunctions {HUBER,BISQUARE,MEDIAN,NONE};
 using namespace std;
+/* For now this is made a frozen constant.   If the size of the data 
+   vector is less than this number we do not attempt a robust calculation */
+const int robust_lower_limit(4);
 class pm_wt_avg
 {
 public:
