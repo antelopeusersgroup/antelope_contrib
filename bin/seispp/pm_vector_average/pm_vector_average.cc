@@ -14,7 +14,7 @@ using namespace std;
 using SEISPP::SeisppError;
 void usage()
 {
-    cerr << "pm_vector_average < in > out [ -wt (huber | bisquare | none) -escale x -extra --help]"
+    cerr << "pm_vector_average < in > out [ -wt (huber | bisquare | none) -escale x -extra -v --help]"
         <<endl
         << "computes an average of a set of particle motion vectors"<<endl
         << "Normal operation is a robust m-estimator with the huber penalty function"<<endl
@@ -24,8 +24,11 @@ void usage()
         << "relative to the true value (in degrees)"<<endl
         << "Output is a single line with four numbers:  average (unit) vector and error estimate for average"
         <<endl
-        << "-wt "
+        << "-wt selects robust weighting function (none turns off robust weighting) "<<endl
         << " -v - be more verbose"<<endl
+        << "   When off (default) the program only computes the final average, an estimate of angular error,"<<endl
+        << "   and (optionally) the median of the extra data column.   When true the input data are exchoed"<<endl
+        << "   with the angle between each vector and the robust average"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
@@ -56,6 +59,7 @@ int main(int argc, char **argv)
     string pftype("huber");
     double error_scale(1.0);
     bool extra_col(false);
+    bool verbose(false);
     for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -77,6 +81,8 @@ int main(int argc, char **argv)
         }
         else if(sarg=="-extra")
           extra_col=true;
+        else if(sarg=="-v")
+          verbose=true;
         else
             usage();
     }
@@ -147,6 +153,16 @@ int main(int argc, char **argv)
       to put the variance estimate for the theta angles in the 0 component
       of the unit vector.  */
       double theta_std=sqrt(jktmp.n[0]);
+      if(verbose)
+      {
+        cout << "x1 x2 x3 sigma theta(deg) theta/sigma"<<endl;
+        for(i=0;i<x.size();++i)
+        {
+          cout << x[i].n[0]<<" "<< x[i].n[1]<<" "<< x[i].n[2]<<" "<<deg(errors[i])<<" "
+            <<deg(x[i].theta(jkmean))<<" "<<x[i].theta(jkmean)/errors[i] <<endl;
+        }
+        cout << "jackknife mean vector and theta error estimate"<<endl;
+      }
       cout << jkmean.n[0]<<" "<<jkmean.n[1]<<" "<<jkmean.n[2]
          <<" "<<deg(theta_std);
       if(extra_col)
