@@ -59,15 +59,16 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
        or median. This assures they are at least initialized to 0 */
     ssq_robust=0.0;
     chisq_robust=0.0;
-    /* This formula copied from matlab script weighted_mean_azbin.m.  The
-    script says it may be wrong.  Needs some theoretical checking before
-    final use.
-    err=sumsigma/Nreal;
-    err/=sqrt(Nreal);
-    */
-    /* I think this may be the right formula */
-    err=sqrt(sumsigsq/sumwt);
+    /* From Wikepedia:  https://en.wikipedia.org/wiki/Weighted_arithmetic_mean */
+    err=sqrt(Nreal)/sumwt;
     if(pfunc==NONE)return;
+    if(d.size()<robust_lower_limit)
+    {
+      cerr << "Warning:   pm_wt_avg constructor was passed a data vector with only "
+        << d.size()<<" elements"<<endl
+        << "Reverting to weighted average.  Will not try robust method with N<"<<robust_lower_limit<<endl;
+      return;
+    }
     /* This block computes robust average using an m-estimator.
     Initial estimate is median of each component normalized to
     remain a unit vector. */
@@ -182,7 +183,7 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
         esq=e[i]*e[i]*scalesq;
         sumsigsq += esq*rwt[i]*rwt[i];
       }
-      err=sumsigsq/sqrt(sumwt);
+      err=sqrt(Nreal)/sumwt;
       /* We could put this initialization in the loop but broken out for clarity since
          these are private attributes of this object.  These are misfit measures stored
          as private attributes */
@@ -207,6 +208,10 @@ pm_wt_avg::pm_wt_avg(const pm_wt_avg& parent)
     avg=parent.avg;
     err=parent.err;
     min_rwt_ratio=parent.min_rwt_ratio;
+    ssq_avg=parent.ssq_avg;
+    chisq_avg=parent.chisq_avg;
+    ssq_robust=parent.ssq_robust;
+    chisq_robust=parent.chisq_robust;
 }
 pm_wt_avg& pm_wt_avg::operator=(const pm_wt_avg& parent)
 {
@@ -215,6 +220,10 @@ pm_wt_avg& pm_wt_avg::operator=(const pm_wt_avg& parent)
     avg=parent.avg;
     err=parent.err;
     min_rwt_ratio=parent.min_rwt_ratio;
+    ssq_avg=parent.ssq_avg;
+    chisq_avg=parent.chisq_avg;
+    ssq_robust=parent.ssq_robust;
+    chisq_robust=parent.chisq_robust;
   }
   return *this;
 }
