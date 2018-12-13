@@ -142,8 +142,13 @@ int main(int argc, char **argv)
       double medextra;
       if(extra_col)
       {
-        SEISPP::VectorStatistics<double> xex(extra);
-        medextra=xex.median();
+        if(N==1)
+          medextra=extra[0];
+        else
+        {
+          SEISPP::VectorStatistics<double> xex(extra);
+          medextra=xex.median();
+        }
       }
       /* First we compute mean from all the data */
       pm_wt_avg pmbar0(x,errors,error_scale,pfunc,probability);
