@@ -36,7 +36,12 @@ double UnitVector::theta(UnitVector& other)
 {
   double dp;
   dp=this->dot_product(other);
-  return(acos(dp));
+  /* acos will throw a nan if dp is invalid.  Hence, this
+   * simpl trap */
+  if(dp>=1.0)
+      return M_PI_2;
+  else
+      return(acos(dp));
 }
 double UnitVector::dot_product(UnitVector& other)
 {
