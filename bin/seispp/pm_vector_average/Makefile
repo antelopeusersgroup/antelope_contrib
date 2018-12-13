@@ -1,15 +1,14 @@
-BIN=pm_vector_average
+# You can usually use this Makefile directly.   It enables
+# only the extra package boost.   If you need to add support for
+# another open source package this will need to be changed to
+# mesh with antelope localmake
+all Include install installMAN pf relink tags test :: FORCED
+	@-if localmake_config boost ; then \
+	    $(MAKE) -f Makefile2 $@ ; \
+	fi
 
-cxxflags=-g
-ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp
-SUBDIR=/contrib
+clean uninstall :: FORCED
+	$(MAKE) -f Makefile2 $@
 
-include $(ANTELOPEMAKE)
-include $(ANTELOPEMAKELOCAL)
+FORCED:
 
-OBJS=pm_vector_average.o pm_wt_avg.o penalty_function.o UnitVector.o
-$(BIN) : $(OBJS)
-	$(RM) $@
-	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
-LDFLAGS += -L$(BOOSTLIB)
