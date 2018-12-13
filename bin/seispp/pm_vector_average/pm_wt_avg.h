@@ -36,9 +36,18 @@ public:
     near one when the scaled residual is small) to the total number of
     data points falls below this value the constructor will throw a 
     SeisppError exception with a diagnostic message.   Default is 0.10
+  \param probability is used to defne the scale factor used for 
+    automatic scaling of the robust estimation procedure.  The scale
+    factor is set to the angle defined by the nearest data point at
+    the nearest quantile to this point.  i.e the data are sorted by 
+    angle and the nearest data to this value is used to define the
+    robust scale.   Default is 0.8.  A negative value turns off
+    automatic scaling and assumes the scale factor is one.   Note
+    angles are already internally nondimensional as all are divided
+    by sigma.
   */
   pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
-      SupportedPenaltyFunctions pen=NONE,double mrwtr=0.1);
+      SupportedPenaltyFunctions pen=NONE,double probability=0.80, double mrwtr=0.1);
   pm_wt_avg(const pm_wt_avg& parent);
   pm_wt_avg& operator=(const pm_wt_avg& parent);
   UnitVector average(){return avg;};
@@ -59,6 +68,7 @@ private:
    * by the number of data points drops below this number the constructor
    * will throw an exception. */
   double min_rwt_ratio;
+  double prob;
   /* These are computed from data.  The _avg values are computed from
      arthmetic mean.   The _robust values are computed from robust 
      estimate using robust weights.   chisq values are scaled by 

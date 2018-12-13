@@ -14,7 +14,7 @@ using namespace std;
 using SEISPP::SeisppError;
 void usage()
 {
-    cerr << "pm_vector_average < in > out [ -wt (huber | bisquare | none) -escale x -extra -v --help]"
+    cerr << "pm_vector_average < in > out [ -wt (huber | bisquare | none) -escale x -p probability -extra -v --help]"
         <<endl
         << "computes an average of a set of particle motion vectors"<<endl
         << "Normal operation is a robust m-estimator with the huber penalty function"<<endl
@@ -22,9 +22,14 @@ void usage()
         << "Input is assumed to be a table of (white space separated) 3 element vectors "<<endl
         << "with a fourth column containing an estimate of the error in angle of each vector"<<endl
         << "relative to the true value (in degrees)"<<endl
+        << "Optionally a 5th column of data can be handled with the -extra option."<<endl
         << "Output is a single line with four numbers:  average (unit) vector and error estimate for average"
         <<endl
-        << "-wt selects robust weighting function (none turns off robust weighting) "<<endl
+        << "When -extra flag appears a 5th column input is the median of the input 5th column of data."<<endl
+        << " -wt selects robust weighting function (none turns off robust weighting) "<<endl
+        << " -escale will cause each error estimate in input data to be multiplied by factor x"<<endl
+        << " -p is used to set a probability level for computing a robust scale factor."<<endl
+        << "    (By default autoscaling is off.   For most data value of .8 to .9 is appropriate"<<endl
         << " -v - be more verbose"<<endl
         << "   When off (default) the program only computes the final average, an estimate of angular error,"<<endl
         << "   and (optionally) the median of the extra data column.   When true the input data are exchoed"<<endl
@@ -60,6 +65,7 @@ int main(int argc, char **argv)
     double error_scale(1.0);
     bool extra_col(false);
     bool verbose(false);
+    double probability(-1.0);
     for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -72,6 +78,18 @@ int main(int argc, char **argv)
             ++i;
             if(i>=argc)usage();
             pftype=sarg;
+        }
+        else if(sarg=="-p")
+        {
+            ++i;
+            if(i>=argc)usage();
+            probability=atof(argv[i]);
+            if(probability>=1.0)
+            {
+              cerr << "Illegal value associated with probability for -p option of "
+                << probability<<endl;
+              usage();
+            }
         }
         else if(sarg=="-escale")
         {
@@ -128,7 +146,7 @@ int main(int argc, char **argv)
         medextra=xex.median();
       }
       /* First we compute mean from all the data */
-      pm_wt_avg pmbar0(x,errors,error_scale,pfunc);
+      pm_wt_avg pmbar0(x,errors,error_scale,pfunc,probability);
       UnitVector ubar;
       ubar=pmbar0.average();
       /* We stop here if the size of the data vector is below 
@@ -193,7 +211,7 @@ int main(int argc, char **argv)
             ed1.push_back(errors[ii]);
           }
         }
-        pm_wt_avg pval(xd1,ed1,error_scale,pfunc);
+        pm_wt_avg pval(xd1,ed1,error_scale,pfunc,probability);
         xbard1.push_back(pval.average());
       }
       D1Jackknife<UnitVector> jknife(xbard1,ubar);

@@ -1,6 +1,7 @@
 #include <float.h>
 //DEBUG
 #include <iostream>
+#include <algorithm>
 #include "coords.h"
 
 #include "pm_wt_avg.h"
@@ -10,10 +11,45 @@
 using SEISPP::VectorStatistics;
 using SEISPP::SeisppError;
 
+double compute_robust_scale(vector<UnitVector>& d, vector<double>& e,
+    UnitVector ubar, double probability)
+{
+  int i;
+  int N;
+  N=d.size();
+  vector<double> angles;
+  angles.reserve(N);
+  for(i=0;i<N;++i)
+  {
+    double scaled_angle;
+    scaled_angle=ubar.theta(d[i]);
+    scaled_angle /= e[i];
+    angles.push_back(scaled_angle);
+  }
+  /* necessary exit for trivial input.  For this code this should
+  never happen, but better handled automatically in case this 
+  is ever used outside original */
+  if(N==1) return(angles[0]);
+  std::sort(angles.begin(),angles.end());
+  /*The quantile size is 1/N because angles must be positive.*/
+  double q=1/static_cast<double>(N);
+  int N_threshold=static_cast<int>(probability/q);
+  if(N_threshold>=N) 
+  {
+  //DEBUG
+    /*
+    cerr << "Error in probability threshold computation. computed N="<<N_threshold<<" but vector size="<<N<<endl
+      <<"Resetting N_threshold to N-1"<<endl;;
+      */
+    N_threshold=N-1;
+  }
+  return(angles[N_threshold]);
+}
 pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
-    SupportedPenaltyFunctions pfunc, double mrwtr)
+    SupportedPenaltyFunctions pfunc, double probability, double mrwtr)
 {
   try{
+    prob=probability;
     min_rwt_ratio=mrwtr;
     const string base_error("pm_wt_avg constructor:  ");
     double scalesq=scale*scale;
@@ -105,7 +141,15 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
       int niterations(0);
       do{
         double sumrwt;  //We compute this to avoid divide by zeros - sum of robust weights
+        /* First we compute the scale.   Note if the probability value is less than or equal
+           0 the scale is set to 1.0 */
+        double rscale;
+        if(prob<=0.0)
+          rscale=1.0;
+        else
+          rscale=compute_robust_scale(d,e,avg,prob);
       //DEBUG
+      //cout << "Robust scale set to "<<rscale<<endl;
       //cout << "pm_wt_avg - starting iteration "<<niterations<<endl;
         theta.clear();
         rwt.clear();
@@ -122,6 +166,7 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
           line not a direction. */
           if(angle>M_PI_2) angle=M_PI-angle;
           scaled_angle=angle/(scale*e[i]);
+          scaled_angle /= rscale;
           //DEBUG
           //cout << "angle (deg)="<<deg(angle)<<" scaled angle="<<scaled_angle<<endl;
           switch(pfunc)
@@ -140,7 +185,7 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
           {
             weight=rwt[i]/(scale*e[i]);
             //DEBUG
-             //cout << i<<" "<<rwt[i]<<" "<<weight<<endl;
+            //cout << i<<" "<<rwt[i]<<" "<<weight<<endl;
             for(k=0;k<3;++k)
             {
               dwtsum[k]+=d[i].n[k]*weight;
