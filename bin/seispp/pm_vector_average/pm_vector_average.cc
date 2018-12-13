@@ -115,6 +115,8 @@ int main(int argc, char **argv)
         cerr << "pm_vector_average:   no input data to prorcess"<<endl;
         exit(-1);
       }
+      int N;
+      N=x.size();
 
       /* We go ahead and compute the median of the data in the
          extra column right away.  It would typically be something
@@ -141,7 +143,7 @@ int main(int argc, char **argv)
         if(verbose)
         {
           cout << "x1 x2 x3 sigma theta(deg) theta/sigma"<<endl;
-          for(i=0;i<x.size();++i)
+          for(i=0;i<N;++i)
           {
             cout << x[i].n[0]<<" "<< x[i].n[1]<<" "<< x[i].n[2]<<" "<<deg(errors[i])<<" "
               <<deg(x[i].theta(ubar))<<" "<< x[i].theta(ubar)/errors[i] <<endl;
@@ -160,9 +162,20 @@ int main(int argc, char **argv)
         }
         exit(0);
       }
+      /* This is also repetitious, but useful output.   In verbose mode it is helpful 
+         to print the rms statistics. */
+      if(verbose)
+      {
+        cout << "Robust mean and theta error estimate from all data"<<endl
+          << "x1 x2 x3 theta_error average_ssq average_chisq robust_rms robust_chisq"<<endl;
+        cout << ubar.n[0]<<" "<<ubar.n[1]<<" "<<ubar.n[2]
+         <<" "<<deg(pmbar0.sigma())<<" "
+         << pmbar0.average_ssq()<<" "
+         << pmbar0.average_chisq()<<" "
+         << pmbar0.robust_rms()<<" "
+         << pmbar0.robust_chisq()<<endl;
+      }
       /* Now we compute the vector of delete one means */
-      int N;
-      N=x.size();
       int i,ii;
       vector<UnitVector> xd1,xbard1;
       vector<double> ed1;
@@ -198,7 +211,8 @@ int main(int argc, char **argv)
           cout << x[i].n[0]<<" "<< x[i].n[1]<<" "<< x[i].n[2]<<" "<<deg(errors[i])<<" "
             <<deg(x[i].theta(jkmean))<<" "<<x[i].theta(jkmean)/errors[i] <<endl;
         }
-        cout << "jackknife mean vector and theta error estimate"<<endl;
+        cout << "jackknife mean vector and theta error estimate and error statistics"<<endl
+          << "x1 x2 x3 sigma_theta(deg) optional_extra"<<endl; 
       }
       cout << jkmean.n[0]<<" "<<jkmean.n[1]<<" "<<jkmean.n[2]
          <<" "<<deg(theta_std);
