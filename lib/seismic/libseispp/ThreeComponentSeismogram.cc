@@ -916,9 +916,9 @@ void ThreeComponentSeismogram::rotate(SphericalCoordinate xsc)
 		phi = xsc.phi + M_PI;
 		if(phi > M_PI) phi -= (2.0*M_PI);
 	}
-	else if(xsc.theta > M_PI_2)
+	else if(xsc.theta > M_PI)
 	{
-		theta = xsc.theta - M_PI_2;
+		theta = xsc.theta - M_PI;
 		phi = xsc.phi + M_PI;
 		if(phi > M_PI) phi -= (2.0*M_PI);
 	}
