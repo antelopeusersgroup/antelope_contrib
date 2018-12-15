@@ -283,12 +283,12 @@ Initializes data and sets aside memory for
 
 The sense of this transformation is confusing because of a difference in 
 convention between spherical coordinates and standard earth coordinates.
-In particular, orientation on the earth uses a convention with x2 being
+In particular, orientation on the earth uses a convention with N being
 the x2 axis and bearings are relative to that with a standard azimuth
 measured clockwise from north.  Spherical coordinate angle phi (used here)
 is measured counterclockwise relative to the x1 axis, which is east in
-standard earth coordinates. This transformation is computed using a phi
-angle.   To use this then to compute a transformation to standard ray 
+standard earth coordinates. The transformation here is computed using a phi
+angle.   We use this to then compute a transformation to standard ray 
 coordinates with x2 pointing in the direction of wavefront advance, 
 phi should be set to pi/2-azimuth which gives the phi angle needed to rotate
 x2 to radial.  This is extremely confusing because in spherical coordinates
