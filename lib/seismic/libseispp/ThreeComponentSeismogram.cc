@@ -907,6 +907,7 @@ void ThreeComponentSeismogram::rotate(SphericalCoordinate xsc)
 	{
 		//This will be left handed
 		tmatrix[2][2] = -1.0;
+                dscal(ns,-1.0,u.get_address(2,0),3);
 		return;
 	}
 
