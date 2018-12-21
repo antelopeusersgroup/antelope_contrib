@@ -1,6 +1,8 @@
 #ifndef _UNITVECTOR_H_
 #define _UNITVECTOR_H_
 #include <vector>
+#include <iostream>
+using std::ostream;
 class UnitVector
 {
 public:
@@ -17,7 +19,9 @@ public:
   UnitVector(std::vector<double>& x);
   UnitVector(const UnitVector& parent);
   UnitVector& operator=(const UnitVector& parent);
+
   double theta(UnitVector& other);
   double dot_product(UnitVector& other);
+  friend ostream& operator<<(ostream& ofs,const UnitVector& x);
 };
 #endif
