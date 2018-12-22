@@ -82,8 +82,7 @@ int main(int argc, char **argv)
             usage();
     }
     try{
-      PfStyleMetadata control;
-      control=pfread(pffile);
+      PfStyleMetadata control(pffile);
       string pfunctype=control.get_string("penalty_function");
       SupportedPenaltyFunctions pfunc=get_pfunc_type(pfunctype);
       double error_scale=control.get<double>("error_scale_factor");
