@@ -1,8 +1,9 @@
 #include <vector>
+#include "coords.h"
 #include "UnitVector.h"
 enum SupportedPenaltyFunctions {HUBER,BISQUARE,MEDIAN,NONE};
 using namespace std;
-/* For now this is made a frozen constant.   If the size of the data 
+/* For now this is made a frozen constant.   If the size of the data
    vector is less than this number we do not attempt a robust calculation */
 const int robust_lower_limit(4);
 class pm_wt_avg
@@ -32,14 +33,14 @@ public:
     average.   Robust averages are m-estimators using a median as
     an initial estimate.  Default is NONE.
   \param mrwtr controls an exit condition for unstable robust weighting.
-    When the ratio of the sum of residual weights (weights are always 
+    When the ratio of the sum of residual weights (weights are always
     near one when the scaled residual is small) to the total number of
-    data points falls below this value the constructor will throw a 
+    data points falls below this value the constructor will throw a
     SeisppError exception with a diagnostic message.   Default is 0.10
-  \param probability is used to defne the scale factor used for 
+  \param probability is used to defne the scale factor used for
     automatic scaling of the robust estimation procedure.  The scale
     factor is set to the angle defined by the nearest data point at
-    the nearest quantile to this point.  i.e the data are sorted by 
+    the nearest quantile to this point.  i.e the data are sorted by
     angle and the nearest data to this value is used to define the
     robust scale.   Default is 0.8.  A negative value turns off
     automatic scaling and assumes the scale factor is one.   Note
@@ -70,8 +71,8 @@ private:
   double min_rwt_ratio;
   double prob;
   /* These are computed from data.  The _avg values are computed from
-     arthmetic mean.   The _robust values are computed from robust 
-     estimate using robust weights.   chisq values are scaled by 
+     arthmetic mean.   The _robust values are computed from robust
+     estimate using robust weights.   chisq values are scaled by
      input sigma values while rms values have radian square units. */
   double ssq_avg;
   double chisq_avg;

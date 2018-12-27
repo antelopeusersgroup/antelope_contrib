@@ -1,6 +1,7 @@
 #include <math.h>
 #include "UnitVector.h"
 #include "SeisppError.h"
+using namespace std;
 using SEISPP::SeisppError;
 UnitVector::UnitVector(double *x)
 {
@@ -48,4 +49,11 @@ double UnitVector::dot_product(UnitVector& other)
   double dprod(0.0);
   for(int k=0;k<3;++k)dprod += n[k]*other.n[k];
   return dprod;
+}
+ostream& operator<<(ostream& ofs, const UnitVector& u)
+{
+  int k;
+  for(k=0;k<2;++k)ofs<<u.n[k]<<" ";
+  ofs<<u.n[2];
+  return ofs;
 }
