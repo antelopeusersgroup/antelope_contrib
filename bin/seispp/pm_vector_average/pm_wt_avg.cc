@@ -1,6 +1,6 @@
 #include <float.h>
 //DEBUG
-#include <iostream>
+//#include <iostream>
 #include <algorithm>
 #include "coords.h"
 
@@ -178,21 +178,23 @@ pm_wt_avg::pm_wt_avg(vector<UnitVector>& d, vector<double>& e, double scale,
             default:
               rwt.push_back(bisquare(scaled_angle));
           };
+          //DEGUG
+          //cout << "Residual weight="<<rwt[i]<<endl;
         }
         /* Now compute the weighted sum */
         for(k=0;k<3;++k)dwtsum[k]=0.0;   // use this again to accumulate
-          for(i=0,sumwt=0.0,sumrwt=0.0;i<d.size();++i)
-          {
+        for(i=0,sumwt=0.0,sumrwt=0.0;i<d.size();++i)
+        {
             weight=rwt[i]/(scale*e[i]);
             //DEBUG
-            //cout << i<<" "<<rwt[i]<<" "<<weight<<endl;
+            //cout << i<<" "<<rwt[i]<<" "<<e[i]<<" "<<weight<<endl;
             for(k=0;k<3;++k)
             {
               dwtsum[k]+=d[i].n[k]*weight;
             }
             sumwt+=weight;
             sumrwt += rwt[i];
-          }
+        }
         /*cout << "Unscaled sum of weighted vectors:  ";
         for(k=0;k<3;++k) cout << dwtsum[k]<<" ";
         cout <<endl;
@@ -253,6 +255,7 @@ pm_wt_avg::pm_wt_avg(const pm_wt_avg& parent)
     avg=parent.avg;
     err=parent.err;
     min_rwt_ratio=parent.min_rwt_ratio;
+    prob=parent.prob;
     ssq_avg=parent.ssq_avg;
     chisq_avg=parent.chisq_avg;
     ssq_robust=parent.ssq_robust;
@@ -265,6 +268,7 @@ pm_wt_avg& pm_wt_avg::operator=(const pm_wt_avg& parent)
     avg=parent.avg;
     err=parent.err;
     min_rwt_ratio=parent.min_rwt_ratio;
+    prob=parent.prob;
     ssq_avg=parent.ssq_avg;
     chisq_avg=parent.chisq_avg;
     ssq_robust=parent.ssq_robust;
