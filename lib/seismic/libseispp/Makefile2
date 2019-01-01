@@ -3,6 +3,8 @@ LICENSES=license_libseispp.txt
 #DLIB=$(LIB:.a=$(DSUFFIX)) 
 # BUNDLE=$(LIB:.a=.bundle)
 DIRS=htdocs
+cxxflags=-g
+#cxxflags=-O2
 ldlibs=-lgclgrid
 INCLUDE=ArrivalUpdater.h \
   AttributeCrossReference.h \
@@ -66,7 +68,7 @@ MAN3=Basic_Time_Series.3 \
   slowness_object.3 \
   seispp_error.3 \
   Top_Mute.3
-DBG=-g
+#DBG=-g
 
 CLEAN = $(LICENSES)
 
