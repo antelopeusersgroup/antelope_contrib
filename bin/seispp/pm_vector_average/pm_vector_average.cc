@@ -160,8 +160,12 @@ int main(int argc, char **argv)
               <<deg(x[i].theta(ubar))<<" "<< x[i].theta(ubar)/errors[i] <<endl;
           }        
         }
-        cout << "Weighted mean vector and theta error estimate"<<endl;
-        cout << ubar <<" "<<" "<<deg(ubar_error);
+        /* We put the tag at the head of this line to allow grep for 
+           this string to pull them from output.  printing the confidence
+        level is potentially wrong but necessary to have output compable to 
+        bootstrap output line */
+        cout << "Weighted mean vector and theta error estimate:  "<<endl
+          << ubar <<" "<<" "<<deg(ubar_error)<<" "<<cl;
         if(extra_col)
         {
           cout << " "<<medextra<<endl;
@@ -184,13 +188,14 @@ int main(int argc, char **argv)
           error_scale,probability,mrwtr,cl,number_of_trials);
 
         cout << "Robust mean and theta error estimate from all data"<<endl
-            << "x1 x2 x3 theta_error average_ssq average_chisq robust_rms robust_chisq"<<endl;
-        cout << ubar.n[0]<<" "<<ubar.n[1]<<" "<<ubar.n[2]
+            << "x1 x2 x3 theta_error average_ssq average_chisq robust_rms robust_chisq N"<<endl;
+        cout << "RobustEstimatorResults:  " << ubar
            <<" "<<deg(pmbar0.sigma())<<" "
            << pmbar0.average_ssq()<<" "
            << pmbar0.average_chisq()<<" "
            << pmbar0.robust_rms()<<" "
-           << pmbar0.robust_chisq()<<endl;
+           << pmbar0.robust_chisq()<<" "
+           <<N<<endl;
         if(verbose)
         {
            cout <<"Input data"<<endl
