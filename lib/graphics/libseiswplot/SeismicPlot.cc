@@ -4,7 +4,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 #include "SeismicPlot.h"
-/* This is needed here because this class is also defined in this file.  
+/* This is needed here because this class is also defined in this file.
    This was necessary to allow both classes to use the BuildMenu procedure. */
 #include "TraceEditPlot.h"
 using namespace std;
@@ -17,7 +17,7 @@ using namespace SEISPP;
 ** also includes pullright menus. Create the menu, the cascade button
 ** that owns the menu, and then the submenu items.
 
-This is a copy from dbxcor.  I think it originally came from some X cookbook. 
+This is a copy from dbxcor.  I think it originally came from some X cookbook.
 */
 Widget BuildMenu (Widget parent, int menu_type, char *menu_title, char menu_mnemonic,
                   Boolean tear_off, MenuItem *items)
@@ -131,7 +131,7 @@ void SeismicPlot::initialize_widgets(Metadata& md)
         menu_file=BuildMenu(menu_bar,XmMENU_PULLDOWN,
                 (char *)"Control",'C',false,file_menu);
         XtManageChild(menu_bar);
-        /* We create a secondary form which will hold the 3 seismic components within it in 
+        /* We create a secondary form which will hold the 3 seismic components within it in
            a paned window.  We'll create that pair now one after the other. */
         Arg args[4];
         int n=0;
@@ -167,24 +167,55 @@ void SeismicPlot::initialize_widgets(Metadata& md)
         XtSetArg(args[n],XmNpaneMinimum,100); n++;
         seisw[0]=ExmCreateSeisw(paned_win,(char *)"Seisw0",args,n);
         XtManageChild(seisw[0]);
+        /* in 3c mode the other components go into seperate windows
+        createed here */
         if(ThreeComponentMode)
         {
-            seisw[1]=ExmCreateSeisw(paned_win,(char *)"Seisw1",args,n);
-            XtManageChild(seisw[1]);
-            seisw[2]=ExmCreateSeisw(paned_win,(char *)"Seisw2",args,n);
-            XtManageChild(seisw[2]);
+          shell_comp[0]=XtVaCreatePopupShell ("Component 1 plot",
+            topLevelShellWidgetClass,toplevel,XmNtitle,"Component 1",
+            XmNallowShellResize,True,XmNwidth,800,XmNheight,800,
+            XmNdeleteResponse,XmUNMAP,NULL);
+          XtManageChild(shell_comp[0]);
+          shell_comp[1]=XtVaCreatePopupShell ("Component 2 plot",
+            topLevelShellWidgetClass,toplevel,XmNtitle,"Component 2",
+            XmNallowShellResize,True,XmNwidth,800,XmNheight,800,
+            XmNdeleteResponse,XmUNMAP,NULL);
+          XtManageChild(shell_comp[1]);
+          /* Not sure these are needed for a plain plot, but all my other
+          motif examples have this consruct.  Should not be a performance issue*/
+          pane_comp[0]=XtVaCreateWidget("Component 1 plot",
+            xmPanedWindowWidgetClass,shell_comp[0],NULL);
+          XtManageChild(pane_comp[0]);
+          pane_comp[1]=XtVaCreateWidget("Component 2 plot",
+              xmPanedWindowWidgetClass,shell_comp[1],NULL);
+          XtManageChild(pane_comp[1]);
+          /* This is the seismic display  for components */
+          seisw[1]=ExmCreateSeisw(pane_comp[0],(char *)"Seisw1",args,n);
+          XtManageChild(seisw[1]);
+          seisw[2]=ExmCreateSeisw(pane_comp[1],(char *)"Seisw2",args,n);
+          XtManageChild(seisw[2]);
         }
         else
         {
             seisw[1]=NULL;
             seisw[2]=NULL;
+            for(int k=0;k<2;++k)
+            {
+              shell_comp[k]=NULL;
+              pane_comp[k]=NULL;
+            }
         }
         XtManageChild(main_w);
         XtRealizeWidget(toplevel);
+        if(ThreeComponentMode)
+        {
+            XtPopup(shell_comp[0],XtGrabNone);
+            XtPopup(shell_comp[1],XtGrabNone);
+        }
     } catch (...){throw;}
 }
 /* Default constructor gets its parameter information from the
-standard antelope parameter file location under a frozen name 
+standard antelope parameter file location under a frozen name
 (SeismicPlot.pf).  */
 SeismicPlot::SeismicPlot()
 {
@@ -202,7 +233,7 @@ SeismicPlot::SeismicPlot()
 	pffree(pf);
         this->initialize_widgets(md);
         EventLoopIsActive=false;
-        block_till_exit_pushed=true;   // default 
+        block_till_exit_pushed=true;   // default
     } catch (...) {throw;}
 }
 /* Construct from a Metadata object. */
@@ -223,11 +254,11 @@ SeismicPlot::~SeismicPlot()
     if(comp0!=NULL) delete comp0;
     if(comp1!=NULL) delete comp1;
     if(comp2!=NULL) delete comp2;
-    /* As I read it destroy the top level widget and destroy all the children. 
+    /* As I read it destroy the top level widget and destroy all the children.
        Hopefully this will not create a seg fault */
-    /* Using this creates problems.  Web research suggests this is probably 
+    /* Using this creates problems.  Web research suggests this is probably
        because motif widgets are built with their own destructors.  With this
-       the program seg faults when this destructor is called. 
+       the program seg faults when this destructor is called.
     XtDestroyWidget(toplevel);
     */
 }
@@ -244,7 +275,7 @@ void SeismicPlot::plot(TimeSeriesEnsemble& d,bool block_for_event)
                         + "Implementation only supports relative time.\n"
                         + "Convert all times to relative with ator");
 	XtAppLock(AppContext);
-        /* Make an internal copy of d managed by the object to be 
+        /* Make an internal copy of d managed by the object to be
            consistent with 3C data.  We intentionally do not manage
            the comp1 and comp2 pointers.   */
         if(comp0!=NULL) delete comp0;
@@ -252,13 +283,13 @@ void SeismicPlot::plot(TimeSeriesEnsemble& d,bool block_for_event)
         XtVaSetValues(seisw[0],ExmNseiswEnsemble, (XtPointer) (comp0),
             ExmNseiswMetadata,(XtPointer)(dynamic_cast<Metadata*>(this)), NULL);
 	XtAppUnlock(AppContext);
-        if(block_for_event) 
+        if(block_for_event)
             block_till_exit_pushed=true;
         else
             block_till_exit_pushed=false;
         //DEBUG
         //cerr <<"starting event handler"<<endl;
-        if(!EventLoopIsActive) 
+        if(!EventLoopIsActive)
             this->launch_Xevent_thread_handler();
         XmUpdateDisplay(this->toplevel);
     }
@@ -271,7 +302,7 @@ void SeismicPlot::refresh()
         int i;
         for(i=0;i<3;++i)
         {
-            if(seisw[i]!=NULL) XtVaSetValues(seisw[i],ExmNseiswMetadata, 
+            if(seisw[i]!=NULL) XtVaSetValues(seisw[i],ExmNseiswMetadata,
                     (XtPointer)(dynamic_cast<Metadata*>(this)), NULL);
         }
         XtAppUnlock(AppContext);
@@ -301,7 +332,7 @@ void SeismicPlot::plot(ThreeComponentSeismogram& d,bool block_for_event)
                     + "Implementation only accepts data with relative time");
         ThreeComponentEnsemble dtmp;
         dtmp.member.push_back(d);
-        /*this assumes dtmp will be copied to 3 components "comp" in private 
+        /*this assumes dtmp will be copied to 3 components "comp" in private
           are of this object.  This is a potential maintenance issue if that implementation
           changes to be aware */
         this->plot(dtmp,block_for_event);
@@ -363,11 +394,11 @@ void SeismicPlot::plot(ThreeComponentEnsemble& d,bool block_for_event)
         }
 
 	XtAppUnlock(AppContext);
-        if(block_for_event) 
+        if(block_for_event)
             block_till_exit_pushed=true;
         else
             block_till_exit_pushed=false;
-        if(!EventLoopIsActive) 
+        if(!EventLoopIsActive)
             this->launch_Xevent_thread_handler();
         XmUpdateDisplay(this->toplevel);
     }catch(...){throw;}
@@ -394,14 +425,14 @@ void SeismicPlot::launch_Xevent_thread_handler()
 }
 /***** BEGIN TraceEditPlot code ************/
 
-/* This is a pair of labels that are posted on the edit menu 
+/* This is a pair of labels that are posted on the edit menu
    displaying edit mode.  Edit is a toggle and this label will change
    back and forth between these two codes */
 const string cutlabel("Switch to Single Trace Edit");
 const string stlabel("Switch to Cutoff Edit Mode");
 /* This callback does nothing.  It is purely a placeholder required
    by the X interface to make btn2 active.  At least I don't see a way
-   to avoid it.  This is null because the widget knows about time series 
+   to avoid it.  This is null because the widget knows about time series
    objects and the concept of the live boolean.  It has wired in it a
    feature that toggles the live varibles when btn2 is pushed. */
 void ecb(Widget w, XtPointer client_data, XtPointer userdata)
@@ -410,7 +441,7 @@ void ecb(Widget w, XtPointer client_data, XtPointer userdata)
 }
 void TraceEditPlot::edit_enable()
 {
-    /*Always initialize the widget in single trace mode which is 
+    /*Always initialize the widget in single trace mode which is
       what editon==1 means.  Set to 2 to enable cutoff edit function */
     int editon(1);
     for(int k=0;k<3;++k)
@@ -485,7 +516,7 @@ void TraceEditPlot::build_edit_menu()
         {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}};
     menu_edit=BuildMenu(menu_bar,XmMENU_PULLDOWN,
             (char *)"Edit Mode",'E',
-            false,edit_menu);    
+            false,edit_menu);
     XtManageChild(menu_bar);
 }
 
