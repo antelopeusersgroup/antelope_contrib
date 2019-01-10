@@ -128,6 +128,7 @@ int main(int argc, char **argv)
         while(inp->good())
         {
             d=inp->read();
+            d.rotate_to_standard();
             d.apply_transformation_matrix(A);
             if(force_cardinal) reset_tmatrix(d);
             out->write(d);
