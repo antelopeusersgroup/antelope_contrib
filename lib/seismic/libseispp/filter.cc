@@ -236,6 +236,66 @@ void TimeInvariantFilter::apply(ThreeComponentSeismogram& ts)
 	// Append this filter name to Metadata part of object
 	ts.append_string(string("filter_spec"),string("; "),filter_spec);
 }
+/* Small helper for routine below.   We use pass by reference for 
+   efficiency.   dr is the time reversed version of d */
+void time_reverse_vector(vector<double>& d, vector<double>& dr)
+{
+  vector<double>::iterator dptr,drptr;
+  /* We initialize the reverse iterator outside the for loop 
+     because we want it to start at end()-1. */
+  drptr=dr.end();
+  --dptr;
+  for(dptr=d.begin();dptr!=d.end();++dptr,--drptr) *drptr = *dptr;
+}
+void TimeInvariantFilter::zerophase(TimeSeries& ts)
+{
+  const string base_error("TimeInvariantFilter::zerophase method:  ");
+  int i;
+  vector<double> sr;
+  /* sr has to be initialized */
+  for(i=0;i<ts.ns;++i) sr.push_back(0.0);
+  switch (this->type)
+  {
+    case highpass:
+    case lowpass:
+    case bandpass:
+     time_reverse_vector(ts.s,sr); 
+     try{
+       this->apply(ts.ns,&(sr[0]),ts.dt);
+     }catch(SeisppError& serr){throw serr;};
+     time_reverse_vector(sr,ts.s);
+     break;
+    default:
+      throw SeisppError(base_error + "Cannot run zerophase version of filter "
+          + filter_spec);
+  };
+}
+void TimeInvariantFilter::zerophase(ThreeComponentSeismogram& tcs)
+{
+  const string base_error("TimeInvariantFilter::zerophase method:  ");
+  int i,ii,k;
+  vector<double> sr;
+  sr.reserve(tcs.ns);
+  switch (this->type)
+  {
+    case highpass:
+    case lowpass:
+    case bandpass:
+     for(k=0;k<3;++k)
+     {
+       sr.clear();
+       for(i=0,ii=tcs.ns-1;i<tcs.ns;++i) sr.push_back(tcs.u(k,ii));
+       try{
+         this->apply(tcs.ns,&(sr[0]),tcs.dt);
+       }catch(SeisppError& serr){throw serr;};
+       for(i=0,ii=tcs.ns-1;i<tcs.ns;++i) tcs.u(k,ii)=sr[i];
+     }
+     break;
+    default:
+      throw SeisppError(base_error + "Cannot run zerophase version of filter "
+          + filter_spec);
+  };
+}
 #ifndef NO_ANTELOPE
 void TimeInvariantFilter::apply(Dbptr tr)
 {
