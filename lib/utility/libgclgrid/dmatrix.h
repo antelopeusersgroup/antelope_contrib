@@ -160,7 +160,7 @@ public:
 // @returns Reference to matrix element at position (rowindex,colindex)
 // @throws dmatrix_index_error is thrown if request is out of range
 //@}
-  double &operator()(int rowindex, int colindex);
+  double &operator()(int rowindex, int colindex); 
 //@{
 // Standard assignment operator
 //@}

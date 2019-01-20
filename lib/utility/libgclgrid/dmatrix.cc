@@ -39,7 +39,7 @@ dmatrix::~dmatrix()
 //if(ary!=NULL) delete [] ary;
 }
 
-double &dmatrix::operator()(int rowindex, int colindex)
+double &dmatrix::operator()(int rowindex, int colindex) 
 {
   int out_of_range=0;
   if (rowindex>=nrr) out_of_range=1;
