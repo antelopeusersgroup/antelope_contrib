@@ -44,6 +44,39 @@ double WindowRMS::metric(const ThreeComponentSeismogram& d)
     return(sumamp/((double)(dwin.ns)));
   }catch(...){throw;};
 }
+double WindowExtrema::metric(const TimeSeries& d)
+{
+  try{
+    vector<double>::iterator minval,maxval;
+    TimeSeries dwin(WindowData(d,this->window));
+    minval=min_element(dwin.s.begin(),dwin.s.end());
+    maxval=max_element(dwin.s.begin(),dwin.s.end());
+    return(maxval-minval);
+  }catch(...){throw;};
+}
+/* This algorithm defines the range as the maximum range on
+   any component.  To simplify coding we use a fairly 
+   expensive but simple algorithm that uses the TimeSeries 
+   method. */
+double WindowExtrema::metric(const ThreeComponentSeismogram& d)
+{
+  try{
+    int k;
+    double amps[3];
+    for(k=0;k<3;++k)
+    {
+      //Slight inefficency to not window before this step
+      TimeSeries *dcomp;
+      dcomp=ExtractComponent(d,k);
+      amps[k]=this->metric(*dcomp);
+      delete dcomp;
+    }
+    double retval(amps[0]);
+    if(amps[1]>retval) retval=amps[1];
+    if(amps[2]>retval) retval=amps[2];
+    return retval;
+  }catch(...){throw;};
+}
 /* We have to implement this as an exception or we get errors
    about unimplemented virtual abstract method */
 double ComponentRange::metric(const TimeSeries& d)
