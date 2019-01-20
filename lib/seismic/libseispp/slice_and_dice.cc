@@ -122,6 +122,11 @@ ThreeComponentSeismogram WindowData(const ThreeComponentSeismogram& parent, cons
 	// Setting the above gaps simplifies this process a lot.
 	//	
 	int i,j;
+        /* This oddity is necessary in current implementation to deal
+           with a const issue I'm unable to figure out.  */
+        dmatrix *uptr;
+        uptr=const_cast<dmatrix *>(&(parent.u));
+        double *ptr;
 	for(i=0;i<result.ns;++i)
 	{
 		double t;
@@ -135,15 +140,10 @@ ThreeComponentSeismogram WindowData(const ThreeComponentSeismogram& parent, cons
                         if( (is<0) || (is>=result.ns) )
                             for(j=0;j<3;++j) result.u(j,i)=0.0;
                         else
-			    for(j=0;j<3;++j) 
+			    for(j=0;j<3;++j)
                             {
-                              /* This extra step was necessary to deal
-                                 with a const issue in operator() in 
-                                 the dmatrix object.   Maybe could have
-                                 been done with const_cast but this seems 
-                                 clearer for minimal cost. */
-                              double val(parent.u(j,parent.sample_number(t)));
-                              result.u(j,i)=val;
+                              ptr=uptr->get_address(j,parent.sample_number(t));
+                              result.u(j,i)=(*ptr);
                             }
 		}
 	}

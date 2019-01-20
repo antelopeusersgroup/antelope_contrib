@@ -15,9 +15,15 @@ TimeSeries *ExtractComponent(const ThreeComponentSeismogram& tcs,const int compo
     try {
 	TimeSeries *ts=new TimeSeries(dynamic_cast<const BasicTimeSeries&>(tcs),
               dynamic_cast<const Metadata&>(tcs));
+        double *ptr;
+        dmatrix *uptr;
 	if(ts->live)
 	    for(int i=0;i<tcs.ns;++i) 
-		ts->s.push_back(tcs.u(component,i));
+            {
+              uptr=const_cast<dmatrix *>(&(tcs.u));
+              ptr=uptr->get_address(component,i);
+              ts->s.push_back(*ptr);
+            }
     	return(ts);
     }
     catch (...)
@@ -35,8 +41,14 @@ TimeSeries *ExtractComponent(const ThreeComponentSeismogram& tcs,const int compo
 		mdclone,mdl);
 	TimeSeries *ts=new TimeSeries(dynamic_cast<const BasicTimeSeries&>(tcs),
             mdclone);
+        double *ptr;
+        dmatrix *uptr;
 	for(int i=0;i<tcs.ns;++i) 
-		ts->s.push_back(tcs.u(component,i));
+        {
+          uptr=const_cast<dmatrix *>(&(tcs.u));
+          ptr=uptr->get_address(component,i);
+          ts->s.push_back(*ptr);
+        }
 	return(ts);
     }
     catch (...)

@@ -33,10 +33,12 @@ double WindowRMS::metric(const ThreeComponentSeismogram& d)
     int i,k;
     for(i=0,sumamp=0.0;i<dwin.ns;++i)
     {
+      double *ptr;
       double compval;
       for(k=0,amp_i=0.0;k<3;++k) 
       {
-        compval=dwin.u(k,i);
+        ptr=dwin.u.get_address(k,i);
+        compval=*ptr;
         amp_i += compval*compval;
       }
       sumamp += sqrt(amp_i);

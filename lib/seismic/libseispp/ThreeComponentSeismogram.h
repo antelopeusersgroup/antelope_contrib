@@ -402,8 +402,8 @@ void HorizontalRotation(ThreeComponentSeismogram& d, double phi);
 \param component is the component to extract (0, 1, or 2)
 \param mdl list of metadata to copy to output from input object.
 **/
-TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
-        MetadataList& mdl);
+TimeSeries *ExtractComponent(const ThreeComponentSeismogram& tcs,const int component,
+        const MetadataList& mdl);
 /*!
  Extract one component from a ThreeComponentSeismogram and 
  create a TimeSeries object from it. 
@@ -414,7 +414,7 @@ TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
 \param tcs is the ThreeComponentSeismogram to convert.
 \param component is the component to extract (0, 1, or 2)
 **/
-TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component);
+TimeSeries *ExtractComponent(const ThreeComponentSeismogram& tcs,const int component);
 
 } // End namespace SEISPP declaration
 #endif
