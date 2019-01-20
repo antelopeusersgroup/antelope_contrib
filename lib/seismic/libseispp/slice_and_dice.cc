@@ -1,24 +1,22 @@
 #include <sstream>
 #include "seispp.h"
 namespace SEISPP {
-//@{
-// Extracts a requested time window of data from a parent TimeSeries object.
+/*! \brief Extracts a requested time window of data from a parent TimeSeries object.
 //
-// It is common to need to extract a smaller segment of data from a larger 
-// time window of data.  This function accomplishes this in a nifty method that
-// takes advantage of the methods contained in the BasicTimeSeries object for
-// handling time and data gaps.  
+It is common to need to extract a smaller segment of data from a larger 
+time window of data.  This function accomplishes this in a nifty method that
+takes advantage of the methods contained in the BasicTimeSeries object for
+handling time and data gaps.  
 //
-//@returns new TimeSeries object derived from  parent but windowed by input
+\return new TimeSeries object derived from  parent but windowed by input
 //      time window range.
 //
-//@throws SeisppError object if the requested time window does not overlap data
+\exception SeisppError object if the requested time window does not overlap data
 //
-//@param parent is the larger TimeSeries object to be windowed
-//@param tw defines the data range to be extracted from parent.
-//@author Gary L. Pavlis
-//@}
-TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw)
+\param parent is the larger TimeSeries object to be windowed
+\param tw defines the data range to be extracted from parent.
+*/
+TimeSeries WindowData(const TimeSeries& parent, const TimeWindow& tw)
 {
 	// Always silently do nothing if marked dead
 	if(!(parent.live)) 
@@ -90,7 +88,7 @@ requested of purists.*/
 //@param tw defines the data range to be extracted from parent.
 //@author Gary L. Pavlis
 //@}
-ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow& tw)
+ThreeComponentSeismogram WindowData(const ThreeComponentSeismogram& parent, const TimeWindow& tw)
 {
 	// Always silently do nothing if marked dead
 	if(!parent.live) 
@@ -137,7 +135,16 @@ ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow
                         if( (is<0) || (is>=result.ns) )
                             for(j=0;j<3;++j) result.u(j,i)=0.0;
                         else
-			    for(j=0;j<3;++j) result.u(j,i)=parent.u(j,parent.sample_number(t));
+			    for(j=0;j<3;++j) 
+                            {
+                              /* This extra step was necessary to deal
+                                 with a const issue in operator() in 
+                                 the dmatrix object.   Maybe could have
+                                 been done with const_cast but this seems 
+                                 clearer for minimal cost. */
+                              double val(parent.u(j,parent.sample_number(t)));
+                              result.u(j,i)=val;
+                            }
 		}
 	}
 	return(result);

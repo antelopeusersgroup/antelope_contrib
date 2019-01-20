@@ -97,14 +97,14 @@ public:
 // (i.e. less than 0 or >= ns).
 //\param is - sample number to test.
 **/
-	bool is_gap(int is);  // query by sample number
+	bool is_gap(int is) const;  // query by sample number
 /*!
 // Checks if data at time ttest is a gap or valid data.  
 // This function is like the overloaded version with an int argument except 
 // it uses a time instead of sample number for the query.
 //\param ttest - time to be tested.
 **/
-	bool is_gap(double ttest);  // query by time
+	bool is_gap(double ttest) const;  // query by time
 /*!
 // Checks if a given data segment has a gap.
 // For efficiency it is often useful to ask if a whole segment of data is
@@ -114,14 +114,14 @@ public:
 //\return true if time segment has any data gaps
 //@param twin time window of data to test defined by a TimeWindow object
 **/
-	bool is_gap(TimeWindow twin);
+	bool is_gap(TimeWindow twin) const;
 /*!
 // Global test to see if data has any gaps defined. 
 // Gap processing is expensive and we need this simple method to
 // test to see if the associated object has any gaps defined.  
 //\return true if the associated object has any gaps defined.  
 **/
-	bool has_gap(){return(!gaps.empty());};
+	bool has_gap() const{return(!gaps.empty());};
 /*!
 // Adds a gap to the gap definitions for this data object.
 // Sometimes an algorithm detects or needs to create a gap (e.g. a mute,
@@ -151,7 +151,7 @@ public:
 // This standardizes this common operation in an obvious way.
 //\param i - sample number to compute time for.  
 **/
-	double time(int i){return(t0+dt*static_cast<double>(i));};
+	double time(int i) const{return(t0+dt*static_cast<double>(i));};
 	// inverse of time
 /*!
 // Inverse of time function.  That is,  it returns the integer position
@@ -160,12 +160,12 @@ public:
 // callers responsibility as this is a common error condition that 
 // should not require the overhead of an exception.
 **/
-	int sample_number(double t){return(nint((t-t0)/dt));};
+	int sample_number(double t)const {return(nint((t-t0)/dt));};
 /*!
 // Returns the end time (time associated with last data sample) 
 // of this data object.
 **/
-	double endtime(){return(t0+dt*static_cast<double>(ns-1));};
+	double endtime() const {return(t0+dt*static_cast<double>(ns-1));};
 /*!
 // Absolute to relative time conversion.  
 // Sometimes we want to convert data from absolute time (epoch times)
@@ -215,7 +215,7 @@ NOTE:  This method is maintained only for backward compatibility.   May be depri
   request only makes sense if the data began with an absolute time and was
   converted with the ator method.   Some cross checks are made for consistency
   that can throw an error in this condition. */
-        double time_reference();
+        double time_reference() const;
 /*! Standard assignment operator. */
         BasicTimeSeries& operator=(const BasicTimeSeries& parent);
 /*!
