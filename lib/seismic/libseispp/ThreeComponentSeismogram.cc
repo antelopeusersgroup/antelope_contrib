@@ -556,10 +556,25 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 	  u()
 {
 	int i,j;
-	// exit immediately if we are given irregular sample rates.
+	/* beware irregular sample rates, but don' be too machevelian.   
+           Abort only if the mismatch is large defined as accumulated time
+           over data range of this constructor is less than half a sample */
 	if( (ts[0].dt!=ts[1].dt) || (ts[1].dt!=ts[2].dt) )
+        {
+            double ddtmag1=fabs(ts[0].dt-ts[1].dt);
+            double ddtmag2=fabs(ts[1].dt-ts[2].dt);
+            double ddtmag;
+            if(ddtmag1>ddtmag1)
+                ddtmag=ddtmag1;
+            else
+                ddtmag=ddtmag2;
+            ddtmag1=fabs(ts[0].dt-ts[2].dt);
+            if(ddtmag1>ddtmag)  ddtmag=ddtmag1;
+            double ddtcum=ddtmag*((double)ts[0].ns);
+            if(ddtcum>(ts[0].dt)/2.0)
 		throw SeisppError(
-		  "gather_components:  sample intervals of components are not consistent");
+		  "ThreeComponentSeismogram constructor::  sample intervals of components are not consistent");
+        }
 	// temporaries to hold component values
 	double t0_component[3];
 	double hang[3];
