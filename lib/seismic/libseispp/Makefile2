@@ -36,6 +36,7 @@ INCLUDE=ArrivalUpdater.h \
   TimeWindow.h\
   VectorStatistics.h\
   VelocityModel_1d.h\
+  WindowMetric.h \
   XcorAnalysisSetting.h \
   XcorProcessingEngine.h \
   databasehandle.h\
@@ -104,6 +105,7 @@ OBJS=ArrivalUpdater.o \
   TimeSeries.o \
   VelocityModel_1d.o \
   VelocityModel_3d.o \
+  WindowMetric.o \
   XcorAnalysisSetting.o \
   XcorProcessingEngine.o \
   array_get_data_3c.o \
