@@ -15,6 +15,8 @@ TimeSeries *ExtractComponent(const ThreeComponentSeismogram& tcs,const int compo
     try {
 	TimeSeries *ts=new TimeSeries(dynamic_cast<const BasicTimeSeries&>(tcs),
               dynamic_cast<const Metadata&>(tcs));
+        /* Important - need to clear vector or we get nothing */
+        ts->s.clear();
         double *ptr;
         dmatrix *uptr;
 	if(ts->live)
