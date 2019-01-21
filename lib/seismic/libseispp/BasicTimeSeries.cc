@@ -7,7 +7,7 @@ namespace SEISPP {
 using namespace SEISPP;
 // Returns true if the requested sample number of a gap or outside the
 // range of the data
-bool BasicTimeSeries::is_gap(int n0)
+bool BasicTimeSeries::is_gap(int n0) const
 {
 	if(n0<0 || n0>ns) return true;
 	if(gaps.empty()) return false;
@@ -25,14 +25,14 @@ bool BasicTimeSeries::is_gap(int n0)
 		return true;
 }
 // query for gap by time window
-bool BasicTimeSeries::is_gap(TimeWindow twin)
+bool BasicTimeSeries::is_gap(TimeWindow twin) const
 {
 	if(gaps.find(twin)==gaps.end())
 		return(false);
 	else
 		return(true);
 }
-bool BasicTimeSeries::is_gap(double t)
+bool BasicTimeSeries::is_gap(double t) const
 {
 	if(t<t0 || t>(t0+((double)(ns-1))*dt)) return true;
 	if(gaps.empty())return false;
@@ -44,7 +44,7 @@ bool BasicTimeSeries::is_gap(double t)
 	else
 		return true;
 }
-void BasicTimeSeries::ator(double tshift)
+void BasicTimeSeries::ator(double tshift) 
 {
 	if(tref==relative) return;
         t0shift=tshift;
@@ -198,7 +198,7 @@ void BasicTimeSeries::shift(double dt)
     this->rtoa();
     this->ator(oldt0shift+dt);
 }
-double BasicTimeSeries::time_reference()
+double BasicTimeSeries::time_reference() const
 {
     const string base_error("BasicTimeSeries::time_reference method: ");
     if(tref==absolute)

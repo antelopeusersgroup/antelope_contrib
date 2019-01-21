@@ -271,21 +271,21 @@ called PfStyleMetadata.
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        double get_double(string key) throw(MetadataGetError);
+        double get_double(string key) const throw(MetadataGetError);
 /*!
 // Get an integer from the Metadata object.
 //
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        int get_int(string key)throw(MetadataGetError);
+        int get_int(string key)const throw(MetadataGetError);
 /*!
 // Get a long integer from the Metadata object.
 //
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        long get_long(string key)throw(MetadataGetError);
+        long get_long(string key)const throw(MetadataGetError);
 /*!
 // Get a string from the Metadata object.
 //
@@ -296,7 +296,7 @@ called PfStyleMetadata.
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        string get_string(string key)throw(MetadataGetError);
+        string get_string(string key)const throw(MetadataGetError);
 /*!
 // Get a  boolean parameter from the Metadata object.
 //
@@ -305,7 +305,7 @@ called PfStyleMetadata.
 //
 //\param key keyword associated with requested metadata member.
 **/
-        bool get_bool(string key) throw(MetadataGetError);
+        bool get_bool(string key) const throw(MetadataGetError);
 /*! Generic get interface.
 
   This is a generic interface most useful for template procedures
@@ -321,7 +321,7 @@ called PfStyleMetadata.
   \exception - will throw a MetadataGetError (child of SeisppError) for
      type mismatch or in an overflow or underflow condition.
      */
-      template <typename T> T get(string key) throw(MetadataGetError);
+  template <typename T> T get(string key) const throw(MetadataGetError);
       /*! \brief Generic get interface for C char array.
 
         This is a generic interface most useful for template procedures
@@ -336,7 +336,7 @@ called PfStyleMetadata.
         \exception - will throw a MetadataGetError (child of SeisppError) for
            type mismatch or in an overflow or underflow condition.
            */
-      template <typename T> T get(const char *key) throw(MetadataGetError)
+      template <typename T> T get(const char *key) const throw(MetadataGetError) 
       {
         try{
           T val;
@@ -508,7 +508,7 @@ private:
 };
 /* Anything but specializations of this template (found in Metadata.cc)  will lead
    to an exception - unsupported type*/
-template <typename T> T Metadata::get(string key) throw(MetadataGetError)
+template <typename T> T Metadata::get(string key) const throw(MetadataGetError) 
 {
   const string base_error("Metadata generic get template: ");
   throw MetadataGetError(typeid(T).name(),key,base_error+"Unsupported type");
@@ -525,8 +525,8 @@ template <typename T> T Metadata::get(string key) throw(MetadataGetError)
 //\param mdlist object containing a typed list of Metadata components
 //  to copy from mdin to mdout.
 **/
-void copy_selected_metadata(Metadata& mdin, Metadata& mdout,
-	MetadataList& mdlist) throw(MetadataError);
+void copy_selected_metadata(const Metadata& mdin, Metadata& mdout,
+	const MetadataList& mdlist) throw(MetadataError);
 #ifndef NO_ANTELOPE
 /*!
 // Build a MetadataList from a parameter file.
