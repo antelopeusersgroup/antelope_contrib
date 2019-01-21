@@ -137,7 +137,7 @@ ThreeComponentSeismogram WindowData(const ThreeComponentSeismogram& parent, cons
 		{
 			t=result.time(i);
                         is=parent.sample_number(t);  
-                        if( (is<0) || (is>=result.ns) )
+                        if( (is<0) || (is>=parent.ns) )
                             for(j=0;j<3;++j) result.u(j,i)=0.0;
                         else
 			    for(j=0;j<3;++j)
