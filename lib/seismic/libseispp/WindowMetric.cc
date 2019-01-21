@@ -63,13 +63,14 @@ double WindowExtrema::metric(const TimeSeries& d)
 double WindowExtrema::metric(const ThreeComponentSeismogram& d)
 {
   try{
+    ThreeComponentSeismogram dwin(WindowData(d,this->window));
     int k;
     double amps[3];
     for(k=0;k<3;++k)
     {
       //Slight inefficency to not window before this step
       TimeSeries *dcomp;
-      dcomp=ExtractComponent(d,k);
+      dcomp=ExtractComponent(dwin,k);
       amps[k]=this->metric(*dcomp);
       delete dcomp;
     }
