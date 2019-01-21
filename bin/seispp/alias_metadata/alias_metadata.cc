@@ -177,11 +177,11 @@ template <typename DataType> int set_aliases(list<AttributeAlias> aliases,
                     switch (mdt)
                     {
                         case MDreal:
-                            dval=d.get<double>(key);
+                            dval=d.get_double(key);
                             d.put(newkey,dval);
                             break;
                         case MDint:
-                            ival=d.get<long>(key);
+                            ival=d.get_int(key);
                             d.put(newkey,ival);
                             break;
                         case MDstring:

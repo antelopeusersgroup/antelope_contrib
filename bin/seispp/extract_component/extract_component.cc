@@ -15,7 +15,7 @@ void usage()
         << "Extract component n (must be 0, 1, or 2) from input 3C ensemble"
         <<endl
         << "Output is boost serialized TimeSeriesEnsemble object"<<endl
-        << " -text - switch to text input and output (default is binary)"<<end;
+        << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
 
