@@ -53,7 +53,7 @@ double WindowExtrema::metric(const TimeSeries& d)
     TimeSeries dwin(WindowData(d,this->window));
     minval=min_element(dwin.s.begin(),dwin.s.end());
     maxval=max_element(dwin.s.begin(),dwin.s.end());
-    return(maxval-minval);
+    return((*maxval) - (*minval));
   }catch(...){throw;};
 }
 /* This algorithm defines the range as the maximum range on
@@ -63,14 +63,18 @@ double WindowExtrema::metric(const TimeSeries& d)
 double WindowExtrema::metric(const ThreeComponentSeismogram& d)
 {
   try{
-    ThreeComponentSeismogram dwin(WindowData(d,this->window));
+    /* We don't window the data like this but depends upon the
+     * metric methods to extract the window of interest assuming
+     * this is a longer waveform segment. */
+    //ThreeComponentSeismogram dwin(WindowData(d,this->window));
     int k;
     double amps[3];
     for(k=0;k<3;++k)
     {
       //Slight inefficency to not window before this step
       TimeSeries *dcomp;
-      dcomp=ExtractComponent(dwin,k);
+      //dcomp=ExtractComponent(dwin,k);
+      dcomp=ExtractComponent(d,k);
       amps[k]=this->metric(*dcomp);
       delete dcomp;
     }
@@ -98,20 +102,30 @@ double ComponentRange::metric(const ThreeComponentSeismogram& d)
       double *dptr=dwin.u.get_address(k,0);
       cl2nrm[k] = dnrm2(dwin.ns,dptr,3);
     }
-    /* Use the max of all permutations */
-    double result,test;
-    result=cl2nrm[1]/cl2nrm[0];
-    test=1.0/result;
-    if(result<test) result=test;
-    test=cl2nrm[2]/cl2nrm[0];
-    if(result<test) result=test;
-    test=1.0/test;
-    if(result<test) result=test;
-    test=cl2nrm[2]/cl2nrm[1];
-    if(result<test) result=test;
-    test=1.0/test;
-    if(result<test) result=test;
-    return result;
+    /* Convert the amplitudes carefully to log values.  log10 will return nan if
+     * the value passed is less than or equal to zero - hence the <= condition.
+     * When we find that condition immediately return a ratio bigger than the 
+     * largest dynamic range of any seismic instrument today - 24 bits */
+    const double MaxdBRatio(180.0);
+    for(k=0;k<3;++k)
+    {
+        if(cl2nrm[k]<=0.0) 
+            return MaxdBRatio;
+        else
+            cl2nrm[k]=log10(cl2nrm[k]);
+    }
+    /* Now find the max and min amplitudes and return the difference 
+     * between them (multiply by 20 to get db)*/
+    double minamp(cl2nrm[0]),maxamp(cl2nrm[0]);
+    for(k=1;k<3;++k)
+    {
+        if(cl2nrm[k]>maxamp)
+            maxamp=cl2nrm[k];
+        if(cl2nrm[k]<minamp)
+            minamp=cl2nrm[k];
+    }
+    double ratio=maxamp-minamp;   //division is - for logs
+    return 20.0*ratio;
   }catch(...){throw;};
 }
 /* SNR metrics.  These are near copies of each other and
@@ -128,7 +142,12 @@ double RMS_SNR::metric(const TimeSeries& d)
     double srms,nrms;
     srms=sig.metric(d);
     nrms=n.metric(d);
-    return(srms/nrms);
+    double snr;
+    if(nrms<=0.0)
+        snr=-1.0;
+    else
+        snr=srms/nrms;
+    return(snr);
   }catch(...){throw;};
 }
 double RMS_SNR::metric(const ThreeComponentSeismogram& d)
@@ -139,7 +158,12 @@ double RMS_SNR::metric(const ThreeComponentSeismogram& d)
     double srms,nrms;
     srms=sig.metric(d);
     nrms=n.metric(d);
-    return(srms/nrms);
+    double snr;
+    if(nrms<=0.0)
+        snr=-1.0;
+    else
+        snr=srms/nrms;
+    return(snr);
   }catch(...){throw;};
 }
 double Range_SNR::metric(const TimeSeries& d)
@@ -150,7 +174,12 @@ double Range_SNR::metric(const TimeSeries& d)
     double srms,nrms;
     srms=sig.metric(d);
     nrms=n.metric(d);
-    return(srms/nrms);
+    double snr;
+    if(nrms<=0.0)
+        snr=-1.0;
+    else
+        snr=srms/nrms;
+    return(snr);
   }catch(...){throw;};
 }
 double Range_SNR::metric(const ThreeComponentSeismogram& d)
@@ -161,7 +190,12 @@ double Range_SNR::metric(const ThreeComponentSeismogram& d)
     double srms,nrms;
     srms=sig.metric(d);
     nrms=n.metric(d);
-    return(srms/nrms);
+    double snr;
+    if(nrms<=0.0)
+        snr=-1.0;
+    else
+        snr=srms/nrms;
+    return(snr);
   }catch(...){throw;};
 }
 /* These are monotonously similar.  I am not certain they 
