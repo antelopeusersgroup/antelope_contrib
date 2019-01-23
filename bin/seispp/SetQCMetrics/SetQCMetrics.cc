@@ -193,7 +193,7 @@ int main(int argc, char **argv)
     if(argc>1)
       if(string(argv[1])=="--help") usage();
     string otype("ThreeComponentEnsemble");
-    string pffile("SetQCMetric.pf");
+    string pffile("SetQCMetrics.pf");
     bool binary_data(true);
     for(i=1;i<argc;++i)
     {
