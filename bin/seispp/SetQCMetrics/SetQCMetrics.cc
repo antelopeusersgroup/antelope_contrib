@@ -14,7 +14,7 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "SetQCMetrics [-pf pffile -t object_type -v --help -text] < in > out"
+    cerr << "SetQCMetrics [-csv outfile -pf pffile -t object_type -v --help -text] < in > out"
         <<endl
         << "Computes and sets one or more quality control (QC) metrics storing"
         <<endl
@@ -30,6 +30,8 @@ void usage()
         << "RangeSNR   Signal to Noise Ratio computed by range (high-low) metric"
         << endl
         << "CompRatio  Ratio of largest component amplitude to minimum component"
+        <<endl
+        << " Use -csv to write the attributes to a csv file outfile"
         <<endl
         << " Use -pf to read from different pf file the default SetQCMetric.pf"
         <<endl
@@ -107,22 +109,38 @@ AllMetrics PfParseMetricDefinitions(PfStyleMetadata& control)
   }catch(...){throw;}
 }
 template <typename Tdata> pair<int,int> process_single_object_file
-     (PfStyleMetadata control, bool binary_data)
+     (PfStyleMetadata control, string csvfile, bool binary_data)
 {
   /* First get the file handles for input and output*/
   try{
+    int i;
     AllMetrics m;
+    AllMetrics::iterator mptr;
     m=PfParseMetricDefinitions(control);
+    int nm=m.size();
     char form('t');
     if(binary_data) form='b';
     StreamObjectReader<Tdata> inp(form);
     StreamObjectWriter<Tdata> outp(form);
+    bool csvsave(false);
+    ofstream ofs;
+    if(csvfile!="NONE")
+    {
+      ofs.open(csvfile);
+      csvsave=true;
+      /* Always write the header to define the attributes.  This makes
+      the more extensible */
+      for(i=0,mptr=m.begin();mptr!=m.end();++mptr,++i)
+      {
+        ofs<<(*mptr)->key();
+        if(i<(nm-1)) ofs<<",";
+      }
+    }
     int count(0),metrics_set(0);
     Tdata d;
     while(inp.good())
     {
       d=inp.read();
-      AllMetrics::iterator mptr;
       BasicWindowMetric *mbase;
       if(d.live)
       {
@@ -134,29 +152,55 @@ template <typename Tdata> pair<int,int> process_single_object_file
           name=mbase->key();
           val=mbase->metric(d);
           d.put(name,val);
+          if(csvsave)
+          {
+            for(i=0,mptr=m.begin();mptr!=m.end();++mptr,++i)
+            {
+              ofs<<val;
+              if(i<(nm-1)) ofs<<",";
+            }
+          }
           ++metrics_set;
         }
       }
-      /* Note we intentionally preserve data marked dead but do 
+      /* Note we intentionally preserve data marked dead but do
          not process them. This allows option to potentially revise
          an object later. */
       outp.write(d);
       ++count;
     }
+    ofs.close();
     return std::pair<int,int>(count,metrics_set);
   }catch(...){throw;};
 }
 template <typename Tens,typename Tdata> pair<int,int> process_ensemble_file
-     (PfStyleMetadata control, bool binary_data)
+     (PfStyleMetadata control, string csvfile, bool binary_data)
 {
   /* First get the file handles for input and output*/
   try{
+    int i;
     AllMetrics m;
+    AllMetrics::iterator mptr;
     m=PfParseMetricDefinitions(control);
+    int nm=m.size();
     char form('t');
     if(binary_data) form='b';
     StreamObjectReader<Tens> inp(form);
     StreamObjectWriter<Tens> outp(form);
+    bool csvsave(false);
+    ofstream ofs;
+    if(csvfile!="NONE")
+    {
+      ofs.open(csvfile);
+      csvsave=true;
+      /* Always write the header to define the attributes.  This makes
+      the more extensible */
+      for(i=0,mptr=m.begin();mptr!=m.end();++mptr,++i)
+      {
+        ofs<<(*mptr)->key();
+        if(i<(nm-1)) ofs<<",";
+      }
+    }
     int count(0),metrics_set(0);
     Tens d;
     while(inp.good())
@@ -176,6 +220,14 @@ template <typename Tens,typename Tdata> pair<int,int> process_ensemble_file
           mbase=(*mptr);
           name=mbase->key();
           val=mbase->metric(*dptr);
+          if(csvsave)
+          {
+            for(i=0,mptr=m.begin();mptr!=m.end();++mptr,++i)
+            {
+              ofs<<val;
+              if(i<(nm-1)) ofs<<",";
+            }
+          }
           ++metrics_set;
         }
         ++count;
@@ -183,6 +235,7 @@ template <typename Tens,typename Tdata> pair<int,int> process_ensemble_file
       }
       outp.write(d);
     }
+    ofs.close();
     return std::pair<int,int>(count,metrics_set);
   }catch(...){throw;};
 }
@@ -195,12 +248,21 @@ int main(int argc, char **argv)
     string otype("ThreeComponentEnsemble");
     string pffile("SetQCMetric.pf");
     bool binary_data(true);
+    /* We use NONE as the default to signal a do not save.  i.e. if
+    we do not change csvfile to something else no csvdata will be written*/
+    string csvfile("NONE");
     for(i=1;i<argc;++i)
     {
         string sarg(argv[i]);
         if(sarg=="--help")
         {
             usage();
+        }
+        else if(sarg=="-csv")
+        {
+            ++i;
+            if(i>=argc)usage();
+            csvfile=string(argv[i]);
         }
         else if(sarg=="-pf")
         {
@@ -231,20 +293,20 @@ int main(int argc, char **argv)
         {
             case TCS:
               funcret=process_single_object_file<ThreeComponentSeismogram>
-                      (control,binary_data);
+                      (control,csvfile,binary_data);
               break;
             case TCE:
               funcret=process_ensemble_file
                 <ThreeComponentEnsemble,ThreeComponentSeismogram>
-                (control,binary_data);
+                (control,csvfile,binary_data);
                 break;
             case TS:
               funcret=process_single_object_file<TimeSeries>
-                      (control,binary_data);
+                      (control,csvfile,binary_data);
               break;
             case TSE:
               funcret=process_ensemble_file<TimeSeriesEnsemble,TimeSeries>
-                      (control,binary_data);
+                      (control,csvfile,binary_data);
               break;
             default:
                 cerr << "Coding problem - dtype variable does not match enum"
