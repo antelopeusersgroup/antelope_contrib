@@ -128,18 +128,23 @@ template <typename Tdata> pair<int,int> process_single_object_file
     {
       ofs.open(csvfile);
       csvsave=true;
+      /* evid and sta are frozen keys - potentially should be generalized*/
+      ofs<<"evid,sta,";
       /* Always write the header to define the attributes.  This makes
-      the more extensible */
+      the more extensible. */
       for(i=0,mptr=m.begin();mptr!=m.end();++mptr,++i)
       {
         ofs<<(*mptr)->key();
         if(i<(nm-1)) ofs<<",";
       }
+      ofs<<endl;
     }
     int count(0),metrics_set(0);
     Tdata d;
     while(inp.good())
     {
+      long evid;
+      string sta;
       d=inp.read();
       BasicWindowMetric *mbase;
       if(d.live)
@@ -154,6 +159,11 @@ template <typename Tdata> pair<int,int> process_single_object_file
           d.put(name,val);
           if(csvsave)
           {
+            /* This weird syntax is needed to prevent an compilation error
+            on dependent template names. */
+            evid=d.template get<long>("evid");
+            sta=d.get_string("sta");
+            ofs<<evid<<","<<sta<<",";
             for(i=0,mptr=m.begin();mptr!=m.end();++mptr,++i)
             {
               ofs<<val;
@@ -193,6 +203,8 @@ template <typename Tens,typename Tdata> pair<int,int> process_ensemble_file
     {
       ofs.open(csvfile);
       csvsave=true;
+      /* evid and sta are frozen keys - potentially should be generalized*/
+      ofs<<"evid,sta,";
       /* Always write the header to define the attributes.  This makes
       the more extensible */
       for(i=0,mptr=m.begin();mptr!=m.end();++mptr,++i)
@@ -200,6 +212,7 @@ template <typename Tens,typename Tdata> pair<int,int> process_ensemble_file
         ofs<<(*mptr)->key();
         if(i<(nm-1)) ofs<<",";
       }
+      ofs<<endl;
     }
     int count(0),metrics_set(0);
     Tens d;
@@ -215,6 +228,8 @@ template <typename Tens,typename Tdata> pair<int,int> process_ensemble_file
        {
         for(mptr=m.begin();mptr!=m.end();++mptr)
         {
+          long evid;
+          string sta;
           double val;
           string name;
           mbase=(*mptr);
@@ -222,6 +237,9 @@ template <typename Tens,typename Tdata> pair<int,int> process_ensemble_file
           val=mbase->metric(*dptr);
           if(csvsave)
           {
+            evid=d.template get<long>("evid");
+            sta=d.get_string("sta");
+            ofs<<evid<<","<<sta<<",";
             for(i=0,mptr=m.begin();mptr!=m.end();++mptr,++i)
             {
               ofs<<val;
