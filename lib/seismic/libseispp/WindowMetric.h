@@ -121,6 +121,7 @@ class RMS_SNR : public BasicWindowMetric
     RMS_SNR(const TimeWindow sigwin,const TimeWindow nwin) 
       : BasicWindowMetric(sigwin)
     {
+      noisewin=nwin;
       name=RMS_SNR_key;;
     };
     RMS_SNR(const RMS_SNR& parent) : BasicWindowMetric(parent)
