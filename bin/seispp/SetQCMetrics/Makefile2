@@ -1,5 +1,7 @@
 BIN=SetQCMetrics
 PF=SetQCMetrics.pf
+DATADIR=schemas/css3.0.ext
+DATA=metrics
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
