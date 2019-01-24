@@ -259,8 +259,9 @@ void TimeInvariantFilter::zerophase(TimeSeries& ts)
     case highpass:
     case lowpass:
     case bandpass:
-     time_reverse_vector(ts.s,sr); 
      try{
+       this->apply(ts);
+       time_reverse_vector(ts.s,sr); 
        this->apply(ts.ns,&(sr[0]),ts.dt);
      }catch(SeisppError& serr){throw serr;};
      time_reverse_vector(sr,ts.s);
@@ -281,14 +282,18 @@ void TimeInvariantFilter::zerophase(ThreeComponentSeismogram& tcs)
     case highpass:
     case lowpass:
     case bandpass:
+    case DEMEAN:
+     try{
+         this->apply(tcs);
+     }catch(SeisppError& serr){throw serr;};
      for(k=0;k<3;++k)
      {
        sr.clear();
-       for(i=0,ii=tcs.ns-1;i<tcs.ns;++i) sr.push_back(tcs.u(k,ii));
+       for(i=0,ii=tcs.ns-1;i<tcs.ns;++i,--ii) sr.push_back(tcs.u(k,ii));
        try{
          this->apply(tcs.ns,&(sr[0]),tcs.dt);
        }catch(SeisppError& serr){throw serr;};
-       for(i=0,ii=tcs.ns-1;i<tcs.ns;++i) tcs.u(k,ii)=sr[i];
+       for(i=0,ii=tcs.ns-1;i<tcs.ns;++i,--ii) tcs.u(k,ii)=sr[i];
      }
      break;
     default:
