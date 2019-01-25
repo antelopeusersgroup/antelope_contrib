@@ -129,7 +129,7 @@ template <typename Tdata> pair<int,int> process_single_object_file
       ofs.open(csvfile);
       csvsave=true;
       /* evid and sta are frozen keys - potentially should be generalized*/
-      ofs<<"evid,sta,";
+      ofs<<"evid,sta,phase,filter,";
       /* Always write the header to define the attributes.  This makes
       the more extensible */
       for(i=0,mptr=m.begin();mptr!=m.end();++mptr,++i)
@@ -143,6 +143,7 @@ template <typename Tdata> pair<int,int> process_single_object_file
     Tdata d;
     while(inp.good())
     {
+      const string filterkey("filter_spec");  //frozen name in filter.cc
       long evid;
       string sta;
       d=inp.read();
@@ -151,9 +152,17 @@ template <typename Tdata> pair<int,int> process_single_object_file
       {
         if(csvsave)
         {
+	 /* We don't test these for existence - error if they aren't define*/
           evid=d.template get<long>("evid");
           sta=d.get_string("sta");
-          ofs<<evid<<","<<sta<<",";
+	  /* Phase column is fixed here as P */
+          ofs<<evid<<","<<sta<<","<<"P,";
+	  if(d.is_attribute_set(filterkey))
+          {
+              ofs<<d.get_string(filterkey)<<",";
+          }
+          else
+              ofs<<"NONE,";
         }
         for(i=0,mptr=m.begin();mptr!=m.end();++mptr,++i)
         {
@@ -188,6 +197,7 @@ template <typename Tens,typename Tdata> pair<int,int> process_ensemble_file
   /* First get the file handles for input and output*/
   try{
     int i;
+    const string filterkey("filter_desc");
     AllMetrics m;
     AllMetrics::iterator mptr;
     m=PfParseMetricDefinitions(control);
@@ -203,7 +213,7 @@ template <typename Tens,typename Tdata> pair<int,int> process_ensemble_file
       ofs.open(csvfile);
       csvsave=true;
       /* evid and sta are frozen keys - potentially should be generalized*/
-      ofs<<"evid,sta,";
+      ofs<<"evid,sta,phase,filter,";
       /* Always write the header to define the attributes.  This makes
       the more extensible */
       for(i=0,mptr=m.begin();mptr!=m.end();++mptr,++i)
@@ -231,7 +241,13 @@ template <typename Tens,typename Tdata> pair<int,int> process_ensemble_file
          {
             evid=d.template get<long>("evid");
             sta=d.get_string("sta");
-            ofs<<evid<<","<<sta<<",";
+            ofs<<evid<<","<<sta<<",P";
+            if(dptr->is_attribute_set(filterkey))
+            {
+              ofs<<d.get_string(filterkey)<<",";
+            }
+            else
+              ofs<<"NONE,";
          }
         for(mptr=m.begin();mptr!=m.end();++mptr)
         {
