@@ -22,8 +22,8 @@ Attribute compratio
 	;
 
 Relation metrics
-	Fields ( evid sta phase snr peaksnr compratio lddate )
-	Primary ( evid sta phase )
+	Fields ( evid sta phase filter snr peaksnr compratio lddate )
+	Primary ( evid sta phase filter )
 	Description ( "Stores output of seispp filter SetQCMetrics" )
 	Detail {
 		Used to provide database functionality to waveform
