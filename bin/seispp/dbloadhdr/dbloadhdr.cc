@@ -82,11 +82,11 @@ Metadata load_find_key(Metadata& d, set<string>& dbmkeys,
           mdkey.put(*mkptr,ival);
           break;
         case MDreal:
-          dval=d.get_double(*mkptr);
+          dval=d.get_double(ik);
           mdkey.put(*mkptr,dval);
           break;
         case MDstring:
-          sval=d.get_string(*mkptr);
+          sval=d.get_string(ik);
           mdkey.put(*mkptr,sval);
           break;
         case MDboolean:
@@ -200,19 +200,19 @@ template <class Datatype>
            <<nmatch
            <<" matching records were found for the defined match keys for this object"
            <<endl
-           << "Will use the last record found but this may be an error."<<endl
+           << "Will use the first record found but this may be an error."<<endl
            << "Check database and be sure this is what you want"
            <<endl;
         errlog<<ss.str();
       }
-      list<long>::iterator mrptr=match_records.end();
+      list<long>::iterator mrptr=match_records.begin();
       db.record = (*mrptr);  // use last record
 
       for(hptr=hdrnames.begin();hptr!=hdrnames.end();++hptr)
       {
         double dval;
         long int ival;
-        string sval;
+        char sval[128];
         /* We assume this pair of methods cannot throw an exception. Must
         be true here because we fetched hdrnames from the object*/
         string name_in_db=attributes_to_copy.external(*hptr);
@@ -254,7 +254,7 @@ template <class Datatype>
             }
             break;
           case MDstring:
-            ierr=dbgetv(db,0,name_in_db.c_str(),&sval,NULL);
+            ierr=dbgetv(db,0,name_in_db.c_str(),sval,NULL);
             if(ierr==dbINVALID)
             {
               ss<<"dbgetv failed trying to fetch attributre="<<name_in_db<<endl;
