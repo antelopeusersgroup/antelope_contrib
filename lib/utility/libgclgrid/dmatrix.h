@@ -225,15 +225,15 @@ public:
 // User should use rows() and columns() method in preference to this.
 // @returns Two element int vector with row=[0] and column=[1].  
 //@}
-  int *size();
+  int *size() const;
 //@{
 // Return the number of rows in this matrix.
 //@}
-  int rows();
+  int rows() const;
 //@{
 //  Return the number of columns in this matrix.  
 //@}
-  int columns();
+  int columns() const;
 //@{
 //  Initialize a matrix to all zeros.
 //@}
