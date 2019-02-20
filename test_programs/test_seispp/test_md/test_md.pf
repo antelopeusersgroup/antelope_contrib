@@ -30,4 +30,5 @@ test_nested_tag &Arr{
     test_double 2.0
     test_int 4
     test_string foo
+    test_multi_word_string   This is a string with blanks.
 }
