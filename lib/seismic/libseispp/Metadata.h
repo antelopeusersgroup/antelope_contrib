@@ -261,6 +261,23 @@ called PfStyleMetadata.
   \param mdold - parent object to copy
   */
 	Metadata& operator=(const Metadata& mdold);
+/*! Append additional metadata with replacement.
+
+A plus operator implies addition, but this overloading does something very 
+different.  A simple way to describe the effect is that on completion the 
+left hand side Metadata object will contain a duplicate of the right hand 
+side plus any attributes in the rhs that were not present on the lhs.   
+Another way to clarify this is to describe the algorithm.   We take each 
+attribute on the right and search for it in the lhs.  If it is not in the lhs
+it will be added.  If it is there already, the rhs value will replace the old
+value on the lhs.   This is most useful when an algorithm creates a new set of
+attributes that we want to use in downstream processing but retain all the 
+other attributes.   
+
+\param rhs is the new metadata to be insert/replace on the lhs.
+*/
+        Metadata& operator+=(const Metadata& rhs);
+        const Metadata operator+(const Metadata& other) const;
 	// In this implementation destructor can be defaulted.
 	// There is thus no need to declare it.
         // ~Metadata();
