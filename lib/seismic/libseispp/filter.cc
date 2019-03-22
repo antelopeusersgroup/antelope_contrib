@@ -252,6 +252,7 @@ void TimeInvariantFilter::zerophase(TimeSeries& ts)
   const string base_error("TimeInvariantFilter::zerophase method:  ");
   int i;
   vector<double> sr;
+  sr.reserve(ts.ns);
   /* sr has to be initialized */
   for(i=0;i<ts.ns;++i) sr.push_back(0.0);
   switch (this->type)
