@@ -1,9 +1,9 @@
 BIN= install_obspy
 MAN1= install_obspy.1
 
-clean= $(BIN).xpy 
+clean= $(BIN).xpl
 
 include $(ANTELOPEMAKE)
 
-$(BIN).xpy: $(BIN).xpy.id
+$(BIN).xpl: $(BIN).xpl.id
 	produce $@
