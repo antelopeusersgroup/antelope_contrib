@@ -406,7 +406,7 @@ const string stlabel("Switch to Cutoff Edit Mode");
    feature that toggles the live varibles when btn2 is pushed. */
 void ecb(Widget w, XtPointer client_data, XtPointer userdata)
 {
-    cerr << "ecb callback entered"<<endl;
+    //cerr << "ecb callback entered"<<endl;
 }
 void TraceEditPlot::edit_enable()
 {
@@ -527,11 +527,13 @@ set<int> TraceEditPlot::report_kills()
             if(!dptr->live) result.insert(i);
     }
     //DEBUG
+    /*
     set<int>::iterator ikill;
     cout << "TraceEditPlot returns this kill list:  ";
     for(ikill=result.begin();ikill!=result.end();++ikill)
     {
         cout << *ikill <<", ";
     }
+    */
     return(result);
 }

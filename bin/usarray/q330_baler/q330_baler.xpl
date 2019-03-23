@@ -54,6 +54,10 @@
     use baler ;
     use utilfunct ;
 
+    use feature qw( switch );
+    no if $] >= 5.018, warnings => qw( experimental::smartmatch );
+
+
     my $PFTIME = 1434481632; # pf_revision_time >= PFTIME, see pfrequire
 
     our ( $opt_v, $opt_V, $opt_D, $opt_a, $opt_m, $opt_P, $opt_n, $opt_p, $opt_q, $opt_s );

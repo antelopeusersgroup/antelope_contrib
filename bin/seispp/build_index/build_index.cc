@@ -7,15 +7,16 @@
 #include "seispp.h"
 #include "ThreeComponentSeismogram.h"
 #include "PfStyleMetadata.h"
-#include "StreamObjectFileIndexer.h"
+#include "StreamObjectFileIndex.h"
 using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "build_index dfile indexfile [-t object_type -v --help -pf pffile]"
+    cerr << "build_index dfile [-o indexfile -t object_type -v --help -pf pffile]"
         <<endl
-        << "Builds an index from dfile and writes to indexfile"<<endl
+        << "Builds an index from dfile and writes an indexfile"<<endl
         << "Index is defined by parameters in pffile"<<endl
+        << " Use -o to change default index file name (basename.inx)"<<endl
         << " Use -t to select object type expected for input. "<<endl
         << " (Allowed options=ThreeComponentEnsemble (default),ThreeComponentSeismogram, TimeSeries, PMTimeSeries, and TimeSeriesEnsemble)"<<endl
         << " -v - be more verbose"<<endl
@@ -57,8 +58,11 @@ template <typename DataType> int build_index(string dfile,
 {
     try{
       int count;
-      StreamObjectFileIndexer<DataType> indexer(dfile,mdl);
-      count=indexer.writeindex(indexfile, dfile);
+      StreamObjectFileIndex<DataType> indexer(dfile,mdl);
+      if(indexfile=="DEFAULT")
+        count=indexer.writeindex();
+      else
+        count=indexer.writeindex(indexfile);
       return count;
     }catch(...){throw;};
 }
@@ -69,12 +73,12 @@ int main(int argc, char **argv)
     int i;
     if(argc>1)
       if(string(argv[1])=="--help") usage();
-    if(argc<3) usage();
+    if(argc<2) usage();
     string otype("ThreeComponentSeismogram");
     string dfile(argv[1]);
-    string indexfile(argv[2]);
+    string indexfile("DEFAULT");
     string pffile("build_index");
-    for(i=3;i<argc;++i)
+    for(i=2;i<argc;++i)
     {
         string sarg(argv[i]);
         if(sarg=="--help")
@@ -88,6 +92,12 @@ int main(int argc, char **argv)
             ++i;
             if(i>=argc)usage();
             otype=string(argv[i]);
+        }
+        else if(sarg=="-o")
+        {
+            ++i;
+            if(i>=argc)usage();
+            indexfile=string(argv[i]);
         }
         else if(sarg=="-pf")
         {
@@ -127,8 +137,9 @@ int main(int argc, char **argv)
                     << "Fatal error - bug fix required. "<<endl;
                 exit(-1);
         };
-        cerr << "build_index:  constructed index for "<<count<<" objects in file "
-          << dfile<<endl<<"Index written to file "<<indexfile<<endl;
+        if(SEISPP_verbose)
+          cerr << "build_index:  constructed index for "<<count<<" objects for file "
+          << dfile<<endl;
     }catch(SeisppError& serr)
     {
         serr.log_error();

@@ -1,8 +1,8 @@
 phase P
 phase_time_key Ptime
 # Note start time be early when the data were processed to set gaps for low snr
-average_window_start -0.5
-average_window_end 1.5
+average_window_start -3.0
+average_window_end 5.0
 # The algorithm hunts from the window start but will stop after this many
 # samples - this provides a focus on earliest part of the waveform but 
 # still works with more emergent arrivals
