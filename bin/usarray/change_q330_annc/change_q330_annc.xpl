@@ -480,7 +480,7 @@ sub current_annc {
 
     my $authnum = (split /\-auth/, $auth) [1] ; 
 
-    if ($authnum != $opt_A) {
+    if (hex($authnum) != hex($opt_A)) {
       $change++;
       elog_complain("Datalogger auth code, $authnum, differs from to-be-used auth code, $opt_A from command line use of -A\n");
       if (&is_valid_auth($opt_A)) {
