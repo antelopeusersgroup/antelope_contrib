@@ -253,7 +253,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 				<<"All data must have exactly 3 channels per bundle,"
 				<< " but group bundle size="
 				<< bundle.end_record-bundle.start_record<<endl;
-			throw(SeisppDberror(message.str(),dbh.db,complain));
+			throw(SeisppDberror(message.str(),dbh.db,COMPLAIN));
 		}
 		// Use the simplified copy constructor.  This handle
 		// to loop through data.  Sometimes is a bundle pointer
@@ -297,7 +297,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 			  << samprate[2] <<endl
 			  << "Cannot handle mixed sample rate data in a 3c bundle"<<endl;
 			throw SeisppDberror(message.str(),
-				dbh.db,complain);
+				dbh.db,COMPLAIN);
 		}
 		// get the start and end time ranges and handle ragged
 		// start and end time irregularities
@@ -539,7 +539,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 		// Land here when any of the metadata routines fail
 		    mderr.log_error();
 		    throw SeisppDberror("Constructor for ThreeComponentSeismogram object failed from a metadata error",
-			dbh.db,complain);
+			dbh.db,COMPLAIN);
 
 	      }
 	    }

@@ -112,12 +112,12 @@ DatascopeHandle::DatascopeHandle(string dbname,
 	if(readonly)
 	{
 		if(dbopen(const_cast<char*>(dbname.c_str()),"r",&db))
-			throw SeisppDberror("Failure in dbopen",db,complain);
+			throw SeisppDberror("Failure in dbopen",db,COMPLAIN);
 	}
 	else
 	{
 		if(dbopen(const_cast<char*>(dbname.c_str()),"r+",&db))
-			throw SeisppDberror("Failure in dbopen",db,complain);
+			throw SeisppDberror("Failure in dbopen",db,COMPLAIN);
 	}
 	close_on_destruction=true;
 	retain_parent=retain_all_views;
@@ -145,7 +145,7 @@ DatascopeHandle::DatascopeHandle(string dbname,
 	db = dbprocess(db,process_list,0);
 	freetbl(process_list,0);
 	if(db.table == dbINVALID)
-		throw SeisppDberror("dbprocess failed",db,complain);
+		throw SeisppDberror("dbprocess failed",db,COMPLAIN);
 	pffree(pf);
 	/* initialize views */
 	views = new multiset<int>;
@@ -195,7 +195,7 @@ DatascopeHandle::DatascopeHandle(DatascopeHandle& dbh, Pf *pf, string tag,
 	        db = dbprocess(dbi,process_list,0);
 		freetbl(process_list,0);
         	if(db.table == dbINVALID)
-                  throw SeisppDberror("dbprocess failed",db,complain);
+                  throw SeisppDberror("dbprocess failed",db,COMPLAIN);
 		/* Previous version tried to use a table number one up for parent table,
 		but this is not compatible with this memory management model.  If dbprocess
 		leaks we just have to cope.  */
@@ -228,12 +228,12 @@ DatascopeHandle::DatascopeHandle(string dbname,bool readonly,
 	if(readonly)
 	{
 		if(dbopen(const_cast<char*>(dbname.c_str()),"r",&db))
-			throw SeisppDberror("Failure in dbopen",db,complain);
+			throw SeisppDberror("Failure in dbopen",db,COMPLAIN);
 	}
 	else
 	{
 		if(dbopen(const_cast<char*>(dbname.c_str()),"r+",&db))
-			throw SeisppDberror("Failure in dbopen",db,complain);
+			throw SeisppDberror("Failure in dbopen",db,COMPLAIN);
 	}
 	is_bundle = false;
 	close_on_destruction=false;
@@ -362,7 +362,7 @@ double DatascopeHandle::get_double(string name)
 	if(dbgetv(db,0,name.c_str(),&val,NULL))
 		throw SeisppDberror(string("dbgetv error extracting attribute ")
 			+name,
-			db,complain);
+			db,COMPLAIN);
 	return(val);
 }
 int DatascopeHandle::get_int(string name)
@@ -376,7 +376,7 @@ long DatascopeHandle::get_long(string name)
 	if(dbgetv(db,0,name.c_str(),&val,NULL))
 		throw SeisppDberror(string("dbgetv error extracting attribute ")
 			+name,
-			db,complain);
+			db,COMPLAIN);
 	return(val);
 }
 string DatascopeHandle::get_string(string name)
@@ -385,7 +385,7 @@ string DatascopeHandle::get_string(string name)
 	if(dbgetv(db,0,name.c_str(),&val,NULL))
 		throw SeisppDberror(string("dbgetv error extracting attribute ")
 			+name,
-			db,complain);
+			db,COMPLAIN);
 	return(string(val));
 }
 string  DatascopeHandle::get_filename()
@@ -393,10 +393,10 @@ string  DatascopeHandle::get_filename()
 	char str[256];
 
 	if(dbgetv(db,0,"dir",str,NULL ) )
-		throw SeisppDberror("dbgetv error trying to read dir",db,complain);
+		throw SeisppDberror("dbgetv error trying to read dir",db,COMPLAIN);
 	string dir(str);
 	if(dbgetv(db,0,"dfile",str,NULL ) )
-		throw SeisppDberror("dbgetv error trying to read dfile",db,complain);
+		throw SeisppDberror("dbgetv error trying to read dfile",db,COMPLAIN);
 	return(dir+"/"+string(str));
 }
 	
@@ -407,7 +407,7 @@ long DatascopeHandle::number_tuples()
 	ierr = dbquery(db,dbRECORD_COUNT,&nrec);
 	if(ierr<0)
 		throw SeisppDberror(string("dbquery of record count failed"),
-			db,complain);
+			db,COMPLAIN);
 	return(nrec);
 }
 int DatascopeHandle::number_attributes()
@@ -417,7 +417,7 @@ int DatascopeHandle::number_attributes()
 	ierr = dbquery(db,dbFIELD_COUNT,&natt);
 	if(ierr<0)
 		throw SeisppDberror(string("number_attributes:  dbquery failed"),
-			db,complain);
+			db,COMPLAIN);
 	return(static_cast<int>(natt));
 }
 DatascopeHandle& DatascopeHandle::operator=(const DatascopeHandle& dbi)
@@ -457,7 +457,7 @@ long DatascopeHandle::append()
 	row_added = dbaddnull(db);
 	if(row_added==dbINVALID)
 		throw SeisppDberror(string("DatascopeHandle::append: dbaddnull failure"),
-			db,complain);
+			db,COMPLAIN);
 	db.record=row_added;
 	return(row_added);
 }
@@ -470,43 +470,43 @@ void DatascopeHandle::put(string name, double value)
 {
 	if(dbputv(db,0,name.c_str(),value,NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
-				db, complain);
+				db, COMPLAIN);
 }
 void DatascopeHandle::put(string name, float value)
 {
 	if(dbputv(db,0,name.c_str(),static_cast<double>(value),NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
-				db, complain);
+				db, COMPLAIN);
 }
 void DatascopeHandle::put(string name, long value)
 {
 	if(dbputv(db,0,name.c_str(),value,NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
-				db, complain);
+				db, COMPLAIN);
 }
 void DatascopeHandle::put(string name, int value)
 {
 	if(dbputv(db,0,name.c_str(),static_cast<long>(value),NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
-				db, complain);
+				db, COMPLAIN);
 }
 void DatascopeHandle::put(string name, string value)
 {
 	if(dbputv(db,0,name.c_str(),value.c_str(),NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
-				db, complain);
+				db, COMPLAIN);
 }
 void DatascopeHandle::put(string name, char *value)
 {
 	if(dbputv(db,0,name.c_str(),value,NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
-				db, complain);
+				db, COMPLAIN);
 }
 void DatascopeHandle::put(string name, const char *value)
 {
 	if(dbputv(db,0,name.c_str(),const_cast<char *>(value),NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
-				db, complain);
+				db, COMPLAIN);
 }
 Tbl *list_to_tbl(list<string> slist)
 {
@@ -530,7 +530,7 @@ void DatascopeHandle::sort(list<string> sortkeys)
 	db = dbsort(db,t,0,0);
 	if(!retain_parent) manage_parent();
 	if(db.table == dbINVALID)
-		throw SeisppDberror("dbsort failed",db,complain);
+		throw SeisppDberror("dbsort failed",db,COMPLAIN);
 	if(views!=NULL) views->insert(db.table);
 	freetbl(t,free);
 }
@@ -548,7 +548,7 @@ void DatascopeHandle::natural_join(string table1, string table2)
 			+ string(" and ") 
 			+ table2 
 			+ string("failed"),
-			db,complain);
+			db,COMPLAIN);
 	if(views!=NULL) views->insert(db.table);
 
 }
@@ -562,7 +562,7 @@ void DatascopeHandle::natural_join(string table)
 		throw SeisppDberror(string("dbjoin: append to current view with table") 
 			+ table 
 			+ string("failed"),
-			db,complain);
+			db,COMPLAIN);
 	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);
 }
@@ -589,7 +589,7 @@ void DatascopeHandle::join(Dbptr dbj2,
 		   << "dbjoin failed for table number ="
 		   << dbj2.table;
 		throw SeisppDberror(ss.str(),
-			db,complain);
+			db,COMPLAIN);
 	}
 	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);
@@ -634,7 +634,7 @@ void DatascopeHandle::leftjoin(string t,
 		throw SeisppDberror(string("dbjoin of table ")
 			+ t
 			+ string("to left of current view failed"),
-			db,complain);
+			db,COMPLAIN);
 	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);
 }
@@ -651,7 +651,7 @@ void DatascopeHandle::group(list<string> groupkeys)
 	freetbl(t,free);
 	if(db.table==dbINVALID)
 		throw SeisppDberror(string("dbgroup failed"),
-			db,complain);
+			db,COMPLAIN);
 	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);
 }
@@ -661,7 +661,7 @@ void DatascopeHandle::subset(string sstr)
 	db = dbsubset(db,const_cast<char *>(sstr.c_str()),0);
 	if(db.table==dbINVALID)
 		throw SeisppDberror(string("dbsubset failed"),
-			db,complain);
+			db,COMPLAIN);
 	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);
 }
@@ -677,7 +677,7 @@ void DatascopeHandle::lookup(string t)
 		0,0);
 	if(db.table==dbINVALID)
 		throw SeisppDberror(string("lookup:  lookup failed for table"
-			+ t),db,complain);
+			+ t),db,COMPLAIN);
 	/* These will only be executed if lookup calls a view
 	defined with a specific name. */
 	is_bundle=is_a_bundle_pointer(db);
@@ -698,14 +698,14 @@ DBBundle DatascopeHandle::get_range()
 		int ierr;
 		ierr = dbgetv(db,0,"bundle",&dbbundle,NULL );
 		if(ierr==dbINVALID)
-			throw SeisppDberror(emess,db,complain);
+			throw SeisppDberror(emess,db,COMPLAIN);
 		dbget_range(dbbundle,&s,&e);
 		bundle.start_record = s;
 		bundle.end_record = e;
 		bundle.parent = dbbundle;
 	}
 	else
-		throw SeisppDberror(emess,db,complain);
+		throw SeisppDberror(emess,db,COMPLAIN);
 	return(bundle);
 }
 
@@ -722,19 +722,19 @@ string Dberror_message(string mess, Dbptr db, ErrorSeverity et)
 	<<"severity level=";
     switch (et)
     {
-    case fault:
+    case FAULT:
     	ess << " Fault" << endl;
     	break;
-    case fatal:
+    case FATAL:
     	ess << " Fatal" << endl;
     	break;
-    case complain:
+    case COMPLAIN:
     	ess << " Complain" << endl;
     	break;
-    case notify:
+    case NOTIFY:
     	ess << " Notify" << endl;
     	break;
-    case log:
+    case LOG:
     	ess << " Log" << endl;
     	break;
     default:
@@ -751,7 +751,7 @@ SeisppDberror::SeisppDberror(const string mess, Dbptr dbi)
 		: SeisppError(mess)
 {
     db=dbi;
-    error_type=unknown;
+    error_type=UNKNOWN;
     message=Dberror_message(mess,db,error_type);
 }
 SeisppDberror::SeisppDberror(const string mess, Dbptr dbi,
@@ -824,7 +824,7 @@ void DatascopeHandle::nojoin(string t2)
     db=dbnojoin(this->db,db2,0L,0L,0L);
     if(db.table==dbINVALID)
         throw SeisppDberror(string("dbnojoin:  dbnojoin operation returned dbINVALID applied against table ")
-                + t2,db,complain);
+                + t2,db,COMPLAIN);
     if(!retain_parent) manage_parent();
     if(views!=NULL) views->insert(db.table);
 }
@@ -847,7 +847,7 @@ void DatascopeHandle::nojoin(string table, list<string> key1, list<string> key2)
 		   << "dbnojoin failed for table number ="
 		   << dbj2.table;
 		throw SeisppDberror(ss.str(),
-			db,complain);
+			db,COMPLAIN);
 	}
 	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);

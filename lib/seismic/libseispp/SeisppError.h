@@ -53,7 +53,7 @@ public:
 /*!
  Defines severity code for errors thrown by database routines.
 **/
-enum ErrorSeverity {fault, fatal, complain, notify, log, unknown};
+enum ErrorSeverity {FAULT, FATAL, COMPLAIN, NOTIFY, LOG, UNKNOWN};
 /*! \brief Error object thrown by routines accessing an Antelope database.  
 
  This object normally leads to errors written by Antelope elog functions

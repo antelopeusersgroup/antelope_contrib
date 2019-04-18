@@ -45,7 +45,7 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 		if(db.table==dbINVALID)
 			throw SeisppDberror(base_error
 				+ string("Input handle Dbptr is invalid"),
-				db,complain);
+				db,COMPLAIN);
 		dbt=parent.db;
 	}
 	else
@@ -57,7 +57,7 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 			throw SeisppDberror( base_error
 				+ string("lookup failed for table=")
 				+table,
-				dbt,complain);
+				dbt,COMPLAIN);
 		}
 	}
 	dbscratch_record=dbt;
