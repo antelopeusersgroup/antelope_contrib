@@ -1,0 +1,34 @@
+# css3.0 extension (contributed)
+
+#Include css3.0  # uncomment to complete schema
+
+Attribute wtsn    
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "serial number for wind turbine " )
+	Detail {
+		Serial number of the installed wind turbine.  
+	}
+	;
+
+
+Relation windturbine
+	Fields ( sta time endtime manu model wtsn comment lddate )
+	Primary ( sta time::endtime )
+	Description ( "Track wind turbines deployed" )
+	Detail {
+		Table designed to handle details of deployed wind turbines including:
+		
+		   manu:    manufacturer, i.e. Forgen 
+		   model:   model number of equipment, i.e. V30
+		   wtsn:    serial number of the wind turbine, if available 
+		   comment: freeform information i.e. oddities at or with insatll, etc. 
+
+		This is a contributed schema extension developed for use at the ANF, UCSD.
+	}
+	;
+
+# firm is used/defined in extensions stabaler and staq330
+# manu is used in digitizer and seismometer tables
+# wtsn is defined here

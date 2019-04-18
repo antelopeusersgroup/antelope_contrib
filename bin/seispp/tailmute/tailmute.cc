@@ -158,8 +158,6 @@ int main(int argc, char **argv)
             //cerr << "Ensemble size="<<d.member.size()<<endl;
             for(i=0;i<d.member.size();++i)
             {
-                //DEBUG
-                //cerr << "Starting on member number "<<i<<endl;
               nchanged=mute.apply(d.member[i]);
               if(SEISPP_verbose) cerr << "TailMute:  ensemble "<<n
                 <<" member="<<i

@@ -12,7 +12,7 @@
 #include "coords.h"
 #include "wfdiscio.h"
 #include "segcss.h"
-#include "stock.h" /* for declaration of now() */
+#include "stock.h" /* for declaration of std_now() */
 
 
 int wrt_segwfd(buffer, dates, names,dname)

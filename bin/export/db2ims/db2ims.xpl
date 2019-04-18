@@ -34,7 +34,10 @@ use strict 'vars' ;
 # debug
 #use diagnostics;
 
-our ( $opt_a, $opt_d, $opt_t, $opt_s, $opt_e, $opt_l, $opt_p, $opt_v, $opt_V, $opt_y);
+no if $] >= 5.018, warnings => qw( experimental::smartmatch );
+
+
+our ( $opt_a, $opt_d, $opt_t, $opt_s, $opt_e, $opt_l, $opt_p, $opt_P, $opt_v, $opt_V, $opt_y);
 our ( $host, $pgm, $usage) ;
 our ( %pf ) ;
 
@@ -48,9 +51,9 @@ our ( %pf ) ;
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &getopts('anvVyd:e:l:p:s:t:') || ( @ARGV != 1 && @ARGV != 10 ) ) { 
+    if (  ! &getopts('anvVyd:e:l:p:P:s:t:') || ( @ARGV != 1 && @ARGV != 10 ) ) { 
         $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-a] [-y] " ;
-        $usage .=  "[-s start_origin.time] [-e end_origin.time] [-t lddate.time] [-p pf] [-l logfile] [-d dbops] database  \n\n" ;
+        $usage .=  "[-s start_origin.time] [-e end_origin.time] [-t lddate.time] [-p pf] [-P project] [-l logfile] [-d dbops] database  \n\n" ;
         elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
     }
@@ -362,6 +365,10 @@ sub build_dbj { # ( $filename, $refj, $refj_event, $refnetmag, $refstamag ) = &b
         $filename = "$opt_l";
     } else {
         $filename = "$pf{ims_dir}/$startyr\_$startmo\_$startdy\_$pf{agency}"."_IMS";
+# add project name to output filename in case your agency has more than one database it produces picks for (i.e. usarray and ceusn for the ANF)     
+        if ($opt_P) {
+	    $filename = "$pf{ims_dir}/$startyr\_$startmo\_$startdy\_$pf{agency}\_$opt_P"."_IMS"
+        } 
         elog_notify( "filename is: $filename.  \n" ) if $opt_V ;
         elog_notify( "Now checking for $pf{ims_dir}  existance.\n" ) if $opt_V;
         if (! -d $pf{ims_dir}) {
@@ -369,6 +376,7 @@ sub build_dbj { # ( $filename, $refj, $refj_event, $refnetmag, $refstamag ) = &b
             mkpath "$pf{ims_dir}" ;
         }
     }
+
 
 
 # check to see if filename already exists in save area
@@ -391,6 +399,11 @@ sub build_dbj { # ( $filename, $refj, $refj_event, $refnetmag, $refstamag ) = &b
 
         dbclose ( @trackdb ) ; 
     } 
+
+# check to make sure corrected filename does not exceed 32 characters (max length of dfile)
+    my ($fdir,$fbase,$fsuffix) = parsepath($filename);
+    elog_die ("Filename, $filename, exceeds 32 characters!\n") if (length($fbase) > 32 ) ; 
+
 
 #
 # join in event, origin, origerr, netmag tables

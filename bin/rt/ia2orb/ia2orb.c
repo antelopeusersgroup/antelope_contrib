@@ -831,7 +831,7 @@ delete_if_old( void *afp, void *acqp )
 	Acqfile	*af = (Acqfile *) afp;
 	void	*element;
 
-	if( filename2epoch( af->fname ) < now() - Cf.reject_old_request_sec ) {
+	if( filename2epoch( af->fname ) < std_now() - Cf.reject_old_request_sec ) {
 
 		element = delstbl( acquired, (void *) af );
 
@@ -887,7 +887,7 @@ retrieve_block( Ia2orb_sta *ia, double reqtime )
 	int	rc;
 
 	if( Cf.reject_old_request_sec > 0 && 
-	    reqtime < now() - Cf.reject_old_request_sec ) {
+	    reqtime < std_now() - Cf.reject_old_request_sec ) {
 
 		elog_notify( 0, 	
 			"[thread '%s']: Ignoring data request because start-time '%s UTC' preceeds "
@@ -996,7 +996,7 @@ retrieve_block( Ia2orb_sta *ia, double reqtime )
 	if( Cf.reject_future_data_sec >= 0 ) {
 
 		sprintf( future_rejection_onset, "%f", 
-			 now() + Cf.reject_future_data_sec );
+			 std_now() + Cf.reject_future_data_sec );
 
 		pushtbl( cmdargs, "-e" );
 		pushtbl( cmdargs, future_rejection_onset );
@@ -1173,7 +1173,7 @@ retrieve_next( Ia2orb_sta *ia )
 			free( ns );
 		}
 
-		estimated_sleep_sec = (int) ( candidate + IA_BLOCKSIZE_SEC - now() + EPSILON_SEC );
+		estimated_sleep_sec = (int) ( candidate + IA_BLOCKSIZE_SEC - std_now() + EPSILON_SEC );
 
 		if( estimated_sleep_sec < 0 ) {
 
@@ -1183,16 +1183,16 @@ retrieve_next( Ia2orb_sta *ia )
 	} else {
 
 		while( retrieve_block( ia, candidate ) < 0 &&
-		       candidate + IA_BLOCKSIZE_SEC < now() ) {
+		       candidate + IA_BLOCKSIZE_SEC < std_now() ) {
 			
 			candidate += IA_BLOCKSIZE_SEC;
 
 			if( Cf.reject_old_request_sec > 0 && 
-			    candidate < now() - Cf.reject_old_request_sec ) {
+			    candidate < std_now() - Cf.reject_old_request_sec ) {
 
 				old_candidate = candidate;
 
-				candidate = normalize_time( now() - Cf.reject_old_request_sec + IA_BLOCKSIZE_SEC ); 
+				candidate = normalize_time( std_now() - Cf.reject_old_request_sec + IA_BLOCKSIZE_SEC ); 
 
 				if( Cf.verbose ) {
 
@@ -1212,7 +1212,7 @@ retrieve_next( Ia2orb_sta *ia )
 			}
 		}
 
-		estimated_sleep_sec = (int) ( candidate + 2 * IA_BLOCKSIZE_SEC - now() + EPSILON_SEC );
+		estimated_sleep_sec = (int) ( candidate + 2 * IA_BLOCKSIZE_SEC - std_now() + EPSILON_SEC );
 
 		if( estimated_sleep_sec < 0 ) {
 
@@ -1487,7 +1487,7 @@ issue_dlcmd_response( Pf *pf, char *response )
 
 	pkt->pf = pfresp;
 
-	pkt->time = now();
+	pkt->time = std_now();
 
 	stuffPkt( pkt, srcname, &time, &packet, &nbytes, &packetsz );
 
@@ -1846,7 +1846,7 @@ ia2orb_acquire_continuous( void *iap )
 				free( ns );
 			}
 
-			wait_for_time( now() + estimated_sleeptime_sec, 0 );
+			wait_for_time( std_now() + estimated_sleeptime_sec, 0 );
 
 		} else if( estimated_sleeptime_sec < 0 ) {
 
@@ -1911,10 +1911,10 @@ ia2orb_acquire_on_demand( void *iap )
 		rc = retrieve_block( ia, iar->reqtime );
 
 		if( rc == IA2ORB_RETRIEVE_FAILED_TRANSIENT &&
-		    iar->reqtime > now() - IA_BLOCKSIZE_SEC - IA_REASONABLE_WRITETIME_SEC ) {
+		    iar->reqtime > std_now() - IA_BLOCKSIZE_SEC - IA_REASONABLE_WRITETIME_SEC ) {
 
 			estimated_sleeptime_sec = 
-			    (int) rint( iar->reqtime + IA_BLOCKSIZE_SEC + IA_REASONABLE_WRITETIME_SEC - now() );
+			    (int) rint( iar->reqtime + IA_BLOCKSIZE_SEC + IA_REASONABLE_WRITETIME_SEC - std_now() );
 
 			if( Cf.veryverbose ) {
 
@@ -2015,7 +2015,7 @@ main( int argc, char **argv )
 	if( Cf.verbose ) {
 
 		elog_notify( 0, "[thread '%s']: Program started at %s UTC\n", 
-				ns = thread_name(), s = strtime( now() ) );
+				ns = thread_name(), s = strtime( std_now() ) );
 
 		free( s );
 		free( ns );

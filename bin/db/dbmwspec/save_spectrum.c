@@ -168,7 +168,7 @@ int save_spectrum(Dbptr db,
 	endtime = pick + (p->end);
 	twin = (p->end) - (p->start);
 	/* here we get the current time (GMT) using CSS time utiliites */
-	today = now();
+	today = std_now();
 	today_time = epoch2str(today,"%y%j%k");
 	cuserid(user);
 	sprintf(auth,"dbmwspec:%7.7s:%7.7s",user,today_time);

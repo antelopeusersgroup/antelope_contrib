@@ -34,7 +34,7 @@ my ($mailtmp,$host);
 my $pgm = $0 ; 
 $pgm =~ s".*/"" ;
 
-if ( ! getopts('CDvzp:d:s:mN:o:V:') || @ARGV < 2 || @ARGV > 4) { 
+if ( ! getopts('CDvzp:d:s:f:mN:o:V:') || @ARGV < 2 || @ARGV > 4) { 
     die ( "Usage: $pgm [-v] [-z] [-C] [-m] [-p pf] [-d output_dir] [-N net] [-s sta] [-f output_file] [-o orb] { -D | -V vnet } dbin dbtrack [comment] \n" ) ; 
 } else {
     $dbin	= $ARGV[0];
@@ -184,7 +184,12 @@ if ($opt_D) {
    if ($opt_s) {
       $mkdl	= "mk_dataless_seed -o $fulldir/$filename $opt_v -s $opt_s $dbin " ;
    } else {
-      $mkdl	= "mk_dataless_seed -o $fulldir/$filename $opt_v $dbin " ;
+       if ($opt_N) {
+          $mkdl	= "mk_dataless_seed -n $net -o $fulldir/$filename $opt_v $dbin " ;
+       }
+       else {
+          $mkdl	= "mk_dataless_seed -o $fulldir/$filename $opt_v $dbin " ;
+       }
    }
 
    elog_notify(0, "Starting mk_dataless_seed. \n") if ($opt_v);
