@@ -82,7 +82,7 @@ char *dname;                     /* Name of the file in SEGY format   */
 
 /* Find current time  */
  
-    dtime = now();
+    dtime = std_now();
     wfd.lddate = dtime;
 
 /*  Write wfdisc  file  */
