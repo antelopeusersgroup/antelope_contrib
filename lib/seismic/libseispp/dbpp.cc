@@ -58,7 +58,7 @@ Returns false otherwise.
 bool is_a_bundle_pointer(Dbptr db)
 {
 	Dbptr dbtest;
-	dbtest=dblookup(db,0,0,"bundle",0);
+	dbtest=dblookup(db,0,0,(char *)"bundle",0);
 	if(dbtest.field<0)
 		return false;
 	else
@@ -111,12 +111,12 @@ DatascopeHandle::DatascopeHandle(string dbname,
 {
 	if(readonly)
 	{
-		if(dbopen(const_cast<char*>(dbname.c_str()),"r",&db))
+		if(dbopen(const_cast<char*>(dbname.c_str()),(char *)"r",&db))
 			throw SeisppDberror("Failure in dbopen",db,COMPLAIN);
 	}
 	else
 	{
-		if(dbopen(const_cast<char*>(dbname.c_str()),"r+",&db))
+		if(dbopen(const_cast<char*>(dbname.c_str()),(char *)"r+",&db))
 			throw SeisppDberror("Failure in dbopen",db,COMPLAIN);
 	}
 	close_on_destruction=true;
@@ -227,12 +227,12 @@ DatascopeHandle::DatascopeHandle(string dbname,bool readonly,
 {
 	if(readonly)
 	{
-		if(dbopen(const_cast<char*>(dbname.c_str()),"r",&db))
+		if(dbopen(const_cast<char*>(dbname.c_str()),(char *)"r",&db))
 			throw SeisppDberror("Failure in dbopen",db,COMPLAIN);
 	}
 	else
 	{
-		if(dbopen(const_cast<char*>(dbname.c_str()),"r+",&db))
+		if(dbopen(const_cast<char*>(dbname.c_str()),(char *)"r+",&db))
 			throw SeisppDberror("Failure in dbopen",db,COMPLAIN);
 	}
 	is_bundle = false;
