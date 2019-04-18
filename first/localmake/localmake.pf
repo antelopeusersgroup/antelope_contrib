@@ -531,6 +531,36 @@ capabilities	&Arr{
                         }
         }
     }
+    gsl	&Arr{
+        Description	GNU Scientific Library
+        Detail	&Literal{
+	  GNU maintains this large open-source scientific library.   
+          It is used in programs developed by Wang and Pavlis.
+		}
+        enable	&Arr{
+            Darwin	1
+            Linux	1
+            SunOS	0
+        }
+        required_macros	&Tbl{
+            GSLINCLUDE
+            GSLLIB
+        }
+        tests	&Tbl{
+            &Literal{
+			$failure_msg = "Couldn't find GNU Scientific Library directory '$GSLINCLUDE' " .
+				       "implied by currently configured value '$GSLINCLUDE' of GSLINCLUDE macro";
+			$success_msg = "GNU Scientific Library is available for compiling with  '$GSLINCLUDE'";
+			-d "$GSLINCLUDE"
+		}
+            &Literal{
+			$failure_msg = "Couldn't find GNU Scientific Library directory '$GSLLIB' " .
+				       "implied by currently configured value '$GSLLIB' of GSLLIB macro";
+			$success_msg = "GNU Scientific Library is available for compiling with  '$GSLLIB'";
+			-d "$GSLLIB"
+		}
+        }
+    }
 }
 antelope	&env(ANTELOPE)
 dest	&antelope/contrib/include
@@ -750,6 +780,30 @@ macros	&Arr{
         Linux
         SunOS
     }
+    GSLINCLUDE	&Arr{
+        Darwin
+        Description	Location of include files for GNU Scientific Library
+        Detail	&Literal{
+          The GSLINCLUDE macro should give the full path to the include
+          directory created in an installation of the GNU Scientific Library.
+          Default puts this in /usr/local/include but best practice would put it
+          elsewhere. 
+		}
+        Linux
+        SunOS
+    }
+    GSLLIB	&Arr{
+        Darwin
+        Description	Location of library files for GNU Scientific Library
+        Detail	&Literal{
+          The GSLLIB macro should give the full path to the library
+          directory created in an installation of the GNU Scientific Library.
+          Default puts this in /usr/local/lib but best practice would put it
+          elsewhere. 
+		}
+        Linux
+        SunOS
+    }
 }
 
 platform_rules &Arr{
@@ -765,3 +819,5 @@ PHPDLDFLAGS= $(DLDFLAGS)
 }
 
 output_file	antelopemake.local
+
+pf_revision_time 1496920612
