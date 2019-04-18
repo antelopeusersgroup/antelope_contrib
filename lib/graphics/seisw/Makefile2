@@ -14,6 +14,7 @@ include $(ANTELOPEMAKELOCAL)
 
 CXXFLAGS += -I$(XMOTIFINCLUDE)
 CXXFLAGS += -I$(BOOSTINCLUDE)
+CXXFLAGS += -Wno-writable-strings
 #Remove this comment to enable verbose stuff from seisw widget
 #CXXFLAGS += -g -DDEBUG_WIDGET
 
