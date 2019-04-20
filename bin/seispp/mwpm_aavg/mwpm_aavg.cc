@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <math.h>
 #include "minicsv.h"
 #include "Vector3DBootstrapError.h"
 using namespace std;   

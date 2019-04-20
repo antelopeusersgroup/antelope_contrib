@@ -56,16 +56,16 @@ template <> void display_ensemble<ThreeComponentEnsemble>(Metadata& control,bool
          (new StreamObjectReader<ThreeComponentEnsemble>);
     }
     ThreeComponentEnsemble d;
-    d=inp->read();
-    ThreeCEnsembleTimePicker win(control);
-    int nseis;
-    nseis=win.plot(d,true);
-    cerr << "Plot completed of "<<nseis<<" seismogram"<<endl
-      << "Use the menu or type x in any active window to quit"
-      <<endl;
-    /* A not so good feature of this gizmo is we have to put it
-     * in pick mode.*/
-    win.pick();
+    SeismicPlot win(control);
+    int i(0);
+    while(inp->good())
+    {
+      d=inp->read();
+      cerr << "Plotting ensemble number "<<i<<endl
+        << "Hit x key in the display window to show next ensemble"<<endl;
+      win.plot(d);
+      ++i;
+    }
   }catch(...){throw;};
 }
 
@@ -84,9 +84,16 @@ template <> void display_ensemble<TimeSeriesEnsemble>(Metadata& control,bool bin
          (new StreamObjectReader<TimeSeriesEnsemble>);
     }
     TimeSeriesEnsemble d;
-    d=inp->read();
     SeismicPlot win(control);
-    win.plot(d,true);
+    int i(0);
+    while(inp->good())
+    {
+      d=inp->read();
+      cerr << "Plotting ensemble number "<<i<<endl
+        << "Hit x key in the display window to show next ensemble"<<endl;
+      win.plot(d);
+      ++i;
+    }
   }catch(...){throw;};
 }
 

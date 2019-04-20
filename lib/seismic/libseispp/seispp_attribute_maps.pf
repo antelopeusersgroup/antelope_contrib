@@ -646,9 +646,16 @@ xsaa.stackwgt stackwgt xsaa real
 xsaa.coherence coherence xsaa real
 xsaa.xcorpeak xcorpeak xsaa real
 xsaa.relamp relamp xsaa real
+# Added by GLP Jan 2019 to support stream processing db loading program
+metrics.evid evid metrics int
+metrics.sta sta metrics string
+metrics.phase phase metrics string
+metrics.snr snr metrics real
+metrics.peaksnr peaksnr metrics real
+metrics.compratio compratio metrics real
 }
 aliases &Tbl{
-sta wfdisc.sta sclink.sta site.sta sitechan.sta arrival.sta assoc.sta xcorarrival.sta sensor.sta snetsta.sta specdisc.sta  xsaa.sta
+sta wfdisc.sta sclink.sta site.sta sitechan.sta arrival.sta assoc.sta xcorarrival.sta sensor.sta snetsta.sta specdisc.sta  xsaa.sta metrics.sta
 chan wfdisc.chan sclink.chan sitechan.chan arrival.chan
 time wfdisc.time wfprocess.time
 endtime wfdisc.endtime wfprocess.endtime 
@@ -683,7 +690,7 @@ datatype wfdisc.datatype wfprocess.datatype
 timetype wfprocess.timetype
 pwfid wfprocess.pwfid xcorbeam.pwfid sclink.pwfid xcorarrival.pwfid xsaa.pwfid
 arid arrival.arid assoc.arid
-evid event.evid origin.evid evlink.evid xsaa.evid
+evid event.evid origin.evid evlink.evid xsaa.evid metrics.evid
 orid origin.orid assoc.orid xsaa.orid
 wfid wfdisc.wfid
 snet snetsta.snet

@@ -389,7 +389,7 @@ ResamplingDefinitions::ResamplingDefinitions(Pf *pf)
 	typedef map<Interval,ResampleOperator> ROmap;
 
 	
-	if(pfget(pf,"resample_definitions",(void **)&pfrda) != PFARR)
+	if(pfget(pf,const_cast<char*>("resample_definitions"),(void **)&pfrda) != PFARR)
 		throw SeisppError("Reample_Definition constructor:  pfget failure looking for Reample_Definition keyword");
 	
 	t = pfkeys(pfrda);

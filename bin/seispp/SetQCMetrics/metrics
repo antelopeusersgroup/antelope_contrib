@@ -1,0 +1,34 @@
+Attribute peaksnr
+	Real (8)
+	Format ( "%8.2f" )
+	Null ( "-999.0000" )
+	Description ( "srn measured from peak amplitues" )
+	Detail {
+		metric measured from range of values in signal and noise 
+                time windows. 
+	}
+	;
+
+Attribute compratio
+	Real (8)
+	Format ( "%8.2f" )
+	Null ( "-999.0000" )
+	Description ( "Component ratio" )
+	Detail {
+		In three component data it is useful to measure the ratio
+                of amplitudes between all pairs of componnts.  This stores
+                the largest such ratio in a time window. 
+	}
+	;
+
+Relation metrics
+	Fields ( evid sta phase filter snr peaksnr compratio lddate )
+	Primary ( evid sta phase filter )
+	Description ( "Stores output of seispp filter SetQCMetrics" )
+	Detail {
+		Used to provide database functionality to waveform
+               metrics computed by SetQCMetrics"
+	}
+	;
+
+

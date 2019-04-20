@@ -27,14 +27,9 @@ ThreeComponentChannelMap::ThreeComponentChannelMap(Pf *pf,string tccmkey)
 		/* Need to only prec array for this error condition */
 		it=level.find(chan);
 		if(it!=level.end()) 
-		  throw SeisppError(errmess
-			+ string("duplicate channel code=") 
-			+ chan
-			+ string(" For entry = ") 
-			+ tccmkey
-			+ string("\nChan code in definition must be unique.\n")
-			+ string("Use a special sta key for irregular stations") );
-
+                    cerr << errmess<<"WARNING - duplicate channel code="
+                        << chan << " for station name key="<<tccmkey<<endl
+                        << "Inconsistent channel mapping is possible"<<endl;
 		channels[chan]=comp;
 		level[chan]=lev;
 	}

@@ -33,7 +33,8 @@ public:
      definitions have a const qualifier for the argument.   For reasons
      I don't get this created a conflict here so they are by necessity
      NOT const. */
-  HdrmathArg& operator=(HdrmathArg&& parent);
+  //HdrmathArg& operator=(HdrmathArg&& parent);
+  HdrmathArg& operator=(const HdrmathArg& parent);
   /* All of the operators will require that if the type of the
      left hand side will always take precedence.  That will assure 
      that the ultimate target of a string of operators will match

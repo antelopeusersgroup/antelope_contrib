@@ -1,0 +1,22 @@
+RMS_SNR &Arr{
+    enable true
+  signal_window_start -2.0
+  signal_window_end 10.0
+  noise_window_start -100
+  noise_window_end -2.0
+}
+Range_SNR &Arr{
+    enable true
+  signal_window_start -2.0
+  signal_window_end 10.0
+  noise_window_start -100
+  noise_window_end -2.0
+}
+# This window is best position before the P wave arrival to avoiding
+# being skewed by P polarization.   The default here assumes 0 is
+# a measure of the start of the P wave signal (P pick)
+ComponentRange &Arr{
+    enable true
+  signal_window_start -100
+  signal_window_end -2.0
+}

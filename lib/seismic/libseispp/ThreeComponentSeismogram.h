@@ -283,12 +283,12 @@ Initializes data and sets aside memory for
 
 The sense of this transformation is confusing because of a difference in 
 convention between spherical coordinates and standard earth coordinates.
-In particular, orientation on the earth uses a convention with x2 being
+In particular, orientation on the earth uses a convention with N being
 the x2 axis and bearings are relative to that with a standard azimuth
 measured clockwise from north.  Spherical coordinate angle phi (used here)
 is measured counterclockwise relative to the x1 axis, which is east in
-standard earth coordinates. This transformation is computed using a phi
-angle.   To use this then to compute a transformation to standard ray 
+standard earth coordinates. The transformation here is computed using a phi
+angle.   We use this to then compute a transformation to standard ray 
 coordinates with x2 pointing in the direction of wavefront advance, 
 phi should be set to pi/2-azimuth which gives the phi angle needed to rotate
 x2 to radial.  This is extremely confusing because in spherical coordinates
@@ -402,8 +402,8 @@ void HorizontalRotation(ThreeComponentSeismogram& d, double phi);
 \param component is the component to extract (0, 1, or 2)
 \param mdl list of metadata to copy to output from input object.
 **/
-TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
-        MetadataList& mdl);
+TimeSeries *ExtractComponent(const ThreeComponentSeismogram& tcs,const int component,
+        const MetadataList& mdl);
 /*!
  Extract one component from a ThreeComponentSeismogram and 
  create a TimeSeries object from it. 
@@ -414,7 +414,7 @@ TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
 \param tcs is the ThreeComponentSeismogram to convert.
 \param component is the component to extract (0, 1, or 2)
 **/
-TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component);
+TimeSeries *ExtractComponent(const ThreeComponentSeismogram& tcs,const int component);
 
 } // End namespace SEISPP declaration
 #endif

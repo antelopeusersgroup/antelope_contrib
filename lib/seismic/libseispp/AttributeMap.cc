@@ -134,7 +134,8 @@ AttributeMap::AttributeMap(Pf *pf,string name)
 		  + string(" AttributeMap definitions"));
 	pfnested=static_cast<Pf *>(vptr);
 
-	char *attblkey="Attributes";
+        char *attblkey;
+        attblkey=strdup("Attributes");
 	t = pfget_tbl(pfnested,attblkey);
 	if(t==NULL) 
 		throw MetadataError(string("Parameter file missing required ")
@@ -151,7 +152,10 @@ AttributeMap::AttributeMap(Pf *pf,string name)
 		delete ap;
 	}
 	freetbl(t,0);
-	t=pfget_tbl(pfnested,"aliases");
+        free(attblkey);
+        attblkey=strdup("aliases");
+	t=pfget_tbl(pfnested,attblkey);
+        free(attblkey);
 	if(t!=NULL)
 	{
 		string token;

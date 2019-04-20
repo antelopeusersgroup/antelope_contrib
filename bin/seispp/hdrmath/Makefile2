@@ -2,7 +2,7 @@ BIN=hdrmath
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp 
+ldlibs=-lseispp -lgclgrid -lmwtpp -lmultiwavelet $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp 
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE) 
