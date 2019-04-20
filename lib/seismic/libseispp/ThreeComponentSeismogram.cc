@@ -253,7 +253,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 				<<"All data must have exactly 3 channels per bundle,"
 				<< " but group bundle size="
 				<< bundle.end_record-bundle.start_record<<endl;
-			throw(SeisppDberror(message.str(),dbh.db,complain));
+			throw(SeisppDberror(message.str(),dbh.db,COMPLAIN));
 		}
 		// Use the simplified copy constructor.  This handle
 		// to loop through data.  Sometimes is a bundle pointer
@@ -297,7 +297,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 			  << samprate[2] <<endl
 			  << "Cannot handle mixed sample rate data in a 3c bundle"<<endl;
 			throw SeisppDberror(message.str(),
-				dbh.db,complain);
+				dbh.db,COMPLAIN);
 		}
 		// get the start and end time ranges and handle ragged
 		// start and end time irregularities
@@ -539,7 +539,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 		// Land here when any of the metadata routines fail
 		    mderr.log_error();
 		    throw SeisppDberror("Constructor for ThreeComponentSeismogram object failed from a metadata error",
-			dbh.db,complain);
+			dbh.db,COMPLAIN);
 
 	      }
 	    }
@@ -556,10 +556,25 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 	  u()
 {
 	int i,j;
-	// exit immediately if we are given irregular sample rates.
+	/* beware irregular sample rates, but don' be too machevelian.   
+           Abort only if the mismatch is large defined as accumulated time
+           over data range of this constructor is less than half a sample */
 	if( (ts[0].dt!=ts[1].dt) || (ts[1].dt!=ts[2].dt) )
+        {
+            double ddtmag1=fabs(ts[0].dt-ts[1].dt);
+            double ddtmag2=fabs(ts[1].dt-ts[2].dt);
+            double ddtmag;
+            if(ddtmag1>ddtmag1)
+                ddtmag=ddtmag1;
+            else
+                ddtmag=ddtmag2;
+            ddtmag1=fabs(ts[0].dt-ts[2].dt);
+            if(ddtmag1>ddtmag)  ddtmag=ddtmag1;
+            double ddtcum=ddtmag*((double)ts[0].ns);
+            if(ddtcum>(ts[0].dt)/2.0)
 		throw SeisppError(
-		  "gather_components:  sample intervals of components are not consistent");
+		  "ThreeComponentSeismogram constructor::  sample intervals of components are not consistent");
+        }
 	// temporaries to hold component values
 	double t0_component[3];
 	double hang[3];
@@ -907,6 +922,7 @@ void ThreeComponentSeismogram::rotate(SphericalCoordinate xsc)
 	{
 		//This will be left handed
 		tmatrix[2][2] = -1.0;
+                dscal(ns,-1.0,u.get_address(2,0),3);
 		return;
 	}
 
@@ -916,9 +932,9 @@ void ThreeComponentSeismogram::rotate(SphericalCoordinate xsc)
 		phi = xsc.phi + M_PI;
 		if(phi > M_PI) phi -= (2.0*M_PI);
 	}
-	else if(xsc.theta > M_PI_2)
+	else if(xsc.theta > M_PI)
 	{
-		theta = xsc.theta - M_PI_2;
+		theta = xsc.theta - M_PI;
 		phi = xsc.phi + M_PI;
 		if(phi > M_PI) phi -= (2.0*M_PI);
 	}

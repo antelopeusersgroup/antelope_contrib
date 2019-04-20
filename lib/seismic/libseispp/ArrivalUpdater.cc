@@ -273,7 +273,7 @@ int ArrivalUpdater::update(Metadata& md)
 		err+=put_attributes_to_db(md,dbarrival,mdlarrival,am);
 		// When we append we have to get a new arid and set
 		// it.  Assume we use old arid for record updates below
-		long arid=dbnextid(dbassoc,"arid");
+		long arid=dbnextid(dbassoc,const_cast<char*>("arid"));
 		dbputv(dbassoc,0,"arid",arid,NULL );
 		dbputv(dbarrival,0,"arid",arid,NULL );
 	}

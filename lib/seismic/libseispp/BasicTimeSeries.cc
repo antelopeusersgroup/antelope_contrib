@@ -7,7 +7,7 @@ namespace SEISPP {
 using namespace SEISPP;
 // Returns true if the requested sample number of a gap or outside the
 // range of the data
-bool BasicTimeSeries::is_gap(int n0)
+bool BasicTimeSeries::is_gap(int n0) const
 {
 	if(n0<0 || n0>ns) return true;
 	if(gaps.empty()) return false;
@@ -25,14 +25,14 @@ bool BasicTimeSeries::is_gap(int n0)
 		return true;
 }
 // query for gap by time window
-bool BasicTimeSeries::is_gap(TimeWindow twin)
+bool BasicTimeSeries::is_gap(TimeWindow twin) const
 {
 	if(gaps.find(twin)==gaps.end())
 		return(false);
 	else
 		return(true);
 }
-bool BasicTimeSeries::is_gap(double t)
+bool BasicTimeSeries::is_gap(double t) const
 {
 	if(t<t0 || t>(t0+((double)(ns-1))*dt)) return true;
 	if(gaps.empty())return false;
@@ -44,7 +44,7 @@ bool BasicTimeSeries::is_gap(double t)
 	else
 		return true;
 }
-void BasicTimeSeries::ator(double tshift)
+void BasicTimeSeries::ator(double tshift) 
 {
 	if(tref==relative) return;
         t0shift=tshift;
@@ -165,6 +165,11 @@ ostream& operator<<(ostream& os,BasicTimeSeries& y)
 	else
 		os << "Data time standard is UTC (absolute)"<<endl
 			<< "t0="<<strtime(y.t0)<<endl;
+        if(y.t0shift_is_valid)
+            os << "t0shift_is_valid is true"<<endl
+                << "t0shift value="<< setprecision(13)<<y.t0shift<<endl;
+        else
+            os << "t0shift_is_valid is set false time should be absolute"<<endl;
 	set<TimeWindow,TimeWindowCmp>::iterator g;
 	for(g=y.gaps.begin();g!=y.gaps.end();++g)
 	{
@@ -193,7 +198,7 @@ void BasicTimeSeries::shift(double dt)
     this->rtoa();
     this->ator(oldt0shift+dt);
 }
-double BasicTimeSeries::time_reference()
+double BasicTimeSeries::time_reference() const
 {
     const string base_error("BasicTimeSeries::time_reference method: ");
     if(tref==absolute)
@@ -206,6 +211,79 @@ double BasicTimeSeries::time_reference()
         throw SeisppError(base_error
                 + "cannot return time reference as it is marked invalid");
 }
-
+/* This used to be in the include file as a trivial insert.  Found it useful
+ * to silently do nothing if the the window was less than one sample in length */
+void BasicTimeSeries::add_gap(TimeWindow tw)
+{
+  const string base_error("BasicTimeSeries::add_gap:  ");
+  /* This complicated construct is required as return code for set insert
+   * method.   We need it to test for failed insertions that happen with 
+   * TimeWindowCmp when a new time window overlaps with an existing one. */
+  pair<set<TimeWindow,TimeWindowCmp>::iterator,bool> ret;
+  double tlen;
+  tlen=tw.end-tw.start;
+  /* this also does nothing if the above resolves negatibe.  That case maybe
+   * should throw an error.  The main idea is to do nothing if the window 
+   * is less than one sample */
+  if(tlen>(this->dt))
+  {
+      ret=gaps.insert(tw);
+      if(ret.second) return;   //boolean is set true if insert succeeded
+      set<TimeWindow,TimeWindowCmp>::iterator gptr;
+      gptr=gaps.find(tw);
+      // This error should not happen, but chaos would happen if it did
+      if(gptr==gaps.end()) throw (base_error
+               + "Coding problem with set find method.   Contact author");
+      /* Create the new time window to replace this one as the range
+       * define by both.   Fudge the ends by 1/2 sample to be sure the 
+       * insert succeed with a unique interval */
+      TimeWindow fullgap;
+      fullgap.start=min(tw.start,(gptr->start));
+      fullgap.end=max(tw.end,(gptr->end));
+      fullgap.start -= ((this->dt)/2.0);
+      fullgap.end += ((this->dt)/2.0);
+      /* Testing shows we have to erase the old window we are replacing */
+      gaps.erase(gptr);
+      ret=gaps.insert(fullgap);
+      /* This could probably be done through recursion, but will only 
+       * allow two levels.  Found this was secondary scan was sometimes
+       * necessary. */
+      if(ret.second) return;
+      gptr=gaps.find(fullgap);
+      /* The 1/4 sample interval pad is artirary - want to avoid floating
+       * point equal compares */
+      if((gptr->start)<fullgap.start) 
+          fullgap.start=(gptr->start)-((this->dt)/4.0);
+      if((gptr->end)>fullgap.end) 
+          fullgap.end=(gptr->end)+((this->dt)/4.0);
+      gaps.erase(gptr);
+      ret=gaps.insert(fullgap);
+      if(!ret.second) throw SeisppError(base_error
+              + "Coding problem with set insert method.  Contact author.");
+  }
+}
+/* Useful procedure for any object inheriting BasicTimeSeries.  
+ * It checks for a situation where all samples in a time series
+ * are inside a gap.   It returns the number of samples samples
+ * not flagged as a gap.  Be warned the process is not cheap 
+ * as we have to test full ns range */
+int number_valid_samples(BasicTimeSeries& d)
+{
+    /* First test to see if there are any gaps defined an return 
+     * ns if there are none. */
+    if(d.has_gap()<=0)
+    {
+        return d.ns;
+    }
+    else
+    {
+        int i,nvalid;
+        for(i=0,nvalid=0;i<d.ns;++i)
+        {
+            if(!d.is_gap(i)) ++nvalid;
+        }
+        return nvalid;
+    }
+}
 
 }  // end SEISPP namespace encapsulation

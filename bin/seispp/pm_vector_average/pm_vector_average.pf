@@ -1,0 +1,27 @@
+# Set the penalty function to use for m-estimator
+# This must be huber, bisquare, or none
+penalty_function huber
+# This set a base scaling for error estimates found in column 4 of input
+# For example, if errors are 95% normal confidence estimates set to 0.5
+error_scale_factor 1.0
+# m-estimators are prone to downward spirals if not properly scaled 
+# by realistic errors.  The program here ranks the data by theta
+# errors and sets a scale by the nearest sample to this probability level.  
+# All errors are then scaled by that factor.   Set to 1 to remove this 
+# feature
+robust_scale_probability_level 0.8
+# User should not normally adjust this parameter - see documentation for 
+# how it is used
+robust_weight_level_threshold  0.1
+# confidence level for bootstrap error estimates
+confidence_level 0.95
+# This set of parameters are interrelated.   Normally the number
+# if trials for the bootstrap resampling is trial_multiplier times
+# the number of data points.  min and max set a floor and ceiling
+# respectively.   
+bootstrap_trial_multiplier 50
+minimum_number_bootstrap_trials 200
+maximum_number_bootstrap_trials 10000
+# If the sample size is less than this the bootstrap is not attempted
+# but we only compute the weighted average with error scaling
+smallest_size_for_bootstrap 4

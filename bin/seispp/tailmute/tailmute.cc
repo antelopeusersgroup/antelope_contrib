@@ -60,9 +60,16 @@ int TailMute::apply(ThreeComponentSeismogram& d)
   int n(0);
   double t;
   double te=d.endtime();
-  for(t=t1+d.dt,i=d.sample_number(t+d.dt)+1;t<te&&i<d.ns;t+=d.dt,++i)
+  //DEBUG
+  /*
+  cerr << "first sample number="<<d.sample_number(t1+d.dt)+1<<endl
+      << "last sample number="<<d.sample_number(te)<<endl
+      << "This trace length="<<d.ns<<endl;
+      */
+  for(t=t1+d.dt,i=d.sample_number(t1+d.dt)+1;t<te&&i<d.ns;t+=d.dt,++i)
   {
     double w;
+    if(i<0) continue;
     if(t>=t0)
         w=0.0;
     else
@@ -74,6 +81,12 @@ int TailMute::apply(ThreeComponentSeismogram& d)
   {
     for(k=0;k<3;++k) d.u(k,i)=0.0;
     ++n;
+  }
+  if(n>=d.ns)
+  {
+      d.live=false;
+      cerr << "TailMute::apply:   zeroed all data.  Marking output dead"
+          <<endl;
   }
   return n;
 }
@@ -136,8 +149,13 @@ int main(int argc, char **argv)
         int n(0);
         while(inp->good())
         {
+            //DEBUG 
+            //cerr << "Trying to read ensemble "<<n<<endl;
             d=inp->read();
             int nchanged;
+            //DEBUG
+            //cerr << "Running mute algorithm on ensemble "<<n<<endl;
+            //cerr << "Ensemble size="<<d.member.size()<<endl;
             for(i=0;i<d.member.size();++i)
             {
               nchanged=mute.apply(d.member[i]);
@@ -145,9 +163,12 @@ int main(int argc, char **argv)
                 <<" member="<<i
                <<" mute altered "<<nchanged<<" vector samples"<<endl;
             }
+            //DEBUG
+            cerr << "Trying to write ensemble "<<n<<endl;
             out->write(d);
             ++n;
         }
+        if(SEISPP_verbose) cerr << "tailmute:  processed "<<n<<" ensembles"<<endl;
     }catch(SeisppError& serr)
     {
         serr.log_error();
@@ -155,6 +176,10 @@ int main(int argc, char **argv)
     catch(std::exception& stexc)
     {
         cerr << stexc.what()<<endl;
+    }
+    catch(...)
+    {
+        cerr << "tailmute:  Something threw an unhandled exception"<<endl;
     }
 }
 

@@ -114,13 +114,27 @@ int main(int argc, char **argv)
              * this situation.   */
             bool restore_data_to_relative=false;
             double t0shift; // need this below to restore to absolute if needed
+            //Drop any data not marked live 
+            if(!d.live) continue;
             if(d.tref == relative) 
             {
                 restore_data_to_relative=true;
                 t0shift=d.time_reference();
                 d.rtoa(t0shift);
             }
-            MWTBundle dmwt(d,mwt);
+            /* We make this a nonfatal error and drop seismgrams 
+             * for which the transform fails.  Without this a large
+             * data set can be aborted inappropriately. */
+            shared_ptr<MWTBundle> dmwt;
+            try{
+              dmwt=shared_ptr<MWTBundle>(new MWTBundle(d,mwt));
+            }catch(SeisppError& serr)
+            {
+              cerr << "Error encountered in MWTransform of object number "<<n
+                  <<endl<<"Error message from processor follows:"<<endl;
+              serr.log_error();
+              cerr << "Attempting to continue"<<endl;
+            };
             //DEBUG
             /*
             for(j=0;j<dmwt.number_wavelets();++j)
@@ -143,10 +157,10 @@ int main(int argc, char **argv)
             {
               PMTimeSeries pmts;
               if(avlen>1)
-                pmts=PMTimeSeries(dmwt,j,pmdt,avlen,confidence,bsmultiplier,
+                pmts=PMTimeSeries(*dmwt,j,pmdt,avlen,confidence,bsmultiplier,
                         nsvd);
               else
-                pmts=PMTimeSeries(dmwt,j,confidence,bsmultiplier);
+                pmts=PMTimeSeries(*dmwt,j,confidence,bsmultiplier);
               pmts.put("band",j);
               if(restore_data_to_relative) 
               {

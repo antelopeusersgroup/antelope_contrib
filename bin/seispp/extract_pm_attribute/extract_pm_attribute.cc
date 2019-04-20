@@ -287,6 +287,10 @@ TimeSeries amptodb(TimeSeries& d)
         {
             ddb.s[i]=0.0;
         }
+        else if(d.s[i]==0.0)
+        {
+            ddb.s[i]=-999.9;
+        }
         else
         {
             ddb.s[i]=20.0*log10(d.s[i]);

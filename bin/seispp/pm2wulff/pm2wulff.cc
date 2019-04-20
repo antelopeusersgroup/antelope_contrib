@@ -50,8 +50,8 @@ WulffData::WulffData(double *u)
   }
   else
   {
-    phi=atan2(u[0],u[1]);
-    theta=atan2(rhorizontal,u[2]);
+    phi=atan2(u[1],u[0]);
+    theta=atan2(u[2],rhorizontal);
     if(theta>=0.0)
         r=cos(theta)/(1.0+sin(theta));
     else

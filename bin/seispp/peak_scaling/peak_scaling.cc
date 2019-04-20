@@ -11,10 +11,11 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "peak_scaling [-help -text] < infile > outfile"
+    cerr << "peak_scaling [-help -v -text] < infile > outfile"
         <<endl
         << "Reads serialized 3c ensemble file and scales each "
         << "seismogram by peak 3C amplitude"<<endl
+        << " -v - be more verbose (echos scaling numbers)"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
@@ -22,7 +23,7 @@ void usage()
 /* This obnoxious external variable is a necessary evil to deal with
    error logging in the SEISPP library. Your code will probably not link
    without it.*/
-bool SEISPP::SEISPP_verbose(true);
+bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
     int iarg;
@@ -34,6 +35,8 @@ int main(int argc, char **argv)
         binary_data=false;
       else if(sarg=="--help")
         usage();
+      else if(sarg=="-v")
+        SEISPP_verbose=true;
       else
         usage();
     }
@@ -68,6 +71,8 @@ int main(int argc, char **argv)
         int i;
         for(dptr=d.member.begin(),i=0;dptr!=d.member.end();++dptr,++i)
         {
+          if(dptr->live)
+          {
             double amp;
             ThreeComponentSeismogram *ptr;
             ptr=&(d.member[i]);
@@ -87,6 +92,7 @@ int main(int argc, char **argv)
             dptr->u=scaling*dptr->u;
             if(SEISPP_verbose)
                 cerr << "Computed gain scaling="<<scaling<<endl;
+          }
         }
         oa->write(d);
       }

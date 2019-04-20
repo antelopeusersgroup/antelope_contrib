@@ -60,7 +60,9 @@ int AttributeTextWriter::write(string fname, TimeSeries& d,
             lower=d[i]-e[i];
             upper=d[i]+e[i];
             /* This order is native order to use errorlines method of gnuplot*/
-            ofs<<d.time(i)<<" "<<center<<" "<<lower<<" "<<upper<<endl;
+            ofs<<std::setprecision(13)
+                <<d.time(i)<<" "<<std::setprecision(8)
+                <<center<<" "<<lower<<" "<<upper<<endl;
             ++count;
         }
         ofs.close();

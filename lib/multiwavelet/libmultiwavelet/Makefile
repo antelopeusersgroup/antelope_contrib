@@ -7,6 +7,7 @@ PF=mwap.pf
 MAN3=mwtransform.3		
 
 CLEAN= 		
+cflags=-g
 ldlibs= -lgenloc $(PERFLIBS) 
 
 SUBDIR=/contrib

@@ -1,18 +1,33 @@
 #include "HdrmathArg.h"
-/* This excellent little gem was found at 
-   https://rosettacode.org/wiki/Determine_if_a_string_is_numeric#C.2B.2B */
+#include "boost/lexical_cast.hpp"
 bool IsNumeric(const std::string& input) {
     return std::all_of(input.begin(), input.end(), ::isdigit);
 }
-/* Secondary test for decimal  - not from above site */
-bool IsReal(const std::string& s)
+bool IsInteger(const std::string& input)
 {
-  if(s.length()==0) return false;  // assume if s is empty we interpret as a 0
-  string tstr(".GEge");
-  if((s.find(tstr) == string::npos))
-    return false;
-  else
+    int i;
+    for(i=0;i<input.length();++i)
+    {
+        if(!isdigit(input[i])) return false;
+    }
     return true;
+}
+/* Modified from:  https://stackoverflow.com/questions/447206/c-isfloat-function*/
+
+bool IsReal(const std::string &someString)
+{
+      using boost::lexical_cast;
+      using boost::bad_lexical_cast; 
+
+      try
+      {
+        boost::lexical_cast<float>(someString);
+      }
+      catch (bad_lexical_cast &)
+      {
+        return false;
+      }
+     return true;
 }
 pair<string,MDtype> parse_md_pair(string arg)
 {
@@ -25,7 +40,7 @@ pair<string,MDtype> parse_md_pair(string arg)
         +arg+"\nMust have format name:type\n");
   }
   MDtype mdt;
-  string key=arg.substr(0,pos-1);
+  string key=arg.substr(0,pos);
   string s=arg.substr(pos+1);
   if((s=="int") || (s=="INT") || (s=="integer") || (s=="INTEGER") )
     mdt=MDint;
@@ -41,23 +56,21 @@ pair<string,MDtype> parse_md_pair(string arg)
 HdrmathArg::HdrmathArg(char *arg) : d()
 {
   string sarg(arg);
-  char **endptr;   //used by strtod
-  if(IsNumeric(sarg))
+  char *endptr;   //used by strtod
+  if(IsInteger(sarg))
   {
-    if(IsReal(sarg))
-    {
-      IsMetadata=false;
-      mdt=MDreal;
-      rval=strtod(arg,endptr);
-      ival=0;
-    }
-    else
-    {
-      IsMetadata=false;
-      mdt=MDint;
-      rval=strtod(arg,endptr);
-      ival=strtol(arg,endptr,10);
-    }
+    IsMetadata=false;
+    ival=strtol(arg,&endptr,10);
+    rval=0.0;
+    key=string("");
+    mdt=MDint;
+  }
+  else if(IsReal(sarg))
+  {
+    IsMetadata=false;
+    mdt=MDreal;
+    rval=strtod(arg,&endptr);
+    ival=0;
     key=string("");
   }
   else
@@ -178,8 +191,11 @@ double HdrmathArg::get_double()
    so beware if this code is altered. 
  
    That oddity required this weird C11 extension.   The &&
-   tells the compiler to use a copy of parent in the method.*/
-HdrmathArg& HdrmathArg::operator=(HdrmathArg&& parent)
+   tells the compiler to use a copy of parent in the method.
+   In this and all other operator= variants we always need to 
+   post the computed value to metadata to allow accumulation in
+   a chain.*/
+HdrmathArg& HdrmathArg::operator=(const HdrmathArg& parent)
 {
   const string base_error("HdrmathArg::operator= error: ");
   /* As always do nothing if parent and this are identical.  */
@@ -187,6 +203,9 @@ HdrmathArg& HdrmathArg::operator=(HdrmathArg&& parent)
   {
     if(parent.IsMetadata)
     {
+      /* We seem to need to copy the parent.  Some oddity of lvalue and rvalue
+       * I don't quite grok */
+      HdrmathArg p2(parent);
       if(key.length()<=0)
         throw SeisppError(base_error+"lhs key is undefined");
       MDtype tmdt=this->mdt;
@@ -196,35 +215,62 @@ HdrmathArg& HdrmathArg::operator=(HdrmathArg&& parent)
       if(tmdt==MDreal)
       {
         double rtmp;
-        switch(parent.mdt)
+        switch(p2.mdt)
         {
           case MDreal:
-            rtmp=parent.get_double();
+            rtmp=p2.get_double();
             this->rval=rtmp;
             break;
           case MDint:
-            this->rval=static_cast<double>(parent.get_long());
+            this->rval=static_cast<double>(p2.get_long());
             break;
           default:
             throw SeisppError(base_error + "rhs has illegal type");
         }
+        this->d.put(this->key,this->rval);
       }
       else if(tmdt==MDint)
       {
-        switch(parent.mdt)
+        switch(p2.mdt)
         {
           case MDreal:
-            this->ival=static_cast<long>(parent.get_double());
+            this->ival=static_cast<long>(p2.get_double());
             break;
           case MDint:
-            this->ival=parent.get_long();
+            this->ival=p2.get_long();
             break;
           default:
             throw SeisppError(base_error + "rhs has illegal type");
-        }
+        };
+        this->d.put(this->key,this->ival);
       }
       else
         throw SeisppError(base_error + "lhs argument has undefined or illegal type");
+    }
+    else
+    {
+        if((this->mdt)==MDint)
+        {
+            if(parent.mdt==MDint) 
+                this->ival=parent.ival;
+            else if(parent.mdt==MDreal)
+                this->rval=static_cast<long>(parent.rval);
+            else
+                throw SeisppError(base_error + "rhs argument has illegal type");
+            this->d.put(this->key,this->ival);
+        }
+        else if((this->mdt)==MDreal)
+        {
+            if(parent.mdt==MDint) 
+                this->ival=static_cast<double>(parent.ival);
+            else if(parent.mdt==MDreal)
+                this->rval=parent.rval;
+            else
+                throw SeisppError(base_error + "rhs argument has illegal type");
+            this->d.put(this->key,this->rval);
+        }
+        else
+            throw SeisppError(base_error + "lhs argument has undefined or illegal type");
     }
   }
   return(*this);
@@ -252,6 +298,7 @@ HdrmathArg& HdrmathArg::operator+=(HdrmathArg& other)
         default:
           throw SeisppError(base_error + "Right hand side has illegal type");
       };
+      this->d.put(this->key,this->rval);
     }
     else if(lhsmdt==MDint)
     {
@@ -267,6 +314,7 @@ HdrmathArg& HdrmathArg::operator+=(HdrmathArg& other)
         default:
           throw SeisppError(base_error + "Right hand side has illegal type");
       };
+      this->d.put(this->key,this->ival);
     }
     else
     {
@@ -298,6 +346,7 @@ HdrmathArg& HdrmathArg::operator-=(HdrmathArg& other)
         default:
           throw SeisppError(base_error + "Right hand side has illegal type");
       };
+      this->d.put(this->key,this->rval);
     }
     else if(lhsmdt==MDint)
     {
@@ -313,6 +362,7 @@ HdrmathArg& HdrmathArg::operator-=(HdrmathArg& other)
         default:
           throw SeisppError(base_error + "Right hand side has illegal type");
       };
+      this->d.put(this->key,this->ival);
     }
     else
     {
@@ -344,6 +394,7 @@ HdrmathArg& HdrmathArg::operator*=(HdrmathArg& other)
         default:
           throw SeisppError(base_error + "Right hand side has illegal type");
       };
+      this->d.put(this->key,this->rval);
     }
     else if(lhsmdt==MDint)
     {
@@ -359,6 +410,7 @@ HdrmathArg& HdrmathArg::operator*=(HdrmathArg& other)
         default:
           throw SeisppError(base_error + "Right hand side has illegal type");
       };
+      this->d.put(this->key,this->ival);
     }
     else
     {
@@ -390,6 +442,7 @@ HdrmathArg& HdrmathArg::operator/=(HdrmathArg& other)
         default:
           throw SeisppError(base_error + "Right hand side has illegal type");
       };
+      this->d.put(this->key,this->rval);
     }
     else if(lhsmdt==MDint)
     {
@@ -405,6 +458,7 @@ HdrmathArg& HdrmathArg::operator/=(HdrmathArg& other)
         default:
           throw SeisppError(base_error + "Right hand side has illegal type");
       };
+      this->d.put(this->key,this->ival);
     }
     else
     {
@@ -443,6 +497,7 @@ HdrmathArg& HdrmathArg::operator%=(HdrmathArg& other)
         default:
           throw SeisppError(base_error + "Right hand side has illegal type");
       };
+      this->d.put(this->key,this->rval);
     }
     else if(lhsmdt==MDint)
     {
@@ -458,6 +513,7 @@ HdrmathArg& HdrmathArg::operator%=(HdrmathArg& other)
         default:
           throw SeisppError(base_error + "Right hand side has illegal type");
       };
+      this->d.put(this->key,this->ival);
     }
     else
     {
@@ -495,4 +551,16 @@ HdrmathArg HdrmathArg::operator%(HdrmathArg& other)
   try{
     return ((*this)%=other);
   }catch(...){throw;};
+}
+void HdrmathArg::SetMetadata(Metadata& din)
+{
+ try{
+  d=din;
+  if(mdt==MDint)
+      ival=d.get<long>(this->key);
+  else if(mdt==MDreal)
+      rval=d.get<double>(this->key);
+  else
+      throw SeisppError("HdrmathArg::SetMetadata: coding error.  MDtype is not valid");
+ }catch(...){throw;};
 }

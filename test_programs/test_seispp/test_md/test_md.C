@@ -61,7 +61,9 @@ int main(int argc, char **argv)
 		Metadata mdplain;
 		cout << mdplain;
 		cout << "Trying string constructor with inline data" << endl;
-		string smdtest("x 4.5\ny 8.0\ni 27\nMYPAR 2.5\ncpar xyz\n");
+                /* Note the nsamp field is here to test that the + operator replaces 
+                   instead of duplicates */
+		string smdtest("x 4.5\ny 8.0\ni 27\nMYPAR 2.5\ncpar xyz\nnsamp -999\n");
 		Metadata mds(smdtest);
 		cout << mds;
 		cout <<"Trying db constructor in testdb"<<endl;
@@ -73,6 +75,13 @@ int main(int argc, char **argv)
 		Metadata *mddb = new Metadata(dynamic_cast<DatabaseHandle&>(dbh),
 					mdl,am2);
 		cout << *mddb;
+                cout << "Trying + operator.  Merging inline and db objects"<<endl;
+                Metadata mdsum;
+                mdsum=mds+(*mddb);
+                cout << mdsum<<endl;
+                cout << "Sum in reverse order - simple should override db"<<endl;
+                mdsum=(*mddb)+mds;
+                cout << mdsum<<endl;
                 /* Now try out the PfStyleMetadata object.  We use the
                    same pf file as above */
                 string pfsn("test_md");

@@ -118,6 +118,14 @@ void TimeSeriesRequiredError(MetadataGetError mde,string name)
 		<< name<<endl;
 	cerr << "Edit your parameter file to make this message go away"<<endl;
 }
+TimeSeries::TimeSeries(const BasicTimeSeries& bd,const Metadata& md)
+  : BasicTimeSeries(bd), Metadata(md)
+{
+  int i;
+  this->s.reserve(this->ns);   // ns should be set by BasicTimeSeries constructor
+  for(i=0;i<this->ns;++i)
+    this->s.push_back(0.0);
+}
 #ifndef NO_ANTELOPE
 
 /* Constructor to read a single seismogram from an antelope
