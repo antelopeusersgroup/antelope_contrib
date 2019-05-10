@@ -1,10 +1,5 @@
 #include <iostream>
-#include <fstream>
-#include <boost/archive/text_oarchive.hpp>
-#include "stock.h"
-#include "perf.h"
 #include "seispp.h"
-#include "LatLong-UTMconversion.h"
 #include "StreamObjectWriter.h"
 /* This could be in an include, but will insert this prototype here
    rather than make an include file with one line.*/
