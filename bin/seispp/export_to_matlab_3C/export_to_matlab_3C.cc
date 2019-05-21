@@ -14,13 +14,13 @@ using namespace SEISPP;
 
 void usage()
 {
-    cerr << "export_to_matlab [-x1 x1f -x2 x2f -x3 x3f -time tfile -pf pffile] < in  "
+    cerr << "export_to_matlab_3C [-x1 x1f -x2 x2f -x3 x3f -time tfile -pf pffile] < in  "
         <<endl
         << "Exports serialized seispp 3C ensemble to 3 matlab matrices in 3 files"<<endl
         << "Use -x1, -x2, or -x3 to set file names for components 1, 2, 3"<<endl
         << "Default files are x1=T.dat, x2=R.dat, and x3=L.dat"<<endl
         << "Default names can also be changed by editing default pf file "
-        << "export_to_matlab.pf"<<endl
+        << "export_to_matlab_3C.pf"<<endl
         << "-time is optional.  When found a matrix of times will saved in tfile"
         <<endl
         << "(Note:  tfile cannot be set with pf - only through command line"
@@ -53,7 +53,7 @@ vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
       sample rates */
       if(fabs(dt-dptr->dt)>0.0001)
       {
-        cerr << "export_to_matlab:  Mixmatched sample rates in Three C ensemble"<<endl
+        cerr << "export_to_matlab_3C:  Mixmatched sample rates in Three C ensemble"<<endl
           << "This program requires fixed sample rate"<<endl
           << "Member "<<i<<" has dt="<<dptr->dt<<" put previous members had dt="
           << dt<<endl<<"No output will be generated"<<endl;
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 {
 
     int i;
-    char *pffile=strdup("export_to_matlab");
+    char *pffile=strdup("export_to_matlab_3C");
     bool save_time_matrix(false);
     string timefile("");
 
