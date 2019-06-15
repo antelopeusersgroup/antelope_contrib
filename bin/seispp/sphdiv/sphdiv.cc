@@ -11,13 +11,20 @@ using namespace std;   // most compilers do not require this
 using namespace SEISPP;  //This is essential to use SEISPP library
 void usage()
 {
-    cerr << "sphdiv [-decay power -text --help] < infile >outfile"
+    cerr << "sphdiv [-ro xx -decay power -akey keyword -text --help] < infile >outfile"
         <<endl
         << "Applies spherical divergence correction to three component"<<endl
-        << "data stored in a boost test archive file."<<endl
+        << "ensembles stored in a seispp serialized stream file"<<endl
         << "Amplitudes scaled by metadata offset variable to power."<<endl
         << "There is no normalization so beware"<<endl
-        << " -decay - set power factor for correction (Default is 2.0)"<<endl
+        << " -r0 - offset reference distance to correct data"<<endl
+        << "       (data are scaled by (r0/r)^power for spreading correction:"
+        << " default is 100)"
+        <<endl
+        << " -decay - set power factor for correction (Default is 1.0)"<<endl
+        << " -akey - Use keyword as the attribute tag for the scale applied "
+        << "to each seismogram"<<endl
+        << "         (default sphdiv_scale)"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl;
     exit(-1);
 }
@@ -26,8 +33,10 @@ int main(int argc, char **argv)
 {
     int i;
     const int narg_required(0);
-    double decay_power(2.0);
+    double r0(100.0);
+    double decay_power(1.0);
     bool binary_data(true);
+    string akey("sphdiv_scale");
     for(i=narg_required+1;i<argc;++i)
     {
         string sarg(argv[i]);
@@ -36,6 +45,24 @@ int main(int argc, char **argv)
             ++i;
             if(i>=argc)usage();
             decay_power=atof(argv[i]);
+        }
+        else if(sarg=="-r0")
+        {
+            ++i;
+            if(i>=argc)usage();
+            r0=atof(argv[i]);
+            if(r0<=0)
+            {
+                cerr << "Illegal reference distance ="<<r0<<endl
+                    << "r0 must be >= 0"<<endl;
+                usage();
+            }
+        }
+        else if(sarg=="-akey")
+        {
+            ++i;
+            if(i>=argc)usage();
+            akey=string(argv[i]);
         }
         else if(sarg=="-text")
             binary_data=false;
@@ -73,22 +100,17 @@ int main(int argc, char **argv)
         d=ia->read();
         vector<ThreeComponentSeismogram>::iterator dptr;
         double scale;
-        const double MIN_offset(0.001);
         for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
         {
             /* Do nothing if the seismogram is marked bad */
             if(dptr->live)
             {
                 double offset=dptr->get_double("offset");
-                /* sanity check to avoid zeroing data.
-                   Assumes rational units. */
-                if(offset>MIN_offset)
-                {
-                    scale=pow(offset,decay_power);
-                    /* ThreeComponentSeismogram really needs an operator
+                double ratio=offset/r0;
+                double scale=pow(ratio,decay_power);
+                /* ThreeComponentSeismogram really needs an operator
                        that does this kind of scale - operator * */
-                    dscal(3*dptr->ns,scale,dptr->u.get_address(0,0),1);
-                }
+                dscal(3*dptr->ns,scale,dptr->u.get_address(0,0),1);
             }
         }
         oa->write(d);
