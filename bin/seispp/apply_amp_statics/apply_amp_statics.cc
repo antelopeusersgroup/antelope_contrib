@@ -96,6 +96,7 @@ template <typename MatchType> map<MatchType,double>
         ifs.close();
         if(result.size()<=0) throw SeisppError(base_error
                 + "static file ="+fname+" was empty - no data loaded");
+        return result;
       }
       else
       {
