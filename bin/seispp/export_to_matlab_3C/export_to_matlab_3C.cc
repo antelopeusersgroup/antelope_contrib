@@ -48,7 +48,7 @@ vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
   double dt;
   for(i=0,dptr=d.member.begin();dptr!=d.member.end();++dptr)
   {
-    if(dptr->tref == absolute) dptr->ator(dptr->t0);
+    //if(dptr->tref == absolute) dptr->ator(dptr->t0);
     if(i==0)
     {
       tmin=dptr->time(0);
@@ -71,7 +71,14 @@ vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
       }
     }
   }
-  cout << "Relative time range of output data is "<<tmin <<" to "<<tmax<<endl;
+  /* Assume we don't have a mix of absolute and relative time */
+  bool is_absolute(false);
+  if(d.member[0].tref == absolute) is_absolute=true;
+  if(is_absolute)
+      cout << "Time range of output data is "<<strtime(tmin) <<" to "
+          << strtime(tmax)<<endl;
+  else
+      cout << "Relative time range of output data is "<<tmin <<" to "<<tmax<<endl;
   int n=d.member.size();
   int m=(tmax-tmin)/dt;
   cout << "Output matrices will be of size "<<m<<"X"<<n<<endl;
@@ -250,9 +257,11 @@ int main(int argc, char **argv)
           ofs.close();
           if(save_time_matrix)
           {
+              //Assume if the first is absolute all are
+              if(d.member[0].tref == absolute) ofs<<std::setprecision(15);
               dmatrix t=time_matrix(d,dmat[0].rows());
               timefile=make_fname(timefbase,d,key);
-              ofs.open(timefbase.c_str(),ios::out);
+              ofs.open(timefile.c_str(),ios::out);
               ofs<<t;
               ofs.close();
           }
