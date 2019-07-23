@@ -6,7 +6,7 @@ q330_calibration \- runs q330 calibations on network
 \fBq330_calibration\fP [-v] [-V] [-n] [-2] [-3]
                   [-i] [-N [-d no_calib_days]]
                   [-o duration_offset_fraction] [-t start_time]
-                  [-p \fIpf\fP] [-m \fImail_to_operator\fP] 
+                  [-p \fIpf\fP] [-m \fImail_to_operator\fP] [-x \fI"sta1|sta2|..."\fP]
                   \fIcmdorb\fP \fIdb\fP \fIsta_regex\fP [\fIsta_regex1\fP [\fIsta_regex2\fP [...]]]
 .fi
 .SH DESCRIPTION
@@ -67,7 +67,9 @@ Only calibrate stations which have been deployed after \fIstart_time\fP
 .IP "-m mail_to"
 Email address list to send results.  Multiple email addresses should be comma delimited without
 white space.
-
+.IP "-x 'sta1|sta2|...'"
+Station list to exclude from sending a calibration. The listing will be put into an expression
+that looks like \fIsta !~ /$opt_x/\fP.  
 
 .SH ENVIRONMENT
 needs to have sourced $ANTELOPE/setup.csh.  
