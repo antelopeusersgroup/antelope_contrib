@@ -37,7 +37,7 @@ Code in this repository is laid out in a few top-level dirctories.
     `bin/export`.
 * `data` - Third-party language bindings for `PHP`, and `Java`, plus data-only
   files like travel time databases and instrument response curves.
-* `nobuild` - Older code that is abandonned by the author or no longer works with the
+* `nobuild` - Older code that is abandoned by the author or no longer works with the
   current version of Antelope, but may be interesting to others
 
 Usage
