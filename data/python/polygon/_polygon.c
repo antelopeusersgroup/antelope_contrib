@@ -16,8 +16,6 @@ static PyObject *python_distancetopolygon( PyObject *self, PyObject *args );
 static PyObject *python_readpolygon( PyObject *self, PyObject *args );
 static PyObject *python_windrose( PyObject *self, PyObject *args );
 
-PyMODINIT_FUNC init_polygon( void );
-
 static struct PyMethodDef _polygon_methods[] = {
 	{ "_inwhichpolygons",  	python_inwhichpolygons,   METH_VARARGS, "find polygon enclosing point" },
 	{ "_distancetopolygon", python_distancetopolygon, METH_VARARGS, "find minimum distance to polygon" },
@@ -26,6 +24,21 @@ static struct PyMethodDef _polygon_methods[] = {
 	{ NULL, NULL, 0, NULL }
 };
 
+
+static struct PyModuleDef _polygon_module = {
+    PyModuleDef_HEAD_INIT,
+    "polygon",   /* name of module */
+    NULL,       /* module documentation, may be NULL */
+    -1,         /* size of per-interpreter state of the module,
+                or -1 if the module keeps state in global variables. */
+    _polygon_methods
+};
+
+PyMODINIT_FUNC
+PyInit__polygon(void)
+{
+    return PyModule_Create(&_polygon_module);
+}
 
 static PyObject *
 python_inwhichpolygons( PyObject *self, PyObject *args ) {
@@ -116,13 +129,4 @@ python_windrose( PyObject *self, PyObject *args ) {
 	obj = Py_BuildValue("s", wr);
 	return obj;
 	
-}
-	
-
-PyMODINIT_FUNC
-init_polygon( void ) {
-    PyObject *mod;
-
-    mod = Py_InitModule( "_polygon", _polygon_methods );
-
 }
