@@ -357,7 +357,7 @@ main(int argc, char **argv)
 		for (i = 0; i < ntables; i++) {
             /* ignore nameless table... */
 			tablename = gettbl(tablenames, i);
-			printf("tavblename: %s\n",tablename);
+			//printf("tablename: %s\n",tablename);
 			if (!tablename) {
 				continue;
 			}

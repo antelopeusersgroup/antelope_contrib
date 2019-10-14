@@ -91,6 +91,9 @@ DATA= \
     rt151_30.pf \
     rt151_60.pf \
     rt151_120.pf \
+    rt151A_60.pf \
+    rt151B_60.pf \
+    rt151o_60.pf \
     s13_yka.pf \
     s13.pf \
     s13e.pf \
@@ -131,6 +134,7 @@ DATA= \
     trillium_240_ss_obsip_sio.pf \
     trillium_40_ss_obsip_sio.pf \
     trillium_compact_sio.pf \
+    trillium_compact_20.pf \
     unknown-acceleration.pf \
     unknown-displacement.pf \
     unknown-velocity-1d.pf \

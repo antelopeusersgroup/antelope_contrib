@@ -30,13 +30,13 @@ char	*argv[];
 	int	np = 4;
 	int	ndef;
 	int	ndeg_of_freedom;
-	int	orid;
+	long	orid;
 	char	orid_str[STRSZ];
 	char	dtype[10];
 	double	sdobs;
 	double	strike_rad, strike_deg;
 	double	smajax, sminax, sdepth, stime;
-	int	nrecs;
+	long	nrecs;
 	char 	c;
 	int	rc;
 
@@ -93,7 +93,7 @@ char	*argv[];
 			    "sdepth", &sdepth,
 			    "stime", &stime,
 			    "strike", &strike_deg,
-			    0 );
+			    NULL );
 		
 
 		if( smajax != -1 || sminax != -1 || 
@@ -115,11 +115,11 @@ char	*argv[];
 			continue;
 		}
 
-		sprintf( orid_str, "%d", orid );
+		sprintf( orid_str, "%ld", orid );
 		dborigin = dblookup( dborigin, 0, "origin",
 						"orid", orid_str );
-		dbgetv( dborigin, 0, "ndef", &ndef, 0 );
-		dbgetv( dborigin, 0, "dtype", &dtype, 0 );
+		dbgetv( dborigin, 0, "ndef", &ndef, NULL );
+		dbgetv( dborigin, 0, "dtype", &dtype, NULL );
 
 		ndeg_of_freedom = ndef;
 		if( STREQ( dtype, "r" ) || STREQ( dtype, "g" ) ) {
@@ -156,7 +156,7 @@ char	*argv[];
 			sdepth = -1;
 			stime = -1;
 			conf = 0.;
-		}
+        }
 		
 		rc = dbputv( db, 0, "conf", conf, 
 			       "strike", strike_deg,
@@ -164,16 +164,16 @@ char	*argv[];
 			       "sminax", sminax,
 			       "sdepth", sdepth,
 			       "stime", stime,
-			       0 );
+			       NULL );
 		if( rc < 0 ) {
 			elog_complain( 1, "dbputv failed on orid %d.\n", orid );
 		} else if( verbose ) {
-		printf( "orid %d\tndef %d\tdtype %s\tconf %5.3f\n",
-			orid, ndef, dtype, conf );
-		printf( "\tsmajax %5.2f sminax %5.2f\tstrike %5.1f\n",
-			smajax, sminax, strike_deg );
-		printf( "\tsdepth %5.2f\tstime %5.2f\n",
-			sdepth, stime );
+            printf( "orid %d\tndef %d\tdtype %s\tconf %5.3f\n",
+                orid, ndef, dtype, conf );
+            printf( "\tsmajax %5.2f sminax %5.2f\tstrike %5.1f\n",
+                smajax, sminax, strike_deg );
+            printf( "\tsdepth %5.2f\tstime %5.2f\n",
+                sdepth, stime );
 		}
 		
 

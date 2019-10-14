@@ -9,6 +9,7 @@ CLEAN= $(LICENSES)
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+SUBDIR=/contrib
 
 OBJS= $(BIN).o
 $(BIN) : $(OBJS)

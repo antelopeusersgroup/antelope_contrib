@@ -20,12 +20,9 @@
 #define VERSION "1.1 2006-01-25"
 #define MAX_DT 20.0
 
-int
-cmp_string( char **a, char **b, void *private )
-{
-    return strcmp( *a, *b );
+int cmp_string( char **a, char **b, void *private ) {
+	return strcmp( *a, *b );
 }
-
 static void
 usage()
 {
@@ -45,20 +42,21 @@ main(int argc, char **argv)
 	                dborigin, dbarrival, dbg, dbb;
 	char           *dbname = NULL, *sitedbname = NULL;
 	Hook           *hook = NULL, *tthook = NULL, *ahook = NULL;
-	int             nos, from, to, recc;
+	long            nos, from, to, recc;
 	char           *pfname = NULL;
-	int             orid;
+	long            orid;
 	double          lat, lon, depth, time, atime, stalat, stalon, staelev,
 	                null_timeres, timeres;
 	Tbl            *stbl, *ttimes = NULL;
 	char            *sta=malloc(10), *iphase=malloc(10),*phase=malloc(10),*n_phase=malloc(10);
 	char           *t;
-	Tbl            *stalist, *assoc_key, *suspicious_phase_codes;
+	Arr			   *simplify;
+	Tbl            *stalist, *assoc_key, *suspicious_phase_codes, *dont_change_to;
 	int             mode = 0, result;
 	char           *method = malloc(20), *model = malloc(20);
 	char           *phases = malloc(20);
 	TTGeometry      geometry;
-	double          max_dt, max_tdelta;
+	double          max_tdelta;
 	Pf             *pf = NULL;
 	int             use_assoc_vmodel = 0, use_iphase = 0, override_phase = 0, verbose = 0,
 	                quiet = 0, dry_run = 0, res, apply_station_corrections = 0,
@@ -147,7 +145,26 @@ main(int argc, char **argv)
 	if (max_tdelta == -1) {
 		check_tdelta = 1;
 	}
-	suspicious_phase_codes = pfget_tbl(pf, "suspicious_phase_codes");
+	if ((suspicious_phase_codes = pfget_tbl(pf, "suspicious_phase_codes")) == NULL) {
+		elog_die(0,
+			 "parameter 'suspicious_phase_codes' not found in the parameter file %s.pf\n",
+			 pfname);
+	}
+	sorttbl(suspicious_phase_codes,(int(*)(char*,char*,void*))cmp_string,private);
+
+	if ((dont_change_to = pfget_tbl(pf, "dont_change_to")) == NULL) {
+		elog_die(0,
+			 "parameter 'dont_change_to' not found in the parameter file %s.pf\n",
+			 pfname);
+	}
+	sorttbl(dont_change_to,(int(*)(char*,char*,void*))cmp_string,private);
+
+	if ((simplify = pfget_arr(pf, "simplify")) == NULL) {
+		elog_die(0,
+			 "array 'simplify' not found in the parameter file %s.pf\n",
+			 pfname);
+	}
+
 
 	apply_station_corrections = pfget_boolean(pf, "apply_station_corrections");
 	if (apply_station_corrections == -1) {
@@ -180,7 +197,7 @@ main(int argc, char **argv)
 
 	if (orid >= 0) {
 		char            expr[100];
-		sprintf(expr, "orid==%d", orid);
+		sprintf(expr, "orid==%li", orid);
 		dborigin = dbsubset(dborigin, expr, 0);
 		dbquery(dborigin, dbRECORD_COUNT, &recc);
 		if (recc < 1) {
@@ -236,25 +253,22 @@ main(int argc, char **argv)
 	dbgetv(t_dbassoc, 0, "timeres", &null_timeres, 0);
 	t_dbassoc.record = dbSCRATCH;
 
+	//iterate over all origin-sta bundles
 	for (dbg.record = 0; dbg.record < nos; dbg.record++) {
 		dbgetv(dbg, 0, "orid", &orid,
 		       "lat", &lat, "lon", &lon,
 		 "depth", &depth, "time", &time, "sta", sta, "bundle", &dbb,
-		       0);
-		/*
-		 * dbts= dbs; dbts.record=dbSCRATCH; hook=NULL;
-		 * stbl=strtbl("sta",0); freetbl(stbl,0); free_hook(&hook);
-		 */
-		dbputv(dbts, 0, "sta", sta, 0);
+		       NULL);
+		dbputv(dbts, 0, "sta", sta, NULL);
 		dbmatches(dbts, dbs, &stbl, &stbl, &hook, &stalist);
 		if (maxtbl(stalist) > 0) {
 			/*
 			 * just take the 1st record, wrongly assume stations
 			 * did not move around...
 			 */
-			dbs.record = (int) gettbl(stalist, 0);
+			dbs.record = (long) gettbl(stalist, 0);
 			dbgetv(dbs, 0, "lat", &stalat, "lon", &stalon, "elev", &staelev,
-			       0);
+			       NULL);
 			freetbl(stalist, 0);
 
 		} else {
@@ -268,6 +282,7 @@ main(int argc, char **argv)
 			 * a database we have that information?
 			 */
 		}
+
 		geometry.receiver.lat = stalat;
 		geometry.receiver.lon = stalon;
 		geometry.receiver.z = -staelev;
@@ -278,7 +293,7 @@ main(int argc, char **argv)
 		geometry.source.lon = lon;
 		geometry.source.z = depth;
 		geometry.source.time = 0.0;
-		strcpy(geometry.source.name, "SOURCE");
+		strcpy(geometry.source.name, "ORIGIN");
 
 		result =
 			ttcalc(method, model, phases, mode, &geometry, &ttimes, &tthook);
@@ -292,19 +307,19 @@ main(int argc, char **argv)
 		dbget_range(dbb, &from, &to);
 		for (dbp.record = from; dbp.record < to; dbp.record++) {
 			TTTime         *t_atime;
-			int             nphases, i;
+			long            nphases, i;
 			double          dt, min_dt;
 			char            vmodel[20];
-			int             arid;
+			long            arid;
 			Tbl            *assoclist;
-			int             t_arid, t_orid;
-			char            t_sta[10];
-			int             nrecs, rec1, rec2;
+			long            nrecs, rec1, rec2;
+			char		   *key_string=malloc(10);	
+			char		   *simplified_phase;
 
 
 			dbgetv(dbp, 0, "arid", &arid, "phase", phase, "iphase", iphase,
 			       "timeres", &timeres, "arrival.time", &atime,
-			       "vmodel", vmodel, 0);
+			       "vmodel", vmodel, NULL);
 
 			if (timeres == null_timeres) {
 				timeres = 0;
@@ -315,13 +330,13 @@ main(int argc, char **argv)
 
 			if (verbose > 1) {
 				elog_debug(0,
-				       "%s %s iphase %s phase %s arid %d\n",
+				       "%s %s iphase %s phase %s arid %ld\n",
 					   t = strtime(atime), sta, iphase, phase, arid);
 				free(t);
 			}
 			if (!override_phase) {
-				if (!searchtbl((char *) &phase, suspicious_phase_codes, 
-							(int(*)(void *,void *,void *))cmp_string, private, &rec1, &rec2)) {
+				if (!searchtbl((char *)&phase, suspicious_phase_codes, 
+							(int(*)(char*,char*,void*))cmp_string, private, &rec1, &rec2)) {
 					break;
 				}
 			}
@@ -352,33 +367,46 @@ main(int argc, char **argv)
 					t = strtime(t_atime->value + time));
 					free(t);
 				}
+				strcpy(key_string,t_atime->phase);
+				if ( searchtbl((char *)&key_string, dont_change_to, (int(*)(char*,char*,void*))cmp_string, private, &rec1, &rec2)> 0 ) {
+					if (verbose > 2) {
+						elog_debug(0, "\tdon't change to %s\n",
+								t_atime->phase);
+					}
+					continue;
+				}
 				if (use_iphase
 				    && strcmp(t_atime->phase, iphase) == 0) {
-				if (!searchtbl((char *) &iphase, suspicious_phase_codes, (int(*)(void *,void *,void *))cmp_string, private, &rec1, &rec2)) {
-						
-
-					strcpy(n_phase, t_atime->phase);
-					check_tdelta = 0;
-					
-					break;
+					if (!searchtbl((char *) &iphase, suspicious_phase_codes, (int(*)(char*,char*,void*))cmp_string, private, &rec1, &rec2)) {
+						strcpy(n_phase, t_atime->phase);
+						check_tdelta = 0;
+						break;
 					}
 				}
+
 				if (dt < min_dt) {
-					min_dt = dt;
-					strcpy(n_phase, t_atime->phase);
+						min_dt = dt;
+						strcpy(n_phase, t_atime->phase);
 				}
 			}
+			if (( simplified_phase= getarr(simplify,n_phase)) != NULL) {
+				if (verbose > 1) { 
+					elog_debug(0, "simplify phase %s to %s\n",n_phase, simplified_phase);
+				}
+				strcpy(n_phase, simplified_phase);
+				//don't free here, it's only a pointer to the stuff in the pf
+			}
 
-			dbputv(t_dbassoc, 0, "arid", arid, "orid", orid, 0);
+			dbputv(t_dbassoc, 0, "arid", arid, "orid", orid, NULL);
 			dbmatches(t_dbassoc, dbassoc, &assoc_key, &assoc_key, &ahook, &assoclist);
 			nrecs = maxtbl(assoclist);
-			dbassoc.record = (int) gettbl(assoclist, 0);
+			dbassoc.record = (long) gettbl(assoclist, 0);
 			for (i = 0; i < nrecs; i++) {
-				dbassoc.record = (int) gettbl(assoclist, i);
+				dbassoc.record = (long) gettbl(assoclist, i);
 
 				if (check_tdelta && min_dt > max_tdelta) {
 					if (verbose > 1) {
-						elog_debug(0, "%s %s leave phase %s unchanged for arid %d\n\t because residual is too high for best phase %s (%7.3f > %7.3f)\n",
+						elog_debug(0, "%s %s leave phase %s unchanged for arid %li\n\t because residual is too high for best phase %s (%7.3f > %7.3f)\n",
 							   t = strtime(atime), sta, phase, arid, n_phase, min_dt, max_tdelta);
 						free(t);
 					}
@@ -387,24 +415,24 @@ main(int argc, char **argv)
 				if (verbose || dry_run) {
 					if (strcmp(n_phase, phase) != 0) {
 						if (verbose > 1) {
-							elog_debug(0, "%s %s changing phase %s to %s for arid %d\n",
+							elog_debug(0, "%s %s changing phase %s to %s for arid %ld\n",
 								   t = strtime(atime), sta, phase, n_phase, arid);
 							free(t);
 						} else {
-							elog_debug(0, "changing phase %s to %s for arid %d\n",
+							elog_debug(0, "changing phase %s to %s for arid %ld\n",
 								   phase, n_phase, arid);
 						}
 					} else {
 						if (verbose > 1) {
-							elog_debug(0, "%s %s found same for phase %s arid= %d\n",
+							elog_debug(0, "%s %s found same for phase %s arid= %ld\n",
 								   t = strtime(atime), sta, phase, arid);
 							free(t);
 						}
 					}
 				}
 				if (!dry_run && strcmp(n_phase, phase) != 0) {
-					if (dbputv(dbassoc, "assoc", "phase", n_phase, 0)) {
-						elog_complain(1, "can't put phase %s (%s) for arid %d (sta %s @ %s) \n",
+					if (dbputv(dbassoc, "assoc", "phase", n_phase, NULL)) {
+						elog_complain(1, "can't put phase %s (%s) for arid %ld (sta %s @ %s) \n",
 							      n_phase, iphase, dbassoc.record, sta, t = strtime(atime));
 						free(t);
 					}

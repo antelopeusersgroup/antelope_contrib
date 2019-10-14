@@ -16,24 +16,21 @@ import codecs
 import urllib2
 import json
 import pprint
-import tempfile as tf
 
 def usage():
-    print sys.argv[0], "[-v] [-c] [-a auth] [-k keydb] [-u url] dbname" 
+    print sys.argv[0], "[-v] [-a auth] [-k keydb] [-u url] dbname" 
 
 def main():    
-    #BASE_URL="http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
-    BASE_URL="https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
+    BASE_URL="http://webservices.rm.ingv.it/fdsnws/event/1/query?format=text"
     verbose=0
     archive=0
     opts = []
     args = []
     keydbname='keydb'
     keyschema='idmatch1.0'
-    auth='NEIC'
-    use_curl=False
+    auth='INGV'
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'a:ck:u:v', '')
+        opts, args = getopt.getopt(sys.argv[1:], 'a:k:u:v', '')
     except getopt.GetoptError:
         print "illegal option"
         usage()
@@ -44,8 +41,6 @@ def main():
             verbose = 1
         elif o == '-a':	
             auth = a
-        elif o=='-c':
-            use_curl=True
         elif o == '-u':	
             BASE_URL = a
         elif o == '-k':
@@ -55,8 +50,8 @@ def main():
         usage()
         sys.exit(1)
 
-    if len(args) > 0:
-        dbname=args[0]
+    dbname=args[0]
+    print dbname
 
     db= ds.dbopen( dbname, "r+" )
     dborigin=db.lookup(table='origin')
@@ -78,7 +73,6 @@ def main():
     else:
         kdb.close()
         ds.dbcreate(keydbname,keyschema)
-
         kdb=ds.dbopen(keydbname,'r+')
     try:
         idmatch=kdb.lookup(table='idmatch')
@@ -86,64 +80,31 @@ def main():
         print "Error :",e
     
 
+    updated=stock.now()
     #proxies={'http':'http://138.22.156.44:3128'}
-    if use_curl:
-        try:
-            fname=tmp.mktemp()
-            op=subprocess.check_output(['curl','-o',fname,BASE_URL])
-            print op
-        except Exception as e:
-            
-            return(-1)
-        with open(fname,'r') as f:
-            gj_string=f.read()
-        obj=json.loads(gj_string)
-        os.remove(fname)
-            
+    url=urllib2.urlopen(BASE_URL)
+    txt_string=url.read()
+    #     #EventID|Time|Latitude|Longitude|Depth/Km|Author|Catalog|Contributor|ContributorID|MagType|Magnitude|MagAuthor|EventLocationName
+    #     7093051|2016-08-24T07:55:22.780000|42.8127|13.1653|9.6|SURVEY-INGV||||ML|2.8|--|Perugia
 
-    else:
-        url=urllib2.urlopen(BASE_URL)
-        gj_string=url.read()
-        obj=json.loads(gj_string)
-    data=obj['features']    
-    i=len(data)    
-    for index in range(i):
-        fdata=data[index]
-        geom_type=fdata['type']    
-        geometry=fdata['geometry']    
-        coordinates=geometry['coordinates']    
-        lon=  coordinates[0]    
-        lat=  coordinates[1]    
-        depth=coordinates[2]    
-        properties=fdata['properties']    
-        mb=ms=ml=mlnull    
+    for line in txt_string.splitlines():
+        if line.startswith('#'):
+            continue
         time=status=cdi=place=code=felt=mag=magtype=net=evtype=''    
+        evid,timestr,lats,lons,depths,oauth,cat,cont,contid,magtype,mags,magauth,evname=line.split('|')
+
+        evid=int(evid)
+        mag=float(mags)
+        lat=float(lats)
+        lon=float(lons)
+        depth=float(depths)
+        etime=stock.str2epoch(timestr.replace('T',' '))
+        if auth != 'INGV':
+            auth=str(oauth)
+
         ml=mb=ms=mlnull
         # be sure to convert unicode objects to string objects by calling "str(xxx)", 
         # this prevents datascope  from CRASHING
-        for propk, propv in properties.iteritems():
-            if propk ==   'time':
-                etime=float(propv) / 1000.
-            elif propk == 'mag':
-                mag=float(propv)
-            elif propk == 'magType':
-                magtype=str(propv)
-            elif propk == 'place':
-                evname=str(propv)
-            elif propk == 'cdi':
-                if propv is not None:
-                    cdi=float(propv)
-                    inull=float(propv)
-            elif propk == 'felt':
-                felt=propv
-            elif propk == 'net':
-                net=str(propv)
-            elif propk == 'code':
-                code=str(propv)
-            elif propk == 'updated':
-                updated=propv / 1000.
-            elif propk == 'place':
-                place=str(propv)
         
         if magtype.lower()   == 'ml':
             ml=mag
@@ -156,7 +117,7 @@ def main():
         sr=stock.srnumber(lat,lon)    
         jdate=stock.epoch2str(etime,'%Y%j')
         
-        fkey=str('%s%s' % (net, code))
+        fkey=str('%d' % evid )
 
         kmatch=idmatch.lookup(table='idmatch',record='dbSCRATCH')
         try:
@@ -183,24 +144,26 @@ def main():
                         updated_event=True
                     else:
                         updated_event=False
-
-
         else:        
             new_event=True
-        
         
         if new_event:    
             if verbose:
                 print "new event %s" % code
             evid=dborigin.nextid('evid')
             orid=dborigin.nextid('orid')
-            orecno=dborigin.addv( ('time',etime),('lat',lat),('lon',lon),('depth',depth), 
+            orecno=dborigin.addv( ('time',etime), 
+                    ('lat',lat), 
+                    ('lon',lon), 
+                    ('depth',depth), 
                     ('evid',evid),('orid',orid), ('jdate',jdate), 
                     ('mb',mb),('ml',ml),('ms',ms), 
-                    ('nass',0),('ndef',0),('auth',auth),('grn',gr),('srn',sr) ) 
+                    ('nass',0),('ndef',0),
+                    ('auth',auth),('grn',gr),('srn',sr) ) 
             erecno=dbevent.addv(('evid',evid),('prefor',orid),('evname',evname[:evname_width]),('auth',auth) )
             nmrecno=dbnetmag.addv(('evid',evid),('orid',orid),('magnitude',mag),('magtype',magtype),('auth',auth) )
             idmatch.addv(('fkey',fkey),('keyname','evid'),('keyvalue',evid),('ftime',updated) )
+            #idmatch.addv(('fkey',fkey),('keyname','evid'),('keyvalue',evid) )
         elif updated_event:
             if verbose:
                 print "updated event %s" % code

@@ -61,8 +61,6 @@ sub ampmag_compmag {
             log($amplitude_in_nanometers_per_second)/log(10) + 
             ( $c1*log($distance)/log(10) ); 
     }
-    #my $ms = log($amplitude_in_nanometers_per_second/(2.0 * pi))/log(10) ;
-    #c0+log10(amp)+c1*log10(delta)+c2*log10(delta*c3+c4)+c5
     return $magnitude ;
 }
 
@@ -78,12 +76,12 @@ sub ampmag_trace_computestats {
 	my $tstart = shift;
 	my $tend = shift;
 
-	print ("computestats: %f %f", $tstart, $tend) ;#775
+	#print ("computestats: %f %f", $tstart, $tend) ;#775
 
 	my $nsegs=dbquery(@dbtrace,"dbRECORD_COUNT");
 
 	my $velmax=-1.0e20;
-	my $velmin = 1.0e10;
+	my $velmin = 1.0e20;
 	my $tmin = 0.0;
 	my $tmax = 0.0;
 	my $rms=0.0;
@@ -95,13 +93,12 @@ sub ampmag_trace_computestats {
 		my $dt = 1.0 / $samprate;
 		my @data=trdata(@dbtrace);
 		my $last_samp= time2samp($t2 - $t1 , $dt);
-		$last_samp++; 
+		#$last_samp++; 
 		for (my $i=0; $i <= $last_samp; $i++) {
 			my $stime =  $t1 + ($i * $dt);
 			if ($stime < $tstart) { next; }
 			if ($stime > $tend) { last; }
 			my $vel=$data[$i] * $calib;
-			#print "geschw: $vel\n";
 			if ($vel > $velmax) {
 				$velmax=$vel;
 				$tmax=$stime;
@@ -132,7 +129,7 @@ sub ampmag_setup_processes {
     }
 
     if ( ref($obj->{params}{channels}) ne "ARRAY" ) {
-        addlog ( $obj, 0, "channels table not defined in parameter file" ) ;
+        addlog ( $obj, 0, "channels is not an array in parameter file" ) ;
         return "skip" ;
     }
 
@@ -390,16 +387,16 @@ sub ampmag_process_channel {
 		my ( $dt, $isamp ) ;
 
 		$dt = 1.0 / $samprate ;
-		$isamp = time2samp ( $self->{stations}{$sta}{noise_tstart} - $t0, $ dt ) ;
+		$isamp = time2samp ( $self->{stations}{$sta}{noise_tstart} - $t0, $dt ) ;
 		$isamp++;
 		$self->{stations}{$sta}{noise_tstart} = $t0 + $isamp * $dt ;
-		$isamp = time2samp ( $self->{stations}{$sta}{noise_tend} - $t0, $ dt ) ;
+		$isamp = time2samp ( $self->{stations}{$sta}{noise_tend} - $t0, $dt ) ;
 		$isamp--;
 		$self->{stations}{$sta}{noise_tend} = $t0 + $isamp * $dt ;
-		$isamp = time2samp ( $self->{stations}{$sta}{signal_tstart} - $t0, $ dt ) ;
+		$isamp = time2samp ( $self->{stations}{$sta}{signal_tstart} - $t0, $dt ) ;
 		$isamp++;
 		$self->{stations}{$sta}{signal_tstart} = $t0 + $isamp * $dt ;
-		$isamp = time2samp ( $self->{stations}{$sta}{signal_tend} - $t0, $ dt ) ;
+		$isamp = time2samp ( $self->{stations}{$sta}{signal_tend} - $t0, $dt ) ;
 		$isamp--;
 		$self->{stations}{$sta}{signal_tend} = $t0 + $isamp * $dt ;
 		undef $self->{stations}{$sta}{channels}{$chan}{first} ;
@@ -407,6 +404,7 @@ sub ampmag_process_channel {
 
 	if (defined $tstart ) {
 		addlog ( $self, 3, "%s - %s: %s: Called process_channel with good time range %s to %s",
+                        $magtype,
  						$sta, $chan, mystrtime($tstart), mystrtime($tend) ) ;
 	} else {
 		addlog ( $self, 3, "%s - %s: %s: Called process_channel with no good time range",
@@ -547,7 +545,8 @@ sub ampmag_process_channel {
 			if ( defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
 				if ( defined $self->{stations}{$sta}{channels}{$chan}{signal_vmax} ) {
 					addlog ( $self, 2, 
- 						"%s: %s: signal max %.6f at %s, snr = %.3f", 
+ 						"%s - %s: %s: signal max %.6f at %s, snr = %.3f", 
+                        $magtype,
  						$sta, $chan, 
  						$self->{stations}{$sta}{channels}{$chan}{signal_vmax}, 
  						mystrtime($self->{stations}{$sta}{channels}{$chan}{signal_tmax}),
@@ -585,7 +584,7 @@ sub ampmag_process_channel {
 	$disp = "channeldone" ;
 	$self->{stations}{$sta}{channels}{$chan}{done} = 1 ;
 
-	addlog ($self, 2, $magtype . " - " . $sta . ": " . $chan . ": done") ;
+	addlog ($self, 2, "%s - %s : %s :done",$magtype, $sta, $chan) ;
 
 	my @chans = keys %{$self->{stations}{$sta}{channels}} ;
 	my $done = 1;
@@ -655,21 +654,33 @@ sub process_channel {
     if ( $self->{stations}{$sta}{snr_thresh} < 1.0
             || $self->{stations}{$sta}{channels}{$chan}{snr}
                 > $self->{stations}{$sta}{snr_thresh} ) {
-        my $amplitude =
+		my $amplitude;
+		if (isyes $self->{params}{use_p2p_amplitude} ) {
+			$amplitude =
+             abs( $self->{stations}{$sta}{channels}{$chan}{signal_vmax} -
+				 $self->{stations}{$sta}{channels}{$chan}{signal_vmin} ) / 2.0 ;
+				 
+			if ( $self->{stations}{$sta}{channels}{$chan}{signal_tmin} >  
+				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ) {   
+				 	$self->{stations}{$sta}{channels}{$chan}{m_time} = 
+						$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
+			} else {
+				 $self->{stations}{$sta}{channels}{$chan}{m_time} = 
+					$self->{stations}{$sta}{channels}{$chan}{signal_tmin} ;
+			}
+	 } else {
+		$amplitude =
              $self->{stations}{$sta}{channels}{$chan}{signal_vmax} ;
-			 #$self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
-         $self->{stations}{$sta}{channels}{$chan}{m} = ampmag_compmag ( 
-            $self, $sta, $amplitude ) ;
-            #$self, $sta, $micrometers_per_second ) ;
-         $self->{stations}{$sta}{channels}{$chan}{m_time} = 
+        $self->{stations}{$sta}{channels}{$chan}{m_time} = 
             $self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
-         $self->{stations}{$sta}{channels}{$chan}{m_snr} = 
-            $self->{stations}{$sta}{channels}{$chan}{snr} ;
-         $self->{stations}{$sta}{channels}{$chan}{m_val1} = $amplitude ;
-         $self->{stations}{$sta}{channels}{$chan}{m_units1} = "nm/s" ;
-        addlog ( $self, 1, "%s - %s: %s: Channel mag = %.3f",
-                 $magtype, $sta, $chan,
-                 $self->{stations}{$sta}{channels}{$chan}{m} ) ;
+	 }
+		$self->{stations}{$sta}{channels}{$chan}{m} = 
+			ampmag_compmag ( $self, $sta, $amplitude );
+		$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
+		$self->{stations}{$sta}{channels}{$chan}{snr} ;
+		$self->{stations}{$sta}{channels}{$chan}{m_val1} = $amplitude ;
+		$self->{stations}{$sta}{channels}{$chan}{m_units1} = "nm/s" ;
+        addlog ( $self, 1, "%s - %s: %s: Channel mag = %.3f", $magtype, $sta, $chan, $self->{stations}{$sta}{channels}{$chan}{m} ) ;
     } else {
          $self->{stations}{$sta}{disposition} = "LowSnr" ;
         addlog ( $self, 1, "%s - %s: %s: Channel mag not computed because of low snr",
@@ -794,13 +805,23 @@ sub ampmag_process_network {
 	dbget ( @dbnetmag, 0 ) ;
 	@dbnetmag = dblookup ( @dbnetmag, 0, "netmag", 0, "dbSCRATCH" ) ;
 	my $magid = dbnextid ( @dbnetmag, "magid" ) ;
-	dbputv ( @dbnetmag, "orid", $self->{orid}, "evid", $self->{evid},
+    if (isyes $self->{params}{mean_magnitude} ) {
+		dbputv ( @dbnetmag, "orid", $self->{orid}, "evid", $self->{evid},
+					"magid", $magid,
+					"magtype", $self->{params}{output_magtype},
+					"nsta", $self->{m_n},
+					"magnitude", $self->{m_mean},
+					"uncertainty", $self->{m_std},
+					"auth", $self->{params}{output_auth} ) ;
+	} else {
+		dbputv ( @dbnetmag, "orid", $self->{orid}, "evid", $self->{evid},
 					"magid", $magid,
 					"magtype", $self->{params}{output_magtype},
 					"nsta", $self->{m_n},
 					"magnitude", $self->{m_median},
 					"uncertainty", $self->{m_unc},
 					"auth", $self->{params}{output_auth} ) ;
+	}
 	$self->{magid} = $magid ;
 	my $rec = dbadd ( @dbnetmag ) ;
 	$dbnetmag[3] = $rec;
@@ -898,6 +919,90 @@ sub ampmag_process_network {
 	}
 
 	return makereturn ( $self, $disp ) ;
+}
+
+sub process_station {
+	my $self = shift ;
+	my $sta = shift ;
+	my $flush = shift ;
+
+
+    my $magtype= $self->{params}{output_magtype};
+
+	my $msta = -1.e30 ;
+	my $mchan ;
+	foreach  my $chan (keys(%{$self->{stations}{$sta}{channels}})) {
+		if ( defined $self->{stations}{$sta}{channels}{$chan}{is_nullcalib} 
+				&& $self->{stations}{$sta}{channels}{$chan}{is_nullcalib} ) {
+			addlog ( $self, 1, "%s: Station mag = data with null calib",
+ 						$sta ) ;
+			$self->{stations}{$sta}{disposition} = "NullCalib" ;
+			return makereturn ( $self, "ok" ) ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$chan}{is_clipped} 
+				&& $self->{stations}{$sta}{channels}{$chan}{is_clipped} ) {
+			addlog ( $self, 1, "%s - %s: Station mag = data clipped",
+ 						$magtype, $sta ) ;
+			$self->{stations}{$sta}{disposition} = "DataClipped" ;
+			return makereturn ( $self, "ok" ) ;
+		}
+		if (defined $self->{stations}{$sta}{channels}{$chan}{m}) {
+			if ($self->{stations}{$sta}{channels}{$chan}{m} > $msta) {
+				$msta = $self->{stations}{$sta}{channels}{$chan}{m} ;
+				$mchan = $chan ;
+			}
+		}
+	}
+
+	if ($msta > -1.e20) {
+		$self->{stations}{$sta}{m} = $msta ;
+		$self->{stations}{$sta}{m_chan} = $mchan ;
+		$self->{stations}{$sta}{m_time} = $self->{stations}{$sta}{channels}{$mchan}{m_time} ;
+		$self->{stations}{$sta}{m_amp} = -1.0 ;
+		$self->{stations}{$sta}{m_per} = -1.0 ;
+		$self->{stations}{$sta}{m_logat} = -999.0 ;
+		$self->{stations}{$sta}{m_snr} = -1.0 ;
+		$self->{stations}{$sta}{m_twin} = 0.0 ;
+		$self->{stations}{$sta}{m_val1} = 0.0 ;
+		$self->{stations}{$sta}{m_val2} = 0.0 ;
+		$self->{stations}{$sta}{m_units1} = "-" ;
+		$self->{stations}{$sta}{m_units2} = "-" ;
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_amp} ) {
+			$self->{stations}{$sta}{m_amp} = $self->{stations}{$sta}{channels}{$mchan}{m_amp} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_per} ) {
+			$self->{stations}{$sta}{m_per} = $self->{stations}{$sta}{channels}{$mchan}{m_per} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_logat} ) {
+			$self->{stations}{$sta}{m_logat} = $self->{stations}{$sta}{channels}{$mchan}{m_logat} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_snr} ) {
+			$self->{stations}{$sta}{m_snr} = $self->{stations}{$sta}{channels}{$mchan}{m_snr} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_twin} ) {
+			$self->{stations}{$sta}{m_snr} = $self->{stations}{$sta}{channels}{$mchan}{m_twin} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_val1} ) {
+			$self->{stations}{$sta}{m_val1} = $self->{stations}{$sta}{channels}{$mchan}{m_val1} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_val2} ) {
+			$self->{stations}{$sta}{m_val2} = $self->{stations}{$sta}{channels}{$mchan}{m_val2} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_units1} ) {
+			$self->{stations}{$sta}{m_units1} = $self->{stations}{$sta}{channels}{$mchan}{m_units1} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_units2} ) {
+			$self->{stations}{$sta}{m_units2} = $self->{stations}{$sta}{channels}{$mchan}{m_units2} ;
+		}
+		addlog ( $self, 1, "%s - %s: Station mag = %.3f",
+ 					$magtype, $sta, $msta ) ;
+		$self->{stations}{$sta}{disposition} = sprintf "%.3f", $msta ;
+	} else {
+		addlog ( $self, 1, "%s - %s: Station mag = no data",
+ 					$magtype, $sta ) ;
+	}
+
+	return makereturn ( $self, "ok" ) ;
 }
 sub process_network {
     my $self = shift ;

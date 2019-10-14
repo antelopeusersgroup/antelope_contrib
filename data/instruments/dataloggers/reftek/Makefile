@@ -1,5 +1,6 @@
 DATADIR=instruments/dataloggers
 DATA=     rt130.pf \
+    rt130s.pf \
     rt24_100.pf \
     rt24_62.pf \
     rt72a-02.pf \
