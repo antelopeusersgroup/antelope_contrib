@@ -3,20 +3,20 @@
 pythonpolygon \- Python interface to polygon library
 .SH SYNOPSIS
 .nf
-import antelope.polygon as p
+sys.path.append(os.environ['ANTELOPE'] + "/contrib/data/python")
+import zamg.polygon as p
 import antelope.datascope as ds
-
 azi=145
 a=p.windrose(azi)
-    print "azi %d -> %s" % (azi,a)
+    print("azimuth %d -> %s" % (azi,a))
 
 db=ds.dbopen("/opt/antelope/local/data/database/BekannteGrenzen","r")
 dist=p.distancetopolygon(db, 47, 16)
-print "print %.3f degrees from (%.f/%.f)  " % (dist, 47,16)
+print("point (46/16) is %.3f degrees from (%.f/%.f)  " % (dist, 47,16))
 dbf = p.inwhichpolygons(db, 47, 16)
 for dbf.record in range(dbf.query(ds.dbRECORD_COUNT)):
     [pid,pname]=dbf.getv('pid','pname')
-    print "found in %s (%d)" % (pname,pid)
+    print("place (47/46) found in %s (%d)" % (pname,pid))
 .fi
 .SH DESCRIPTION
 Python interface to the polygon library

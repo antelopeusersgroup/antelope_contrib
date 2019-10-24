@@ -1,5 +1,5 @@
 import antelope.datascope as datascope
-import _polygon
+import zamg._polygon as _polygon
 def inwhichpolygons(db, lat,lon):
     """find enclosing polygon"""
     # Ugly but clear: Kent says, for C, a database is only a list

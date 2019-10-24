@@ -19,6 +19,9 @@ SUBDIR= /contrib
 
 DSOBJS= _polygon.o
 
+__init__.py:
+	@touch $@
+
 $(DSDLIB) : $(DSOBJS)
 	$(RM) $@
 	$(DLD) $(DLDFLAGS) -o $(DSDLIB) $(DSOBJS) $(DLDLIBS) 

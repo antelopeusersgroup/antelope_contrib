@@ -84,7 +84,6 @@ python_readpolygon( PyObject *self, PyObject *args ) {
 	char    *usage = "Usage: dbout= _polygon._readpolygon( dbin )\n";
 	Dbptr	db;
 	Point 	*poly;
-	double  lat,lon;
     char    pname[1024];
     long    npolygons, nvertices;
 	PyObject *obj;
