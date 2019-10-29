@@ -14,13 +14,13 @@ import antelope.datascope as ds
 import antelope.stock as stock
 import getopt
 import codecs
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 import pprint
 import datetime
 
 def usage():
-    print sys.argv[0], "[-v] [-a auth] [-k keydb] [-u url] dbname" 
+    print(sys.argv[0], "[-v] [-a auth] [-k keydb] [-u url] dbname") 
 
 def main():    
     BASE_URL="http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
@@ -35,16 +35,16 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'a:k:u:v', '')
     except getopt.GetoptError:
-        print "illegal option"
+        print("illegal option")
         usage()
         sys.exit(2)
 
     for o,a in opts:
         if o == '-v':
             verbose = 1
-        elif o == '-a':	
+        elif o == '-a': 
             auth = a
-        elif o == '-u':	
+        elif o == '-u': 
             BASE_URL = a
         elif o == '-k':
             keydbname=a
@@ -71,7 +71,7 @@ def main():
     if os.path.exists(descname):
         schemaname=kdb.query('dbSCHEMA_NAME')
         if schemaname != keyschema:
-            print "keydb %s has wrong schema %s, should be %s" % (keydbname,schemaname,keyschema) 
+            print("keydb %s has wrong schema %s, should be %s" % (keydbname,schemaname,keyschema)) 
             sys.exit(1)
     else:
         kdb.close()
@@ -80,12 +80,12 @@ def main():
         kdb=ds.dbopen(keydbname,'r+')
     try:
         idmatch=kdb.lookup(table='idmatch')
-    except Exception,e:
-        print "Error :",e
+    except Exception as e:
+        print("Error :",e)
     
 
     #proxies={'http':'http://138.22.156.44:3128'}
-    url=urllib2.urlopen(BASE_URL)
+    url=urllib.request.urlopen(BASE_URL)
     gj_string=url.read()
     obj=json.loads(gj_string)
     data=obj['features']    
@@ -98,7 +98,7 @@ def main():
         lon=  float(coordinates[0])    
         lat=  float(coordinates[1])    
         depth=float(coordinates[2])    
-	if depth < 0.0:
+        if depth < 0.0:
             depth = depth * -1.0
         properties=fdata['properties']    
         mb=ms=ml=mlnull    
@@ -106,10 +106,10 @@ def main():
         ml=mb=ms=mlnull
         # be sure to convert unicode objects to string objects by calling "str(xxx)", 
         # this prevents datascope  from CRASHING
-        for propk, propv in properties.iteritems():
+        for propk, propv in properties.items():
             if propk ==   'time':
                 try:
-		    etime=float(propv) / 1000.
+                    etime=float(propv) / 1000.
                 except ValueError:
                     dt=propv.replace('T',' ')
                     dt2=dt.replace('Z',' ')
@@ -165,8 +165,8 @@ def main():
         kmatch=idmatch.lookup(table='idmatch',record='dbSCRATCH')
         try:
             kmatch.putv(('fkey', fkey))
-        except Exception,e:
-            print "Error :",e
+        except Exception as e:
+            print("Error :",e)
 
         matcher=kmatch.matches(idmatch,'fkey')        
         rec_list=matcher()
@@ -174,7 +174,7 @@ def main():
         evid=0
         updated_event=False
         if len(rec_list) > 1:
-            print "found too many keys, sth strange goes on here" 
+            print("found too many keys, sth strange goes on here") 
         if len(rec_list) > 0:
             for rec in rec_list:
                 idmatch.record=rec
@@ -195,7 +195,7 @@ def main():
         
         if new_event:    
             if verbose:
-                print "new event %s" % code
+                print("new event %s" % code)
             evid=dborigin.nextid('evid')
             orid=dborigin.nextid('orid')
             orecno=dborigin.addv( ('time',etime),('lat',lat),('lon',lon),('depth',depth), 
@@ -207,14 +207,14 @@ def main():
             idmatch.addv(('fkey',fkey),('keyname','evid'),('keyvalue',evid),('ftime',updated) )
         elif updated_event:
             if verbose:
-                print "updated event %s" % code
+                print("updated event %s" % code)
             idmatch.putv( ('ftime',updated) )
             kmatch=db.lookup(table='event', record='dbSCRATCH')
             kmatch.putv( ('evid',evid) )
             evmatcher=kmatch.matches(dbevent,'evid')
             evlist=evmatcher()
             if len(evlist) >1:
-                print "strange, found a few matching events for evid %d " % evid
+                print("strange, found a few matching events for evid %d " % evid)
             if len(evlist) >0:
                 dbevent.record=evlist[0]
                 [prefor]=dbevent.getv('prefor')
@@ -224,7 +224,7 @@ def main():
                 ormatcher=kmatch.matches(dborigin,'orid')
                 orlist=ormatcher()
                 if len(orlist) >1:
-                    print "strange, found a few origind for orid %d" % prefor
+                    print("strange, found a few origind for orid %d" % prefor)
                 if len(orlist)>0:
                     dborigin.record=orlist[0]
                     dborigin.putv( ('time',etime),('lat',lat),('lon',lon),('depth',depth),
@@ -240,7 +240,7 @@ def main():
                     magmatcher=kmatch.matches(dbnetmag,'orid')
                     maglist=magmatcher()
                     if len(maglist)>1:
-                        print "strange, found a few netmags for origin %d" % prefor
+                        print("strange, found a few netmags for origin %d" % prefor)
                     if len(maglist) > 0:
                         dbnetmag.record=maglist[0]
                         dbnetmag.putv( ('magnitude',mag) ,('magtype',magtype),('auth',auth) )
