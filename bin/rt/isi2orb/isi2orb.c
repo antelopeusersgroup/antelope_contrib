@@ -236,7 +236,7 @@ main( int argc, char **argv )
 	if( Verbose ) {
 
 		elog_notify( 0, "Program starting at %s UTC\n", 
-				s = strtime( now() ) );
+				s = strtime( std_now() ) );
 
 		free( s );
 	}
@@ -502,7 +502,7 @@ main( int argc, char **argv )
 		if( ( nextrequest = getarr( latest, key ) ) != NULL ) {
 
 			if( statefile_rewind_max_sec != 0 && 
-			    *nextrequest < now() - statefile_rewind_max_sec ) {
+			    *nextrequest < std_now() - statefile_rewind_max_sec ) {
 			
 
 				if( Verbose ) {
@@ -521,7 +521,7 @@ main( int argc, char **argv )
 
 				dreq->req.twind[ireq].beg = ISI_NEWEST;
 
-			} else if( *nextrequest > now() ) {
+			} else if( *nextrequest > std_now() ) {
 
 				elog_complain( 0, 
 					  "Data request for '%s' is ahead of "
@@ -572,7 +572,7 @@ main( int argc, char **argv )
 			if( oldest != 0 ) {
 
 				if( statefile_rewind_max_sec != 0 && 
-			    	    oldest < now() - statefile_rewind_max_sec ) {
+			    	    oldest < std_now() - statefile_rewind_max_sec ) {
 			
 					if( Verbose ) {
 
@@ -586,7 +586,7 @@ main( int argc, char **argv )
 					free( s );
 					}
 
-					oldest = now();
+					oldest = std_now();
 
 					dreq->req.twind[ireq].beg = ISI_NEWEST;
 
@@ -726,7 +726,7 @@ main( int argc, char **argv )
 		pktchan->time = ts->hdr.tofs.value;
 
 		if( too_old != ISI2ORB_NULL_TIME &&
-		    pktchan->time < now() - too_old ) {
+		    pktchan->time < std_now() - too_old ) {
 
 		    if( VeryVerbose ) {
 
@@ -744,7 +744,7 @@ main( int argc, char **argv )
 		}
 
 		if( too_new != ISI2ORB_NULL_TIME &&
-		    pktchan->time > now() + too_new ) {
+		    pktchan->time > std_now() + too_new ) {
 
 		    if( VeryVerbose ) {
 
@@ -851,7 +851,7 @@ main( int argc, char **argv )
 	}
 
 	elog_notify( 0, "Program stopping at %s UTC\n", 
-			s = strtime( now() ) );
+			s = strtime( std_now() ) );
 
 	return 0;
 }

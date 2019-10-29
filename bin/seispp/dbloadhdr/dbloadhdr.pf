@@ -1,0 +1,14 @@
+dbprocess_commands &Tbl{
+  verbose
+  dbopen metrics
+}
+attributes_to_load &Tbl{
+rmssnr  metrics.snr real
+peaksnr metrics.peaksnr real
+compratio metrics.compratio real
+}
+match_keys &Tbl{
+    evid metrics.evid int
+    sta metrics.sta string
+}
+error_log_file dbloadhdr.log

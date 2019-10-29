@@ -141,7 +141,7 @@ char *argv[];
 	          until = rq_time + window ;
 	  }
        }
-       crnt_time = now();
+       crnt_time = std_now();
             
        if( ( tmwait = rq_time - crnt_time ) > 0 )
           sleep( tmwait);
@@ -278,7 +278,7 @@ char *argv[];
           for( i = 0 ; i <  cmd_timeout; i++ ) 
 	    sleep(ONEDAY); 
 
-	  crnt_time = now();
+	  crnt_time = std_now();
        }
 
 }

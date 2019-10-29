@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>export_to_matlab</title>
+  </head>
+  <body>
+    <h1>export_to_matlab_3C</h1>
+    <h3>Usage:</h3>
+    <p>export_to_matlab_3C [-x1 x1f -x2 x2f -x3 x3f -pf pffile] &lt; in<br>
+    </p>
+    <h3>Algorithm:</h3>
+    The purpose of this program is to export a single
+    ThreeComponentEnsemble as three parallel matrices easily read into
+    matlab.&nbsp;&nbsp; Each of the three matrices are written to
+    separate files. &nbsp; Defaults for the file names are defined in
+    the parameter file export_to_matlab.pf. &nbsp; Alternatively, use
+    the command line arguments -x1, -x2, and/or -x3 to change output
+    file names.&nbsp; Default output file names are 'T.dat' for
+    component 1, 'R.dat' for component 2, and 'L.dat' for component
+    3.&nbsp; <br>
+    <br>
+    The algorithm used requires all data in the ensemble have the same
+    nominal sample rate.&nbsp; It will exit if the range of sample
+    intervals is by more than 0.1 ms.&nbsp;&nbsp; Start and end times
+    can be irregular.&nbsp; When that happens the data will be silently
+    zero padded.&nbsp;&nbsp; The program computes the earliest start
+    time and lastest end time in the ensemble.&nbsp; Any seismogram
+    whose start and end time do not match those times within one sample
+    will be zero padded.&nbsp;&nbsp; The start time computed this way
+    and the size of the output matrices are written to stdout in a log
+    record.&nbsp; The program avoids extreme blunders by checking the
+    number of samples against a fixed internal wall size (currently 100
+    million samples).&nbsp; It will exit the computed number of samples
+    exceeds this size, but otherwise it will blunder forward
+    blindly.&nbsp; If you get gigantic output files it likely means the
+    ensemble has a large range of UTC times instead of a small range of
+    times relative to some other time standard (i.e. the implict
+    assumption is that the input ensemble is a fixed time window or
+    something like a common receiver gather with relative times set by
+    something like predicted P arrival times.).<br>
+    <h3>File Format</h3>
+    <p>In the input ThreeComponentEnsemble object, seismograms are
+      stored as a vector of ThreeComponentSeismogram objects that each
+      store three-component seismogramsa as a 3 by ns (number of
+      samples) matrix.&nbsp; This program rearranges that data into
+      three M by N matrix where M=ns (number of samples as described
+      above) and N is the number of seismograms in the input
+      ensemble.&nbsp;&nbsp; Each of these matrices is the data from one
+      component extracted from the enemble.&nbsp;&nbsp; Output file
+      names are controlled by the -x1, -x2, and -x3 command line options
+      or the pf file defaults.&nbsp; Each file is a text file of one of
+      these matrices written in the visual order (i.e. each row of the
+      matrix is written in one line with a newline terminator).&nbsp;
+      Each of these matrices is then easily read by the load command in
+      matlab.&nbsp; This would be a proto section of an m-file to read
+      these:<br>
+      T=load('T.dat','-ascii');<br>
+      R=load('R.dat','-ascii');<br>
+      L=load('L.dat','-ascii');<br>
+    </p>
+    <h3>Options:</h3>
+    <h3> </h3>
+    Use the -x1, -x2, and -x3 options to change the default output
+    matrix file names.<br>
+    <br>
+    Use -pf to read from parameter file pffile instead of the default
+    export_to_matlab.pf.<br>
+    <br>
+  </body>
+</html>

@@ -1,9 +1,9 @@
+#ifndef _SEISMIC_PICK_H_
+#define _SEISMIC_PICK_H_
 #include "TimeWindow.h"
-
+namespace SEISPP {
 using namespace std;
 using namespace SEISPP;
-
-namespace SEISPP {
 
 typedef struct PointPick {
         double time;
@@ -38,3 +38,4 @@ private:
         bool window_set;
 };
 }
+#endif

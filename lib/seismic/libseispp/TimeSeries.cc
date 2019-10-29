@@ -118,6 +118,14 @@ void TimeSeriesRequiredError(MetadataGetError mde,string name)
 		<< name<<endl;
 	cerr << "Edit your parameter file to make this message go away"<<endl;
 }
+TimeSeries::TimeSeries(const BasicTimeSeries& bd,const Metadata& md)
+  : BasicTimeSeries(bd), Metadata(md)
+{
+  int i;
+  this->s.reserve(this->ns);   // ns should be set by BasicTimeSeries constructor
+  for(i=0;i<this->ns;++i)
+    this->s.push_back(0.0);
+}
 #ifndef NO_ANTELOPE
 
 /* Constructor to read a single seismogram from an antelope
@@ -276,20 +284,12 @@ TimeSeries& TimeSeries::operator=(const TimeSeries& tsi)
 {
 	if(this!=&tsi)
 	{
-		live=tsi.live;
-		dt=tsi.dt;
-		t0=tsi.t0;
-		ns=tsi.ns;
-		tref=tsi.tref;
-		if(tsi.live)
-		{
-			s=tsi.s;
-		}
-		gaps=tsi.gaps;
-		mreal=tsi.mreal;
-		mint=tsi.mint;
-		mbool=tsi.mbool;
-		mstring=tsi.mstring;
+            this->BasicTimeSeries::operator=(tsi);
+            this->Metadata::operator=(tsi);
+	    if(tsi.live)
+	    {
+		s=tsi.s;
+	    }
 	}
 	return(*this);
 }			

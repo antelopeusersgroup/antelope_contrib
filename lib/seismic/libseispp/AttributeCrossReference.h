@@ -2,6 +2,7 @@
 #define _ATTRIBUTE_CROSS_REFERENCE_
 #include <string>
 #include <map>
+#include <set>
 #include "Metadata.h"
 namespace SEISPP
 {
@@ -71,6 +72,16 @@ class AttributeCrossReference
           \param intern is the internal name
           \param ext is the external name to be added. */
         void put(string intern, string ext);
+        /*! Return the set of internal names defined by this object.
+
+          Returns an std::set container of strings that are the internal
+          names defined by this object. */
+        set<string> internal_names();
+        /*! Return the set of external names defined by this object.
+
+          Returns an std::set container of strings that are the external
+          names defined by this object. */
+        set<string> external_names();
     private:
         map<string,string> itoe;
         map<string,string> etoi;

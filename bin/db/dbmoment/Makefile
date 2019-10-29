@@ -1,12 +1,12 @@
-BIN = dbmoment run_dbmoment_example
+BIN = dbmoment
+
 PF = dbmoment.pf
 
-MAN1 = dbmoment.1 run_dbmoment_example.1
+MAN1 = dbmoment.1
 
 DATADIR = python/dbmoment
 
 DATA = __init__.py \
-	logging_helper.py \
 	mt.py \
 	origin.py \
 	data.py \
@@ -14,17 +14,14 @@ DATA = __init__.py \
 	functions.py \
 	inversion.py
 
-CLEAN = *.pyc
-
 EXAMPLEDIR = dbmoment
 
 EXAMPLE = EXAMPLE_1 \
 		EXAMPLE_2 \
 		dbmoment.pf
 
-
 SUBDIR=/contrib
+
 include $(ANTELOPEMAKE)
 
-DIRS = DREGERS_MTPACKAGE MODELS
-
+DIRS = DREGERS_MTPACKAGE MODELS EXAMPLE_CODE

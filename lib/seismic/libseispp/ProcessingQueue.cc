@@ -100,7 +100,7 @@ DatascopeProcessingQueue::DatascopeProcessingQueue(DatascopeHandle& dbh, string 
 	    {
 		if(SEISPP_verbose)
 		{
-			cout << "DatascopeProcessingQueue constructor:  queue file = "
+			cerr << "DatascopeProcessingQueue constructor:  queue file = "
 				<< fname 
 				<< " is being created"<<endl
 				<< "Buildng queue with "<<records_in_this_view<<" entries"<<endl;
@@ -166,8 +166,8 @@ DatascopeProcessingQueue::~DatascopeProcessingQueue()
 {	
 	if(SEISPP_verbose)
 	{
-		cout << "Closing DatascopeProcessinqQueue.  Final contents on closure."<<endl;
-		cout << *this;
+		cerr << "Closing DatascopeProcessinqQueue.  Final contents on closure."<<endl;
+		cerr << *this;
 	}
 	fclose(fp);
 }

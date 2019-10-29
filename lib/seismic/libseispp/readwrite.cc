@@ -209,7 +209,6 @@ void save_metadata_for_object(Metadata& md,
 		string table,
 			MetadataList& mdl, 
 				AttributeMap& am)
-		throw(SeisppError)
 {
 	MetadataList::iterator mdli;
 	map<string,AttributeProperties>::iterator ami,amie=am.attributes.end();
@@ -495,21 +494,21 @@ long dbsave(ThreeComponentSeismogram& tcs,
 	int irec;
 	try {
 		if(output_as_standard) tcs.rotate_to_standard();
-		auto_ptr<TimeSeries>x1(ExtractComponent(tcs,0));
+		shared_ptr<TimeSeries>x1(ExtractComponent(tcs,0));
 		if(output_as_standard)
 		{
 			x1->put("vang",90.0);
 			x1->put("hang",0.0);
 		}
 		x1->put("chan",chanmap[0]);
-		auto_ptr<TimeSeries>x2(ExtractComponent(tcs,1));
+		shared_ptr<TimeSeries>x2(ExtractComponent(tcs,1));
 		if(output_as_standard)
 		{
 			x2->put("vang",90.0);
 			x2->put("hang",90.0);
 		}
 		x2->put("chan",chanmap[1]);
-		auto_ptr<TimeSeries>x3(ExtractComponent(tcs,2));
+		shared_ptr<TimeSeries>x3(ExtractComponent(tcs,2));
 		if(output_as_standard)
 		{
 			x3->put("vang",0.0);
@@ -520,7 +519,7 @@ long dbsave(ThreeComponentSeismogram& tcs,
 		irec=dbsave(*x2,db,table,mdl,am);
 		irec=dbsave(*x3,db,table,mdl,am);
 		return(irec);
-		// delete not needed because of auto_ptr
+		// delete not needed because of shared_ptr
 	// catch all exceptions and just rethrow them
 	} catch (...)
 	{ throw;}
@@ -657,82 +656,6 @@ long dbsave_oriented(ThreeComponentSeismogram& tcs,
                     + "dbaddv failed attempting to save to tmatrix table");
         return(rec);
     }catch(...){throw;};
-}
-
-// Similar to above for ComplexTimeSeries object.  
-// Behaves the same, but uses a 2xns dmatrix to
-// which complex numbers are copied (real in row
-// 1, imag in row 2).
-
-
-long dbsave(ComplexTimeSeries& tcs, 
-	Dbptr db,
-		string table, 
-			MetadataList& mdl, 
-				AttributeMap& am)
-{
-	int recnumber;
-	string field_name;
-
-	if(!tcs.live) return(-1);  // return immediately if this is marked dead
-	if(table=="wfdisc")
-		throw SeisppError(string("dbsave(ComplexTimeSeries):")
-			+string("wfdisc incompatible with a ComplexTimeSeries.  Check documentation for alternatives.\n"));
-	
-	db = dblookup(db,0,const_cast<char *>(table.c_str()),0,0);
-	recnumber = dbaddnull(db);
-	if(recnumber==dbINVALID) 
-		throw SeisppError(string("dbsave:  dbaddnull failed on table "+table));
-	db.record=recnumber;
-	try {
-		save_metadata_for_object(dynamic_cast<Metadata&>(tcs),
-			db,table,mdl,am);
-		// Even if they were written in the above loop the contents 
-		// of the object just override the metadata versions.  
-		// This is safer than depending on the metadata
-		double etime;
-		etime = tcs.endtime();
-		string sdtype("cx"); // special datatype signals complex
-		dbputv(db,0,"time",tcs.t0,
-			"endtime",etime,
-			"samprate",1.0/tcs.dt,
-			"nsamp",tcs.ns,
-			"datatype",sdtype.c_str(),NULL);
-		char dir[65],dfile[33];  //css3.0 wfdisc attribute sizes
-		long int foff;  // actual foff reset in db record
-		// assume these were set in mdl.  probably should have a cross check
-		dbgetv(db,0,"dir",dir,"dfile",dfile,NULL);
-		// make sure the directory is present
-		if(makedir(dir))
-		{
-			dbmark(db);
-			throw SeisppError(string("makedir(dir) failed with dir=")
-					+ string(dir));
-		}
-		dmatrix cmpxdata(2,tcs.ns);
-		for(int i=0;i<tcs.ns;++i)
-		{
-			cmpxdata(0,i)=tcs.s[i].real();
-			cmpxdata(1,i)=tcs.s[i].imag();
-		}
-		// Note we always write these as doubles.  I don't
-		// expect to save a datatype with this class of 
-		// object database writers.
-		foff=vector_fwrite(cmpxdata.get_address(0,0),tcs.ns*2,
-			string(dir),string(dfile));
-		// Above returns and off that we need to set 
-		// in the database as the absolutely correct value
-		// Reasons is that if the file exists these functions
-		// always append and return foff.
-		dbputv(db,0,"foff",foff,NULL);
-		return(recnumber);
-	}
-	catch (SeisppError& serr)
-	{
-		// delete this database row if we had an error
-		dbmark(db);
-		throw serr;
-	}
 }
 #endif
 } // Termination of namespace SEISPP definitions

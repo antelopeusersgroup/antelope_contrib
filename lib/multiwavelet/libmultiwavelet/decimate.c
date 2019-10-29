@@ -26,9 +26,9 @@ Tbl **define_decimation(Pf *pf, int *nbands)
 	int ntest;
 	
 	list = pfget_tbl(pf, "bands");
-	*nbands = maxtbl(list);
-	if(*nbands <= 0)
+	if(list==NULL)
 		elog_die(0,"define_decimation:  wavelet bands not defined\n");
+	*nbands = maxtbl(list);
 	ntest=pfget_int(pf,"number_frequency_bands");
 	if(ntest>*nbands)
 		elog_die(0,"define_decimation:  decimation band definition not consistent with number_frequency_bands\nband tbl is of length %d while number_frequency_bands parameter is %d\n",

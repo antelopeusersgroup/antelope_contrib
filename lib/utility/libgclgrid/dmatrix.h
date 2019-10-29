@@ -160,7 +160,7 @@ public:
 // @returns Reference to matrix element at position (rowindex,colindex)
 // @throws dmatrix_index_error is thrown if request is out of range
 //@}
-  double &operator()(int rowindex, int colindex);
+  double &operator()(int rowindex, int colindex); 
 //@{
 // Standard assignment operator
 //@}
@@ -225,15 +225,15 @@ public:
 // User should use rows() and columns() method in preference to this.
 // @returns Two element int vector with row=[0] and column=[1].  
 //@}
-  int *size();
+  int *size() const;
 //@{
 // Return the number of rows in this matrix.
 //@}
-  int rows();
+  int rows() const;
 //@{
 //  Return the number of columns in this matrix.  
 //@}
-  int columns();
+  int columns() const;
 //@{
 //  Initialize a matrix to all zeros.
 //@}

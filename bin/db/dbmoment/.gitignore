@@ -14,9 +14,12 @@ window
 sac2bin
 bin2sac
 tdmt_invc
+tdmt_inv
 fortran_fkrprog
 wvint9
 putmt
 *.o
 *.a
 test_rotation.py
+dbmoment_run_example
+trigd.mod

@@ -61,11 +61,16 @@
 /* Some standard X file seems to have a guard problem.  This won't
 compile on either solaris or g++ if these appear after the Xm includes.
 --GLP August 1, 2006*/
+#include <math.h>
 #include <string.h>
 #include <vector>
 #include "seispp.h"
 #include "TimeSeries.h"
 #include "ensemble.h"
+/* This pragma is needed to suppress obnoxious warning messages about literals 
+   in C++ that are impossible to eliminate in the context of X code like this. */
+#pragma clang diagnostic push
+#pragma clang diagnosic ignored "-Wwriteable-strings"
 
 /* Include appropriate header files. */ 
 #include "SeiswP.h"    /* private header file for the ExmSeisw widget */
@@ -328,16 +333,16 @@ static char defaultTranslations[] =
 
 /* The following actions will be handled by code inside this file. */
 static XtActionsRec Actions[] = {
-	{"SeiswEnter",		     SeiswEnterProc},
-	{"SeiswLeave",              SeiswLeaveProc},
-        {"Btn1DownProc",             Btn1DownProc},
-        {"Btn1UpProc",               Btn1UpProc},
-        {"Btn2DownProc",             Btn2DownProc},
-        {"Btn2UpProc",               Btn2UpProc},
-        {"Btn3DownProc",             Btn3DownProc},
-        {"Btn3UpProc",               Btn3UpProc},
-	{"Btn1MotionProc",	     Btn1MotionProc},
-	{"Btn3MotionProc",           Btn3MotionProc}
+	{(char *)"SeiswEnter",		     SeiswEnterProc},
+	{(char *)"SeiswLeave",              SeiswLeaveProc},
+        {(char *)"Btn1DownProc",             Btn1DownProc},
+        {(char *)"Btn1UpProc",               Btn1UpProc},
+        {(char *)"Btn2DownProc",             Btn2DownProc},
+        {(char *)"Btn2UpProc",               Btn2UpProc},
+        {(char *)"Btn3DownProc",             Btn3DownProc},
+        {(char *)"Btn3UpProc",               Btn3UpProc},
+	{(char *)"Btn1MotionProc",	     Btn1MotionProc},
+	{(char *)"Btn3MotionProc",           Btn3MotionProc}
 };
 
 
@@ -1298,6 +1303,9 @@ static void Btn2DownProc (
                         String *params,
                         Cardinal *num_params)
 {
+#ifdef DEBUG_WIDGET
+cerr << "Entering Btn2DownProc in widget"<<endl;
+#endif
         ExmSeiswWidget sw = (ExmSeiswWidget)w;
         SeiswPar * spar=static_cast<SeiswPar *>(sw->seisw.seisw_parameters);
         SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
@@ -1319,6 +1327,10 @@ static void Btn2DownProc (
                                   spar->x2begb,spar->x2endb,sca->p2beg,sca->p2end);
         spick->trace_number=get_trace_number(w, spick->get_x2()); 
 
+#ifdef DEBUG_WIDGET
+cerr << "Leaving Btn2DownProc"<<endl
+<< "Pick set trace_number="<<spick->trace_number<<endl;
+#endif
 }
 
 static void Btn2UpProc (
@@ -2494,7 +2506,7 @@ Author:  Dave Hale, Colorado School of Mines, 06/02/89
         double s[20],a[20],c[20],work[20],fmax;
 
         /* compute auto-correlation and cross-correlation arrays */
-        fmax = 0.066+0.265*std::log((double)lsinc);
+        fmax = 0.066+0.265*log((double)lsinc);
         fmax = (fmax<1.0)?fmax:1.0;
         for (j=0; j<lsinc; j++) {
                 a[j] = dsinc_peng(fmax*j);
@@ -2859,8 +2871,8 @@ MODIFIED:  Paul Michaels, Boise State University, 29 December 2000
                 ymin,ymax,ybase,ythis,ynext,xthis,xnext,xstep;
         int igrey,ideci;
         float yscale,yoffset,zthis,znext;
-        register int bit;
-        register unsigned char *byte;
+        int bit;
+        unsigned char *byte;
 
         /* if solid/grey coloring desired      */
         if (wiggle>=2)
@@ -3118,8 +3130,8 @@ MODIFIED: Paul Michaels, Boise State University, 29 December 2000
                 ymin,ymax,ybase;
         int igrey,ideci;
         float yscale,yoffset,zthis;
-        register int bit;
-        register unsigned char *byte;
+        int bit;
+        unsigned char *byte;
 
         static float *xout  , *yout;
         static int    nx = 0;

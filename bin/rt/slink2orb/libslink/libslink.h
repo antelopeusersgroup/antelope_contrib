@@ -1,27 +1,26 @@
 /***************************************************************************
  * libslink.h:
- * 
+ *
  * Interface declarations for the SeedLink library (libslink).
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
- * as published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 3 of the
+ * License, or (at your option) any later version.
  *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License (GNU-LGPL) for more details.  The
- * GNU-LGPL and further information can be found here:
- * http://www.gnu.org/
+ * Lesser General Public License (GNU-LGPL) for more details.
  *
- * Written by Chad Trabant
- *   ORFEUS/EC-Project MEREDIAN
- *   IRIS Data Management Center
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software.
+ * If not, see <https://www.gnu.org/licenses/>.
  *
- * modified: 2012.152
+ * Copyright (C) 2016 Chad Trabant, IRIS Data Management Center
+ *
+ * modified: 2016.288
  ***************************************************************************/
-
 
 #ifndef LIBSLINK_H
 #define LIBSLINK_H 1
@@ -32,8 +31,8 @@ extern "C" {
 
 #include "slplatform.h"
 
-#define LIBSLINK_VERSION "2.4b"
-#define LIBSLINK_RELEASE "2013.305"
+#define LIBSLINK_VERSION "2.6"
+#define LIBSLINK_RELEASE "2016.290"
 
 #define SLRECSIZE           512      /* Default Mini-SEED record size */
 #define MAX_HEADER_SIZE     128      /* Max record header size */
@@ -224,7 +223,7 @@ typedef struct slcd_s
 
   float       protocol_ver;     /* Version of the SeedLink protocol in use */
   const char *info;             /* INFO level to request */
-  int         link;		/* The network socket descriptor */
+  SOCKET      link;		/* The network socket descriptor */
   SLstat     *stat;             /* Persistent state information */
   SLlog      *log;              /* Logging parameters */
 } SLCD;
@@ -255,10 +254,10 @@ extern int   sl_parse_streamlist (SLCD *slconn, const char *streamlist,
 extern int    sl_configlink (SLCD * slconn);
 extern int    sl_send_info (SLCD * slconn, const char * info_level,
 			    int verbose);
-extern int    sl_connect (SLCD * slconn, int sayhello);
+extern SOCKET sl_connect (SLCD * slconn, int sayhello);
 extern int    sl_disconnect (SLCD * slconn);
 extern int    sl_ping (SLCD * slconn, char *serverid, char *site);
-extern int    sl_checksock (int sock, int tosec, int tousec);
+extern int    sl_checksock (SOCKET sock, int tosec, int tousec);
 extern int    sl_senddata (SLCD * slconn, void *buffer, size_t buflen,
 			   const char *ident, void *resp, int resplen);
 extern int    sl_recvdata (SLCD * slconn, void *buffer, size_t maxbytes,
@@ -304,7 +303,7 @@ extern int   sl_savestate (SLCD *slconn, const char *statefile);
 
 typedef struct SLMSrecord_s {
   const char            *msrecord;    /* Pointer to original record */
-  struct sl_fsdh_s       fsdh;        /* Fixed Section of Data Header */ 
+  struct sl_fsdh_s       fsdh;        /* Fixed Section of Data Header */
   struct sl_blkt_100_s  *Blkt100;     /* Blockette 100, if present */
   struct sl_blkt_1000_s *Blkt1000;    /* Blockette 1000, if present */
   struct sl_blkt_1001_s *Blkt1001;    /* Blockette 1001, if present */
@@ -321,6 +320,7 @@ extern SLMSrecord* sl_msr_parse (SLlog * log, const char * msrecord, SLMSrecord 
 extern SLMSrecord* sl_msr_parse_size (SLlog * log, const char * msrecord, SLMSrecord ** msr,
 				      int8_t blktflag, int8_t unpackflag, int slrecsize);
 extern int         sl_msr_print (SLlog * log, SLMSrecord * msr, int details);
+extern char*       sl_msr_srcname (SLMSrecord * msr, char * srcname, int8_t quality);
 extern int         sl_msr_dsamprate (SLMSrecord * msr, double * samprate);
 extern double      sl_msr_dnomsamprate (SLMSrecord * msr);
 extern double      sl_msr_depochstime (SLMSrecord * msr);

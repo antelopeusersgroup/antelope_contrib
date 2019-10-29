@@ -1,3 +1,25 @@
+2016.290: version 2.6
+	- Change host name resolution to use getaddrinfo() on all platforms
+	except Windows.  Support is now nearly ubiquitous.  Still limited to
+	IPv4 addresses.
+	- Add Cygwin target to platforms and cleanup platform support.
+
+2016.288:
+	- Replace data sample unpacking routines from qlib2 with new routines
+	developed from scratch in libmseed.  All code is now LGPL licensed.
+	- Add sl_msr_srcname() function to generate "Net_Sta_Loc_Chan[_Qual]".
+	- Switch to simpler SOCKET type defined as needed by platform includes
+	or as int when not set.
+	- Clarify licensing to be LGPLv3.
+	- Cleanup Makefile (remove unused targets) and README, add INSTALL.
+
+2016.287: version 2.5
+	- Support data sample unpacking with byte order specified in Blockette 1000,
+	specifically allows little endian decoding.  Thanks to patch by Yen Soon.
+	- Port socket usage to portable SLP_SOCKET type, either int or SOCKET.
+	- Change default use of lastpkttime to true (1) in sl_newslcd().
+	- Quiet some MSVC warnings with a define suggested by Kevin Frechette.
+
 2013.305: version 2.4b
 	- sl_read_streamlist(): Allow '!' character in selectors field, this
 	is allowed to negate selector(s).  This routine is only used when

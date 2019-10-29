@@ -1,0 +1,21 @@
+BIN=SU3CEnsembleConverter
+PF=SU3CEnsembleConverter.pf
+#
+# CWPROOT is used by Seismic Unix.  This program uses library
+# routines in seismic unix.   Currently this is not integrated into
+# with the localmake.config setup in antelope.  glp (9/22/2017)
+#
+cxxflags=-g -I$(CWPROOT)/include
+ldflags=-L$(ANTELOPE)/contrib/static -L$(CWPROOT)/lib
+ldlibs=-lseispp -lgclgrid -lgeocoords $(DBLIBS) $(TRLIBS) -lperf -lsu -lcwp -lpar -lboost_serialization -lcwp -lgclgrid
+SUBDIR=/contrib
+
+include $(ANTELOPEMAKE) 
+include $(ANTELOPEMAKELOCAL)
+CXXFLAGS += -I$(BOOSTINCLUDE)
+LDFLAGS += -L$(BOOSTLIB)
+
+OBJS=SU3CEnsembleConverter.o ReadSegyTrace.o
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

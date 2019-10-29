@@ -8,7 +8,7 @@ CLEAN= $(LICENSES)
 cflags=
 fflags=
 ldflags=
-ldlibs= -lbrttpkt $(ORBLIBS)
+ldlibs= -lbrttpkt $(ORBLIBS) -lpthread
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)

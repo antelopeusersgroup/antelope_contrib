@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>agc</title>
+  </head>
+  <body>
+    <h1>AGC</h1>
+    <h3>Usage:</h3>
+    <p>agc windlength [-g gainfunction] &lt; infile &gt; outfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    <p>This is a three-component agc operator.&nbsp;&nbsp; The algorithm
+      was stolen from seismic unix, but extended to three-component
+      data.&nbsp;&nbsp; That means the moving rms window used to define
+      the gain function is computed from the vector magnitude of each
+      sample rather than the scale rms used for stock seismic reflection
+      data handled by seismic unix.&nbsp; <br>
+    </p>
+    <h3>Options:<br>
+    </h3>
+    <p>The required argument windlength defines the agc window length in
+      seconds.&nbsp;&nbsp; No sanity checks are made on this parameter.
+      <br>
+    </p>
+    <p>If the&nbsp; -g option is specified the computed gain functions
+      for each seismogram are saved as serialized TimeSeriesEnsemble
+      objects to the file defined by the argument that follows the -g
+      flag (gainfunction in the usage line). <br>
+    </p>
+  </body>
+</html>

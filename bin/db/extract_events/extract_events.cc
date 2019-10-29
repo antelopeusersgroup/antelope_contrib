@@ -96,6 +96,9 @@ template <class Tvec>
 		double atime;  //  arrival time.  
 		if(d->live)
 		{
+                    string statmp=d->get_string("sta");
+                    /* This may not be necessary but near zero cost*/
+                    d->put("arrival.sta",statmp);
 		// First see if there is an arrival for this
 		// station.  If not, skip it. 
 			list<long> records
@@ -148,7 +151,7 @@ ThreeComponentEnsemble *BuildRegularGather(ThreeComponentEnsemble& raw,
 	//fractional sample rate tolerance
 	const double samprate_tolerance(0.01);  
 	int nmembers=raw.member.size();
-	auto_ptr<TimeSeries> x1,x2,x3;
+	shared_ptr<TimeSeries> x1,x2,x3;
 	ThreeComponentEnsemble *result;
 	result = new ThreeComponentEnsemble(raw);
 	// An inefficiency here, but this allow us to discard dead
@@ -189,10 +192,10 @@ ThreeComponentEnsemble *BuildRegularGather(ThreeComponentEnsemble& raw,
 			d.rotate_to_standard();	
 			// partial clone used to hold result
 			ThreeComponentSeismogram d3c(d);  
-			x1=auto_ptr<TimeSeries>(ExtractComponent(d,0));
-			x2=auto_ptr<TimeSeries>(ExtractComponent(d,1));
-			x3=auto_ptr<TimeSeries>(ExtractComponent(d,2));
-			// resample if necessary.  Using auto_ptr to avoid temporary pointer
+			x1=shared_ptr<TimeSeries>(ExtractComponent(d,0));
+			x2=shared_ptr<TimeSeries>(ExtractComponent(d,1));
+			x3=shared_ptr<TimeSeries>(ExtractComponent(d,2));
+			// resample if necessary.  Using shared_ptr to avoid temporary pointer
 			// and as good practice to avoid memory leaks
 			if( ( (abs( (d.dt)-target_dt)/target_dt) > samprate_tolerance) 
 				&& do_resampling)
@@ -201,7 +204,7 @@ ThreeComponentEnsemble *BuildRegularGather(ThreeComponentEnsemble& raw,
 				*x2=ResampleTimeSeries(*x2,rdef,target_dt,false);
 				*x3=ResampleTimeSeries(*x3,rdef,target_dt,false);
 			}
-			// This procedure returns an auto_ptr.  An inconsistency in
+			// This procedure returns an shared_ptr.  An inconsistency in
 			// SEISPP due to evolutionary development
 			x1=ArrivalTimeReference(*x1,arrival_keyword,processing_window);
 			x2=ArrivalTimeReference(*x2,arrival_keyword,processing_window);
@@ -246,7 +249,11 @@ void PostEvid(ThreeComponentEnsemble *d,int evid)
 {
 	vector<ThreeComponentSeismogram>::iterator dptr;
 	for(dptr=d->member.begin();dptr!=d->member.end();++dptr)
+        {
 		dptr->put("evid",evid);
+                /* This may not be necessary, but safer for near zero cost*/
+                dptr->put("event.evid",evid);
+        }
 }
 /*! \brief Builds a standard catalog view from a CSS3.0 database.
 
@@ -267,13 +274,13 @@ builds a handle to this database view.
 DatascopeHandle StandardCatalogView(DatascopeHandle& dbh)
 {
 	DatascopeHandle result(dbh);
-	dbh.lookup("event");
-	dbh.natural_join("origin");
+	result.lookup("event");
+	result.natural_join("origin");
 	string ss_to_prefor("orid==prefor");
-	dbh.subset(ss_to_prefor);
-	dbh.natural_join("assoc");
-	dbh.natural_join("arrival");
-	return(dbh);
+	result.subset(ss_to_prefor);
+	result.natural_join("assoc");
+	result.natural_join("arrival");
+	return(result);
 }
 void ApplyFST(ThreeComponentEnsemble& e,Hypocenter& hypo,
 	double vp0,double vs0)
@@ -718,26 +725,25 @@ int main(int argc, char **argv)
 		AttributeMap am(schemain);  
 		AttributeMap amo(schemaout);  
 		DatascopeHandle dbcatalog(dbh);
+                DatascopeHandle dborigin(dbh);
 		if(eventdb!=dbin)
                 {
-			dbcatalog=DatascopeHandle(eventdb,false);
+			dborigin=DatascopeHandle(eventdb,false);
                         if(SEISPP_verbose) cout << "Using event database="
                             <<eventdb<<endl;
                 }
-		if(use_arrival)
-			dbcatalog=StandardCatalogView(dbcatalog);
-		else if(require_event)
+		if(require_event)
 		{
-			dbcatalog.lookup(string("event"));
-			dbcatalog.natural_join(string("origin"));
-			dbcatalog.subset(string("orid==prefor"));
+			dborigin.lookup(string("event"));
+			dborigin.natural_join(string("origin"));
+			dborigin.subset(string("orid==prefor"));
 		}
 		else
-			dbcatalog.lookup(string("origin"));
+			dborigin.lookup(string("origin"));
 		if(event_subset_expression!="NONE")
 		{
-			dbcatalog.subset(event_subset_expression);
-			if(dbcatalog.number_tuples()<=0)
+			dborigin.subset(event_subset_expression);
+			if(dborigin.number_tuples()<=0)
 			{
 				cerr << "Event subset expression= "
 					<< event_subset_expression
@@ -745,6 +751,12 @@ int main(int argc, char **argv)
 					<< endl;
 			}
 		}
+		if(use_arrival)
+                {
+		    dbcatalog=StandardCatalogView(dborigin);
+                }
+                else
+                    dbcatalog=dborigin;
 		/* These are actually only used in 3c mode, but we still have
 		to initialize them here */
 		DatascopeHandle dbhelink(dbho);
@@ -753,8 +765,13 @@ int main(int argc, char **argv)
                 /* if using arrivals we need a station match.  
                    The match handle is largely ignored for event processing
                    without arrivals but we push evid as the key anyway*/
+		//if(use_arrival)matchkeys.push_back(string("arrival.sta"));
 		if(use_arrival)matchkeys.push_back(string("sta"));
-		if(require_event) matchkeys.push_back(string("evid"));
+		if(require_event) 
+                    //matchkeys.push_back(string("event.evid"));
+                    matchkeys.push_back(string("evid"));
+                else
+                    matchkeys.push_back(string("orid"));
 		DatascopeMatchHandle dbhm(dbcatalog,string(""),matchkeys,am);
 		if(save_as_3c)
 		{
@@ -775,19 +792,22 @@ int main(int argc, char **argv)
 		int record;
 		string dir,dfile;
 		char *year, *jday;
-		dbcatalog.rewind();
-		for(record=0;record<dbcatalog.number_tuples();++record,++dbcatalog)
+		dborigin.rewind();
+		for(record=0;record<dborigin.number_tuples();++record,++dborigin)
 		{
-			lat=dbcatalog.get_double("lat");
-			lon=dbcatalog.get_double("lon");
+			lat=dborigin.get_double("lat");
+			lon=dborigin.get_double("lon");
 			lat=rad(lat);
 			lon=rad(lon);
-			depth=dbcatalog.get_double("depth");
-			otime=dbcatalog.get_double("time");
+			depth=dborigin.get_double("depth");
+			otime=dborigin.get_double("time");
 			if(require_event)
-				evid=dbcatalog.get_int("evid");
+				evid=dborigin.get_int("evid");
 			else
-				evid=dbcatalog.get_int("orid");
+				evid=dborigin.get_int("orid");
+                        if(SEISPP_verbose)
+                          cerr << "Working on data for evid="<<evid<<endl
+                            << "origin time="<<strtime(otime)<<endl;
 			Hypocenter hypo(lat,lon,depth,otime,
 				method,model);
 

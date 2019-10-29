@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>template</title>
+  </head>
+  <body>
+    <h1>dbloadhdr</h1>
+    <h3>Usage:</h3>
+    <p>dbloadhdr db [-t type -o logfile -pf pffile --help -text] &lt;
+      infile &gt; outfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    This is intended as a general purpose program to load attributes
+    from an Antelope database into the standard data objects defined in
+    the seispp library.&nbsp;&nbsp; It depends on two key concepts in
+    the Antelope API:<br>
+    <ol>
+      <li>The program uses <i>dbprocess</i> (see man(3) dbprocess) to
+        build a working virtual table commonly called a "view".&nbsp; <br>
+      </li>
+      <li>The object stored in the input file must already have a set of
+        attributes that can provide a unique match to the working
+        view.&nbsp; Ideally the match should be one-to-one, but if the
+        key provides an unambiguous match to a set of many rows that are
+        all identical for the required attributes, the algorithm should
+        still work.&nbsp; In the later case, however, it can throw a lot
+        of error messages.&nbsp; <br>
+      </li>
+    </ol>
+    The program was designed to blunder on and do something even if it
+    is wrong.&nbsp;&nbsp; To provide quality control the program has the
+    option to generate a log file of what attributes were set for each
+    object in the file.&nbsp;&nbsp; Although the log file is optional it
+    is almost always wise to create it unless you are repeating a
+    process that was known previously to work.&nbsp; The program outputs
+    special "bad" outputs in the log file for values not set because of
+    a failure to match the keys provided.&nbsp;&nbsp; The bad values
+    are:<br>
+    <table width="40%" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td valign="top"><i>Data type</i><br>
+          </td>
+          <td valign="top"><i>Bad value</i><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">integer<br>
+          </td>
+          <td valign="top">-999999999<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">real<br>
+          </td>
+          <td valign="top">-999999999E-99<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">string<br>
+          </td>
+          <td valign="top">UNDEFINED<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">boolean<br>
+          </td>
+          <td valign="top">--not supported--<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    Note booleans are currently not supported and are best implemented
+    as integers for now.&nbsp;&nbsp; If you try to define an attribute
+    as boolean the program will abort on initialization.&nbsp; The
+    reason is that Datascope does no support boolean type directly, but
+    boolean like things are stored in the db as single characters (e.g.
+    timedef in assoc).&nbsp; <br>
+    <br>
+    This is a core program to make this package useful for data
+    processing.&nbsp; The default parameter file is well suited to
+    segmented waveforms produced by the extract_events program I wrote a
+    number of years ago.&nbsp;&nbsp; It creates 3c bundled data that are
+    readily converted to the streams format used by this package of
+    programs.&nbsp; <br>
+    <br>
+    <h3>Options:</h3>
+    <p><i>-t type<br>
+      </i>Use this switch to change the expected type of file to
+      process.&nbsp; The default is ThreeComponentEnsemble
+      objects.&nbsp; Accepted options at this time are:&nbsp;
+      TimeSeries, TimeSeriesEnsemble, and
+      ThreeComponentSeismogram.&nbsp; <br>
+    </p>
+    <p><i>-o logfile<br>
+      </i>Enables the log file feature and writes the results to
+      logfile.&nbsp; The output is a white space separated table of
+      attributes with an order defined in the parameter file (see
+      below).&nbsp; <br>
+    </p>
+    <p><i>-pf pffile<br>
+      </i>Read pf data from pffile instead of the default of
+      dbloadhdr.pf.&nbsp; <br>
+    </p>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <i>-v<br>
+    </i>Be more verbose.&nbsp; Note all log information goes to stderr
+    so it is best to use this option only for debugging problems.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.&nbsp; <br>
+    <br>
+    <h3>Parameter file:</h3>
+    <p>The behavior of this program is controlled largely by the
+      parameter file.&nbsp; The pf is structured as three &amp;Tbl
+      lists:<br>
+    </p>
+    <ol>
+      <li><i>dbprocess_commands </i>is a series of instructions to the
+        Datascope dbprocess procedure (see man
+        dbprocess(3)).&nbsp;&nbsp; This set of commands builds the
+        working view used for matching to load the right attributes with
+        each seismogram.&nbsp; The "verbose" command is highly
+        recommended unless you are 100% confident in the integrity of
+        your database and what you are doing.</li>
+      <li><i>match_keys</i> defines the namespace used to build
+        one-to-one matches of attributes currently loaded with each
+        seismogram to a row of the view created by
+        dbprocess.&nbsp;&nbsp;&nbsp;</li>
+      <li><i>attributes_to_load </i>defines the list of database
+        attributes to be extracted and loaded with the data.</li>
+    </ol>
+    The <i>match_keys</i> and <i>attributes_to_load </i>Tbl lists
+    share a common format.&nbsp; The concept is to define the type of
+    the attribute and provide an optional mapping of datascope attribute
+    names (e.g. site.lat) to a more rational internal name key (e.g.
+    source_latitude).&nbsp; Each line of both Tbls have are expected to
+    have this structure:<i><br>
+    </i>
+    <blockquote><i>internal_name dbattribute_name db_table type<br>
+      </i></blockquote>
+    Where<br>
+    <blockquote><i>internal_name</i> is the key used to in the
+      "Metadata" (header) for this attribute.<br>
+      <i>dbattribute_name </i>is the css3.0 attribute name that is to
+      be loaded keyed with <i>internal_name. <br>
+      </i><i>db_table</i> is the specific table for which the attribute
+      is to be loaded.&nbsp; The calls to dbgetv are always expanded to
+      <i>dbattribute_name.db_table </i>to avoid ambiguity for
+      attributes like time that occur in multiple tables.&nbsp; <br>
+      <i>type</i> defines the type of the attribute in the database,
+      which is always retained in the output file.&nbsp; Accepted names
+      are defined in the following table:<br>
+      <table width="100%" cellspacing="2" cellpadding="2" border="1">
+        <tbody>
+          <tr>
+            <td valign="top"><i>Data type</i><br>
+            </td>
+            <td valign="top"><i>Accepted values to define</i><br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">integer<br>
+            </td>
+            <td valign="top">int, INT, integer<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">real<br>
+            </td>
+            <td valign="top">real, REAL, double<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">string<br>
+            </td>
+            <td valign="top">string, STRING<br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+    </blockquote>
+    <br>
+    <br>
+  </body>
+</html>

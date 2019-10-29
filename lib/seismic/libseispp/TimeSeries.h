@@ -48,8 +48,7 @@ public:
 // already known.
 **/
 	TimeSeries(int nsin);
-/*!
-// Partial constructor for a TimeSeries object driven by a Metadata object.
+/*! \brief Partial constructor for a TimeSeries object driven by a Metadata object.
 // This is essentially uses the Metadata object as a way to make a parameterized
 // constructor with a potentially large and variable number of parameters. 
 // The following parameters must exist in the Metadata object or the constructor
@@ -71,6 +70,16 @@ public:
 //                     attributes derived from the Metadata object (see above).
 **/
 	TimeSeries(const Metadata& md,bool load_data);
+/*! \brief Partial constructor with explicit core time series data.
+
+  This is partial constructor that is useful to deal with type conversion
+from higher level time series type object.   Metadata is copied verbatim 
+from parent, which would typically be sent with a dynamic_cast from a 
+child of Metadata.   The BasicTimeSeries component would normally be
+from the same parent, although that isn't required.   The contents of the 
+BasicTimeSeries are used to initialize the data vector to ns zeros.  
+*/
+        TimeSeries(const BasicTimeSeries& bd,const Metadata& md);
 #ifndef NO_ANTELOPE
 
 /*!

@@ -29,7 +29,7 @@ enum MDtype {MDreal, /*!< Attribute is a real (floating point) number */
 #endif
 #include "SeisppError.h"
 
-namespace SEISPP 
+namespace SEISPP
 {
 using namespace std;
 using namespace SEISPP;
@@ -37,7 +37,7 @@ using namespace SEISPP;
 //
 //This object is used for selective copy
 //
-/*! 
+/*!
 \brief Used in Metadata to defined type of Metadata associated with
 a given tag.
 **/
@@ -47,7 +47,7 @@ typedef struct Metadata_typedef {
 } Metadata_typedef;
 
 /*!
-// Some components of the Metadata object are driven by 
+// Some components of the Metadata object are driven by
 // this STL list.
 **/
 typedef list<Metadata_typedef> MetadataList;
@@ -60,7 +60,7 @@ typedef list<Metadata_typedef> MetadataList;
 // This is the base class that is bare bones
 //
 
-/*! \brief Base class error object for Metadata.  
+/*! \brief Base class error object for Metadata.
 **/
 class MetadataError : public SeisppError
 {
@@ -112,32 +112,32 @@ public:
 
 /*! \brief Object to hold auxiliary parameters referenced by a keyword.
 *
-*  Ancillary data (Metadata) are a common need in data processing.  
-*  Most data objects have a set of parameters required to define to all such 
+*  Ancillary data (Metadata) are a common need in data processing.
+*  Most data objects have a set of parameters required to define to all such
 *  objects (e.g. sample rate in a time series).  With real data of
 *  any kind there are always ancillary parameters that are required
 *  for one algorithm but are not needed by another.  A common solution
 *  to this is traditional data processing is a header like that used
 *  in seismic data processing.  A Metadata object can be conveniently
-*  thought of as a generalized header.  Data can be put into the 
+*  thought of as a generalized header.  Data can be put into the
 *  Metadata object with constructors and additional data added or replaced by
-*  various put methods.  Data is extract with get methods.  
-* 
-*  This object supports only the standard data types:  integers, 
+*  various put methods.  Data is extract with get methods.
+*
+*  This object supports only the standard data types:  integers,
 *  real numbers, booleans, and strings.  The expectation is if one
 *  requires a more complicated objects to be associated with another
-*  through this mechanism one can readily extend this object by 
+*  through this mechanism one can readily extend this object by
 *  standard inheritance mechanisms.  It is important to note that
-*  data are stored internally in STL map objects indexed by 
+*  data are stored internally in STL map objects indexed by
 *  a keyword.  Reals, ints, and booleans are stored in the machines
 *  native form in these maps.  For each of them if a parameter is
 *  requested by one of the typed get methods it looks first in the
-*  typed container.  If it is not there, it then tries the string 
+*  typed container.  If it is not there, it then tries the string
 *  container and throws and exception if that parameter is not their
-*  either.  
-* 
-*  For Antelope users think of a Metadata object as an alternative 
-*  interface to a parameter file.  It is, in fact, more or less a 
+*  either.
+*
+*  For Antelope users think of a Metadata object as an alternative
+*  interface to a parameter file.  It is, in fact, more or less a
 *  C++ interface to a parameter file.
 **/
 
@@ -166,17 +166,17 @@ public:
 /*!
 // Construct from a tagged component of a larger Antelope parameter file.
 //
-// It is often useful to associate common sets of names to 
+// It is often useful to associate common sets of names to
 // the same basic object type but with different values.  This
 // can be accomplished with this constructor with a nested parameter
 // file.  That is, an an antelope parameter file blocks with duplicate
 // parameter names can be contained in blocks of the generic form
 // tag1 &Arr{ ... parameters...}  tag2 &Arr{ ... parameters ...} etc.
-// This allows the contents of only the section between the curly 
-// brackets associated with the unique tag (tag1 or tag2 in the 
+// This allows the contents of only the section between the curly
+// brackets associated with the unique tag (tag1 or tag2 in the
 // above example) to be parsed and stored in the Metadata object.
-//\exception MetadataParseError if parsing the parameter file for the 
-//   requested tag fails.  
+//\exception MetadataParseError if parsing the parameter file for the
+//   requested tag fails.
 //\param pfin pointer to Antelope Pf to be used to construct this object.
 //\param tag keyword of nested &Arr in parameter file to use to parse
 //   this Metadata.
@@ -200,12 +200,12 @@ intended use has been superceded by child of this class
 called PfStyleMetadata.
 
 \exception MeetadataParseError if pfcompile failes.
-\param s is one of two things.  If format is string it assumed to 
+\param s is one of two things.  If format is string it assumed to
   be a string that is to be parsed as an antelope pf file image.  Otherwise
   it is assumed to be a file name with the structure defined by format.
 \param format is a keyword that defines the format of the file to be read.
   Currently the only recognized name is "pf" for an antelope pf, but this
-  is intended to be a general interface.  The default is "string", which 
+  is intended to be a general interface.  The default is "string", which
   is different.  In that case s is assume to be an image of an
   antelope pf file.
 
@@ -213,10 +213,10 @@ called PfStyleMetadata.
 	Metadata(string s,const char *format="string") throw(MetadataParseError);
 #endif
 /*!
-//  Restricted build from a string driven by a typed list.  
-//  
-// Similar to the string constructor, but only Metadata 
-// defined by a list (mdl) are copied.  
+//  Restricted build from a string driven by a typed list.
+//
+// Similar to the string constructor, but only Metadata
+// defined by a list (mdl) are copied.
 //
 //\param s string to be compiled into Metadata
 //\param mdl MetadataList object containing list of items to be copied
@@ -228,22 +228,22 @@ called PfStyleMetadata.
 /*!
 //  Construct from a database.
 //
-// Constructs a Metadata object from one tuple of an database 
+// Constructs a Metadata object from one tuple of an database
 // view.  Attributes to extract are driven by the MetadataList
 // with a name mapping through the AttributeMap object.
-// 
-//\exception MetadataError if there are problems extracting any 
+//
+//\exception MetadataError if there are problems extracting any
 //  requested attribute.
 //
 //\param dbh generalized database handle assumed to point at a single
 //  tuple that is to be parsed.  In the current implementation this is
-//  always an Antelope database handle, but the intent here is to 
+//  always an Antelope database handle, but the intent here is to
 //  abstract the interface.
-//\param mdl is the list of attributes to be extracted.  This list is 
-//  pairs of internal names and data types.  
-//\param am is an AttributeMap object that defines the name mapping 
+//\param mdl is the list of attributes to be extracted.  This list is
+//  pairs of internal names and data types.
+//\param am is an AttributeMap object that defines the name mapping
 //  between database attribute names and internal metadata names
-//  to be used inside a given program. For example, wfdisc.time 
+//  to be used inside a given program. For example, wfdisc.time
 //  can be mapped to "t0" or "time" by this mechanism.
 **/
 	Metadata(DatabaseHandle& dbh,
@@ -258,37 +258,54 @@ called PfStyleMetadata.
 	Metadata(const Metadata& mdold);
 
 /*! Standard assignment operator.
-  \param mdold - parent object to copy 
+  \param mdold - parent object to copy
   */
 	Metadata& operator=(const Metadata& mdold);
+/*! Append additional metadata with replacement.
+
+A plus operator implies addition, but this overloading does something very 
+different.  A simple way to describe the effect is that on completion the 
+left hand side Metadata object will contain a duplicate of the right hand 
+side plus any attributes in the rhs that were not present on the lhs.   
+Another way to clarify this is to describe the algorithm.   We take each 
+attribute on the right and search for it in the lhs.  If it is not in the lhs
+it will be added.  If it is there already, the rhs value will replace the old
+value on the lhs.   This is most useful when an algorithm creates a new set of
+attributes that we want to use in downstream processing but retain all the 
+other attributes.   
+
+\param rhs is the new metadata to be insert/replace on the lhs.
+*/
+        Metadata& operator+=(const Metadata& rhs);
+        const Metadata operator+(const Metadata& other) const;
 	// In this implementation destructor can be defaulted.
 	// There is thus no need to declare it.
         // ~Metadata();
 
 /*!
-// Get a real number from the Metadata object.  
-// 
+// Get a real number from the Metadata object.
+//
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        double get_double(string key) throw(MetadataGetError);
+        double get_double(string key) const throw(MetadataGetError);
 /*!
-// Get an integer from the Metadata object.  
-// 
+// Get an integer from the Metadata object.
+//
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        int get_int(string key)throw(MetadataGetError);
+        int get_int(string key)const throw(MetadataGetError);
 /*!
-// Get a long integer from the Metadata object.  
-// 
+// Get a long integer from the Metadata object.
+//
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        long get_long(string key)throw(MetadataGetError);
+        long get_long(string key)const throw(MetadataGetError);
 /*!
-// Get a string from the Metadata object.  
-// 
+// Get a string from the Metadata object.
+//
 // Note the string in this case can be quite large.  If the string
 // was parsed from an Antelope Pf nested Tbl and Arrs can be extracted
 // this way and parsed with pf routines.
@@ -296,19 +313,57 @@ called PfStyleMetadata.
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        string get_string(string key)throw(MetadataGetError);
+        string get_string(string key)const throw(MetadataGetError);
 /*!
-// Get a  boolean parameter from the Metadata object.  
-// 
+// Get a  boolean parameter from the Metadata object.
+//
 // This method never throws an exception assuming that if the
 // requested parameter is not found it is false.
 //
 //\param key keyword associated with requested metadata member.
 **/
-        bool get_bool(string key);
+        bool get_bool(string key) const throw(MetadataGetError);
+/*! Generic get interface.
+
+  This is a generic interface most useful for template procedures
+  that need to get a Metadata component.   Since this object only
+  can contain simple types the type requested must be simple.
+  Currently supports only int, long, short, double, float, and string.
+  C char* is intentionally not supported.   
+  Calls to anything but the supported types will
+  throw an exception. 
+
+  \param key is the name tag of desired component.
+
+  \exception - will throw a MetadataGetError (child of SeisppError) for
+     type mismatch or in an overflow or underflow condition.
+     */
+  template <typename T> T get(string key) const throw(MetadataGetError);
+      /*! \brief Generic get interface for C char array.
+
+        This is a generic interface most useful for template procedures
+        that need to get a Metadata component.   Since this object only
+        can contain simple types the type requested must be simple.
+        Currently supports only int, long, short, double, float, and string.
+        C char* is intentionally not supported. This is largely a wrapper
+        on the string key version of this same generic function. 
+
+        \param key is the name tag of desired component.
+
+        \exception - will throw a MetadataGetError (child of SeisppError) for
+           type mismatch or in an overflow or underflow condition.
+           */
+      template <typename T> T get(const char *key) const throw(MetadataGetError) 
+      {
+        try{
+          T val;
+          val=get<T>(string(key));
+          return val;
+        }catch(...){throw;};
+      }
 /*!
 // Place a real number into the Metadata object.
-// 
+//
 // Inserts a new, real number parameter into the Metadata object.
 // If the parameter was present before it will be replaced.  If not
 // it will be inserted.  
@@ -317,63 +372,69 @@ called PfStyleMetadata.
 //\param val value to load.
 **/
         void put(string key,double val);
+        void put(const char *key,double val);
 /*!
 // Place a long integer into the Metadata object.
-// 
+//
 // Inserts a new, integer parameter into the Metadata object.
 // If the parameter was present before it will be replaced.  If not
-// it will be inserted.  
+// it will be inserted.
 //
 //\param key keyword to be used to reference this parameter.
 //\param val value to load.
 **/
         void put(string key,long val);
+        void put(const char *key, long val);
 /*!
 // Place an integer into the Metadata object.
-// 
+//
 // Inserts a new, integer parameter into the Metadata object.
 // If the parameter was present before it will be replaced.  If not
-// it will be inserted.  
+// it will be inserted.
 //
 //\param key keyword to be used to reference this parameter.
 //\param val value to load.
 **/
         void put(string key,int val);
+        void put(const char *key,int val);
 /*!
 // Place a boolean parameter into the Metadata object.
-// 
+//
 // Inserts a boolean parameter into the Metadata object.
 // If the parameter was present before it will be replaced.  If not
-// it will be inserted.  
+// it will be inserted.
 //
 //\param key keyword to be used to reference this parameter.
 //\param val value to load.
 **/
         void put(string key,bool val);
+        void put(const char *key,bool val);
 /*!
 // Place a string parameter the Metadata object.
-// 
+//
 // Inserts a new string parameter into the Metadata object.
 // If the parameter was present before it will be replaced.  If not
-// it will be inserted.  
+// it will be inserted.
 //
 //\param key keyword to be used to reference this parameter.
 //\param val value to load.
 **/
-        void put(string key,string val); 
+        void put(string key,string val);
+        void put(const char *key,string val);
 /*!
 // Place a string parameter into the Metadata object.
-// 
+//
 // Inserts a new string parameter into the Metadata object.
 // Differs from similar method with C++ string in that this passes
 // a plan C char *.  The char * is converted to C++ string internally.
 // If the parameter was present before it will be replaced.  If not
-// it will be inserted.  
+// it will be inserted.
 //
 //\param key keyword to be used to reference this parameter.
 //\param val value to load.
 **/
-        void put(string key,char * val); 
+        void put(string key,const char * val);
+        void put(const char *key,const char * val);
 /*! \brief Query to find out if an attribute is set.
 //
 // It is frequently necessary to ask if an attribute has been set.
@@ -383,10 +444,10 @@ called PfStyleMetadata.
 // be certain an attribute is defined should call this method instead
 // of using an error handler.  It is both faster and better form.
 //
-// Note the algorithm used is independent of type simply searching 
+// Note the algorithm used is independent of type simply searching
 // the containers that hold each type stored by this object.
 //
-// \param key attribute to be test.  
+// \param key attribute to be test.
 */
 	bool is_attribute_set(string key);
 /*! \brief Query to find out if an attribute is set.
@@ -400,53 +461,53 @@ called PfStyleMetadata.
 // This overloaded form is a convenience for testing using char constants
 // (the standard result of a string between double quotes.).
 //
-// \param key attribute to be test.  
+// \param key attribute to be test.
 */
 	bool is_attribute_set(char *val);
 /*!
 // Delete a parameter from the Metadata object.
-// 
+//
 //\param key keyword tagging parameter to be removed.
 **/
 	void remove(string key);
 /*!
 // Appends a string to an existing string value with a separator.
-// 
+//
 // It is frequently useful to append a new string to an existing
 // string variable stored in a Metadata object.  This can be used,
-// for example to build up file names.  A real example in this 
+// for example to build up file names.  A real example in this
 // library at the moment is that this is used to accumulate filter
-// parameters when multiple filters are cascaded on data in the 
-// TimeInvariantFilter object.  
-// 
+// parameters when multiple filters are cascaded on data in the
+// TimeInvariantFilter object.
+//
 // This could be done by a get and put, but this automates the process.
 // Note that if the key passed was not present in the Metadata object
-// before this method is called the separator is ignored and only the 
+// before this method is called the separator is ignored and only the
 // third argument becomes the value associated with key.
 //
-//\param key keyword to access string.   
+//\param key keyword to access string.
 //\param separator string used to separate new string from previous
 //   contents.  Note that if the key passed was not present in the Metadata object
 //   before this method is called the separator is ignored and only the
 //   third argument becomes the value associated with key.
-//\param appendage this string is appended to the current contents subject to 
+//\param appendage this string is appended to the current contents subject to
 //   special case noted above for separator parameter.
 **/
 	void append_string(string key, string separator, string appendage);
 /*!
 // Output function to a standard stream.
 //
-// Output format is an Antelope parameter file. 
+// Output format is an Antelope parameter file.
 **/
 	friend ostream& operator<<(ostream&,Metadata&);
 /*!
 // Return a list of keys and associated types.
 **/
-	MetadataList keys(); 
+	MetadataList keys();
 protected:
-	// Typed methods use appropriate map first.  If the 
+	// Typed methods use appropriate map first.  If the
 	// key is not found in the typed version they try to
-	// fetch from mstring and convert 
+	// fetch from mstring and convert
 	map<string,double> mreal;
 	map<string,long> mint;
 	map<string,bool> mbool;
@@ -462,6 +523,13 @@ private:
             ar & mstring;
         };
 };
+/* Anything but specializations of this template (found in Metadata.cc)  will lead
+   to an exception - unsupported type*/
+template <typename T> T Metadata::get(string key) const throw(MetadataGetError) 
+{
+  const string base_error("Metadata generic get template: ");
+  throw MetadataGetError(typeid(T).name(),key,base_error+"Unsupported type");
+}
 
 //
 // Helpers
@@ -474,8 +542,8 @@ private:
 //\param mdlist object containing a typed list of Metadata components
 //  to copy from mdin to mdout.
 **/
-void copy_selected_metadata(Metadata& mdin, Metadata& mdout, 
-	MetadataList& mdlist) throw(MetadataError);
+void copy_selected_metadata(const Metadata& mdin, Metadata& mdout,
+	const MetadataList& mdlist) throw(MetadataError);
 #ifndef NO_ANTELOPE
 /*!
 // Build a MetadataList from a parameter file.
@@ -484,12 +552,12 @@ void copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 //
 //\param pf pointer to Pf to be parsed (normally produced by pfread
 //   of a parameter file.
-//\param tag key of Tbl in Pf holding the list.  
+//\param tag key of Tbl in Pf holding the list.
 **/
 MetadataList pfget_mdlist(Pf *pf,const string tag);
 /*!
 // Convert a Metadata to an Antelope Pf.  This is essentially
-// an inverse to the Pf constructor.  
+// an inverse to the Pf constructor.
 //
 //\param md Metadata to be converted.
 //\return Antelope parameter file Pf pointer.
@@ -502,10 +570,10 @@ Pf *Metadata_to_pf(Metadata& md);
   single value type.   This procedure finds a Tbl with a specified
   tag and extracts the Tbl contents into a string which is returned.
 
-\param pf  is the Antelope Pf pointer 
+\param pf  is the Antelope Pf pointer
 \param tag is the tag for the Tbl to be extracted
 
-\return string of Tbl contents. 
+\return string of Tbl contents.
 */
 string pftbl2string(Pf *pf, const char *tag);
 /*!  \brief Extract an antelope Pf Tbl into a list of strings.
@@ -513,19 +581,40 @@ string pftbl2string(Pf *pf, const char *tag);
   Antelope pf files have the concept of a Tbl grouping of stuff
   that is commonly parsed by programs for data that is not a simple
   single value type.   This procedure finds a Tbl with a specified
-  tag and extracts the Tbl contents into list container.   Each 
+  tag and extracts the Tbl contents into list container.   Each
   string in this list is defined by newlines in the original Tbl of
   the pf file.  Said another way the basic algorithm is a gettbl for
   each line in the Tbl followed by a push_back to the STL list.
 
-\param pf  is the Antelope Pf pointer 
+\param pf  is the Antelope Pf pointer
 \param tag is the tag for the Tbl to be extracted
 
 \return STL list container of std::string objects derived from tbl lines.
 */
 list<string> pftbl2list(Pf *pf, const char *tag);
+/*! \brief Saves a specified list of Metadata components to an antelope db.
+
+  Any object that is a child of Metadata can find this procedure useful.
+  It saves a list of metadata to a specified database table.
+  NOTE VERY IMPORTANT ASSUMPTION:  the Datascope db pointer must have
+  the record field set to the correct insertion point or this procedure
+  will throw an exception and fail.
+
+  \param md - Metadata from which the data are to be extracted
+  \param db - Antelope Dbptr of table to which these are to be saved
+  \param table - name of the table where the data are to be written
+            (Used for consistency check - db must point to this table)
+  \param mdl - list of metadata to write to db
+  \param am - internal to external name mapping object
+
+  \exception - SeisppError object will be throw for a variety of
+     problems.  Most common is if the name is not defined on one
+     side or the other (i.e. ask to save something not stored in
+     metadata or name requested to save is not defined in table. )
+     */
+void save_metadata_for_object(Metadata& md,Dbptr db, string table,
+        MetadataList& mdl, AttributeMap& am);
+
 #endif
-
-
 } // End namespace SEISPP declaration
 #endif

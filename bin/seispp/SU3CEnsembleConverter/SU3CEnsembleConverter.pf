@@ -1,0 +1,12 @@
+correct_for_geometric_spreading true
+spreading_power_factor 2.0
+UTM_zone 13T
+convert_utm_to_dd true
+channel_orientation &Tbl{
+0 0.0 0.0
+1 0.0 90.0
+2 90.0 90.0
+}
+apply_rotation true
+rotation_angle 65.0
+load_coordinates true

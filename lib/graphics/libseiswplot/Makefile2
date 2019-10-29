@@ -2,13 +2,19 @@ LIB=libseisppplot.a
 PF=SeismicPlot.pf
 # DLIB=$(LIB:.a=$(DSUFFIX))
 # BUNDLE=$(LIB:.a=.bundle) 
-INCLUDE=BasicSeisPlot.h SeismicPlot.h TraceEditPlot.h TimeWindowPicker.h
+INCLUDE=BasicSeisPlot.h \
+        SeismicPlot.h \
+        TraceEditPlot.h \
+        TimeWindowPicker.h \
+        GenericTimePicker.h \
+        ThreeCEnsembleTimePicker.h \
+	ThreeCPlot.h
 SUBDIR=/contrib
 
 #Needed eventually
 #MAN3=
 
-ccflags=$(XMOTIFINCLUDE)
+cxxflags=-g $(XMOTIFINCLUDE)
 
 ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
@@ -17,7 +23,11 @@ include $(ANTELOPEMAKELOCAL)
 
 CXXFLAGS += -I$(XMOTIFINCLUDE) -I$(BOOSTINCLUDE)
 
-OBJS=   SeismicPlot.o TimeWindowPicker.o
+OBJS=   SeismicPlot.o \
+    ThreeCEnsembleTimePicker.o \
+    TimeWindowPicker.o \
+    GenericTimePicker.o \
+    ThreeCPlot.o
 $(LIB) : $(OBJS)
 	$(RM) $@
 	$(CXXAR) $(CXXARFLAGS) $@ $(OBJS)  

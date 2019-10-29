@@ -389,7 +389,7 @@ ResamplingDefinitions::ResamplingDefinitions(Pf *pf)
 	typedef map<Interval,ResampleOperator> ROmap;
 
 	
-	if(pfget(pf,"resample_definitions",(void **)&pfrda) != PFARR)
+	if(pfget(pf,const_cast<char*>("resample_definitions"),(void **)&pfrda) != PFARR)
 		throw SeisppError("Reample_Definition constructor:  pfget failure looking for Reample_Definition keyword");
 	
 	t = pfkeys(pfrda);
@@ -438,7 +438,7 @@ TimeSeries ResampleTimeSeries(TimeSeries& ts, ResamplingDefinitions& rd,double d
 			+string("don't know how to resample data with sample interval ")
 			+string(dt_str));
 	}
-	auto_ptr<DecimatedVector> dv( this_ro->second.apply(ts.ns,
+	shared_ptr<DecimatedVector> dv( this_ro->second.apply(ts.ns,
 		&(ts.s[0]),ts.dt,dtout,trim) );
 	// Subtle difference here with gaps.  This won't work
 	//TimeSeries tsout=ts;

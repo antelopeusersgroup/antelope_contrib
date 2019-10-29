@@ -3,6 +3,8 @@ LICENSES=license_libseispp.txt
 #DLIB=$(LIB:.a=$(DSUFFIX)) 
 # BUNDLE=$(LIB:.a=.bundle)
 DIRS=htdocs
+cxxflags=-g
+#cxxflags=-O2
 ldlibs=-lgclgrid
 INCLUDE=ArrivalUpdater.h \
   AttributeCrossReference.h \
@@ -13,11 +15,13 @@ INCLUDE=ArrivalUpdater.h \
   FixedFormatTrace.h \
   GenericFileHandle.h \
   HeaderMap.h \
+  HFArray.h \
   Hypocenter.h\
   Metadata.h\
   MultichannelCorrelator.h\
   PfStyleMetadata.h \
   ProcessingQueue.h \
+  RegionalCoordinates.h \
   SacFileHandle.h \
   SeisppError.h\
   SeisppKeywords.h \
@@ -32,6 +36,7 @@ INCLUDE=ArrivalUpdater.h \
   TimeWindow.h\
   VectorStatistics.h\
   VelocityModel_1d.h\
+  WindowMetric.h \
   XcorAnalysisSetting.h \
   XcorProcessingEngine.h \
   databasehandle.h\
@@ -64,7 +69,7 @@ MAN3=Basic_Time_Series.3 \
   slowness_object.3 \
   seispp_error.3 \
   Top_Mute.3
-DBG=-g
+#DBG=-g
 
 CLEAN = $(LICENSES)
 
@@ -84,11 +89,13 @@ OBJS=ArrivalUpdater.o \
   FixedFormatTrace.o  \
   GenericFileHandle.o \
   HeaderMap.o \
+  HFArray.o \
   Hypocenter.o \
   Metadata.o \
   MultichannelCorrelator.o \
   PfStyleMetadata.o \
   ProcessingQueue.o \
+  RegionalCoordinates.o \
   SacFileHandle.o \
   SignalToNoise.o \
   SimpleWavelets.o \
@@ -98,6 +105,7 @@ OBJS=ArrivalUpdater.o \
   TimeSeries.o \
   VelocityModel_1d.o \
   VelocityModel_3d.o \
+  WindowMetric.o \
   XcorAnalysisSetting.o \
   XcorProcessingEngine.o \
   array_get_data_3c.o \

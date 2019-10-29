@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <unistd.h>
 #include <string>
 #include <list>
 #include <iostream>
@@ -9,8 +10,8 @@ namespace SEISPP {
 using namespace std;
 using namespace SEISPP;
 enum PfStyleInputType {PFMDSTRING, PFMDREAL, PFMDINT, PFMDBOOL, PFMDARR, PFMDTBL};
-/* this is functionally similar to antelope yesno function, but 
-   in a more C++ style.  int return code is the same: 
+/* this is functionally similar to antelope yesno function, but
+   in a more C++ style.  int return code is the same:
    0 is false, -1 for boolean true, and +1 for no match.
    One difference from antelope is that 0 or 1 for the true or
    false value will yield a -1.  That approach conflicts with
@@ -27,14 +28,14 @@ int yesno(string s)
             || (s=="f") ) return(0);
     return(1);
 }
-/* This internal helper tests an std::string to make a guess of 
+/* This internal helper tests an std::string to make a guess of
    the type.   The algorithm is:
     if( contains &Arr ) return Arr
     else if (contains &Tbl) return Tbl
-    else 
+    else
       enter algorithm to parse simple tokens
 
-    The else clause defines a real as containing a ".", 
+    The else clause defines a real as containing a ".",
     a "-", and/or a e/E.
     */
 PfStyleInputType arg_type(string token)
@@ -55,14 +56,14 @@ PfStyleInputType arg_type(string token)
     bool found_an_e(false);
     for(i=0;i<slen;++i)
     {
-        /* This will fail if one had an odd key like 0_0 but 
+        /* This will fail if one had an odd key like 0_0 but
            would at a lot of complexity to allow that.
            It also should skip negative sign. */
         if(isalpha(token[i]))
         {
             if((token[i]=='e') || (token[i]=='E'))
             {
-                if(found_an_e) 
+                if(found_an_e)
                     return(PFMDSTRING);
                 else
                     found_an_e=true;
@@ -91,7 +92,7 @@ bool is_comment_line(string testline)
     start=testline.find_first_not_of(white,0);
     if(start!=0) testline.erase(0,start);
     char c=testline[0];
-    if(c=='#') 
+    if(c=='#')
         return true;
     else
         return false;
@@ -100,7 +101,7 @@ PfStyleMetadata pfread(string fname)
 {
     ifstream inp;
     inp.open(fname.c_str(),ios::in);
-    if(inp.fail()) throw SeisppError("SEISPP::pfread: open failed for file"
+    if(inp.fail()) throw SeisppError("SEISPP::pfread: open failed for file "
             +fname);
 
     /* Eat up the whole file - this assumes not a large
@@ -124,7 +125,7 @@ PfStyleMetadata pfread(string fname)
 }
 
 /* This is a helper for the primary constructor below.   It searches
-   for closing curly bracket.  It returns a count of the number of 
+   for closing curly bracket.  It returns a count of the number of
    lines that define this block starting from the iterator first.
    */
 int find_end_block(list<string>& alllines,list<string>::iterator first)
@@ -144,8 +145,26 @@ int find_end_block(list<string>& alllines,list<string>::iterator first)
         return(count);
     }catch(...){throw;};
 }
+pair<string,string> split_line(string s)
+{
+  const string white(" \t");
+  const string terminators("\n#");
+  size_t is,ie;
+  is=s.find_first_not_of(white,0);
+  ie=s.find_first_of(white,is);
+  string key;
+  key.assign(s,is,ie-is);
+  is=s.find_first_not_of(white,ie);
+  ie=s.find_first_of(terminators,is);
+  string val;
+  val.assign(s,is,ie-is);
+  pair<string,string> result;
+  result.first=key;
+  result.second=val;
+  return result;
+}
 /* Note this constructor is recursive.  That is when there is
-   a nest &Arr{ in a pf this constructor will call itself for 
+   a nest &Arr{ in a pf this constructor will call itself for
    each Arr block */
 PfStyleMetadata::PfStyleMetadata(list<string> alllines) : Metadata()
 {
@@ -160,9 +179,18 @@ PfStyleMetadata::PfStyleMetadata(list<string> alllines) : Metadata()
         int lines_this_block;
         /* This is redundant, but cost is low for long term stability*/
         if(is_comment_line(*lptr)) continue;
+        /* Older version used a stringstream here but it would not
+           parse string attributes with embedded white space.  This 
+           revised algorithm will do that.  returned pair has the 
+           key as first and the string with the key trimmed in second. */
+        /*
         istringstream is(*lptr);
         is>>key;
         is>>token2;
+        */
+        pair<string,string> sl=split_line(*lptr);
+        key=sl.first;
+        token2=sl.second;
         PfStyleInputType type_of_this_line=arg_type(token2);
         switch(type_of_this_line)
         {
@@ -179,20 +207,20 @@ PfStyleMetadata::PfStyleMetadata(list<string> alllines) : Metadata()
                 this->put(key,atof(token2.c_str()));
                 break;
             case PFMDINT:
-                /* save ints as both string and int some string 
+                /* save ints as both string and int some string
                    values could be all digits. */
                 this->put(key,token2);
                 this->put(key,atoi(token2.c_str()));
                 break;
             case PFMDBOOL:
                 ival=yesno(token2);
-                /* perhaps should allow for +1 return by yesno, but 
+                /* perhaps should allow for +1 return by yesno, but
                    this should not happen with the current function.
                    Further, we are saving the same item to the
                    string map too. */
                 if(ival<0)
                     this->put(key,true);
-                else 
+                else
                     this->put(key,false);
                 this->put(key,token2);
                 break;
@@ -223,8 +251,125 @@ PfStyleMetadata::PfStyleMetadata(list<string> alllines) : Metadata()
     }
     }catch(...){throw;};
 }
-    map<string,list<string> > pftbls;
-    map<string, PfStyleMetadata> pfbranches;
+/* This is the private helper function for the PFPATH constructor */
+int PfStyleMetadata::merge_pfmf(PfStyleMetadata& m)
+{
+  try{
+    /* We simply use th operator [] because of the otherwise annoying
+    propety of the stl map that this will silently overwrite the previous
+    value if it exists and add it if it does not */
+    map<string,double>::iterator mrit;
+    map<string,long>::iterator  miit;
+    map<string,bool>::iterator mbit;
+    map<string,string>::iterator msit;
+    int count(0);
+    /* these loops are monotonously similar but I don't see a way to do this
+    this with a template without a major design change.  The first four
+    work because the map containers are protected attribures */
+    for(mrit=m.mreal.begin();mrit!=m.mreal.end();++mrit)
+    {
+      this->mreal[mrit->first]=mrit->second;
+      ++count;
+    }
+    for(miit=m.mint.begin();miit!=m.mint.end();++miit)
+    {
+      this->mint[miit->first]=miit->second;
+      ++count;
+    }
+    for(mbit=m.mbool.begin();mbit!=m.mbool.end();++mbit)
+    {
+      this->mbool[mbit->first]=mbit->second;
+      ++count;
+    }
+    for(msit=m.mstring.begin();msit!=m.mstring.end();++msit)
+    {
+      this->mstring[msit->first]=msit->second;
+      ++count;
+    }
+    /* for thse we need to use the PfStyleMetadata methods to fetch keys
+    and copy components one by one */
+    list<string> akey,tkey;
+    akey=m.arr_keys();
+    tkey=m.tbl_keys();
+    list<string>::iterator kptr;
+    for(kptr=tkey.begin();kptr!=tkey.end();++kptr)
+    {
+      list<string> t=m.get_tbl(*kptr);
+      this->pftbls[*kptr]=t;
+      ++count;
+    }
+    for(kptr=akey.begin();kptr!=akey.end();++kptr)
+    {
+      PfStyleMetadata pfv;
+      pfv=m.get_branch(*kptr);
+      this->pfbranches[*kptr]=pfv;
+      ++count;
+    }
+    return count;
+  }catch(...){throw;};
+}
+/* small helper - splits s into tokens and assures each result is
+is a pf file with the required .pf ending */
+list<string> split_pfpath(string pfbase, char *s)
+{
+  /* make sure pfbase ends in .pf.  If it doesn't, add it */
+  string pftest(".pf");
+  std::size_t found;
+  found=pfbase.find(pftest);
+  if(found==std::string::npos) pfbase+=pftest;
+  list<string> pftmp;
+  char *p;
+  p=strtok(s,":");
+  while(p!=NULL)
+  {
+    pftmp.push_back(string(p));
+    p=strtok(NULL,":");
+  }
+  list<string> pfret;
+  list<string>::iterator pfptr;
+  for(pfptr=pftmp.begin();pfptr!=pftmp.end();++pfptr)
+  {
+    string fname;
+    fname=(*pfptr)+"/"+pfbase;
+    pfret.push_back(fname);
+  }
+  return pfret;
+}
+PfStyleMetadata::PfStyleMetadata(string pfbase)
+{
+  try{
+    const string envname("PFPATH");
+    char *s=getenv(envname.c_str());
+    list<string> pffiles;
+    if(s==NULL)
+    {
+      pffiles.push_back(".");
+    }
+    else
+    {
+      pffiles=split_pfpath(pfbase,s);
+    }
+    list<string>::iterator pfptr;
+    int nread;
+    for(nread=0,pfptr=pffiles.begin();pfptr!=pffiles.end();++pfptr)
+    {
+      // Skip pf files that do not exist
+      if(access(pfptr->c_str(),R_OK)) continue;
+      if(nread==0)
+      {
+        *this=pfread(*pfptr);
+      }
+      else
+      {
+        PfStyleMetadata pfnext=pfread(*pfptr);
+        this->merge_pfmf(pfnext);
+      }
+      ++nread;
+    }
+    if(nread==0) throw SeisppError(string("PFPATH=")+s
+        +" had no pf files matching" + pfbase);
+  }catch(...){throw;};
+}
 
 PfStyleMetadata::PfStyleMetadata(const PfStyleMetadata& parent)
     : Metadata(parent)
@@ -269,7 +414,7 @@ PfStyleMetadata& PfStyleMetadata::operator=(const PfStyleMetadata& parent)
     if(this!=&parent)
     {
         /* These are protected members of Metadata.  There is a trick to
-           dynamic_cast operator= in some situations but could not 
+           dynamic_cast operator= in some situations but could not
            reproduce it and make it work here. Probably because
            Metadata has no virtual members */
         mreal=parent.mreal;
@@ -281,7 +426,7 @@ PfStyleMetadata& PfStyleMetadata::operator=(const PfStyleMetadata& parent)
     }
     return(*this);
 }
-/* Output from this should be pf compatible. The use of 
+/* Output from this should be pf compatible. The use of
  the print function makes this polymorphic for operator <<*/
 void PfStyleMetadata::pfwrite(ostream& ofs)
 {
@@ -311,4 +456,4 @@ void PfStyleMetadata::pfwrite(ostream& ofs)
     }
 }
 
-} // End SEISPP Namespace declaration 
+} // End SEISPP Namespace declaration

@@ -28,7 +28,6 @@
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #ifndef NO_ANTELOPE
-#include "ComplexTimeSeries.h"
 #include "StationChannelMap.h"
 #endif
 #include "Hypocenter.h"
@@ -366,10 +365,6 @@ double PeakAmplitude(TimeSeries *p);
 /*! Measures peak amplitude (L2 norm of 3 components) for a ThreeComponent
 Seismogram. */
 double PeakAmplitude(ThreeComponentSeismogram *p);
-/*! Measures peak amplitude for a ComplexTimeSeries. */
-#ifndef NO_ANTELOPE
-double PeakAmplitude(ComplexTimeSeries *p);
-#endif
 
 /*! Generic algorithm to measure and set peak amplitude as a scaling attribute.
 
@@ -472,10 +467,6 @@ template <class Tensemble,class Tmember>
 void ScaleMember(TimeSeries *p,double scale);
 /*! Scales a ThreeComponentSeismogram object by scale. */
 void ScaleMember(ThreeComponentSeismogram *p,double scale);
-#ifndef NO_ANTELOPE
-/*! Scales a ComplexTimeSeries object by scale. */
-void ScaleMember(ComplexTimeSeries *p,double scale);
-#endif
 
 /* Companion to above */
 
@@ -794,11 +785,11 @@ to yield a scalar (TimeSeriesEnsemble) result.  This procedure does this.
 \param tcs input ensemble
 \param component is data component to extract.  Must be 0,1, or 2 or the procedure
 	will throw an exception.
-\return auto_ptr to ensemble containing requested component
+\return shared_ptr to ensemble containing requested component
 
 \exception SeisppError is throw if result is empty of component number is illegal.
 */
-auto_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int component);
+shared_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int component);
 #ifndef NO_ANTELOPE
 /*! \brief Bundle scalar data to produce an ensemble of three-component data.
 

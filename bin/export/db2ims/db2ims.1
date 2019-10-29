@@ -3,8 +3,8 @@
 db2ims \- publish an IMS 2.0 short DMC modified bulletin from a css3.0 database
 .SH SYNOPSIS
 .nf
-\fBdb2ims \fP[-a] [-v] [-V] [-y] [-p \fIpf\fP] [-s \fIstart_origin.time\fP] [-e
-                \fIend_origin.time\fP] [-l \fIlogfile\fP] [-d \fIdb\fP]
+\fBdb2ims \fP[-a] [-v] [-V] [-y] [-p \fIpf\fP] [-P \fIproject\fP] -s \fIstart_origin.time\fP] 
+		[-e \fIend_origin.time\fP] [-l \fIlogfile\fP] [-d \fIdb\fP]
                 \fIdatabase\fP
 .fi
 .SH DESCRIPTION
@@ -25,6 +25,16 @@ and event checks cleanly.
 .SH OPTIONS
 .IP "-p pf"
 Name of parameter file (default is \fBdb2ims\fP.\fIpf\fP)
+.IP "-P project"
+Project name that will be placed in the output file name.  
+To be used if one \fIagency\fP is producing more than one 
+set of phase picks.  For instance, the ANF has produced phase picks from
+separate databases for both the \fIusarray\fP and \fIceusn\fP projects:  
+without a \fIproject\fP appended to the filename, there is no distinguishing
+which input \fIdatabase\fP was used.  This has led to confusion for agencies 
+like the ISC which collects the produced files from the DMC. 
+Note that the combined default file name plus this project must be less
+than 32 characters in order to fit within the max characters for \fIdfile\fP.
 .IP -v
 Verbose log messages
 .IP -V
@@ -41,9 +51,9 @@ are skipped and not reported in the output file despite having one solution/orig
 that is marked as reviewed.  ALL solutions must be marked as reviewed for the
 event to be included in the output file.
 .IP -a
-Sent all associated origins, not just the prefor and the mag_origin_auth in the pf file.
-Beware that this may cause significant heartburn if you are sending data to the IRIS DMC 
-as they have limited capacity to receive all the origin data.
+Send all associated origins, not just the \fIprefor\fP and the \fImag_origin_auth\fP 
+in the pf file.  Beware that this may cause significant heartburn if you are sending 
+data to the IRIS DMC as they have limited capacity to receive all the origin data.
 .IP "-s start_time"
 Select origins after this time.
 .IP "-e end_time"
@@ -54,6 +64,9 @@ Exclude origins with lddate before this time.
 Output file.  The default format is:  $year_$month_$day_$agency_IMS.  
 The year, month, and day are determined by the first event in the 
 subsetted \fIdatabase\fP.  The agency is determined from the parameter file.
+If a \fIproject\fP is requested with the \fI-P\fP option, the file name will
+look like $year_$month_$day_$agency_$project_IMS and will need to be less than
+32 characters.
 .IP "-d database"
 This is the database which contains the dmcbull table.  The dmcbull table
 tracks the output files created by this program that have been sent to the
@@ -220,7 +233,7 @@ This is used to reject certain authors from the output file.  The subset
 that is performed is "auth!~/$author_reject/".  Use this to remove automatic solutions,
 or others that you do not want reported.
 .IP \fImatch_origerr_auth\fP
-Use this to select which authors from which to attempt to find origerr information.  If this
+Use this to select from which authors to attempt to find origerr information.  If this
 is not used, the Smaj, Smin, Az, etc. may not be filled in properly (or with proper
 blanks).
 .IP \fIims_dir\fP

@@ -19,43 +19,42 @@ class Synthetics():
         GF.plot(0,150)
 
     """
-    def __init__( self, dbfolder, model, tmp_folder='/tmp/dbmoment' ):
+    def __init__( self, dbfolder, tmp_folder='/tmp/dbmoment' ):
 
-        self.logging = getLogger('Synthetics')
-
-        self.model = model
-
+        self.dbfolder = dbfolder
         self.tmp_folder = tmp_folder
 
+    def set_model( self, model  ):
         # Read configuration from parameter file self.model
+        self.model = model
         self._read_model()
 
-        self.database = "%s/synthetics-%s" % (dbfolder,self.model_short_name)
+        self.database = "%s/synthetics-%s" % (self.dbfolder,self.model_short_name)
         self.dbdir = os.path.dirname( self.database )
-        self.logging.debug( 'Init Synthetics Class: model=%s db=%s' % \
+        elog.debug( 'Init Synthetics Class: model=%s db=%s' % \
                 (self.model['name'],self.database) )
 
         # Return a relative  path to save the files
         self.archive = self.dbdir + '/files/'
-        self.logging.debug( 'Archive for GF: %s' % self.archive )
+        elog.debug( 'Archive for GF: %s' % self.archive )
 
         # Recursive directory creation function
         try:
             if not os.path.exists(self.archive): os.makedirs(self.archive)
         except Exception,e:
-            self.logging.error('Cannot create directory (%s) %s => %s' % (self.archive,Exception,e))
+            elog.error('Cannot create directory (%s) %s => %s' % (self.archive,Exception,e))
 
         if not os.path.exists(self.archive):
-            self.logging.error( 'Missing GF archive: %s' % self.archive )
+            elog.error( 'Missing GF archive: %s' % self.archive )
 
         # Get db ready
         try:
             self.db = datascope.dbopen( self.database, "r+" )
             self.db = self.db.lookup(table='wfdisc')
         except Exception,e:
-            self.logging.error('Problems opening wfdisc: %s %s' % (self.database,e) )
+            elog.error('Problems opening wfdisc: %s %s' % (self.database,e) )
 
-    def get_synth(self, depth, distance, delay=0, tw=-1, response='', filter=None, debug_plot=False):
+    def get_synth(self, depth, distance, tw=-1, response='', filters=None, debug_plot=False):
         """
         Main function to retrieve ( and produce if missing ) the requested elements.
 
@@ -66,30 +65,32 @@ class Synthetics():
 
         self.depth = int(depth)
         self.distance = "{:03d}".format(distance)
-        self.delay = delay
         self.tw = tw
-        self.filter = filter
+        self.filters = filters
         self.response = response
 
         self.debug_plot = debug_plot
 
-        if not distance: self.logging.error('Problems with distance. %s' % distance )
+        if not distance: elog.error('Problems with distance. %s' % distance )
 
-        self.logging.debug("get_synth(%s,%s,tw=%s,filter=%s)" % \
-                (self.depth,self.distance,self.tw,filter))
+        elog.debug("get_synth(%s,%s,tw=%s)" % \
+                (self.depth,self.distance,self.tw))
 
         self._read_model()
 
         if distance < self.d_min:
-            self.logging.error("distance to event [%s] under model's limit [%s]" % \
+            elog.warning("distance to event [%s] under model's limit [%s]" % \
                     (self.distance,self.d_min))
+            return None
+
         if distance > self.d_max:
-            self.logging.error("distance to event [%s] over model's limit [%s]" % \
+            elog.warning("distance to event [%s] over model's limit [%s]" % \
                     (self.distance,self.d_max))
+            return None
 
         # LAZY EVALUATION HERE....
 
-        self.logging.debug("Try to get from database.")
+        elog.debug("Try to get from database.")
         # get from database
         synthetics = self._get_from_db()
 
@@ -99,22 +100,26 @@ class Synthetics():
 
             with datascope.freeing(self.db.process( steps )) as dbview:
                 if dbview.record_count:
-                    #self.logging.debug( 'Clean %s records after subset.' % dbview.record_count )
+                    #elog.debug( 'Clean %s records after subset.' % dbview.record_count )
                     #dbview.record = 0
                     #for trace in dbview.iter_record():
-                    #    self.logging.debug( 'trace.delete()')
+                    #    elog.debug( 'trace.delete()')
                     #    try:
                     #        os.remove( trace.extfile()[1] )
                     #    except Exception,e:
-                    #        self.logging.error('Cannot remove %s [%s]' % \
+                    #        elog.error('Cannot remove %s [%s]' % \
                     #                (trace.extfile()[1], e) )
                     #    trace.delete()
-                    self.logging.warning('Trying to access synthetics not found on [%s].' % self.database )
-                    self.logging.warning('Maybe some parameters in MODEL [%s] are new.' % self.model_short_name )
-                    self.logging.error('Remove/Clean [%s] archive and restart process.' % \
-                            self.database )
+                    elog.warning('********************' )
+                    elog.warning('Synthetics for this depth already in [%s]' % self.database )
+                    elog.warning('Missing the traces for depth:[%s] dist:[%s]' % (self.depth,self.distance) )
+                    elog.warning('Maybe some parameters in MODEL [%s] are new.' % self.model_short_name )
+                    elog.warning('Clean [%s] archive and restart process may help.' % self.database )
+                    elog.warning('********************' )
+                    return False
 
-            self.logging.debug("Not in db. Generate new.")
+            elog.debug('Missing synthetics for depth:[%s] dist:[%s]' % (self.depth,self.distance) )
+            elog.debug("Generate new.")
             self._generate()
 
             # Now try to get from database again
@@ -127,7 +132,7 @@ class Synthetics():
         Configure model based on parameter file and run shell command.
         """
 
-        self.logging.notify("generate synthetics for depth:%s" % self.depth )
+        elog.notify("generate synthetics for depth:%s" % self.depth )
 
         try:
             os.remove('%s/TEMP_MODEL') % self.tmp_folder
@@ -137,7 +142,7 @@ class Synthetics():
         except:
             pass
 
-        self.logging.debug("FKRPROG.PY: generate()  -  Fix model")
+        elog.debug("FKRPROG.PY: generate()  -  Fix model")
 
         d = 0.0
         padding = 2.5
@@ -148,10 +153,10 @@ class Synthetics():
 
             d += float(self.D[y])
 
-            self.logging.debug('Test if depth: %f is above model layer: %f' % (self.depth, d))
+            elog.debug('Test if depth: %f is above model layer: %f' % (self.depth, d))
             if d > self.depth:
                 # Add new layer
-                self.logging.debug('insert at: %s' % y)
+                elog.debug('insert at: %s' % y)
                 self.D.insert( y, missing )
                 self.A.insert( y, self.A[y] )
                 self.B.insert( y, self.B[y] )
@@ -192,35 +197,35 @@ class Synthetics():
             model += "\n"
 
         model = self._file_format(self.MMAX,model,self.LMAX)
-        self.logging.debug( "MODEL:" )
-        self.logging.debug( model )
+        elog.debug( "MODEL:" )
+        elog.debug( model )
 
         # Open temp file to put model.
         try:
-            self.logging.debug( "Write model to %s/TEMP_MODEL" % self.tmp_folder ) 
+            elog.debug( "Write model to %s/TEMP_MODEL" % self.tmp_folder ) 
             f = open('%s/TEMP_MODEL' % self.tmp_folder, 'w')
             f.write(model)
             f.close()
         except Exception,e:
-            self.logging.error('Cannot open temp file TEMP_MODEL %s %s'% (Exception,e))
+            elog.error('Cannot open temp file TEMP_MODEL %s %s'% (Exception,e))
 
 
-        self.logging.debug("generate()  -  Running: fortran_fkrprog < %s/TEMP_MODEL" % self.tmp_folder)
+        elog.debug("generate()  -  Running: fortran_fkrprog < %s/TEMP_MODEL" % self.tmp_folder)
         cmd = 'fortran_fkrprog < TEMP_MODEL'
         run(fix_exec(cmd),self.tmp_folder)
 
         if not os.path.isfile('%s/GREEN.1' % self.tmp_folder):
-            self.logging.error('Problem during "fortran_fkrprog < %s/TEMP_MODEL" command' % self.tmp_folder)
+            elog.error('Problem during "fortran_fkrprog < %s/TEMP_MODEL" command' % self.tmp_folder)
 
         script = 'run_fkrsort'
-        script = self._new_script( script, self.tmp_folder, self._fkrsort_script(self.DT) )
+        script = self._new_script( script, self.tmp_folder, self._new_fkrsort_script(self.DT) )
 
         cmd = './run_fkrsort temp_data %s %s %s' % (self.distances[0], self.depth,len(self.distances))
         run(fix_exec(cmd),self.tmp_folder)
 
         for dist in self.distances:
             newfile = 'temp_data%sd%s.raw_synthetics' % (dist,self.depth)
-            self.logging.debug( 'READ file for SYNTH: %s' % newfile )
+            elog.debug( 'READ file for SYNTH: %s' % newfile )
             record = readHelm( "%s/%s" % ( self.tmp_folder,newfile ) )
 
             self._save_to_db(record,dist,self.depth)
@@ -237,7 +242,7 @@ class Synthetics():
         except:
             pass
 
-        self.logging.debug('new_script(%s)' % filename)
+        elog.debug('new_script(%s)' % filename)
         outfile = open(filename, 'w')
 
         global executables
@@ -247,7 +252,7 @@ class Synthetics():
                     line = re.sub(r"^%s " % src, "%s " % target, line)
                 outfile.write(line+"\n")
         else:
-            self.logging.debug('content = %s' % content)
+            elog.debug('content = %s' % content)
             outfile.write(content)
 
         outfile.close()
@@ -278,93 +283,131 @@ class Synthetics():
         to a different component of the fundamental Green's Functions and will include objects for metadata.
         """
 
-        results = False
+        results = {}
 
-        self.logging.debug("get_from_db()")
+        elog.debug("get_from_db()")
 
         steps = ['dbsubset sta =~ /%s/ && chan =~ /%s_.*/' % (self.depth,self.distance) ]
 
-        self.logging.debug( steps )
+        elog.debug( steps )
 
         with datascope.freeing(self.db.process( steps )) as dbview:
             # Get list of elements and get values for time, endtime, nsamp, samprate and LOC_CODE.
-            self.logging.debug( 'Found %s records after subset.' % dbview.record_count )
+            elog.debug( 'Found %s records after subset.' % dbview.record_count )
             if not dbview.record_count: return False
+
+            if dbview.record_count < 10:
+                elog.warning( 'OLD FORMAT FOR SYNTHETICS. NEED 10 ELEMENTS FOR *NEW* ISO_INV.' )
+                elog.error( 'Remove old synthetics database and restart process.' )
 
             dbview.record = 0
 
             samprate = dbview.getv('samprate')[0]
             time = dbview.getv('time')[0]
             #endtime = dbview.getv('endtime')[0]
-            endtime = time + ( self.tw * 3 ) + self.delay
+            endtime = time + ( self.tw * 2 )
 
-            self.logging.debug('trloadchan(%s,%s)'% (time,endtime))
-            tr = dbview.trload_cssgrp(time,endtime)
-            tr.trapply_calib()
+            try:
+                elog.debug('trloadchan(%s,%s)'% (time,endtime))
+                tr = dbview.trload_cssgrp(time,endtime)
+                tr.trsplice()
+            except Exception, e:
+                elog.error('Could not read synthetics for %s:%s [%s]' % (self.depth,self.distance, e))
+                return False
 
-            if self.debug_plot:
-                fig = plot_tr_object( tr, 'raw', style='r')
 
-            tr = apply_response( tr, self.response, samprate)
+            # Need to track original
+            original = {}
+            for t in tr.iter_record():
+                original[ t.getv('chan')[0] ] = t.trdata()
 
-            if self.debug_plot:
-                plot_tr_object( tr, 'add-response', style='b', fig=fig)
+            #
+            # Loop over every possible filter
+            #
+            for f in self.filters:
 
-            if self.filter:
-                self.logging.debug('Filter synth with [%s]' % self.filter)
-                try:
-                    tr.trfilter( self.filter )
-                except Exception,e:
-                    self.logging.error('Problems with the filter %s => %s' % (self.filter,e))
-                if self.debug_plot:
-                    plot_tr_object( tr, 'filtered', style='y', fig=fig)
-
-            #tr = decimate_trace( tr, 1 )
-
-            #if self.debug_plot:
-            #    plot_tr_object( tr, 'decimate', style='g', jump=samprate, fig=fig)
-
-            results = Records(1)
-
-            this = 1
-            for record in tr.iter_record():
-                (depth,chan,nsamp,time,endtime) = \
-                        record.getv('sta','chan','nsamp','time','endtime')
-
-                self.logging.debug('getv()=> (%s,%s,%s,%s,%s)' % \
-                        (depth,chan,nsamp,time,endtime))
-
-                # Extract the element name from the channel text (distance)
-                try:
-                    m = re.match(".*_(...)",chan)
-                    element = m.group(1)
-                except Exception,e:
-                    self.logging.error('Problems in regex [.*_(...)] on [%s] %s: %s' % (chan,Exception,e))
-
-                if not element:
-                    self.logging.error('Cannot find component name in wfdisc entry: %s_%s' % (self.depth,self.distance))
-
-                data = record.trdata()[int(self.delay*samprate):int(self.tw*samprate)]
-                newdata = []
-                for x in range(0,len(data),int(samprate)):
-                    newdata.append( data[x] )
-                data = newdata
-
-                if not data:
-                    self.logging.error('Cannot find data for component [%s] in %s_%s' % (m.group(1),depth,dsitance))
-
-                # Placing inside Records object
-                results.trace( element, data)
-                #results.set_samplerate(newsamprate)
+                # Return this version to the original data
+                for t in tr.iter_record():
+                    t.trputdata( original[ t.getv('chan')[0] ] )
 
                 if self.debug_plot:
-                    add_trace_to_plot( results.get( element ), '.k', 'final-%s' % record.getv('chan')[0],
-                            tr.record_count, this, delay=self.delay, jump=samprate )
-                    this += 1
+                    fig = plot_tr_object( tr, 'raw', style='r')
 
-            if self.debug_plot: pyplot.show()
+                #tr = apply_response( tr, self.response, samprate)
+                apply_response( tr, self.response, samprate)
+
+                if self.debug_plot:
+                    plot_tr_object( tr, 'add-response', style='b', fig=fig)
+
+                # Demean the trace
+                tr.trfilter('BW 0 0 2 4')
+                tr.trfilter('DEMEAN')
+
+                tr.trapply_calib()
+
+
+                elog.debug('Filter synth with [%s]' % f)
+                tr.trfilter( f )
+
+                if self.debug_plot:
+                    plot_tr_object( tr, f, style='y', fig=fig)
+
+                results[ f ] = Records(1)
+
+                this = 1
+                for record in tr.iter_record():
+                    (depth,chan,nsamp,time,endtime) = \
+                            record.getv('sta','chan','nsamp','time','endtime')
+
+                    elog.debug('getv()=> (%s,%s,%s,%s,%s)' % \
+                            (depth,chan,nsamp,time,endtime))
+
+                    # Extract the element name from the channel text (distance)
+                    try:
+                        m = re.match(".*_(\w{3})",chan)
+                        element = m.group(1)
+                    except Exception,e:
+                        elog.error('Problems in regex [.*_(\w{3})] on [%s] %s: %s' % (chan,Exception,e))
+
+                    if not element:
+                        elog.error('Cannot find component name in wfdisc entry: %s_%s' % (self.depth,self.distance))
+
+
+                    # SIMPLE decimation method.
+                    # We are way above the min freq for this to be a problem.
+                    data = []
+                    elog.debug( 'Extract data' )
+                    temp_data = record.trdata()
+                    elog.debug( 'Simple decimation' )
+                    for x in range(0,len(temp_data),int(samprate)):
+                        data.append( temp_data[x] )
+                    data = data[:self.tw]
+
+
+                    # Verify if we have NULL values in array
+                    data = [ x for x in data if x < 1.e20 ]
+
+
+                    elog.debug( '%s: %s samples' % (m.group(1),len(data)) )
+
+                    if not data:
+                        elog.error('Cannot find data for component [%s] in %s_%s' % \
+                                (m.group(1),self.depth,self.distance))
+
+                    # Placing inside Records object
+                    results[ f ].trace( element, data)
+                    #results[ f ].set_samplerate(newsamprate)
+
+                    if self.debug_plot:
+                        add_trace_to_plot( results[ f ].get( element ), '.k', 'final-%s' % element,
+                                tr.record_count, this, jump=samprate )
+                        this += 1
+
 
             tr.trfree()
+
+        if self.debug_plot:
+            pyplot.show()
 
 
         return results
@@ -388,30 +431,30 @@ class Synthetics():
 
         # Save all data to file
         dfile = "%s_%s_%s.gf" % (depth,distance,self.model_short_name)
-        self.logging.debug( 'depth %s' % depth )
-        self.logging.debug( 'distance  %s' % distance  )
-        self.logging.debug( 'model %s' % self.model_short_name )
-        self.logging.debug( 'dfile %s' % dfile )
+        elog.debug( 'depth %s' % depth )
+        elog.debug( 'distance  %s' % distance  )
+        elog.debug( 'model %s' % self.model_short_name )
+        elog.debug( 'dfile %s' % dfile )
 
 
 
         try:
             f = open("%s/%s"%(self.archive,dfile), 'w')
         except Exception,e:
-            raise SystemExit('\n\nERROR: Cannot open file %s %s %s\n'% (dfile,Exception,e))
+            elog.error('Cannot open file %s %s %s'% (dfile,Exception,e))
 
         for element,data in record:
 
-            self.logging.debug( 'add element %s to database' % element )
+            elog.debug( 'add element %s to database' % element )
 
             sta = '%s' % depth
             chan_loc = '%s_%s' % (distance,element)
-            self.logging.debug( 'name %s_%s' % (sta,chan_loc) )
+            elog.debug( 'name %s_%s' % (sta,chan_loc) )
 
             samprate = record.samplerate
             nsamp = record.samplecount(element)
-            self.logging.debug( 'samplerate %s' % samprate )
-            self.logging.debug( 'nsamp %s' % nsamp )
+            elog.debug( 'samplerate %s' % samprate )
+            elog.debug( 'nsamp %s' % nsamp )
 
             time = 1.0
             endtime = (nsamp*samprate)+time
@@ -432,12 +475,12 @@ class Synthetics():
 
                 self.db.addv(*keyvals)
             except Exception,e:
-                raise SystemExit('\n\nERROR: Cannot add new line [%s] %s %s\n'% (element,Exception,e))
+                elog.error('Cannot add new line [%s] %s %s'% (element,Exception,e))
 
         try:
             f.close()
         except Exception,e:
-            raise SystemExit('\n\nERROR: Cannot close file %s %s %s\n'% (file,Exception,e))
+            elog.error('Cannot close file %s %s %s'% (file,Exception,e))
 
 
         return record
@@ -448,7 +491,7 @@ class Synthetics():
         """
         Template for the earth model.
         """
-        self.logging.debug("file_format()")
+        elog.debug("file_format()")
 
         text =  ".T.\n     0   64\n"
         text += "GREEN.1\n"
@@ -492,7 +535,7 @@ class Synthetics():
         """
         Read parameters from configuration file.
         """
-        self.logging.debug("read_model(%s)" % self.model)
+        elog.debug("read_model(%s)" % self.model)
 
         self.model_short_name = self.model[ 'name' ]
 
@@ -501,12 +544,12 @@ class Synthetics():
         try:
             self.DT = float(self.model['samplerate'])
         except Exception,e:
-            raise SystemExit('\n\nWrong Format of samplerate PF file[%s]. %s %s\n'% (self.model,Exception,e))
+            elog.error('Wrong Format of samplerate PF file[%s]. %s %s'% (self.model,Exception,e))
 
         try:
             self.DECAY = float(self.model['decay'])
         except Exception,e:
-            raise SystemExit('\n\nWrong Format of decay PF file[%s]. %s %s\n'% (self.model,Exception,e))
+            elog.error('Wrong Format of decay PF file[%s]. %s %s'% (self.model,Exception,e))
 
         try:
             self.N1 = int( self.model['start_frequency'] )
@@ -515,15 +558,15 @@ class Synthetics():
             #self.N  = (self.N2-self.N1+1)*4 # 2 times the total number of freqs
             self.N  = (self.N2)*4 # 4 times the total number of freqs
         except Exception,e:
-            raise SystemExit('\n\nWrong Format of PF file[%s]. %s %s\n'% (self.model,Exception,e))
+            elog.error('Wrong Format of PF file[%s]. %s %s'% (self.model,Exception,e))
 
-        self.logging.debug("read_model()  -  DECAY=%s N1=%s N2=%s N=%s DT=%s " % (self.DECAY,self.N1,self.N2,self.N,self.DT))
+        elog.debug("read_model()  -  DECAY=%s N1=%s N2=%s N=%s DT=%s " % (self.DECAY,self.N1,self.N2,self.N,self.DT))
 
 
         # ISRC, JBDRY
         self.ISRC = [ 1 for x in range(10) ]
         self.JBDRY = 0
-        self.logging.debug("read_model()  -  ISRC=%s JBDRY=%s " % (self.ISRC,self.JBDRY))
+        elog.debug("read_model()  -  ISRC=%s JBDRY=%s " % (self.ISRC,self.JBDRY))
 
 
         # Init vars for model layers
@@ -540,11 +583,11 @@ class Synthetics():
             temp  = self.model['model'].splitlines()
 
             for x in temp:
-                self.logging.debug(x)
+                elog.debug(x)
 
             for x in range(len(temp)):
                 t = temp[x].split()
-                self.logging.debug('temp:[%s]' % t)
+                elog.debug('temp:[%s]' % t)
                 if not t: continue
                 self.D.append( float(t[0]) )
                 self.A.append( float(t[1]) )
@@ -552,10 +595,10 @@ class Synthetics():
                 self.RHO.append( float(t[3]) )
                 self.QA.append( 1/float(t[4]) )
                 self.QB.append( 1/float(t[5]) )
-                self.logging.debug('D:%s A:%s B:%s RHO:%s QA:%s QB:%s' % (self.D[x],self.A[x],self.B[x],self.RHO[x],self.QA[x],self.QB[x]))
+                elog.debug('D:%s A:%s B:%s RHO:%s QA:%s QB:%s' % (self.D[x],self.A[x],self.B[x],self.RHO[x],self.QA[x],self.QB[x]))
 
         except Exception,e:
-            raise SystemExit('\n\nWrong Format of input file[%s]. %s(%s) \n RAW: %s'% (self.model,Exception,e,temp))
+            elog.error('Wrong Format of input file[%s]. %s(%s) RAW: %s'% (self.model,Exception,e,temp))
 
 
 
@@ -564,8 +607,8 @@ class Synthetics():
         self.C2   = float(self.model['c2'])
         self.CMIN = float(self.model['cmin'])
         self.VEL_RED = float(self.model['velocity_reduction'])
-        self.logging.debug("read_model()  -  CMAX=%s C1=%s C2=%s CMIN=%s " % (self.ISRC,self.C1,self.C2,self.CMIN))
-        self.logging.debug("read_model()  -  VELOCITY_REDUCTION=%s " % self.VEL_RED)
+        elog.debug("read_model()  -  CMAX=%s C1=%s C2=%s CMIN=%s " % (self.ISRC,self.C1,self.C2,self.CMIN))
+        elog.debug("read_model()  -  VELOCITY_REDUCTION=%s " % self.VEL_RED)
 
 
 
@@ -586,7 +629,7 @@ class Synthetics():
         the dictionary DATA in self.
 
         """
-        self.logging.debug("plot()")
+        elog.debug("plot()")
 
         total = len(self.DATA)
         half = int(total/2)
@@ -603,20 +646,20 @@ class Synthetics():
                 pyplot.plot(data[start:end])
                 pyplot.legend([trace])
             except Exception,e:
-                sys.exit('ERROR: problem plotting green functions.[%s => %s]' % (Exception,e) )
+                elog.error('Problem plotting green functions.[%s => %s]' % (Exception,e) )
 
         pyplot.suptitle("Green Functions: depth:%s distance:%s" % (self.DEPTH,self.DISTANCE))
         pyplot.show()
 
 
 
-    def _fkrsort_script(self,samplerate):
-        self.logging.debug('New fkrsort script samplerate=[%s]' % samplerate)
+    def _new_fkrsort_script(self,samplerate):
+        elog.debug('New fkrsort script samplerate=[%s]' % samplerate)
 
-        text = "#! /bin/csh\nset dt={:0.4f}\n".format(1/samplerate)
+        text = "#! /bin/csh -f\n"
+        text += "set dt={:0.4f}\n".format(1/samplerate)
+        text += "set npts={0}\n".format( int(512*samplerate) )
         text += '''
-
-set npts=2048
 set name=$1
 set dist=$2
 set depth=$3
@@ -654,9 +697,13 @@ window v0=$vshift e0=0 nt=$npts nx=$nvec nv=1 < vec > tmp6$$
 window v0=$vshift e0=0 nt=$npts nx=$nvec nv=1 < vec > tmp7$$
 @ vshift=$i
 window v0=$vshift e0=0 nt=$npts nx=$nvec nv=1 < vec > tmp8$$
-cat tmp1$$ tmp2$$ tmp3$$ tmp4$$ tmp5$$ tmp6$$ tmp7$$ tmp8$$ > junk
+@ vshift=$i + 8
+window v0=$vshift e0=0 nt=$npts nx=$nvec nv=1 < vec > tmp9$$
+@ vshift=$i + 9
+window v0=$vshift e0=0 nt=$npts nx=$nvec nv=1 < vec > tmp10$$
+cat tmp1$$ tmp2$$ tmp3$$ tmp4$$ tmp5$$ tmp6$$ tmp7$$ tmp8$$ tmp9$$ tmp10$$ > junk
 echo $j
-mkHelm format="(6e12.5)" ntr=8 dt=$dt nt=$npts < junk > {$name}{$dist}d{$depth}.raw_synthetics
+mkHelm format="(6e12.5)" ntr=10 dt=$dt nt=$npts < junk > {$name}{$dist}d{$depth}.raw_synthetics
 rm -f tmp*$$
 @ i += 10
 @ count++

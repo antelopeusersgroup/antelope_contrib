@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>sort1</title>
+  </head>
+  <body>
+    <h1>sort1</h1>
+    <h3>Usage:</h3>
+    <p>sort1 key [-i -text --help] &lt; in &gt; out<br>
+    </p>
+    <h3>Algorithm:</h3>
+    This is a simple in-memory sort program for ThreeComponentSeismogram
+    objects using a single key.&nbsp;&nbsp; The key can be either a
+    string or an integer.&nbsp; Real attributes are not
+    supported.&nbsp;&nbsp; The implementation uses the STL sort
+    algorithm fetching metadata using the specified key.&nbsp;&nbsp; The
+    program sorts the entire file by the specified key.&nbsp;&nbsp; A
+    common use of htis program is to sort a file of seismograms before
+    running the gather program to group the file into ensembles.&nbsp; <br>
+    <h3>Options:</h3>
+    <h3> </h3>
+    <i>-i<br>
+    </i>Treat the key as an integer value.&nbsp; The default assumes the
+    key defines a string attribute defined in every seismogram. <br>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.&nbsp; <br>
+    <br>
+    <h3>Caveats/limitations</h3>
+    <ol>
+      <li> Because this uses an in-memory sort it is potentially
+        problematic on very large files.&nbsp;&nbsp; One could
+        innocently create a monster file to sort in several
+        ways.&nbsp;&nbsp; If in doubt check the file size before running
+        the program.&nbsp;&nbsp; Modify your processing flow to fragment
+        a data set if this becomes an issue.</li>
+      <li>The use of a single key that is either an int or a string is a
+        major limitation.&nbsp; A more general solution is needed, but
+        is only a planned development.&nbsp;&nbsp; With some work it
+        would be possible to solve this limitation and remove the memory
+        limitation.&nbsp; An algorithm I think would work is to build a
+        tuple that contains a set of requested sort keys and store byte
+        offsets for each seismogram in a file.&nbsp;&nbsp; Sorting
+        millions of tuples with that algorithm would be a small memory
+        job by modern standards.&nbsp; It would, however, could not work
+        as a filter for the same reason sort in seismic unix does not
+        allow this.&nbsp;&nbsp; <br>
+      </li>
+    </ol>
+  </body>
+</html>

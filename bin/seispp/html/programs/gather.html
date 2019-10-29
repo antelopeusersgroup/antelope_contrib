@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>gather</title>
+  </head>
+  <body>
+    <h1>gather</h1>
+    <h3>Usage:</h3>
+    <p>gather -i key1 key2 ... -s key1 key2 ... [-text] &lt; in &gt;
+      out<br>
+    </p>
+    <h3>Algorithm:</h3>
+    Assembles a file of serialized ThreeComponentSeismogram objects read
+    from stdin into one or more ThreeComponentEnsemble objects that are
+    serialized and written to stdout.&nbsp; Grouping that defines the
+    ensemble is defined by exact matches of integer and/or string
+    keys.&nbsp;&nbsp; A new ensemble is created and written to output
+    whenever any of the keys change.&nbsp; It is thus assumed the file
+    has been properly sorted before running this program.<br>
+    <br>
+    <i>-s</i> should precede the list of string keys.<br>
+    <i>-i </i>should precede the list of integer keys.<br>
+    Note only integer keys, only string keys, and mixes of integer and
+    string keys are all allowed.<br>
+    <h3>Options:</h3>
+    <p><i>-text<br>
+      </i>Switch to text format input and output.&nbsp; Default is binary
+      format serialized data.&nbsp; The -binary argument must occur as
+      the first argument, the last argument, or between the -i and -s
+      key lists.&nbsp;&nbsp; <br>
+    </p>
+    <h3>Limitations and Caveats</h3>
+    <ol>
+      <li>If the gather keys given are not consistent with the order of
+        the file the results will likely be garbage.&nbsp; <br>
+      </li>
+      <li>If the gather keys never change in a large file a memory fault
+        can be generated as the program has not safety valve for large
+        ensembles created in error.</li>
+      <li>Only exact match grouping is currently supported.&nbsp;&nbsp;
+        Defining real number matches, for example, would require range
+        matching that would require a different algorithm.&nbsp;&nbsp;
+        That type of functionality might be easier to implement with a
+        prefilter that does more elaborate metadata processing and
+        assigns a new integer key that can be handled correctly with
+        this program. <br>
+      </li>
+    </ol>
+  </body>
+</html>

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2" xmlns:q="http://quakeml.org/xmlns/quakeml/1.2" xmlns:catalog="http://anss.org/xmlns/catalog/0.1">
+	<eventParameters publicID="examples/dbfull/reno">
+		<comment>
+			<text>Antelope QuakeML conversion using event2qml software.</text>
+		</comment>
+		<event catalog:eventid="524536" catalog:eventsource="xx" catalog:datasource="xx" publicID="quakeml:xx.local/event/00524536">
+			<origin catalog:dataid="1371463" catalog:datasource="xx" publicID="quakeml:xx.local/origin/1371463">
+				<arrival publicID="quakeml:xx.local/arrival/7002041/1371463">
+					<earthModelID>quakeml:xx.local/vmodel/iasp91</earthModelID>
+					<distance>3.971</distance>
+					<pickID>quakeml:xx.local/pick/7002041</pickID>
+					<azimuth>223.34</azimuth>
+					<phase>P</phase>
+					<creationInfo>
+						<creationTime>2015-12-29T20:37:46.953Z</creationTime>
+					</creationInfo>
+					<timeResidual>-0.512</timeResidual>
+					<timeWeight>1</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/7002040/1371463">
+					<earthModelID>quakeml:xx.local/vmodel/iasp91</earthModelID>
+					<distance>4.69</distance>
+					<pickID>quakeml:xx.local/pick/7002040</pickID>
+					<azimuth>205.27</azimuth>
+					<phase>P</phase>
+					<creationInfo>
+						<creationTime>2015-12-29T20:37:46.953Z</creationTime>
+					</creationInfo>
+					<timeResidual>-0.746</timeResidual>
+					<timeWeight>1</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/7002039/1371463">
+					<earthModelID>quakeml:xx.local/vmodel/iasp91</earthModelID>
+					<distance>4.835</distance>
+					<pickID>quakeml:xx.local/pick/7002039</pickID>
+					<azimuth>208.66</azimuth>
+					<phase>P</phase>
+					<creationInfo>
+						<creationTime>2015-12-29T20:37:46.953Z</creationTime>
+					</creationInfo>
+					<timeResidual>2.04</timeResidual>
+					<timeWeight>1</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/7002038/1371463">
+					<earthModelID>quakeml:xx.local/vmodel/iasp91</earthModelID>
+					<distance>4.952</distance>
+					<pickID>quakeml:xx.local/pick/7002038</pickID>
+					<azimuth>201.93</azimuth>
+					<phase>P</phase>
+					<creationInfo>
+						<creationTime>2015-12-29T20:37:46.953Z</creationTime>
+					</creationInfo>
+					<timeResidual>-0.781</timeResidual>
+					<timeWeight>1</timeWeight>
+				</arrival>
+				<methodID>method/grassoc</methodID>
+				<quality>
+					<usedPhaseCount>4</usedPhaseCount>
+					<associatedPhaseCount>4</associatedPhaseCount>
+					<standardError></standardError>
+				</quality>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<creationInfo>
+					<creationTime>2015-12-29T20:37:47.453Z</creationTime>
+					<agencyID></agencyID>
+					<author>orbassoc</author>
+				</creationInfo>
+				<evaluationMode>manual</evaluationMode>
+				<longitude>
+					<value>-116.2391</value>
+				</longitude>
+				<depth>
+					<value>0.0</value>
+				</depth>
+				<time>
+					<value>2015-12-29T20:35:58.765Z</value>
+				</time>
+				<latitude>
+					<value>42.3335</value>
+				</latitude>
+			</origin>
+			<preferredOriginID>quakeml:xx.local/origin/1371463</preferredOriginID>
+			<creationInfo>
+				<creationTime>2017-02-06T00:51:07.724Z</creationTime>
+				<agencyID></agencyID>
+				<author>orbassoc</author>
+			</creationInfo>
+			<certainty></certainty>
+			<pick publicID="quakeml:xx.local/pick/7002041">
+				<comment>
+					<text>snr: 4.92</text>
+				</comment>
+				<creationInfo>
+					<creationTime>2015-12-29T20:37:46.453Z</creationTime>
+					<agencyID></agencyID>
+					<author>orbassoc</author>
+				</creationInfo>
+				<methodID></methodID>
+				<evaluationStatus>preliminary</evaluationStatus>
+				<time>
+					<uncertainty>0.1</uncertainty>
+					<value>2015-12-29T20:37:00.318Z</value>
+				</time>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="XX" stationCode="REDF"></waveformID>
+				<backazimuth>
+					<value>223.34</value>
+				</backazimuth>
+				<phaseHint>P</phaseHint>
+				<evaluationMode>automatic</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/7002040">
+				<comment>
+					<text>snr: 18.1</text>
+				</comment>
+				<creationInfo>
+					<creationTime>2015-12-29T20:37:46.453Z</creationTime>
+					<agencyID></agencyID>
+					<author>orbassoc</author>
+				</creationInfo>
+				<methodID></methodID>
+				<evaluationStatus>preliminary</evaluationStatus>
+				<time>
+					<uncertainty>0.1</uncertainty>
+					<value>2015-12-29T20:37:10.010Z</value>
+				</time>
+				<waveformID channelCode="EHZ" locationCode="" networkCode="XX" stationCode="MPT"></waveformID>
+				<backazimuth>
+					<value>205.27</value>
+				</backazimuth>
+				<phaseHint>P</phaseHint>
+				<evaluationMode>automatic</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/7002039">
+				<comment>
+					<text>snr: 12.57</text>
+				</comment>
+				<creationInfo>
+					<creationTime>2015-12-29T20:37:46.453Z</creationTime>
+					<agencyID></agencyID>
+					<author>orbassoc</author>
+				</creationInfo>
+				<methodID></methodID>
+				<evaluationStatus>preliminary</evaluationStatus>
+				<time>
+					<uncertainty>0.1</uncertainty>
+					<value>2015-12-29T20:37:14.870Z</value>
+				</time>
+				<waveformID channelCode="EHZ" locationCode="" networkCode="XX" stationCode="LUL"></waveformID>
+				<backazimuth>
+					<value>208.66</value>
+				</backazimuth>
+				<phaseHint>P</phaseHint>
+				<evaluationMode>automatic</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/7002038">
+				<comment>
+					<text>snr: 7.92</text>
+				</comment>
+				<creationInfo>
+					<creationTime>2015-12-29T20:37:46.453Z</creationTime>
+					<agencyID></agencyID>
+					<author>orbassoc</author>
+				</creationInfo>
+				<methodID></methodID>
+				<evaluationStatus>preliminary</evaluationStatus>
+				<time>
+					<uncertainty>0.1</uncertainty>
+					<value>2015-12-29T20:37:13.530Z</value>
+				</time>
+				<waveformID channelCode="EHZ" locationCode="" networkCode="XX" stationCode="BEN"></waveformID>
+				<backazimuth>
+					<value>201.93</value>
+				</backazimuth>
+				<phaseHint>P</phaseHint>
+				<evaluationMode>automatic</evaluationMode>
+			</pick>
+			<type></type>
+		</event>
+		<description>Using ANSS Quakeml Standards https://github.com/usgs/Quakeml/wiki</description>
+		<creationInfo>
+			<creationTime>2017-02-06T00:51:07.647Z</creationTime>
+			<agencyID>xx</agencyID>
+			<author>export_events.css2qml</author>
+		</creationInfo>
+	</eventParameters>
+</q:quakeml>

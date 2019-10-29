@@ -1,0 +1,15 @@
+#!/bin/csh
+if($#argv < 1) then
+  echo "Usage:  new_seispp_module modname [-m]"
+  echo "Use -m to use multiobject template (default is simple demo template)"
+  exit(-1)
+endif
+mkdir $1
+set modname=$1
+cp template/Makefile $modname
+sed s/template/${modname}/ < template/Makefile2 > ${modname}/Makefile2
+if( $#argv == 2 ) then
+  cp template/template_multiobject.cc ${modname}/${modname}.cc
+else
+  cp template/template_instructional.cc ${modname}/${modname}.cc
+endif

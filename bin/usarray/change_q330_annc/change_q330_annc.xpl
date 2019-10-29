@@ -1,5 +1,4 @@
 
-
 use strict ;
 use Datascope ;
 use orb ;
@@ -9,14 +8,14 @@ use utilfunct ;
 
 use File::Path qw( make_path );
 
-our ($opt_a, $opt_d, $opt_f, $opt_i, $opt_l, $opt_p, $opt_P, $opt_n, $opt_s, $opt_t, $opt_T, $opt_x, $opt_V, $opt_v);
+our ($opt_a, $opt_A, $opt_d, $opt_f, $opt_i, $opt_l, $opt_p, $opt_P, $opt_n, $opt_s, $opt_t, $opt_T, $opt_x, $opt_V, $opt_v);
 
 our ($dlsta, $inp, $ssident, $ip, $pfname, $str, $k, $kcnt, $getannc, $change, $named);
 
 our (@db, @db2, @dlevent, @dbstaq330, @dbq, @q330comm);
 
 our ($dbin, $targetname, $dbsub, $targetsub, $dlselect, $dlreject, $nrecs);
-our ($cmdto, $rqcmd, $row, $setannccmd, $umsg, $eeprom, $auth, $newip, $port_base, $whodat);
+our ($cmdto, $rqcmd, $row, $setannccmd, $setauthcmd, $umsg, $eeprom, $auth, $newip, $port_base, $whodat);
 our ($status, $logdir, $logtime);
 
 our (%Pf,%Pfannc) = () ;
@@ -31,7 +30,7 @@ $Pgm = $0 ;
 $Pgm =~ s".*/"" ;
 $cmd = "\n$0 @ARGV" ;
 
-if (! getopts('a:d:fil:np:P:s:t:T:x:vV')  || ((@ARGV == 1 ) && ($opt_i) ) || (@ARGV == 0 && (!$opt_i)) || (@ARGV > 1 ) ) {
+if (! getopts('a:A:d:fil:np:P:s:t:T:x:vV')  || ((@ARGV == 1 ) && ($opt_i) ) || (@ARGV == 0 && (!$opt_i)) || (@ARGV > 1 ) ) {
    print STDERR "getopts or number of arguments failure.\n";
    &usage;
 }
@@ -322,7 +321,7 @@ exit (0);
 
 sub usage {
         print STDERR <<END;
-            \nUSAGE: $0 [-a authcode] [-d dlevent_db] [-l logdir] [-p pf] [-P port] [-v] [-s select] [-x xclude] [-t targetname] [-T timeout] [-n]  {db | -i }
+            \nUSAGE: $0 [-a authcode] [-A new_authcode] [-d dlevent_db] [-l logdir] [-p pf] [-P port] [-v] [-s select] [-x xclude] [-t targetname] [-T timeout] [-n]  {db | -i }
 
 END
         exit(1);
@@ -362,6 +361,7 @@ sub current_annc {
      }
 
   } 
+
 
   &collect_Pfannc('Initial') ;
 
@@ -476,6 +476,20 @@ sub current_annc {
     } else {
 	print "Changes to POC setup needed for: $dlsta \n\n"  ;
 	&setannc  ;		# maybe add an if $change is counted?
+    }
+
+    my $authnum = (split /\-auth/, $auth) [1] ; 
+
+    if (hex($authnum) != hex($opt_A)) {
+      $change++;
+      elog_complain("Datalogger auth code, $authnum, differs from to-be-used auth code, $opt_A from command line use of -A\n");
+      if (&is_valid_auth($opt_A)) {
+          &setauth($opt_A) ;
+      } else {
+	  elog_notify("$opt_A is not a valid auth code.  You need a 16 digit hex number.  No change to auth code.\n");
+      }
+    } else {
+      elog_notify("Datalogger auth code is already $opt_A.  No change to auth code needed.\n");
     }
 
   } else {
@@ -648,14 +662,13 @@ sub setannc  {		# setannc
 
      print "Saved new POC config to eeprom for $dlsta\n\n" if $change ;
 
-     close SETANNC ;
+     close SETANNC ; 
      close UMSG ;
      close EEPROM ;
 
 
   } else {		# $opt_n is toggled, don't run setannc
-
-     if ($#changetype >= 0)  {
+     if ($#changetype >= 1)  {
         print "\tUser specified -n prevents setannc from running. \n";
         print "\t   annc structure remains as before for $dlsta \n\n";
      }
@@ -693,3 +706,100 @@ sub trimip {		# remove trailing nslookup info or (?)
 
   return $input ;
 }
+
+sub setauth  {		# setauth($opt_A)
+
+  $named = "" ;
+  my $names = 0 ;
+  my @dlevent_record = ();
+  my $dlcomment ;
+
+  $dlcomment = "Auth code changed for $dlsta.  ";		# start of dlcomment for dlevent table
+
+# starter for the sauth cmd
+  $setauthcmd =  "q330util $port_base $auth $cmdto sauth $dlinfo{ip},$dlinfo{ssident},$opt_A"  ;
+
+
+  print "setauth cmd is: $setauthcmd\n" if $opt_v;
+  printf RUN "# %s\n",  $dlsta;
+  printf RUN "%s\n",  $setannccmd ;
+
+
+  if (!$opt_n) {
+
+# send a message saying the auth is going to change
+    if ($Pf{umsg_institution}) {
+      $whodat =  "$Pf{umsg_institution}" . "(" . $ENV{USER} . ")" ;
+    } else {
+      $whodat =  "datacenter" . "(" . $ENV{USER} . ")"  ;
+    }
+
+    $umsg	=  "q330util $port_base $auth $cmdto umsg $dlinfo{ip},$dlinfo{ssident},0,'Changing authcode.  -- $whodat'" ;
+		
+    if ($opt_v) {
+       open (UMSG, "$umsg |" ) || die "umsg cmd failed for $dlinfo{ip},$dlinfo{ssident}: $! \n";
+    } else {
+       # supress q330util output
+       open (UMSG, "$umsg 2>/dev/null |" ) || die "umsg cmd failed for $dlinfo{ip},$dlinfo{ssident}: $! \n";
+    }
+
+# force a timeout between umsg and setcmmd
+    sleep 30; 		# unknown if this is the problem/needed
+
+    if ($opt_v) {
+       open (SETAUTH, "$setauthcmd |" ) || die "setauth cmd failed for $dlinfo{ip},$dlinfo{ssident}: $! \n";
+    } else {
+       # supress q330util output
+       open (SETAUTH, "$setauthcmd 2>/dev/null |" ) || die "setauth cmd failed for $dlinfo{ip},$dlinfo{ssident}: $! \n";
+    }
+
+
+    push(@dlevent_record,       "dlname",         $dlsta,
+                        "time",         now(),
+                        "dlevtype",     "auth_change", 
+                        "dlcomment",    "$dlcomment"
+     );
+
+    eval { dbaddv(@dlevent,@dlevent_record) } ;
+
+    if ($@) {
+	warn $@;
+	print "Problem adding auth_change to dlevent table for $dlsta\n";
+    }
+
+    print "Changed AUTH CODE for $dlsta\n\n" if $change ;
+
+     # per the manpage, sauth saves to eeprom and datalogger reboots, unlike sannc
+     sleep 30; 		# unknown if this is the problem/needed
+
+
+     close SETAUTH ;
+     close UMSG ;
+
+  } else {		# $opt_n is toggled, don't run setannc
+     print "\tUser specified -n prevents setauth from running. \n";
+     print "\t   auth code remains as before for $dlsta \n\n";
+  }
+
+}
+
+sub is_valid_auth {	# &is_valid_auth($opt_A) needs to be a 16 digit hex number
+  my ($s) = @_;
+    
+  if ( (length $s)  != 16) {
+    elog_notify ("$s is not the correct length for an auth code \n");
+    return (0); 
+  } 
+
+  if (hex($s) >= 1) {
+    elog_notify (" -a $s passes evaluation of a hex number  \n") if $opt_V ;
+    return(1) ;
+  } else {
+    elog_complatin(" -a $s is not a valid hex number \n") if $opt_V ; 
+    return(0) ;
+  }
+
+
+  return eval { scalar hex $s; 1 };
+}
+

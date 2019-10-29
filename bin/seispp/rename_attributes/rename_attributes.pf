@@ -1,0 +1,8 @@
+edit_list &Tbl{
+    copy site.lat ry real 
+    copy site.lon rx real 
+    copy origin.lat sy real 
+    copy origin.lat sy real 
+    rename delta offset real
+    copy evid ffid int
+}

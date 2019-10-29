@@ -134,7 +134,8 @@ AttributeMap::AttributeMap(Pf *pf,string name)
 		  + string(" AttributeMap definitions"));
 	pfnested=static_cast<Pf *>(vptr);
 
-	char *attblkey="Attributes";
+        char *attblkey;
+        attblkey=strdup("Attributes");
 	t = pfget_tbl(pfnested,attblkey);
 	if(t==NULL) 
 		throw MetadataError(string("Parameter file missing required ")
@@ -151,7 +152,10 @@ AttributeMap::AttributeMap(Pf *pf,string name)
 		delete ap;
 	}
 	freetbl(t,0);
-	t=pfget_tbl(pfnested,"aliases");
+        free(attblkey);
+        attblkey=strdup("aliases");
+	t=pfget_tbl(pfnested,attblkey);
+        free(attblkey);
 	if(t!=NULL)
 	{
 		string token;
@@ -267,7 +271,11 @@ map<string,AttributeProperties> AttributeMap::aliases(string key)
 				+ string("Attribute named ")
 				+ (*listiter)
 				+ string(" is not defined for this AttributeMap"));
-			result[amiter->second.db_table_name]=amiter->second;
+                        /* We need to copy this AttributeProperty and 
+                         * change the internal_name to the alias name */
+                        AttributeProperties alias_property(amiter->second);
+                        alias_property.internal_name=key;
+			result[amiter->second.db_table_name]=alias_property;
 		}
 	}
 	/* note this silently returns an empty list if key is not alias*/

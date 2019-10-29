@@ -10,22 +10,22 @@ simply rethrown.
 This version clones the entire metadata space of the parent to the 
 output TimeSeries.  
 */
-TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component)
+TimeSeries *ExtractComponent(const ThreeComponentSeismogram& tcs,const int component)
 {
     try {
-	TimeSeries *ts=new TimeSeries(dynamic_cast<Metadata&>(tcs),false);
-	// There may be a clever way to do this, but here we manually
-	// copy BasicTimeSeries attributes from tcs to result (ts).
-	// Note this is a potential maintenance problem is BasicTimeSeries
-	// changes
-	ts->live=tcs.live;
-	ts->t0=tcs.t0;
-	ts->ns=tcs.ns;
-	ts->dt=tcs.dt;
-	ts->tref=tcs.tref;
+	TimeSeries *ts=new TimeSeries(dynamic_cast<const BasicTimeSeries&>(tcs),
+              dynamic_cast<const Metadata&>(tcs));
+        /* Important - need to clear vector or we get nothing */
+        ts->s.clear();
+        double *ptr;
+        dmatrix *uptr;
 	if(ts->live)
 	    for(int i=0;i<tcs.ns;++i) 
-		ts->s.push_back(tcs.u(component,i));
+            {
+              uptr=const_cast<dmatrix *>(&(tcs.u));
+              ptr=uptr->get_address(component,i);
+              ts->s.push_back(*ptr);
+            }
     	return(ts);
     }
     catch (...)
@@ -34,22 +34,23 @@ TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component)
     }
 }
 // Overloaded version to do a selective copy
-TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
-	MetadataList& mdl)
+TimeSeries *ExtractComponent(const ThreeComponentSeismogram& tcs,const int component,
+	const MetadataList& mdl)
 {
     try {
 	Metadata mdclone;
-	copy_selected_metadata(dynamic_cast<Metadata &>(tcs),
+	copy_selected_metadata(dynamic_cast<const Metadata &>(tcs),
 		mdclone,mdl);
-	TimeSeries *ts=new TimeSeries(mdclone,false);
-	// As above these from BasicTimeSeries need to be copied
-	ts->live=tcs.live;
-	ts->t0=tcs.t0;
-	ts->ns=tcs.ns;
-	ts->dt=tcs.dt;
-	ts->tref=tcs.tref;
+	TimeSeries *ts=new TimeSeries(dynamic_cast<const BasicTimeSeries&>(tcs),
+            mdclone);
+        double *ptr;
+        dmatrix *uptr;
 	for(int i=0;i<tcs.ns;++i) 
-		ts->s.push_back(tcs.u(component,i));
+        {
+          uptr=const_cast<dmatrix *>(&(tcs.u));
+          ptr=uptr->get_address(component,i);
+          ts->s.push_back(*ptr);
+        }
 	return(ts);
     }
     catch (...)

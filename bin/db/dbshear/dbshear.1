@@ -1,0 +1,180 @@
+'\" te
+.TH dbshear 1
+.SH NAME
+\fBdbshear\fP \- shear wave detector
+.SH SYNOPSIS
+.nf
+\fBdbshear\fP \fI[-h] [-p pfname] [-l logfile] [-v]\fP wfdb|wforb \fI[detdb|detorb]\fP
+.fi
+.SH DESCRIPTION
+\fBdbshear\fP is a multi-threadede program that, when triggered by a P-wave
+detection, will read three-component waveform data and attempt to make S-wave
+detections. The P-wave detection capabilities of \fBdbdetect/orbdetect\fP are
+leveraged by \fBdbshear\fP to detect P-waves and trigger a search for the
+corresponding S-wave.  \fBdbshear\fP will interface with both ORBs and
+databases. The nature of the data back-end is determined automatically at
+run-time.  The only mandatory argument is the input source \fIwfdb|wforb\fP and
+this may be either a database path or an ORB specification in the standard
+HOST:PORT syntax. Waveforms will be read from this source and if a separate
+detection source is not provided, detections will also be read from this source.
+Alternatively, an alternate detection source \fIdetdb|detorb\fP for detections
+may be specified in the same manner as the waveform input source. S-wave
+detections will be written to the same data back-end that P-wave detections are
+read from. This dual data back-end functionality is necessary, for example, in
+cases where a real-time system collects waveform data into one ORB and uses a
+separate ORB to house results of real-time waveform processing. See REFERENCES
+section for papers documenting this method.
+
+.SH OPTIONS
+.IP -h
+.fi
+get help.
+.IP -v
+.fi
+verbosity flag.
+.IP "-p pfname"
+.fi
+Name of program parameter file. If not specified, the default is dbshear.pf
+.IP "-l logfile"
+.fi
+Name of log file. If not specified, no log file will be written.
+
+.SH PARAMETER FILE
+.IP k_len
+.fi
+The length, in seconds, of the sliding kurtosis window.
+.IP cov_len
+.fi
+The length, in seconds, of the sliding covariance window.
+.IP min_dt
+.fi
+Minimum allowed time separation between P-wave detection and S-wave detection.
+Reject any S-wave detections closer to the P-wave detection than this amount.
+Setting to 0.0 disables this.
+.IP n_detection_threads
+.fi
+The number of parallel threads to use to make detections.
+.IP thread_respawn_time
+.fi
+A workaround to free leaking memory. Respawn detection threads after this many
+seconds.
+.IP p_state
+.fi
+The \fIstate\fP value of P-wave detections in the input detection table or ORB.
+This corresponds to the \fIiphase\fP parameter in the \fBdbdetect/orbdetect\fP
+parameter file.
+.IP s_state
+.fi
+The \fIstate\fP value of S-wave detections to be written to the output detection
+table or ORB.
+.IP start_lead
+.fi
+The amount of time, in seconds, prior to P-wave to window for detecting S-wave.
+.IP end_lag
+.fi
+The amount of time, in seconds, after P-wave to window for detecting S-wave.
+.IP filter
+.fi
+Filter waveforms before detecting S-waves. See \fBwffil(3)\fP,
+\fBwffilbrtt(3)\fP, and \fBwffilave(3)\fP for examples of filter
+specifications.
+.IP schema
+.fi
+Schema type. This is only really important for working with ORBs.
+Detection packets are formatted differently in CSS3.0 and CSS3.1.
+.IP max_packet_length
+.fi
+The maximum length, in seconds, of packets in the waveform source ORB. This
+parameter is only used by the ORB interface.
+
+.SH EXAMPLE
+.SS Database interface
+.ft R
+.in 2c
+.nf
+
+.ne 12
+
+[mcwhite@whitehawk-CentOS anza_1998001]$ \fBdbshear -v anza_1998001\fP
+2016176 13:55:20::INFO::__main__::main_loop()::17582:: Starting...
+2016176 13:55:20::DEBUG::__main__::detection_reaper_thread()::17594:: P-wave detection on RDM:BHZ at 1998001 00:30:36.825 added to processing queue.
+2016176 13:55:20::DEBUG::__main__::shear_wave_detector_thread()::17596:: Spawning shear_wave_detector_thread
+2016176 13:55:20::DEBUG::__main__::shear_wave_detector_thread()::17596:: Processing P-wave detection on RDM:BHZ at 1998001 00:30:36.825.
+2016176 13:55:20::DEBUG::__main__::detection_reaper_thread()::17594:: P-wave detection on CRY:BHZ at 1998001 00:30:38.975 added to processing queue.
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17596:: Retrieving waveform data for detection on RDM:BHZ at 1998001 00:30:36.825
+2016176 13:55:20::DEBUG::__main__::shear_wave_detector_thread()::17602:: Spawning shear_wave_detector_thread
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17596:: Getting data for RDM  1/01/98 00:30:30.825 -  1/01/98 00:30:50.825
+2016176 13:55:20::DEBUG::__main__::shear_wave_detector_thread()::17598:: Spawning shear_wave_detector_thread
+2016176 13:55:20::DEBUG::__main__::shear_wave_detector_thread()::17601:: Spawning shear_wave_detector_thread
+2016176 13:55:20::DEBUG::__main__::shear_wave_detector_thread()::17602:: Processing P-wave detection on CRY:BHZ at 1998001 00:30:38.975.
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17602:: Retrieving waveform data for detection on CRY:BHZ at 1998001 00:30:38.975
+2016176 13:55:20::DEBUG::__main__::detection_reaper_thread()::17594:: P-wave detection on KNW:BHZ at 1998001 00:30:39.100 added to processing queue.
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17602:: Getting data for CRY  1/01/98 00:30:32.975 -  1/01/98 00:30:52.975
+2016176 13:55:20::DEBUG::__main__::detection_reaper_thread()::17594:: P-wave detection on SND:BHZ at 1998001 00:30:41.475 added to processing queue.
+2016176 13:55:20::DEBUG::__main__::shear_wave_detector_thread()::17598:: Processing P-wave detection on KNW:BHZ at 1998001 00:30:39.100.
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17598:: Retrieving waveform data for detection on KNW:BHZ at 1998001 00:30:39.100
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17598:: Getting data for KNW  1/01/98 00:30:33.100 -  1/01/98 00:30:53.100
+2016176 13:55:20::DEBUG::__main__::shear_wave_detector_thread()::17601:: Processing P-wave detection on SND:BHZ at 1998001 00:30:41.475.
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17601:: Retrieving waveform data for detection on SND:BHZ at 1998001 00:30:41.475
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17601:: Getting data for SND  1/01/98 00:30:35.475 -  1/01/98 00:30:55.475
+2016176 13:55:20::DEBUG::__main__::detection_reaper_thread()::17594:: P-wave detection on FRD:BHZ at 1998001 00:30:41.500 added to processing queue.
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17596:: Getting data for RDM:BHZ  1/01/98 00:30:30.825 -  1/01/98 00:30:50.825
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17596:: Getting data for RDM:BHN  1/01/98 00:30:30.825 -  1/01/98 00:30:50.825
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17602:: Getting data for CRY:BHZ  1/01/98 00:30:32.975 -  1/01/98 00:30:52.975
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17596:: Getting data for RDM:BHE  1/01/98 00:30:30.825 -  1/01/98 00:30:50.825
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17598:: Getting data for KNW:BHZ  1/01/98 00:30:33.100 -  1/01/98 00:30:53.100
+2016176 13:55:20::DEBUG::__main__::shear_wave_detector_thread()::17596:: Loading waveform data took 0.0336861610413 seconds.
+2016176 13:55:20::DEBUG::__main__::shear_wave_detector_thread()::17596:: Waveform data retrieved for detection on RDM:BHZ at 1998001 00:30:36.825.
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17598:: Getting data for KNW:BHN  1/01/98 00:30:33.100 -  1/01/98 00:30:53.100
+2016176 13:55:20::DEBUG::__main__::get_wfdata()::17602:: Getting data for CRY:BHN  1/01/98 00:30:32.975 -  1/01/98 00:30:52.975
+2016176 13:55:20::DEBUG::__main__::shear_wave_detector_thread()::17596:: S-wave detection found on RDM:BHN at 1998001 00:30:41.175.
+
+.SS ORB interface
+.ft R
+.in 2c
+.nf
+
+.ne 12
+
+[mcwhite@whitehawk-CentOS sanbox]$ \fBdbshear -v anfproc-dev:anza anfproc-dev:proc\fP
+2016176 15:34:17::INFO::__main__::main_loop()::18679:: Starting...
+2016176 15:34:17::DEBUG::__main__::shear_wave_detector_thread()::18690:: Spawning shear_wave_detector_thread
+2016176 15:34:17::DEBUG::__main__::shear_wave_detector_thread()::18692:: Spawning shear_wave_detector_thread
+2016176 15:34:17::DEBUG::__main__::shear_wave_detector_thread()::18694:: Spawning shear_wave_detector_thread
+2016176 15:34:17::DEBUG::__main__::shear_wave_detector_thread()::18698:: Spawning shear_wave_detector_thread
+2016176 15:36:30::DEBUG::__main__::detection_reaper_thread()::18688:: P-wave detection on STS:HHZ at 2016176 22:36:24.588 added to processing queue.
+2016176 15:36:30::DEBUG::__main__::shear_wave_detector_thread()::18690:: Processing P-wave detection on STS:HHZ at 2016176 22:36:24.588.
+2016176 15:36:30::DEBUG::__main__::get_wfdata()::18690:: Retrieving waveform data for detection on STS:HHZ at 2016176 22:36:24.588
+2016176 15:36:41::DEBUG::__main__::shear_wave_detector_thread()::18690:: Loading waveform data took 10.034288168 seconds.
+2016176 15:36:41::DEBUG::__main__::shear_wave_detector_thread()::18690:: Waveform data retrieved for detection on STS:HHZ at 2016176 22:36:24.588.
+2016176 15:36:41::DEBUG::__main__::shear_wave_detector_thread()::18690:: S-wave detection found on STS:HHN at 2016176 22:36:30.288.
+2016176 15:36:41::DEBUG::__main__::write_detection()::18689:: Writing S-wave detection on STS:HHN at 2016176 22:36:30.288.
+
+.nf
+.fi
+.ft R
+
+.SH REFERENCES
+.nf
+Ross, Z.E. and Y. Ben-Zion (2014). Automatic picking of direct P,S seismic phases
+and fault zone head waves, \fIGeophys. J. Int.\fP, \fB199\fP, 368-381
+
+Ross, Z.E., M.C. White, F.L. Vernon, and Y. Ben-Zion (2016). An improved
+algorithm for real-time S-wave picking with application to the (augmented) ANZA
+network in Southern California, \fIBull. seism. Soc. Am.,\fP (Accepted for
+publication)
+.fi
+
+
+.SH AUTHOR
+.ft R
+.in 2c
+.nf
+
+Zachary Ross
+California Insitute of Technology
+
+Malcolm White
+University of Southern California
+malcolcw@usc.edu
+

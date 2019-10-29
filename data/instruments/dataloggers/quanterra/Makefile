@@ -5,6 +5,7 @@ DATA= 	qx80-90.pf \
     Passcal_q330_linear_b100.pf \
     q330_linear.pf \
     q330_linear_ANF.pf \
+    q330_linear_ANF_soh_only.pf \
     q330_linear_below_100.pf \
     q330_linear_below_100_ANF.pf \
     q330_linear_below_20.pf \
@@ -33,6 +34,8 @@ DATA= 	qx80-90.pf \
     qep_soh_only.pf \
     qep_with_sensors.pf \
     qep_wxt.pf \
+    qep_wxt520.pf \
+    qep_wxt536.pf \
     qep_ch1.pf \
     qep_ch2.pf \
     qep_ch3.pf 

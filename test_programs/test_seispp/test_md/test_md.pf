@@ -1,0 +1,34 @@
+Attribute_Map &Tbl{
+sta sta  wfdisc string
+chan chan  wfdisc string
+time time wfdisc real
+endtime endtime wfdisc real
+nsamp nsamp wfdisc int
+samprate samprate wfdisc real
+directory dir wfdisc string
+file	dfile wfdisc string
+#atime time arrival real
+#bad bad
+}
+mdlist &Tbl{
+sta string
+chan string
+time real
+#atime real
+endtime real
+nsamp int
+samprate real
+}
+simple_real_parameter 2.0
+simple_int_parameter 3
+simple_bool_parameter true
+dbprocess_list &Tbl{
+    dbopen wfdisc
+    dbsort sta chan time
+}
+test_nested_tag &Arr{
+    test_double 2.0
+    test_int 4  # Test inline comment
+    test_string foo
+    test_multi_word_string   This is a string with blanks.
+}

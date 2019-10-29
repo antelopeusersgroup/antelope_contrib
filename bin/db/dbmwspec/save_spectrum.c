@@ -97,25 +97,20 @@ int save_spectrum(Dbptr db,
 	int jack)
 {
 	/* scratch variables */
-	Dbptr dbsta,dbs;
-	char string[128];
-	int n;
 	double today;
 	char *today_time;
 	char user[10];
-	int i;
 
 	/* These variables written to specdisc are assembled from
 	variables passed to this routine */
 	char sta[8],chan[10];
-	int arid;
+	long arid;
 	char *phase;
 	double tbp;
 
 
 	/* These variables are set in this routine */
 	double time,twin,endtime;
-	int ondate,offdate;
 	char auth[16];
 	double freqmin=0.0,freqmax;
 	int nfreq;
@@ -148,7 +143,7 @@ int save_spectrum(Dbptr db,
 	or we won't get an arid value.  Ditto for net */
 	if((dbgetv(db,0,"sta",sta,"chan",chan,
 		"dfile",dfile,"arid",&arid,"net",net,"segtype",rsptype,
-		0)) == dbINVALID)
+		NULL)) == dbINVALID)
 	{
 		return(-5);
 	}
@@ -173,7 +168,7 @@ int save_spectrum(Dbptr db,
 	endtime = pick + (p->end);
 	twin = (p->end) - (p->start);
 	/* here we get the current time (GMT) using CSS time utiliites */
-	today = now();
+	today = std_now();
 	today_time = epoch2str(today,"%y%j%k");
 	cuserid(user);
 	sprintf(auth,"dbmwspec:%7.7s:%7.7s",user,today_time);
@@ -235,8 +230,8 @@ int save_spectrum(Dbptr db,
 			"units",units,
 			"specfmt",specfmt,
 			"dir",dir,
-			"foff", (int) foff,
-				"dfile",dfile,0) < 0  )
+			"foff", foff,
+				"dfile",dfile,NULL) < 0  )
 	{
 		return(-2);
 	}
@@ -274,7 +269,7 @@ int save_spectrum(Dbptr db,
 			"foff", (int) foff,
 			"auth",auth,
 			"dir",dir,
-				"dfile",dfile,0) < 0  )
+				"dfile",dfile,NULL) < 0  )
 		{
 			return(-4);
 		}

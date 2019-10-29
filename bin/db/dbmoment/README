@@ -7,9 +7,10 @@
 #################################
 
 The dbmoment tool implementation included in the distribution is
-the core component of the more complex TDMT_INV toolbox that is in
-use by multiple seismic networks. We completed this first step of
-mapping the source data and the final results values to Antelope.
+the core component of the more complex TDMT_INV_ISO toolbox that
+is in use by multiple seismic networks. We completed the process
+of mapping the source information and the final results values
+to Antelope.
 
 All data gets evaluated as velocity at 1Hz before inversion. The
 instrument response will be convolved into the synthetic trace
@@ -29,6 +30,7 @@ is perform in Antelope.
 You need to have $ANTELOPE defined in your environment. Then run in
 this directory...
 
+    make clean;
     make;
     make install;
 
@@ -36,14 +38,12 @@ this directory...
 The Dreger's inversion source code is included in the distribution
 and we include 2 full examples from the original distribution.
 The data needed for the example is located on folders "EXAMPLE_1" and
-"EXAMPLE_2". You can run the code from the same repo or run the script
-*run_dbmoment_example* to automate the process.
+"EXAMPLE_2". You can process the example database with the script
+*dbmoment_run_example* to automate the 2 events.
 
-For this you have to:
+Run this in terminal:
 
-    make clean; make; make install;
-    cd ~
-    run_dbmoment_example
+    dbmoment_run_example
 
 This will go to the example folder "$ANTELOPE/contrib/example/dbmoment/" and
 will run both examples. You will see several new folders.
@@ -52,3 +52,7 @@ will run both examples. You will see several new folders.
     synthetics_db   => Includes all databases for synthetics.
     dbmoment_images => Default folder to save the results in PNG files.
     mt db tables    => Results will go into a new 'mt' table.
+
+There is an option to define an argument to the script that will run the
+example in that directory if possible. This is useful for installations
+with no write access to the Antelope distribution.

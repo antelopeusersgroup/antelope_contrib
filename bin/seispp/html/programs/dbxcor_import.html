@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>dbxcor_import</title>
+  </head>
+  <body>
+    <h1>dbxcor_import</h1>
+    <h3>Usage:</h3>
+    <p>
+      <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+      dbxcor_import db [-s subset -filter -text -v --help -pf pffile]
+      &gt; seisppfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    The dbxcor program in the Antelope package uses cross-correlation
+    and a robust stacking method to do a form of array processing that
+    does not depend upon the plane wave approximation.&nbsp;&nbsp; The
+    main output of dbxcor is a set of database tables with arrival times
+    estimated by the cross-correlation and picking procedure.&nbsp; That
+    table also contains the weights used to compute the robust
+    stack.&nbsp;&nbsp; The program saves a version of the array stack
+    (beam) used for the correlation, but that waveform is always too
+    short to be useful for any subsequent waveform
+    processing.&nbsp;&nbsp; For example, one might want to use the array
+    beam from a small aperture array like a low noise single
+    station.&nbsp; Time windowing parameters to define the output
+    waveform extent come from the parameter file.&nbsp; <br>
+    <br>
+    The database view formed by this program is this join:&nbsp;
+    xcorarrival-&gt;xcorbeam-&gt;evlink-&gt;event-&gt;origin.&nbsp;&nbsp;
+    Note that evid and orid are loaded with each seismogram along with
+    the hypocenter information stored as the attributes origin.lat,
+    origin.lon, origin.depth, and origin.time.&nbsp; <br>
+    <br>
+    Output is a serialized file of ThreeComponentEnsemble
+    objects.&nbsp;&nbsp; Seismograms always saved in cardinal
+    directions.&nbsp;&nbsp; For large arrays this can be
+    inappropriate.&nbsp;&nbsp; A stack to something like LQT coordinates
+    is not currently supported.&nbsp; Waveform segments of all stations
+    with entries in the xcorarrival are saved in the output along with a
+    simple stack and a robust stack of those seismograms.<br>
+    <h3>Options:</h3>
+    <h3> </h3>
+    <i>-s subset<br>
+    </i>This optional flag will apply subset condition to the input
+    database view.&nbsp;&nbsp; See Antelope documentation for the syntax
+    of the subset condition.<br>
+    <br>
+    <i>-filter<br>
+    </i>When this flag appears the program will read the BRTT filter
+    string stored in the xcorbeam table and apply that filter to the
+    data before stacking.&nbsp; If this option is used make sure the
+    time window parameters are appropriate to remove the filter
+    transients on window edges.&nbsp;&nbsp; <br>
+    <br>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <i>-v<br>
+    </i>Be more verbose.&nbsp; Note all log information goes to stderr
+    so it is best to use this option only for debugging problems.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.&nbsp; <br>
+    <br>
+    <i>-pf pffile<br>
+    </i>Use pffile instead of default dbxcor_import.pf.<br>
+    <h3>Parameter File<br>
+    </h3>
+    <i>Time Windowing Parameters</i><br>
+    <p>Time windowing in this program is a two stage process. &nbsp; The
+      program reads a waveform segment with a time starting at <i>read_window_start_relative_time
+      </i>and ending at <br>
+      <i>read_window_end_relative_time </i>from the absolute time
+      defined for each station in the xcorarrival table.&nbsp;&nbsp; If
+      the -filter option is used it is applied to this waveform
+      segment.&nbsp; The daa are then cut down to the time window
+      defined by the two parameters <i>stack_window_start_time</i> and<br>
+      <i>stack_window_end_time.&nbsp; </i>The stack window parameters
+      must define a shorter time window than the read window
+      parameters.&nbsp;&nbsp; When the filter option is applied the read
+      window should be large enough relative to the stack time to remove
+      edge transients from all filters defined in the input database
+      tables.&nbsp; <br>
+    </p>
+    <p><i>Beam Station Names<br>
+      </i>Seismologists commonly use the concept of a station name to
+      define a particular seismogram.&nbsp;&nbsp;&nbsp; Two parameters
+      control how the <i>sta</i> attribute is set in the output.&nbsp;
+      <i>simple_beam_sta</i> defines the station name assigned to the
+      straight stack (average).&nbsp; <i>robust_beam_sta</i> does the
+      same for the robust stacked (weighted stack using weights stored
+      in the xcorarrival table).<br>
+    </p>
+    <i>StationChannelMap</i><br>
+    The program uses a seispp library concept of a "<a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_station_channel_map.html">StationChannelMap</a>"
+    to sort out the complexity of modern broadband seismic instruments
+    that almost always have multiple sample rates and sometimes have
+    multiple sensors.&nbsp;&nbsp; A description of how this parameter
+    should be specified can be found in the man page for the Antelope
+    contrib program dbxcor (see parameter file section and search for
+    StationChannelMap - the format here is identical).&nbsp;
+  </body>
+</html>

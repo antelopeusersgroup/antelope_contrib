@@ -1,6 +1,4 @@
 
-use lib "$ENV{ANTELOPE}/data/perl" ;
-
 #
 #  Searches for important user messages in q330 log files 
 #   and saves them to a dlevent database table
@@ -21,7 +19,7 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
 
     elog_init ( $0, @ARGV) ;
 
-    our ( $opt_d, $opt_l, $opt_n, $opt_p, $opt_v, $opt_V, $opt_w );
+    our ( $opt_d, $opt_l, $opt_n, $opt_p, $opt_r, $opt_v, $opt_V, $opt_w );
 
 
     my ($dlname, $dlsta, $dlevtype, $comment);
@@ -30,7 +28,7 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
     my (%dlevents, $key, $value, %event_phrase, %convert_umsg, @match, @reject);    
     my ($target, @dlevent_record, @dbl, @db); 
     my ($cnt_days, $dbout, $dir, $search_dir, $logdir);
-    my ($file_pattern, $search_pattern, $reject_pattern, $line, $matches);
+    my ($file_pattern, $search_pattern, $reject_pattern, $line, $matches, $reject_files);
     my ($com1, $com2, $com3, $com4, $com5, $com6);
     my ($now, $t) ;
     my ($first, $last) ;
@@ -57,7 +55,7 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
 
 # -d time to start search 
 
-if (! getopts('p:m:M:n:l:w:d:vV')  || @ARGV != 2 ) {
+if (! getopts('p:m:M:n:l:w:d:r:vV')  || @ARGV != 2 ) {
     print STDERR "getopts or number of arguments failure.\n";
     elog_complain("getopts or number of arguments failure.\n");
     &usage;
@@ -89,6 +87,13 @@ if (! getopts('p:m:M:n:l:w:d:vV')  || @ARGV != 2 ) {
     } else { 
         $file_pattern	= "log" ;	# name of log file to match
 					# Can also be used to search only a particular datalogger
+    }
+
+    if ($opt_r) {
+        $reject_files	= $opt_r ;
+    } else { 
+	# no parsing of marmot files, so they are defaulted to skip
+        $reject_files	= "syslog|elog" ;	# name of log file to skip (marmot syslog and elog files)
     }
 
 # more variables
@@ -174,6 +179,7 @@ sub grep_this {
 
     return unless -f $_;
     return if $file =~/\.gz|\.Z|\.bz2/;            # attempt to skip compressed files
+    return if $file =~/$reject_files/;
     return unless $file =~/$file_pattern/;
 #    return unless $file =~/@jdates/;
 
@@ -349,7 +355,7 @@ sub get_pf {
 
 sub usage { 
         print STDERR <<END;
-            \nUSAGE: $0 [-p pf] [-d date] [-n ndays] [-v] [-l match_logname] logdir db 
+            \nUSAGE: $0 [-p pf] [-d date] [-n ndays] [-v] [-l match_logname] [-r reject_logname] logdir db 
 
 END
         exit(1);

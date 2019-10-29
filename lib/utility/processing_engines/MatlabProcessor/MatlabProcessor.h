@@ -5,6 +5,9 @@
 #include <fstream>
 #include <sstream>
 
+// needed for blas - could use other versions
+#include "perf.h"
+
 // SEISPP includes
 #include "ExternalProcessor.h"
 #include "dmatrix.h"
@@ -248,11 +251,11 @@ public:
 	returning a potentially large matrix.
 
 	\param name symbolic name attached to desire matlab vector.
-	\return auto_ptr to a dmatrix of the desired result.
+	\return shared_ptr to a dmatrix of the desired result.
 	\exception SeisppError is thrown if the attempt to retrieve
 		the desired matrix failed.
 	*/
-	auto_ptr<dmatrix> retrieve_matrix(string name);
+	shared_ptr<dmatrix> retrieve_matrix(string name);
 	/*! \brief Run an matlab session through this processor interactively.
 	\par
 	Sometimes one wants to talk directly to Matlab to debug a problem or
@@ -278,7 +281,7 @@ to a parent ensemble. */
 const string EnsembleIndexKeyword("MatlabEnsembleIndex");
 /*! This procedure will synchronize Metadata from an ensemble returned by
 one of ensemble retrieve methods with a parent. */
-template <class Tensemble> void CloneMetadata(Tensemble& parent, auto_ptr<Tensemble *>(child))
+template <class Tensemble> void CloneMetadata(Tensemble& parent, shared_ptr<Tensemble *>(child))
 {
 	cerr << "CloneMetadata procedure not yet implemented\n"<<endl;
 }

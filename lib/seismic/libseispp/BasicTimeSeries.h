@@ -2,7 +2,7 @@
 #define _BASICTIMESERIES_H_
 #include <ostream>
 #include <set>
-//#include <boost/serialization/set.hpp>
+#include <boost/serialization/set.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include "TimeWindow.h"
@@ -97,14 +97,14 @@ public:
 // (i.e. less than 0 or >= ns).
 //\param is - sample number to test.
 **/
-	bool is_gap(int is);  // query by sample number
+	bool is_gap(int is) const;  // query by sample number
 /*!
 // Checks if data at time ttest is a gap or valid data.  
 // This function is like the overloaded version with an int argument except 
 // it uses a time instead of sample number for the query.
 //\param ttest - time to be tested.
 **/
-	bool is_gap(double ttest);  // query by time
+	bool is_gap(double ttest) const;  // query by time
 /*!
 // Checks if a given data segment has a gap.
 // For efficiency it is often useful to ask if a whole segment of data is
@@ -114,21 +114,21 @@ public:
 //\return true if time segment has any data gaps
 //@param twin time window of data to test defined by a TimeWindow object
 **/
-	bool is_gap(TimeWindow twin);
+	bool is_gap(TimeWindow twin) const;
 /*!
 // Global test to see if data has any gaps defined. 
 // Gap processing is expensive and we need this simple method to
 // test to see if the associated object has any gaps defined.  
 //\return true if the associated object has any gaps defined.  
 **/
-	bool has_gap(){return(!gaps.empty());};
+	bool has_gap() const{return(!gaps.empty());};
 /*!
 // Adds a gap to the gap definitions for this data object.
 // Sometimes an algorithm detects or needs to create a gap (e.g. a mute,
 // or a constructor).
 // This function provides a common mechanism to define such a gap in the data.
 **/
-	void add_gap(TimeWindow tw){gaps.insert(tw);};
+	void add_gap(TimeWindow tw);
 /*!
 //  \brief Clear gaps.
 //
@@ -151,7 +151,7 @@ public:
 // This standardizes this common operation in an obvious way.
 //\param i - sample number to compute time for.  
 **/
-	double time(int i){return(t0+dt*static_cast<double>(i));};
+	double time(int i) const{return(t0+dt*static_cast<double>(i));};
 	// inverse of time
 /*!
 // Inverse of time function.  That is,  it returns the integer position
@@ -160,12 +160,12 @@ public:
 // callers responsibility as this is a common error condition that 
 // should not require the overhead of an exception.
 **/
-	int sample_number(double t){return(nint((t-t0)/dt));};
+	int sample_number(double t)const {return(nint((t-t0)/dt));};
 /*!
 // Returns the end time (time associated with last data sample) 
 // of this data object.
 **/
-	double endtime(){return(t0+dt*static_cast<double>(ns-1));};
+	double endtime() const {return(t0+dt*static_cast<double>(ns-1));};
 /*!
 // Absolute to relative time conversion.  
 // Sometimes we want to convert data from absolute time (epoch times)
@@ -176,18 +176,48 @@ public:
 //\param tshift - time shift applied to data before switching data to relative time mode.
 **/
 	void ator(double tshift);
-/*!
-// Relative to absolute time conversion.
-// Sometimes we want to convert data from relative time to 
-// to an absolute time standard.  An example would be converting
-// segy shot data to something that could be processed like earthquake
-// data in a css3.0 database.
-// This operation simply switches the tref 
-// variable and alters t0 by tshift.
-//\param tshift - time shift applied to data before switching data to absolute time mode.
-// 
+/*!  Relative to absolute time conversion.
+ Sometimes we want to convert data from relative time to 
+ to an absolute time standard.  An example would be converting
+ segy shot data to something that could be processed like earthquake
+ data in a css3.0 database.
+ This operation simply switches the tref 
+ variable and alters t0 by tshift.
+\param tshift - time shift applied to data before switching data to absolute time mode.
+
+NOTE:  This method is maintained only for backward compatibility.   May be depricated
+   in favor of method that uses internally stored private shift variable. 
 **/
 	void rtoa(double tshift);
+/*! Relative to absolute time conversion.
+ Sometimes we want to convert data from relative time to 
+ to an absolute time standard.  An example would be converting
+ segy shot data to something that could be processed like earthquake
+ data in a css3.0 database.
+
+ This method returns data previously converted to relative back to absolute using the
+ internally stored time shift attribute. */
+        void rtoa();
+/*! Shift the reference time.
+ 
+  Sometimes we need to shift the reference time t0.  An example is a moveout correction.
+  This method shifts the reference time by dt.   Note a positive dt means data aligned to 
+  zero will be shifted left because relative time is t-t0.
+  */
+        void shift(double dt);
+/*! Return the reference time.
+ 
+  We distinguish relative and absolute time by a time shift constant
+  stored with the object.   This returns the time shift to return
+  data to an epoch time. 
+
+  \throw SeisppError object if the request is not rational.  That is this
+  request only makes sense if the data began with an absolute time and was
+  converted with the ator method.   Some cross checks are made for consistency
+  that can throw an error in this condition. */
+        double time_reference() const;
+/*! Standard assignment operator. */
+        BasicTimeSeries& operator=(const BasicTimeSeries& parent);
 /*!
 // Outputs the data members of this base class.
 // Main use of this function is for ease of output in an ascii format.
@@ -207,6 +237,13 @@ protected:
 	set<TimeWindow,TimeWindowCmp> gaps;
 	
 private:
+    /* We actually test for t0shift two ways.  If this is true we always accept it.
+     * If false we check for nonzero t0shift and override if necessary. 
+     * */
+    bool t0shift_is_valid;
+    /*When ator or rtoa are called this variable defines the conversion back
+     * and forth.  The shift method should be used to change it. */
+    double t0shift;
     friend class boost::serialization::access;
     template<class Archive>
             void serialize(Archive & ar, const unsigned int version)
@@ -216,11 +253,9 @@ private:
         ar & dt;
         ar & tref;
         ar & ns;
-/* for latest Xcode and clang, this will not serialize.  Since I've not 
-uniformly handled gaps for now anyway will remove this until a reason 
-is found that it breaks.
+        ar & t0shift_is_valid;
+        ar & t0shift;
         ar & gaps;
-*/
     };
 };
 /*! Convert a TimeWindow to a SampleRange object.
@@ -245,6 +280,22 @@ template <class T> SampleRange get_sample_range(T& d, TimeWindow win)
 	if(nend>=d.ns)nend = d.ns - 1;
 	return(SampleRange(nstart,nend));
 }
+
+/* Function prototypes are here. */
+
+/*! \brief Get number of valid samples in a time series object.
+ 
+  Time series objects inheriting BasicTimeSeries can have gaps 
+  defind through this component.   This procedure returns the
+  number of valid samples meaning those not defined as gaps.   
+  A stock test should be that if the return of this procedure is 
+  number of samples (this->ns) there are not gaps.  Don't use this
+  procedure to do that, however, as it can be an expensive test.
+  A more important use of this procedure is to makes sure a set 
+  of time series data has any valid samples in its range.   i.e.
+  the caller should normally trap the condition of a return 
+  of 0 and mark live false or discard the data. */
+int number_valid_samples(BasicTimeSeries& d);
 
 } // End namespace declaration SEISPP
 #endif

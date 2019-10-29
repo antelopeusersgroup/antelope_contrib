@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>rotate</title>
+  </head>
+  <body>
+    <h1>rotate</h1>
+    <h3>Usage:</h3>
+    <p>rotate [-accumulate --help -text -pf pffile] &lt; infile &gt;
+      outfile<br>
+    </p>
+    <h3>Algorithm:</h3>
+    Rotation of three-component seismograms is a fundamental
+    functionality.&nbsp;&nbsp; This is a relatively generic program to
+    apply a suite of possible rotation operators implemented in the
+    seispp library.&nbsp; Options are:<br>
+    <ol>
+      <li>Constant transformation - rotate all data by specified
+        spherical coordinate angles<br>
+      </li>
+      <li>ZRT - rotate around Z axis (changing only horizontal
+        components)<br>
+      </li>
+      <li>LQT - rotate to orthogonal LQT coordinates (L - longitudinal,
+        Q - radial, and T - transverse).&nbsp; <br>
+      </li>
+      <li>FST - Kennett's free surface transformation
+        operator.&nbsp;&nbsp; <br>
+      </li>
+    </ol>
+    Rotation operators can be set as a constant for all data in the file
+    or basic on computed from event information stored as trace
+    attributes.&nbsp; Computed transformations to LQT or FST require
+    input of an assumed surface P and S wave velocity.&nbsp;&nbsp;
+    Primary control for all the options comes through a parameter file
+    described below.&nbsp;&nbsp; <br>
+    <br>
+    This program only accepts serialized ThreeComponentEnsemble
+    objects.&nbsp;&nbsp; Unless the constant transformation is selected,
+    these are also assumed to be common source gathers with source
+    information stored in the ensemble metadata and receiver coordinates
+    defined in the metadata for each seismogram.&nbsp; <br>
+    <h3>Options:</h3>
+    <i>-text</i><br>
+    Write the output in text format.&nbsp;  Default is a binary serialized file.<br>
+    <br>
+    <i>--help</i><br>
+    Print the usage message<br>
+    <br>
+    <i>-accumulate</i><br>
+    This flag will cause the program to apply the requested
+    transformation to the data without checking. Default is to force all
+    data to cardinal directions before applying the requested
+    transformations.<br>
+    <br>
+    <i>-pf pffile<br>
+    </i>When present the program will read from parameter file pf
+    instead of the default rotate.pf.&nbsp;&nbsp; <br>
+    <br>
+    <h3>Parameter file</h3>
+    The top-level behavior of this program should be thought of as a
+    switch controlled by the boolean parameter <i>constant_transformation.</i>&nbsp;&nbsp;
+
+    When true the program ignore everything else and apply a constant
+    transformation vector to all data.&nbsp; In this case it will
+    extract two&nbsp; parameters:&nbsp; (1) <i>phi</i> should be set to
+    the counterclockwise angle (in degrees) to rotate around the Z axis
+    (x1 axis is always east unless the -accumulate flag is used and the
+    data were not originally cardinal), and (2) <i>theta </i>should
+    define the angle to rotate around the <i>phi</i> rotated x2 axis,
+    which is equivalent to the zonal angle in standard spherical
+    coordinates.&nbsp;&nbsp; For those familiar with spherical
+    coordinates the transformation is equivalent to that to transform
+    from standard coordinates to the basis vectors of spherical
+    coordinates at a point r, theta, phi.&nbsp;&nbsp; <br>
+    <br>
+    When <i>constant_transformation </i>is false the most important
+    parameter for this program has the key <i>rotation_type</i>.&nbsp;&nbsp;
+
+    It must have one of three values with definitions defined
+    above:&nbsp; ZRT, LQT, or FST.&nbsp;&nbsp; If it is anything else
+    the program will abort with a diagnostic message.&nbsp; All of these
+    modes assume some form ray-based transformations computed for each
+    seismogram.&nbsp; They thus require the program to<i> </i>know both
+    source and receiver geographic coordinates.&nbsp; Source coordinates
+    are expected to be found in the ensemble's metadata.&nbsp;&nbsp; The
+    parameter file defines the keys used to fetch these
+    coordinates.&nbsp; The keywords in the parameter file that define
+    these are:&nbsp; <i>event_latitude_key, event_longitude_key, </i>and<i>
+      event_depth_key.&nbsp; </i>Defaults for these are Antelope
+    database names that would be used to extract them:&nbsp; origin.lat,
+    origin.lon, and origin.depth respectively. &nbsp;<i> </i>Receiver
+    coordinates must be defined for each member seismogram of the input
+    ensemble.&nbsp; The program will try to extract source and receiver
+    latitudes (in degrees) from each seismogram using the keys defined
+    in the parameter file with these tags:&nbsp; <i>station_latitude_key
+
+    </i>and<i> station_longitude_key </i>(defaults are site.lat and
+    site.lon).&nbsp; <br>
+    <i><br>
+    </i>ZRT defines the simplest transformation.&nbsp;&nbsp; It defines
+    the R direction from a great circle path calculation that requires
+    only source and receiver latitudes and longitudes.&nbsp;&nbsp; When
+    ZRT is selected the output seismograms will all be rotated with x1
+    in the R direction, x2 in the T direction, and x3 in the Z direction
+    (unaltered). <br>
+    <br>
+    LQT and FST are both forms of a ray-coordinate transformation.&nbsp;
+    An earth model is necessary to define the geometry of the incident
+    wave used to define the transformation.&nbsp; This program uses
+    Antelope's generic travel time calculator (man ttcalc(3)) that
+    require two parameters that must be defined in the parameter
+    file:&nbsp; <i>ttmethod </i>and<i> ttmodel.&nbsp;&nbsp; </i>See
+    the manual page for ttcalc(3) for a description of how these are
+    used and limitations.&nbsp;&nbsp; Default is tttaup and iasp91
+    respectively.&nbsp; Both LQT and FST require a surface velocity to
+    define ray geometry at the station.&nbsp;&nbsp; The program gets
+    these from the parameter file through two keys:&nbsp; <i>vp0 </i>and<i>
+      vs0.&nbsp;&nbsp;&nbsp; </i>As the names imply the first is the
+    assumed surface P wave velocity and the second is the assumed
+    surface S wave velocity.&nbsp; Note only the first is used for LQT,
+    but both are required for FST.&nbsp;&nbsp; Defaults are 6.2 and 3.5
+    respectively.&nbsp; <br>
+    <br>
+    The LQT transformation is orthogonal and transforms x1 to radial
+    (Q), x2&nbsp; to tranverse (T), and x3 to longitudinal
+    (L).&nbsp;&nbsp; Note that unless the -accumulate flag is used the
+    program will force the data back to cardinal directions using the
+    <a
+href="http://www.indiana.edu/%7Epavlab/software/seispp/html/class_s_e_i_s_p_p_1_1_three_component_seismogram.html">
+      rotate_to_standard</a> method<b> </b>of the
+    ThreeComponentSeismogram objects before applying the
+    transformation.&nbsp;&nbsp; That guarantees the initial orientation
+    before the LQT transformation is applied is ENZ (x1 positive east,
+    x2 positive north, and x3 positive up).&nbsp;&nbsp;&nbsp; The
+    program derives the azimuthal angle for the transformation the same
+    as ZRT from a great circle path calculation.&nbsp; The theta
+    rotation computes the P wave slowness vector from the earth model
+    defined by <i>ttmethod </i>and<i> ttmodel.&nbsp;&nbsp; </i>It
+    then computes the emergence angle, theta, from Snell's law using <i>vp0</i>.&nbsp;
+
+    <br>
+    <br>
+    FST is similar to LQT, but transforms the data into a coordinate
+    system that is not orthogonal.&nbsp;&nbsp; See e.g. Kennett (1991 -
+    GJI) or Reading et al. (2003, GRL).&nbsp;&nbsp; For practical
+    purposes&nbsp; the primary difference here is that because FST
+    includes the distortion effects of P to S conversions at the free
+    surface, it&nbsp; requires both the surface S wave velocity defined
+    through the parameter <i>vs0 </i>and the surface P wave velocity
+    defined by <i>vp0</i>.&nbsp;&nbsp; See sources above for the
+    background theory.&nbsp;&nbsp;&nbsp; Otherwise it puts the data in a
+    form conceptually similar to LQT.&nbsp; That is, x1 becomes SV
+    (radial), x2 becomes SH (transverse), and x3 becomes P
+    (longitudinal).&nbsp;&nbsp; <br>
+    <br>
+    <br>
+    <i></i><br>
+    <i><br>
+      <br>
+    </i>
+  </body>
+</html>

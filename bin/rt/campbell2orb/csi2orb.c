@@ -404,7 +404,7 @@ int main(int argc,char *argv[])
 	    fd=-2;
 	    if (jitterenable && samintlogvalid && skewlogvalid)
 	    {
-		sleeptime=(int)((previoustimestamp+samintlog+skewlog)-now());
+		sleeptime=(int)((previoustimestamp+samintlog+skewlog)-std_now());
 		if (sleeptime>interval || sleeptime<0)
 		    sleeptime=interval;
 		else if (verbose)
@@ -504,7 +504,7 @@ int stuffline(Tbl *r, char *readbuf)
 
       /* load some values that will allow it to skip through the rest of this code */
       /* if we exit here instead then we don't update the state file with the current mem location */
-      fake.timestamp=now();
+      fake.timestamp=std_now();
       fake.saminterval=0;
       fake.prog_vs=-1;
       fake.year_ch=1;
@@ -1036,7 +1036,7 @@ void getTime(int *fd)
       *fd=-1;
       return;
     }
-  samtime=now();
+  samtime=std_now();
 
   val=fcntl(*fd,F_GETFL,0);
 
@@ -1765,14 +1765,14 @@ void setTime(int *fd)
   write(*fd,"7H\r",3);
   flushUntil(fd,'>');
 
-  lt=now();
+  lt=std_now();
   if (lt%60<55)
   {
       elog_notify(0,"sleeping until close to end of minute, waking at 55 sec  (%d sec)",55-lt%60);
       sleep(55-lt%60);
   }
 
-  t=now()+60;
+  t=std_now()+60;
 
   sprintf(year,"%.4d",atoi(epoch2str(t,"%Y")));
   sprintf(dayOfYear,"%.4d",atoi(epoch2str(t,"%j")));

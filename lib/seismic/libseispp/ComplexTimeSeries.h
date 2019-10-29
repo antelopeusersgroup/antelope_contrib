@@ -218,5 +218,62 @@ public:
 	friend ostream& operator<<(ostream& os,ComplexTimeSeries& z);
 };
 ostream& operator<<(ostream& os,ComplexTimeSeries& z);
+/*!
+// Save the data in a ComplexTimeSeries object to a database.
+// This function works only with an Antelope (Datascope) database but the
+// design is aimed to be schema and database independdent.  
+// It does this by assuming each object will generate one row in 
+// some table.  What is written to the row that is associated with
+// this object is assumed to be present in the Metadata area of the
+// object.  The attributes to be written are controlled by the
+// contents of the MetadataList passed as an argument.  
+// The internal names in the MetadataList are translated 
+// translated to the database namespace using the AttributeMap
+// object am and pushed to an output record using the Datascope dbputv
+// function one attribute at a time.  The data are saved to files
+// whose name and location are driven by two (frozen) standard names
+// extracted from the metadata area:  dir and dfile.  The filename
+// for output is created as dir+"/"+dfile or simply dfile if dir
+// is not defined (assumes current directory).  
+//
+// This function is dogmatic about four database output names.  
+// It always translates it's internal t0 to be a "time" database
+// attribute,  the ns variable is saved as "nsamp", the sample
+// interval (dt) is always converted to 1/dt and called "samprate",
+// and an endtime (computed as this->endtime()) is computed and
+// saved as the database attribute "endtime".   These are the css3.0
+// name conventions and I chose to leave them as frozen names.  
+// The current implemenation ALWAYS saves the result as a 
+// host-specific (i.e. not portable across platform) 
+// vector of double complex values (real,imag).  i.e. real and 
+// imaginary parts are multiplexed and stored externally as 
+// doubles.  This will NOT work if data like this are passed 
+// between different hosts with incompatible binary double
+// formats (infamous endian problem).
+// The "datatype" is ALWAYS saved and is ALWAYS set to cx.  
+// Finally note that if the "live" boolean in the object is set false
+// this function silently returns immediately doing nothing.
+//
+//\exception SeisppError object if there are any problems saving the data or 
+//    writing attributes into the database.
+//
+//\return -1 if live is false, record number of added row otherwise
+//
+//\param ts is the ComplexTimeSeries object to be saved.
+//\param db is a Datascope database pointer.  It need only point at a valid
+//    open database.
+//\param table is the name of the table to index this time series data
+//   (generally wfprocess for this procedure)
+//\param md  is the list of metadata to be dumped to the database as described above.
+//\param am is a mapping operator that defines how internal names are to be mapped
+//    to database attribute names and tables.  
+*/
+long dbsave(ComplexTimeSeries& ts,Dbptr db,
+        string table, MetadataList& md, 
+        AttributeMap& am);
+/*! Measure peak amplitude (a modulus) of ComplexTimeSeries. */
+double PeakAmplitude(ComplexTimeSeries *p);
+/*! Scales a ComplexTimeSeries object by scale. */
+void ScaleMember(ComplexTimeSeries *p,double scale);
 } // End SEISPP Namespace declaration
 #endif

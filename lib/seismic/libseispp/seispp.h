@@ -37,7 +37,7 @@
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #ifndef NO_ANTELOPE
-#include "ComplexTimeSeries.h"
+//#include "ComplexTimeSeries.h"
 #include "seismicarray.h"
 #endif
 #include "ensemble.h"
@@ -144,7 +144,7 @@ SphericalCoordinate PMHalfspaceModel(double vp0,double vs0,
 //\param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 **/
-auto_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram& din,
+shared_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram& din,
 	string key, TimeWindow tw);
 /*!
 // Returns a gather of ThreeComponentSeismograms in an arrival time reference fram.
@@ -159,7 +159,7 @@ auto_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram
 //\param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 **/
-auto_ptr<ThreeComponentEnsemble> ArrivalTimeReference(ThreeComponentEnsemble& din,
+shared_ptr<ThreeComponentEnsemble> ArrivalTimeReference(ThreeComponentEnsemble& din,
 	string key, TimeWindow tw);
 /*!
 // Returns a new TimeSeries seismogram in an arrival time reference.
@@ -181,7 +181,7 @@ auto_ptr<ThreeComponentEnsemble> ArrivalTimeReference(ThreeComponentEnsemble& di
 //\param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 **/
-auto_ptr<TimeSeries> ArrivalTimeReference(TimeSeries& din,
+shared_ptr<TimeSeries> ArrivalTimeReference(TimeSeries& din,
 	string key, TimeWindow tw);
 /*!
 // Returns a gather of TimeSeries objects in an arrival time reference frame.
@@ -196,7 +196,7 @@ auto_ptr<TimeSeries> ArrivalTimeReference(TimeSeries& din,
 //\param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 **/
-auto_ptr<TimeSeriesEnsemble> ArrivalTimeReference(TimeSeriesEnsemble& din,
+shared_ptr<TimeSeriesEnsemble> ArrivalTimeReference(TimeSeriesEnsemble& din,
 	string key, TimeWindow tw);
 
 
@@ -495,9 +495,11 @@ long dbsave(ThreeComponentSeismogram& ts,Dbptr db,
 //\param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
 **/
+/*
 long dbsave(ComplexTimeSeries& ts,Dbptr db,
 	string table, MetadataList& md, 
 	AttributeMap& am);
+        */
 
 #endif
 
@@ -518,7 +520,7 @@ long dbsave(ComplexTimeSeries& ts,Dbptr db,
 //\param tw defines the data range to be extracted from parent.
 //\author Gary L. Pavlis
 **/
-TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw);
+TimeSeries WindowData(const TimeSeries& parent, const TimeWindow& tw);
 
 /*!
 // Extracts a requested time window of data from a parent ThreeComponentSeismogram object.
@@ -537,7 +539,7 @@ TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw);
 //\param tw defines the data range to be extracted from parent.
 //\author Gary L. Pavlis
 **/
-ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow& tw);
+ThreeComponentSeismogram WindowData(const ThreeComponentSeismogram& parent, const TimeWindow& tw);
 
 /*! Extract a specified time window from an ensemble.
 // The seispp library defines a fairly generic ensemble object that
@@ -553,9 +555,9 @@ ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow
 //\param  parent input ensemble 
 //\param tw TimeWindow to cut parent to produce output.
 //
-//\return new ensemble T as an auto_ptr cut to desired window.
+//\return new ensemble T as an shared_ptr cut to desired window.
 **/
-//template <class T> auto_ptr<T>WindowData(T& parent, TimeWindow& tw);
+//template <class T> shared_ptr<T>WindowData(T& parent, TimeWindow& tw);
 
 /*!
 // Sorts an ensemble by station:channel.  
@@ -583,7 +585,7 @@ void StaChanSort(TimeSeriesEnsemble& ensemble);
 
 \author Gary L. Pavlis
 **/
-auto_ptr<TimeSeriesEnsemble> StaChanRegExSubset(TimeSeriesEnsemble& parent,
+shared_ptr<TimeSeriesEnsemble> StaChanRegExSubset(TimeSeriesEnsemble& parent,
         string sta_expr, string chan_expr);
 #ifndef NO_ANTELOPE
 /*! 
@@ -604,13 +606,13 @@ that match are copied to the output.
 \param array contains the stations defining the array that will be used
 	to form the output ensemble.  
 
-\return auto_ptr<TimeSeriesEnsemble> containing data subset.
+\return shared_ptr<TimeSeriesEnsemble> containing data subset.
 	Note be warned that the function may return an empty 
 	ensemble if the parent does not have the sta attribute defined.
 	It will not be silent about this, however, as it will blast 
 	numerous messages to stderr if this happens.
 **/
-auto_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
+shared_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
 		SeismicArray& array);
 #endif
 /*! Sparse convolution routine.
@@ -764,6 +766,18 @@ template <class Tensemble> void LagShift(Tensemble& d,
 		mde.log_error();
 		throw SeisppError(error2);
 	}
+}
+template <class Tensemble> Tensemble remove_dead(Tensemble& d)
+{
+    Tensemble dedit(dynamic_cast<Metadata&>(d),1);
+    int nd=d.member.size();
+    int i;
+    for(i=0;i<nd;++i)
+    {
+        if(d.member[i].live)
+            dedit.member.push_back(d.member[i]);
+    }
+    return dedit;
 }
 /*! \brief Test a generic time series object for sample rate match with standard.
 
