@@ -529,6 +529,13 @@ int main(int argc, char **argv)
         te=control.get<double>("average_window_end");
         TimeWindow avgwin(ts,te);
         int maxsamples=control.get<int>("number_of_samples_cutoff");
+        if(windowlimit>0) 
+        {
+            maxsamples=windowlimit;
+            if(SEISPP_verbose) cerr << "mwpmavg:  -avglimit set average "
+                << "length to "<<windowlimit<<" pf number_samples_cutoff ignored"
+                    <<endl;
+        }
         string name_key=control.get_string("name_key");
         string key_type=control.get_string("name_key_type");
         allowed_key_types kt;
