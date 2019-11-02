@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>template</title>
+  </head>
+  <body>
+    <h1>template</h1>
+    <h3>Usage:</h3>
+    <p>mwpmavg outfile [-avglimit n -v --help -text -pf pffile] &lt; in<br>
+    </p>
+    <h3>Algorithm:</h3>
+    Computes time averages of particle motion estimates from a file of
+    PMTimeSeries objects in a serialized file read through stdin.&nbsp;
+    Output is a csv file defined by argument 1 (<i>outfile</i> in above
+    usage line).&nbsp;&nbsp; The program will never destroy <i>outfile</i>
+    but opens it in append mode if it is already present.&nbsp;&nbsp;
+    This allows multiple files to be processed putting all the output
+    into a single file.&nbsp;&nbsp; <br>
+    <br>
+    The algorithm used for time averaging is motivated by two
+    fundamental issues about particle motion estimates stored in a
+    PMTimeSries object.&nbsp; <br>
+    <ol>
+      <li>Because multiwavelet estimates are produced by convolution of
+        a set of (finite duration) wavelets with a parent three
+        component seismogram each time step is highly correlated with
+        neigboring time steps.&nbsp;&nbsp; All estimates within at least
+        + and - the time duration of the wavelet are correlat</li>
+      <li>All real data are not the response of a single, direct wave
+        pulse but best thought of as the first arrival pulse followed by
+        a string of scattered waves of unknown amplitude and
+        polarization.&nbsp;&nbsp; An assumption of the algorithm is that
+        the the time defined by the input through the parameter <i>phase_time_key</i>
+        is close to the time of the pulse that we want to estimate
+        polarization and that that pulse is dominant.&nbsp;&nbsp; This
+        is most true for direct wave phases and deep teleseismic
+        earthquakes.&nbsp; It is most questionable for regional phases
+        like Pn and Pg any any teleseismic phase near a major phase
+        crossover. <br>
+      </li>
+    </ol>
+    Because of these two fundamental issues the algorithm tries to
+    estimate an average from a minimal number of points with high signal
+    to noise near from the earliest times possible while attempting to
+    automatically handle more emergent signals.&nbsp;&nbsp; The
+    algorithm defines a time window that starts at the time defined by
+    the parameter <i>average_window_start</i> and has an absolute end
+    defined by the parameter <i>average_window_end</i>.&nbsp;
+    Experience has shown this process is more robust if the data are
+    preprocessed with the program called <a href="./mask_pm_snr.html">mask_pm_snr</a>.&nbsp;
+
+    That program defines lower signal to noise periods as data gaps that
+    are dropped from the averaging.&nbsp;&nbsp; The algorithm then
+    accumulates particle motion ellipses from the first sample with
+    significant snr until reaching an upper limit defined by the
+    parameter <i>number_of_samples_cutoff </i>or reaching the end of
+    the defined averaging window.&nbsp;&nbsp; <br>
+    <br>
+    Because the estimates are highly correlated (item 1 above) the
+    average particle motion vectors and error estimates are computed by
+    a mixed&nbsp; algorithm.&nbsp;&nbsp; The major axis direction is
+    first computed from a bootstrap mean of all estimates extracted from
+    the input window.&nbsp;&nbsp; Because the estimates are assumed to
+    be highly correlated, however, the error estimate saved is the
+    median of the ensemble of point estimates.&nbsp;&nbsp; The minor
+    axis computation is complicated by the fact that to be a valid
+    particle motion ellipse the minor and major axes must be
+    orthogonal.&nbsp;&nbsp; To handle this the algorithm computes an
+    initial estimate for an average minimum axis direction from the same
+    bootstrap mean method used to estimate the major axis unit
+    vector.&nbsp; We then define the plan formed by these two estimates
+    by the cross product between the major axis vector and the
+    preliminary estimate of the minor axis vector.&nbsp;&nbsp; The minor
+    axis is then defined as the vector perpendicular to the major axis
+    vector and in this plane.&nbsp;&nbsp; Amplitudes of both major and
+    minor axes are computed as the median of all point estimates.&nbsp;
+    Similarly, all error estimates are computed as simple scalar medians
+    of the point estimates.&nbsp; <br>
+    <h3>Options:</h3>
+    <i>-avglimit <br>
+    </i>Use this parameter to override the <i>number_of_samples_cutoff</i>
+    value in the parameter file.&nbsp;&nbsp; <br>
+    <i></i>
+    <p><i>-pf</i> <i>pffile<br>
+      </i>Use <i>pffile </i>instead of default (always the name of the
+      main program)<br>
+    </p>
+    <h3> </h3>
+    <i>-text<br>
+    </i>Write the output in text format.&nbsp; Default is binary
+    serialized file.<br>
+    <br>
+    <i>-v<br>
+    </i>Be more verbose.&nbsp; Note all log information goes to stderr
+    so it is best to use this option only for debugging problems.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.&nbsp; <br>
+    <br>
+    <h3>Parameter file:</h3>
+    <i>average_window_start </i>and <i>average_window_end<br>
+    </i>This pair of parameters define the analysis window as described
+    above.<br>
+    <br>
+    <i>number_of_samples_cutoff <br>
+    </i>Window cutoff size as described above.<br>
+    <br>
+    <i>phase </i>and <i>phase_time_key<br>
+    </i>This pair of parameters determine the relative time position of
+    the analysis window.&nbsp; Zero time of the analysis window is
+    defined as the time returned by a get with the key <i>phase_time_key</i>.&nbsp;&nbsp;
+
+    <i>phase</i> is simply a label for the seismic phase that is passed
+    to the output.&nbsp;&nbsp; <br>
+    <i></i><i></i><i></i>Many seispp programs have a parameter file
+    option.&nbsp; In this section describe the parameter file structure.
+    <br>
+    <br>
+    <i>name_key<br>
+    </i>This defines a single keyword passed to output.&nbsp;&nbsp; It
+    is intended as a generic way to add a different key to distinguish
+    multiple data sets.<br>
+    <br>
+    <i>AuxiliaryOutputMetadata<br>
+    </i>This Tbl of entries should not normally be changed as it changes
+    the output data format.&nbsp;&nbsp; This set of parameters are
+    pulled from the data object Metadata and written to the output file
+    as a set of columns of data appended to the right of the main
+    data.&nbsp; Change this only if you are prepared to alter any script
+    or program that reads the output of this program. <br>
+    <br>
+    <h3>Output CSV File</h3>
+    The output is a csv file with the data in this order:<br>
+majornrm,dmajornrm,majoraz,dmajoraz,majorinc,dmajorinc,minornrm,dminornrm,minoraz,dminoraz,minorinc,dminorinc,rectilinearity,drect,major_x,major_y,major_z,dtheta_major,minor_x,minor_y,minor_z,dtheta_minor,count<br>
+    <br>
+    These are followed by the entries in <i>AuxiliaryOutputMetadata</i>
+    in the order listed in the Tbl.&nbsp; <br>
+    <i></i>
+  </body>
+</html>
