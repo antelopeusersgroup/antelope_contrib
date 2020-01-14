@@ -25,7 +25,9 @@ void usage()
         << "Sample (binary) data are stored with the same root with extension .dat"<<endl
         << " -o Defines the base file name for output (default is MsPASSExport) "<<endl
         << " Use -t to select object type expected for input. "<<endl
-        << " (Allowed options=TimeSeries or Seismogram.  Others will cause an abort with an error message"<<endl
+        << " (Allowed options=TimeSeries or Seismogram.  Others will cause an abort with an error message."<<endl
+        << "Default is ThreeComponentSeismogram.)"<<endl
+        << "Default is ThreeComponentSeismogram"<<endl
         << " -pf use pffile instead of default export_to_mspass.pf"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
@@ -252,7 +254,8 @@ template <typename T> int save_sample_data(T& d, ofstream& dout)
   }
 }
 
-template <typename DataType> int export_to_mspass(ofstream& hdroutput,ofstream& dout,
+template <typename DataType> pair<int,int> export_to_mspass
+  (ofstream& hdroutput,ofstream& dout,
   NameMapper& require, NameMapper& optional, bool binary_data)
 {
     try{
@@ -261,7 +264,6 @@ template <typename DataType> int export_to_mspass(ofstream& hdroutput,ofstream& 
         char form('t');
         if(binary_data) form='b';
         StreamObjectReader<DataType> inp(form);
-        StreamObjectWriter<DataType>  outp(form);
         int count(0),nread(0);
         DataType d;
         while(inp.good())
@@ -313,7 +315,7 @@ template <typename DataType> int export_to_mspass(ofstream& hdroutput,ofstream& 
             serr.log_error();
           }
         }
-        return count;
+        return pair<int,int>(nread,count);
     }catch(...){throw;};
 }
 
@@ -374,11 +376,14 @@ int main(int argc, char **argv)
         /* Open the hdr file immediately, but open the sample data file alter to
         allow a change in file extension for 3c versus scalar data.*/
         string fname;
-        fname=outbase+".hdr";
+        fname=outbase+".yaml";  // yaml may be required for reading
         ofstream hdrostrm;
         hdrostrm.open(fname,std::ofstream::out);
+        /* We need to do this immediately to be sure epoch times are not 
+         * truncated */
+        hdrostrm<<std::setprecision(15);
         ofstream dout;
-        int count;
+        pair<int,int> count;
         /* dtype can have more valid values than this, but assum get_object_type
         aborts if they aren't supportd */
         switch (dtype)
@@ -401,8 +406,8 @@ int main(int argc, char **argv)
                     << "Fatal error - bug fix required. "<<endl;
                 exit(-1);
         };
-        cerr << "template:  copied "<<count<<" objects from stdin to stdout"
-            <<endl;
+        cerr << "export_to_mspass:  processed "<<count.first
+            <<" and converted "<<count.second<<" objects"<<endl;
     }catch(SeisppError& serr)
     {
         serr.log_error();
