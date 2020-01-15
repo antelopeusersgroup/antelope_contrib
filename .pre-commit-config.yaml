@@ -7,14 +7,14 @@ repos:
           - --safe
           - --quiet
         files: .+.(x|)py$
--   repo: https://gitlab.com/pycqa/flake8
-    rev: 3.7.9
-    hooks:
-    -   id: flake8
-        additional_dependencies:
-          - flake8-docstrings==1.5.0
-          - pydocstyle==5.0.2
-        files: .+\.(x|)py$
+#-   repo: https://gitlab.com/pycqa/flake8
+#    rev: 3.7.9
+#    hooks:
+#    -   id: flake8
+#        additional_dependencies:
+#          - flake8-docstrings==1.5.0
+#          - pydocstyle==5.0.2
+#        files: .+\.(x|)py$
 #-   repo: https://github.com/PyCQA/bandit
 #    rev: 1.6.2
 #    hooks:
