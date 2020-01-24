@@ -1,5 +1,5 @@
 """
-Utilities to work with dbcentral
+Utilities to work with dbcentral.
 
 Dbcentral will load the database and test for
 the existence of the 'clusters' table first. If missing
@@ -11,76 +11,103 @@ dbcentral tables will load normally and set
 self.type to "dbcentral".
 
 
-@author: Juan Reyes <reyes@ucsd.edu>
+@author: Juan Reyes <support@anf.ucsd.edu>
 @author: Geoff Davis <gadavis@ucsd.edu>
 
 @usage:
+
   Create:
      element = Dbcentral(path)
      element = Dbcentral(path,nickname)
-     element = Dbcentral(path,nickname,True) # Enable Debug mode. Verbose output
-     element = Dbcentral(path,nickname,False,['wfdisc','sitechan') # verify each db contains specifed tables with data in them
+
+     # Enable Debug mode. Verbose output
+     element = Dbcentral(path,nickname,True)
+
+     # verify each db contains specifed tables with data in them
+     element = Dbcentral(path,nickname,False,['wfdisc','sitechan')
+
   Access:
-     print element                           # Nice print of values
-     element.type                            # return string value for mode [dbcentral,masquerade]
-     element.path                            # return string value for path
-     element.nickname                        # return string value for nickname
-     element.list()                          # return list of databases
-     element(epoch)                          # return database matching the epoch time
-     element.purge(db)                       # remove database from class.
+     # Nice print of values
+     print(element)
+
+     # return string value for mode [dbcentral,masquerade]
+     element.type
+
+     # return string value for path
+     element.path
+
+     # return string value for nickname
+     element.nickname
+     j
+     # return list of databases
+     element.list()
+
+     # return database matching the epoch time
+     element(epoch)
+
+     # remove database from class.
+     element.purge(db)
 """
 
-# Start our imports
-import os,sys,signal
+import glob
+import logging
+import os
+import signal
+import sys
 
-if __name__ == '__main__':
+from six import string_types
+
+from antelope import datascope, stock
+
+if __name__ == "__main__":
     # Conditionally add in paths for finding antelope modules
     """
     Test the class
     """
-    import sys, os, signal
-
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    sys.path.append(os.environ['ANTELOPE'] + '/data/python')
-    sys.path.append(os.environ['ANTELOPE'] + 'contrib/data/python')
+    sys.path.append(os.environ["ANTELOPE"] + "/data/python")
+    sys.path.append(os.environ["ANTELOPE"] + "contrib/data/python")
 
-
-import antelope.datascope as datascope
-import antelope.stock as stock
-import logging
-import glob
 
 class DbcentralException(Exception):
-    """Base exception type for Dbcentral
-    """
+    """Base exception type for Dbcentral."""
+
     def __init__(self, msg):
+        """Initialze DbcenteralException."""
         self.msg = msg
+
     def __repr__(self):
-        return 'DbcentralException(msg=%r)' % (self.msg)
+        """Make a copy of self."""
+        return "DbcentralException(msg=%r)" % (self.msg)
+
 
 class UnknownVolumeTypeException(DbcentralException):
-    """
-    The Dbcentral cluster database contains an unknown Volume type.
-    """
-    def __init__(self,volumetype):
+    """The Dbcentral cluster database contains an unknown Volume type."""
+
+    def __init__(self, volumetype):
+        """Initialize class."""
         self.volumetype = volumetype
         msg = 'Volume type "%s" in cluster database not understood' % volumetype
         DbcentralException.__init__(msg)
+
     def __repr__(self):
-        return('UnknownVolumeTypeException(volumetype=%r)'%self.volumetype)
+        """Make a copy of self."""
+        return "UnknownVolumeTypeException(volumetype=%r)" % self.volumetype
+
 
 class NoDatabaseException(DbcentralException):
-    """
-    The Dbcentral database contains no valid databases
-    """
+    """The Dbcentral database contains no valid databases."""
+
     def __init__(self):
-        msg="No valid databases in dbcentral"
-        DbcentralException.__init__(self,msg)
+        """Initialize class."""
+        msg = "No valid databases in dbcentral"
+        DbcentralException.__init__(self, msg)
+
 
 class Dbcentral:
     """
-    Object representing the contents of an Antelope DBCentral database
+    Represent the contents of an Antelope DBCentral database.
 
     DBCentral databases are a meta-list of other Antelope databases.
     They allow a large database to be split up into a collection of smaller
@@ -90,21 +117,20 @@ class Dbcentral:
     """
 
     def __init__(self, path, nickname=None, debug=False, required_tables=None):
-        """
-        initalize Dbcentral class
+        """Initialize the Dbcentral object.
 
-        path is the path on disk to the dbcentral database descriptor file. If
-        the database specified is not a dbcentral database, this class goes
-        into "masquerade" mode where it will contain only a single database,
-        but still behave like a Dbcentral object.
+        @param path is the path on disk to the dbcentral database descriptor
+        file. If the database specified is not a dbcentral database, this class
+        goes into "masquerade" mode where it will contain only a single
+        database, but still behave like a Dbcentral object.
 
-        nickname is the task nickname, useful to filter databases by type.
+        @param nickname is the task nickname, useful to filter databases by type.
         REQUIRED when path is a dbcentral database instead of a waveform or
         other type of database
 
-        debug sets the logging level
+        @param debug sets the logging level
 
-        required_tables is a list of table names to validate in each database.
+        @param required_tables is a list of table names to validate in each database.
         A database is automatically dropped from the list of available
         databases if it does not contain these tables, or if those tables do
         not have any records.
@@ -117,177 +143,201 @@ class Dbcentral:
         if required_tables is None:
             self.required_tables = []
         else:
-            if isinstance(required_tables, basestring):
-                if len(required_tables) > 0 :
-                    self.required_tables=[required_tables]
-                else: self.required_tables=[]
+            if isinstance(required_tables, string_types):
+                if len(required_tables) > 0:
+                    self.required_tables = [required_tables]
+                else:
+                    self.required_tables = []
             else:
                 self.required_tables = required_tables
-        assert not isinstance(self.required_tables, basestring)
+        assert not isinstance(self.required_tables, string_types)
 
         self.glob = glob.glob
 
         self.logger = logging.getLogger(__name__)
 
         if self.debug:
-            self.logger.setLevel( logging.DEBUG )
+            self.logger.setLevel(logging.DEBUG)
 
         # Create dictionary to hold all the values
-        self.logger.debug( 'init(): path:%s nickname:%s debug:%s' \
-                % (self.path,self.nickname,self.debug) )
+        self.logger.debug(
+            "init(): path:%s nickname:%s debug:%s"
+            % (self.path, self.nickname, self.debug)
+        )
         self.dbs = {}
 
         # Load the dbs
-        self.logger.debug( '_get_list(): ' )
+        self.logger.debug("_get_list(): ")
         self._get_list()
 
     def __repr__(self):
+        """Duplicate self."""
         return (
-            "%s(dbname=%r, nickname=%r, debug=%r, required_tables=%r, type=%r, dbs=%r)"%(
+            "%s(dbname=%r, nickname=%r, debug=%r, required_tables=%r,"
+            + " type=%r, dbs=%r)"
+            % (
                 self.__class__.__name__,
-                self.path, self.nickname, self.debug, self.required_tables,
-                self.type,self.dbs))
+                self.path,
+                self.nickname,
+                self.debug,
+                self.required_tables,
+                self.type,
+                self.dbs,
+            )
+        )
 
     def __str__(self):
-        """
-        end-user/application display of content using print() or log.msg()
-        """
-        start="An instance of the %s class at %r containing %d databases: " % (
-            self.__class__.__name__, self.path, len(self.dbs))
-        middle=' ,'.join(self.dbs.keys())
-        return start+middle
+        """Generate string for end-user/application display of content."""
+        start = "An instance of the %s class at %r containing %d databases: " % (
+            self.__class__.__name__,
+            self.path,
+            len(self.dbs),
+        )
+        middle = " ,".join(self.dbs.keys())
+        return start + middle
 
     def info(self):
-        self.logger.info( "Dbcentral.nickname => %s" % self.nickname )
-        self.logger.info( "Dbcentral.type => %s" % self.type )
-        self.logger.info( "Dbcentral.path => %s" % self.path )
-        self.logger.info( "Dbcentral.list => %s" % self.list() )
+        """Print log messages with information about this class."""
+        self.logger.info("Dbcentral.nickname => %s" % self.nickname)
+        self.logger.info("Dbcentral.type => %s" % self.type)
+        self.logger.info("Dbcentral.path => %s" % self.path)
+        self.logger.info("Dbcentral.list => %s" % self.list())
         for element in sorted(self.dbs):
-            self.logger.info( "%s => %s" % (element,self.dbs[element]['times']) )
-
+            self.logger.info("%s => %s" % (element, self.dbs[element]["times"]))
 
     def __call__(self, time=stock.now()):
         """
-        method to intercepts data requests.
-            time default is "now"
+        Intercept data requests.
+
+        Default value of time is "now"
         """
 
         try:
             time = float(time)
-        except Exception,e:
-            print "\n*Dbcentral*: Dbcentral() => error in time=>[%s] %s" % \
-                    (time,time.__class__)
+        except Exception:
+            print(
+                "\n*Dbcentral*: Dbcentral() => error in time=>[%s] %s"
+                % (time, time.__class__,)
+            )
         else:
             for element in sorted(self.dbs):
-                start = self.dbs[element]['times'][0]
-                end = self.dbs[element]['times'][1]
+                start = self.dbs[element]["times"][0]
+                end = self.dbs[element]["times"][1]
                 if start < time and time < end:
                     return element
 
-        raise DbcentralException( "No db match for time=>[%s]" % time )
-
+        raise DbcentralException("No db match for time=>[%s]" % time)
 
     def _get_list(self):
         try:
             db = datascope.dbopen(self.path, "r")
-        except Exception,e:
-            raise DbcentralException("Cannot open database %s (%s)" % (self.path,e))
-
+        except Exception as e:
+            raise DbcentralException("Cannot open database %s (%s)" % (self.path, e))
 
         try:
-            db = db.lookup('','clusters','','')
-        except datascope.DblookupFieldError,e:
-            self.type = 'masquerade'
+            db = db.lookup("", "clusters", "", "")
+        except datascope.DblookupFieldError:
+            self.type = "masquerade"
             self.nickname = None
-            self.dbs[self.path] = {'times': [-10000000000.0,10000000000.0]}
-            self.logger.info( "Not a dbcentral database. Set single database." )
+            self.dbs[self.path] = {"times": [-10000000000.0, 10000000000.0]}
+            self.logger.info("Not a dbcentral database. Set single database.")
             return
 
         else:
-            self.type = 'dbcentral'
+            self.type = "dbcentral"
             if self.nickname is None:
                 raise ValueError("Need nickname for Dbcentral clustername regex.")
 
         try:
-            db = db.lookup('','clusters','','dbNULL')
-            null_time,null_endtime = db.getv('time','endtime')
-        except Exception,e:
-            raise DbcentralException("Cannot look up null values in clusters table. (%s)" % e)
-
+            db = db.lookup("", "clusters", "", "dbNULL")
+            null_time, null_endtime = db.getv("time", "endtime")
+        except Exception as e:
+            raise DbcentralException(
+                "Cannot look up null values in clusters table. (%s)" % e
+            )
 
         expr = "clustername =='%s'" % self.nickname
 
         try:
             db = db.subset(expr)
-        except Exception,e:
+        except Exception as e:
             raise DbcentralException("Cannot subset on clustername. %s" % e)
 
         try:
-            db = db.sort('time')
+            db = db.sort("time")
             nclusters = db.record_count
-        except Exception,e:
+        except Exception as e:
             raise DbcentralException("Cannot sort on 'time' . %s" % e)
 
         if nclusters < 1:
-            raise DbcentralException(
-                "No matches for nickname \"%s\"." % self.nickname)
+            raise DbcentralException('No matches for nickname "%s".' % self.nickname)
 
-        self.logger.debug( "Records=%s" % nclusters )
+        self.logger.debug("Records=%s" % nclusters)
 
         for i in range(nclusters):
-            self.logger.debug( "db.record=%s" % i )
+            self.logger.debug("db.record=%s" % i)
             db.record = i
 
             try:
                 dbname_template = db.extfile()[-1]
-            except Exception, e:
+            except Exception as e:
                 raise DbcentralException("Cannot run db.extfile(). %s" % e)
 
-            self.logger.debug( "dbname_template=%s" % dbname_template )
+            self.logger.debug("dbname_template=%s" % dbname_template)
 
             try:
-                volumes,net,time,endtime = db.getv("volumes","net","time","endtime")
-            except Exception,e:
-                raise DbcentralException("Problems with db.getv('volumes','net','time','endtime'). (%s)\n" % e)
+                volumes, net, time, endtime = db.getv(
+                    "volumes", "net", "time", "endtime"
+                )
+            except Exception as e:
+                raise DbcentralException(
+                    "Problems with db.getv('volumes','net',"
+                    + "'time','endtime'). (%s)\n" % e
+                )
 
-            self.logger.debug( "volumes=%s" % volumes )
-            self.logger.debug( "net=%s" % net )
-            self.logger.debug( "time=%s" % time )
-            self.logger.debug( "endtime=%s" % endtime )
+            self.logger.debug("volumes=%s" % volumes)
+            self.logger.debug("net=%s" % net)
+            self.logger.debug("time=%s" % time)
+            self.logger.debug("endtime=%s" % endtime)
 
             if endtime == null_endtime:
                 # This will be problematic with realtime systems
                 endtime = stock.now()
 
-            self.logger.debug( "endtime=%s" % endtime )
+            self.logger.debug("endtime=%s" % endtime)
 
-            start_year  = int(stock.epoch2str(time,"%Y"))
-            end_year    = int(stock.epoch2str(endtime,"%Y"))
-            start_month = int(stock.epoch2str(time,"%L"))
-            end_month   = int(stock.epoch2str(endtime,"%L"))
+            start_year = int(stock.epoch2str(time, "%Y"))
+            end_year = int(stock.epoch2str(endtime, "%Y"))
+            start_month = int(stock.epoch2str(time, "%L"))
+            end_month = int(stock.epoch2str(endtime, "%L"))
 
-            if volumes == 'single':
+            if volumes == "single":
 
-                self._test_db(voltime,volendtime,dbname)
+                dbname = stock.epoch2str(time, dbname_template)
+                self._test_db(time, endtime, dbname)
 
-            elif volumes == 'year':
+            elif volumes == "year":
 
-                for y in range(start_year,end_year+1):
+                for y in range(start_year, end_year + 1):
 
-                    voltime    = stock.str2epoch("1/1/%s 00:00:00" % y)
+                    voltime = stock.str2epoch("1/1/%s 00:00:00" % y)
                     volendtime = stock.str2epoch("12/31/%s 23:59:59" % y)
-                    dbname     = stock.epoch2str(voltime,dbname_template)
+                    dbname = stock.epoch2str(voltime, dbname_template)
 
-                    self._test_db(voltime,volendtime,dbname)
+                    self._test_db(voltime, volendtime, dbname)
 
-            elif volumes == 'month':
+            elif volumes == "month":
 
-                vol_month   = start_month
-                vol_year    = start_year
+                vol_month = start_month
+                vol_year = start_year
+                vol_endmonth = end_month
+                vol_endyear = end_year
 
-                while vol_year < end_year or ( vol_year == end_year and vol_month <= end_month ):
+                while vol_year < end_year or (
+                    vol_year == end_year and vol_month <= end_month
+                ):
 
-                    voltime           = stock.str2epoch("%d/1/%d" % (vol_month,vol_year) )
+                    voltime = stock.str2epoch("%d/1/%d" % (vol_month, vol_year))
 
                     if vol_month < 12:
                         vol_month = vol_month + 1
@@ -295,38 +345,39 @@ class Dbcentral:
                         vol_year = vol_year + 1
                         vol_month = 1
 
-                    volendtime = stock.str2epoch("%d/1/%d" % (vol_endmonth,vol_endyear) ) - 1
-                    dbname     = stock.epoch2str(int(voltime), dbname_template)
+                    volendtime = (
+                        stock.str2epoch("%d/1/%d" % (vol_endmonth, vol_endyear)) - 1
+                    )
+                    dbname = stock.epoch2str(int(voltime), dbname_template)
 
-                    self._test_db(voltime,volendtime,dbname)
+                    self._test_db(voltime, volendtime, dbname)
 
-            elif volumes == 'day':
+            elif volumes == "day":
 
                 start_day = int(stock.yearday(time))
-                end_day   = int(stock.yearday(endtime))
+                end_day = int(stock.yearday(endtime))
 
-                vol_day   = start_day
+                vol_day = start_day
 
                 while vol_day <= end_day:
 
-                    voltime    = stock.epoch(vol_day)
-                    volendtime = voltime + 86399 # one second less than a full day
-                    dbname     = stock.epoch2str(voltime, dbname_template)
+                    voltime = stock.epoch(vol_day)
+                    volendtime = voltime + 86399  # full day -1 sec
+                    dbname = stock.epoch2str(voltime, dbname_template)
 
-                    if self._test_db(voltime,volendtime,dbname):
-                        self.dbs[dbname] = {'times': [time,endtime]}
+                    if self._test_db(voltime, volendtime, dbname):
+                        self.dbs[dbname] = {"times": [time, endtime]}
 
-                    vol_day = stock.yearday((stock.epoch(vol_day)+86400))
+                    vol_day = stock.yearday((stock.epoch(vol_day) + 86400))
 
             else:
                 raise UnknownVolumeTypeException(volumes)
 
-        self.logger.debug( "DBS=%s" % self.dbs.keys() )
+        self.logger.debug("DBS=%s" % self.dbs.keys())
 
-
-    def _test_db(self,time,endtime,dbname):
+    def _test_db(self, time, endtime, dbname):
         """
-        verify that the db is valid before saving the value.
+        Verify that the db is valid before saving the value.
 
         Skips databases that don't match the criteria specified. If
         self.verifytables is set, extra tests are performed to ensure that the
@@ -334,119 +385,119 @@ class Dbcentral:
         data.
         """
 
-        self.logger.debug( "Test for time=%s =>> %s" % (time,dbname) )
+        self.logger.debug("Test for time=%s =>> %s" % (time, dbname))
 
-        #if os.path.isfile(dbname):
+        # if os.path.isfile(dbname):
         #    self.dbs[dbname] = {'times': [time,endtime]}
         #    return
 
-        #if self.glob("%s.*" % dbname):
+        # if self.glob("%s.*" % dbname):
         #    self.dbs[dbname] = {'times': [time,endtime]}
         #    self.logger.warning( "No descriptor file for (%s)." % dbname )
         #    return
 
         try:
-            db = datascope.dbopen(dbname, 'r')
-        except datascope.DatascopeError, e:
-            self.logger.error('Cannot dbopen %s, skipping.' % dbname)
+            db = datascope.dbopen(dbname, "r")
+        except datascope.DatascopeError:
+            self.logger.error("Cannot dbopen %s, skipping." % dbname)
             return False
         else:
             for table in self.required_tables:
                 try:
                     dbtbl = db.lookup(table=table)
                     try:
-                        present = dbtbl.query(datascope.dbTABLE_PRESENT)
+                        dbtbl.query(datascope.dbTABLE_PRESENT)
                         records = dbtbl.query(datascope.dbRECORD_COUNT)
                         if not records:
-                            logger.error('%s.%s is an empty table. Skipping db.' % (dbname,table))
+                            self.logger.error(
+                                "%s.%s is an empty table. Skipping db."
+                                % (dbname, table)
+                            )
                             return False
-                    except datascope.DatascopeError, e:
-                        self.logger.error('The table %s.%s is not present. Skipping db.' % (dbname,table))
+                    except datascope.DatascopeError:
+                        self.logger.error(
+                            "The table %s.%s is not present. Skipping db."
+                            % (dbname, table)
+                        )
                         return False
                 finally:
-                    dbfree(dbtbl)
+                    datascope.dbfree(dbtbl)
         finally:
-            dbclose(db)
+            datascope.dbclose(db)
 
         # If we get here, the database passes our tests. Add it to the list
         return True
 
-    def after(self,time):
-        """
-        Method to get the rest of the
-        databases after the designated
-        timestamp.
-        """
+    def after(self, time):
+        """Get the rest of the databases after the designated timestamp."""
 
         dbs_after = []
 
         try:
             time = float(time)
-        except Exception,e:
-            self.logger.error("error in time=>[%s] %s" % \
-                    (time,time.__class__))
+        except Exception:
+            self.logger.error("error in time=>[%s] %s" % (time, time.__class__))
         else:
             for element in sorted(self.dbs):
-                start = self.dbs[element]['times'][0]
-                end = self.dbs[element]['times'][1]
-                if time < start  and time < end:
+                start = self.dbs[element]["times"][0]
+                end = self.dbs[element]["times"][1]
+                if time < start and time < end:
                     dbs_after.extend([element])
 
         return dbs_after
 
-
     def list(self):
-        """
-        Get the databases contained within the dbcentral class
-        """
+        """Get the databases contained within the dbcentral class."""
 
         try:
             return sorted(self.dbs.keys())
-        except:
+        except Exception:
             raise NoDatabaseException()
 
-
-    def purge(self,tbl):
-        """
-        Method to clean Dbcentral object by removing a database
-        """
-        self.logger.debug( 'Dbcentral.purge() => %s' % tbl )
+    def purge(self, tbl):
+        """Cean Dbcentral object by removing a database."""
+        self.logger.debug("Dbcentral.purge() => %s" % tbl)
 
         try:
             del self.dbs[tbl]
-        except :
+        except Exception:
             pass
 
+
 def main():
-    """
+    """Run tests on the Antelope demo database.
+
     This test function will run if the file is called directly
 
     Opens the Antelope demo database and runs some tests on it
     """
     import logging
     from pprint import pprint
+
     logging.basicConfig()
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
-    time =  1262404000.00000
+    time = 1262404000.00000
 
-    dbcntl = Dbcentral('/opt/antelope/data/db/demo/demo', debug=True,
-                       required_tables=['wfdisc','stachan']
-                      )
+    dbcntl = Dbcentral(
+        "/opt/antelope/data/db/demo/demo",
+        debug=True,
+        required_tables=["wfdisc", "stachan"],
+    )
 
-    print 'dbcntl.__repr__() = %r' % dbcntl
-    pprint(dbcntl,indent=10,width=1,depth=1)
-    pprint(dbcntl.dbs,indent=10,width=1,depth=None)
-    print 'dbcntl.str__() is %s' % dbcntl
-    print ( 'dbcntl(%s) == %s' % (time,dbcntl(time)) )
+    print("dbcntl.__repr__() = %r" % dbcntl)
+    pprint(dbcntl, indent=10, width=1, depth=1)
+    pprint(dbcntl.dbs, indent=10, width=1, depth=None)
+    print("dbcntl.str__() is %s" % dbcntl)
+    print("dbcntl(%s) == %s" % (time, dbcntl(time)))
     try:
-        dbcntl.purge('test')
-    except Exception, e:
-        logger.info('dbcntl.purge(%s) => %s' % ('test',e) )
+        dbcntl.purge("test")
+    except Exception as e:
+        logger.info("dbcntl.purge(%s) => %s" % ("test", e))
 
-    print('Done with Dbcentral demo.')
+    print("Done with Dbcentral demo.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
