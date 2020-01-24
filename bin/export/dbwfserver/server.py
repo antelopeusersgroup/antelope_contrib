@@ -1,11 +1,10 @@
 """main server resource for dbwfserver."""
 
 from __main__ import config
+from dbwfserver.resource import FaviconResource, QueryParserResource
 from twisted.application import internet, service
 from twisted.python.log import ILogObserver, PythonLoggingObserver
 from twisted.web import server, static
-
-from .resource import FaviconResource, QueryParserResource
 
 for port, db in config.run_server.items():
 
