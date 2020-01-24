@@ -629,14 +629,14 @@ class QueryParserResource(twisted.web.resource.Resource):
             if results is not False:
                 if type(results).__name__ == "list" or type(results).__name__ == "dict":
                     uri.setHeader("content-type", "application/json")
-                    uri.write(json.dumps(results))
+                    uri.write(json.dumps(results).encode())
                 else:
                     uri.setHeader("content-type", "text/html")
-                    uri.write(results)
+                    uri.write(results.encode())
             else:
                 uri.setHeader("content-type", "text/html")
                 uri.setResponseCode(500)
-                uri.write("Problem with server!")
+                uri.write(b"Problem with server!")
 
             try:
                 uri.finish()
