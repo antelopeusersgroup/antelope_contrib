@@ -15,8 +15,6 @@ from string import Template
 import sys
 from textwrap import dedent
 
-from dbcentral import Dbcentral
-from dbwfserver.util import Events, Stations, isNumber, load_template
 import twisted.internet.defer
 import twisted.internet.reactor
 from twisted.internet.threads import deferToThread
@@ -24,7 +22,10 @@ import twisted.web.resource
 import twisted.web.server
 import twisted.web.static
 
-import antelope.stock as stock
+from antelope import stock
+
+from .dbcentral import Dbcentral
+from .util import Events, Stations, isNumber, load_template
 
 
 class FaviconResource(twisted.web.static.File):
