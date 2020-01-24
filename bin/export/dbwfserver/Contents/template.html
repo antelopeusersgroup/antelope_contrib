@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html>
@@ -13,7 +13,7 @@
         google.load("jqueryui", "1.8.9");
         google.load("jqueryui", "1.8.9", {uncompressed:true});
         A truncated version (such as google.load("jqueryui", "1")
-        which loads the most recent version in that branch (in this case, 1.8.2). 
+        which loads the most recent version in that branch (in this case, 1.8.2).
 
     Using Google jsapi loader to load a css stylesheet
         google.loader.writeLoadTag(a,b,c)
@@ -22,7 +22,7 @@
             c, is the method used to "include" the link element.
     -->
 
-    <script src="http://www.google.com/jsapi" language="javascript" type="text/javascript"></script>
+    <script src="//www.google.com/jsapi" language="javascript" type="text/javascript"></script>
     <script language="javascript" type="text/javascript">
         google.load("jquery", "1.6.1");
         google.load("jqueryui", "1.8.13");
@@ -32,8 +32,8 @@
 
     Microsoft Ajax CDN (Content Delivery Network)
 
-    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.5.min.js"></script>  
-    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.8/jquery-ui.min.js"></script>  
+    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.5.min.js"></script>
+    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.8/jquery-ui.min.js"></script>
     <link type="text/css" rel="Stylesheet" href="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.8/themes/redmond/jquery-ui.css" />
 
     -->
@@ -52,7 +52,7 @@
 
     <script type="text/javascript" src="$proxy_url/static/jquery/dbwfserver.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="$proxy_url/static/css/dbwfserver.css">
+	<link rel="stylesheet" type="text/css" href="$proxy_url/static/css/dbwfserver.css"></link>
 
 
 
@@ -92,7 +92,7 @@
             Last data for station X: http://server/wf/X/.*
             Last week for station X: http://server/wf/X/week
             Flags: [day,week,month]
-            Regex options: 
+            Regex options:
                 .*
                 ....
                 A...
@@ -112,9 +112,9 @@
 
         <h1>Traces:</h1>
         <div id="plot_size_wrapper">
-            <div class="controls" id="plot_size"> 
+            <div class="controls" id="plot_size">
                 <input type="radio" id="big" name="wf_size" value="big"/>
-                <label for="big">Big</label> 
+                <label for="big">Big</label>
                 <input type="radio" id="medium" name="wf_size" value="medium"/>
                 <label for="medium">Medium</label>
                 <input type="radio" id="small" name="wf_size" value="small"/>
@@ -125,9 +125,9 @@
         <br/>
 
         <div id="plot_type_wrapper">
-            <div class="controls" id="plot_type"> 
+            <div class="controls" id="plot_type">
                 <input type="radio" id="waveform" name="wf_type" value="waveform"/>
-                <label for="waveform">Waveforms</label> 
+                <label for="waveform">Waveforms</label>
                 <input type="radio" id="coverage" name="wf_type" value="coverage"/>
                 <label for="coverage">Coverage</label>
             </div>
@@ -157,9 +157,9 @@
 
         <h2>Timezone:</h2>
         <div id="time_zone_wrapper">
-            <div id="time_zone"> 
+            <div id="time_zone">
                 <input type="radio" id="utc" name="timezone" value="UTC"/>
-                <label for="utc">UTC</label> 
+                <label for="utc">UTC</label>
                 <input type="radio" id="local" name="timezone" value="local"/>
                 <label for="local">Local</label>
             </div>
@@ -167,9 +167,9 @@
 
         <h2>Acceleration Units:</h2>
         <div id="acceleration">
-            <div class="controls" id="acceleration_type"> 
+            <div class="controls" id="acceleration_type">
                 <input type="radio" id="cm" name="accel_type" value="cm"/>
-                <label for="cm">cm/sec/sec</label> 
+                <label for="cm">cm/sec/sec</label>
                 <input type="radio" id="nm" name="accel_type" value="nm"/>
                 <label for="nm">nm/sec/sec</label>
             </div>
@@ -331,7 +331,7 @@
 
     </div>
 
-    <div id="control_bar" class='ui-state-highlight ui-corner-all' style="padding: 5px; margin-top: 5px; margin-bottom: 5px"> 
+    <div id="control_bar" class='ui-state-highlight ui-corner-all' style="padding: 5px; margin-top: 5px; margin-bottom: 5px">
 
         <button id='home'><span class="ui-icon ui-icon-home" style="float: left; margin-right: 0.3em;"></span>Home</button>
         <button id='openconfig'><span class="ui-icon ui-icon-gear" style="float: left; margin-right: 0.3em;"></span>Config</button>
@@ -351,7 +351,7 @@
         </span>
 
     </div>
-                
+
     <div id="errors" style='margin-top:5px;margin-bottom:5px' class="ui-helper-hidden ui-widget-content ui-corner-all ui-state-error">
         <button id='remove_error'><span class="ui-icon ui-icon-close" style="float: left; margin-right: 0.3em;"></span>CLOSE</button>
         <br />
@@ -385,7 +385,7 @@
             <input type="submit" id="load_chans" class="controls" value="Load"/>
         </div>
 
-        <div class='controls ui-state-highlight ui-corner-all' style="padding: 5px; margin: 5px"> 
+        <div class='controls ui-state-highlight ui-corner-all' style="padding: 5px; margin: 5px">
             <input type="submit" id="plot" value="Plot"/>
             <input type="submit" id="clear" value="Clear"/>
         </div>
@@ -399,7 +399,7 @@
 
 <div id="wforms" class="ui-helper-hidden ui-widget-content ui-corner-all"></div>
 
-<div id="load_bar" class='ui-state-highlight ui-corner-all ui-helper-hidden' style="padding: 5px; margin-top: 5px; margin-bottom: 5px"> 
+<div id="load_bar" class='ui-state-highlight ui-corner-all ui-helper-hidden' style="padding: 5px; margin-top: 5px; margin-bottom: 5px"></div>
 
 <script type="text/javascript">
 
