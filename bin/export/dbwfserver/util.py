@@ -463,7 +463,7 @@ class Stations:
 
     def dates(self):
         """Return start and end times for a station."""
-        return self.wfdates.keys()
+        return list(self.wfdates.keys())
 
     def channels(self, station=[]):
         """Get unique list of channels."""
@@ -488,7 +488,7 @@ class Stations:
 
                     chans[ch] = 1
 
-        return chans.keys()
+        return list(chans.keys())
 
     def convert_sta(self, list=[r".*"]):
         """Get list of stations for the query."""
@@ -523,7 +523,7 @@ class Stations:
 
     def list(self):
         """List of station names in this Stations object."""
-        return self.stachan_cache.keys()
+        return list(self.stachan_cache.keys())
 
 
 class Events:
@@ -599,7 +599,7 @@ class Events:
 
     def list(self):
         """Produce list of event key names."""
-        return self.event_cache.keys()
+        return list(self.event_cache.keys())
 
     def table(self):
         """Produce table representation of self."""
