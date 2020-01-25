@@ -10,9 +10,9 @@ for port, db in config.run_server.items():
 
     root = QueryParserResource(config, db)
 
-    root.putChild("static", static.File(config.static_dir))
+    root.putChild(b"static", static.File(config.static_dir))
 
-    root.putChild("favicon.ico", FaviconResource(config))
+    root.putChild(b"favicon.ico", FaviconResource(config))
 
     site = server.Site(root)
 
