@@ -260,9 +260,10 @@ class QueryParserResource(twisted.web.resource.Resource):
         # This (localhost:8008/stations/) is the same as # (localhost:8008/stations)
         #
         path = request.prepath
+        # print("Hello, world! I am located at %r." % (request.prepath))
         while True:
             try:
-                path.remove("")
+                path.remove(b"")
             except Exception:
                 break
 
@@ -319,7 +320,7 @@ class QueryParserResource(twisted.web.resource.Resource):
         )
         self.logger.debug("QueryParser(): render_uri() query => [%s]" % query)
 
-        if query["data"]:
+        if query["data"] is True:
 
             self.logger.debug('QueryParser(): render_uri() "data" query')
 
@@ -464,7 +465,7 @@ class QueryParserResource(twisted.web.resource.Resource):
 
         response_meta.update(self.tvals)
 
-        if not path:
+        if (not path) or len(path) == 0:
             return self.uri_results(
                 request, self.root_template.safe_substitute(response_meta)
             )
@@ -479,7 +480,7 @@ class QueryParserResource(twisted.web.resource.Resource):
         if request.args:
             response_meta["setupUI"] = json.dumps(request.args)
 
-        response_meta["meta_query"] = json.dumps(response_meta["meta_query"])
+        response_meta["meta_query"] = json.dumps(str(response_meta["meta_query"]))
 
         if path[0] == "wf":
             return self.uri_results(
