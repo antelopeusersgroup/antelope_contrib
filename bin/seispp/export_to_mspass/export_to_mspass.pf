@@ -1,0 +1,29 @@
+required &Tbl{
+dt delta real
+origin.depth source_depth real
+origin.lat source_lat real
+origin.lon source_lon real
+origin.time source_time real
+site.lat site_lat real
+site.lon site_lon real
+site.elev site_elev real
+nsamp npts int
+sta sta string
+evid source_id int
+U11 U11 real
+U12 U12 real
+U13 U13 real
+U21 U21 real
+U22 U22 real
+U23 U23 real
+U31 U31 real
+U32 U32 real
+U33 U33 real
+}
+optional &Tbl{
+origin.mb mb real
+origin.ms ms real
+arrival.iphase iphase string
+assoc.phase phase string
+orid orid int
+}
