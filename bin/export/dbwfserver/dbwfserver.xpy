@@ -2,10 +2,12 @@ import os
 import sys
 import platform
 import logging
+
 logging.basicConfig()
 
 from twisted.scripts.twistd import run
 import dbwfserver.config as configuration
+
 
 def system_print():
     """
@@ -14,19 +16,20 @@ def system_print():
     """
 
     print
-    print 'uname:', platform.uname()
+    print("uname:", platform.uname())
     print
-    print 'Version      :', sys.version_info
-    print 'Version      :', platform.python_version()
-    print 'Compiler     :', platform.python_compiler()
-    print 'Build        :', platform.python_build()
+    print("Sys Version  :", sys.version_info)
+    print("Py Version   :", platform.python_version())
+    print("Compiler     :", platform.python_compiler())
+    print("Build        :", platform.python_build())
     print
-    print 'system   :', platform.system()
-    print 'node     :', platform.node()
-    print 'release  :', platform.release()
-    print 'version  :', platform.version()
-    print 'machine  :', platform.machine()
-    print 'processor:', platform.processor()
+    print("system   :", platform.system())
+    print("node     :", platform.node())
+    print("release  :", platform.release())
+    print("version  :", platform.version())
+    print("machine  :", platform.machine())
+    print("processor:", platform.processor())
+
 
 def main():
     """
@@ -45,12 +48,12 @@ def main():
     global config
 
     # Always release the Python GIL when using the Antelope bindings
-    os.environ['ANTELOPE_PYTHON_GILRELEASE']='1'
+    os.environ["ANTELOPE_PYTHON_GILRELEASE"] = "1"
 
     # Set up the logging infrastructure
-    logger=logging.getLogger('dbwfserver')
+    logger = logging.getLogger("dbwfserver")
 
-    #Configure system with command-line flags and pf file values.
+    # Configure system with command-line flags and pf file values.
     config = configuration.Config_Server()
     sys.argv = config.configure()
 
@@ -60,9 +63,10 @@ def main():
     if config.debug:
         logger.setLevel(logging.DEBUG)
 
-    logger.info('Start Server!')
+    logger.info("Start Server!")
 
     run()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
