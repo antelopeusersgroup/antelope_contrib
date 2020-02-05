@@ -136,7 +136,7 @@ main(int argc, char **argv)
 	if (access(datafilename, 4)) {
 		elog_die(0, "datafile %s should be READABLE!\n", datafilename);
 	}
-	if (dbcreate(dbname, "polygon1.2", 0, 0, 0)) {
+	if (dbcreate(dbname, "polygon1.2", 0, 0, 0, 0, 0)) {
 		elog_die(1, "can't create database %s\n", dbname);
 	}
 	if (!strcmp(name, "-")) {

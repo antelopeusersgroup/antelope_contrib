@@ -89,7 +89,7 @@ main (int argc, char **argv)
 	
 	if (verbose) elog_notify(0,"creating database descriptor %s",dboutname);
 	
-	if (dbcreate(dboutname,"places1.2",0,0,0)) {
+	if (dbcreate(dboutname,"places1.2",0,0,0,0,0)) {
 		elog_die(1,"cannot create database %s",dboutname);
 	}
 	dbopen(dboutname,"r+",&dbout);
