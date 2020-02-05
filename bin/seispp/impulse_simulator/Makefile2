@@ -1,4 +1,5 @@
 BIN=impulse_simulator
+PF=impulse_simulator.pf
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static

@@ -145,6 +145,24 @@ int find_end_block(list<string>& alllines,list<string>::iterator first)
         return(count);
     }catch(...){throw;};
 }
+pair<string,string> split_line(string s)
+{
+  const string white(" \t");
+  const string terminators("\n#");
+  size_t is,ie;
+  is=s.find_first_not_of(white,0);
+  ie=s.find_first_of(white,is);
+  string key;
+  key.assign(s,is,ie-is);
+  is=s.find_first_not_of(white,ie);
+  ie=s.find_first_of(terminators,is);
+  string val;
+  val.assign(s,is,ie-is);
+  pair<string,string> result;
+  result.first=key;
+  result.second=val;
+  return result;
+}
 /* Note this constructor is recursive.  That is when there is
    a nest &Arr{ in a pf this constructor will call itself for
    each Arr block */
@@ -161,9 +179,18 @@ PfStyleMetadata::PfStyleMetadata(list<string> alllines) : Metadata()
         int lines_this_block;
         /* This is redundant, but cost is low for long term stability*/
         if(is_comment_line(*lptr)) continue;
+        /* Older version used a stringstream here but it would not
+           parse string attributes with embedded white space.  This 
+           revised algorithm will do that.  returned pair has the 
+           key as first and the string with the key trimmed in second. */
+        /*
         istringstream is(*lptr);
         is>>key;
         is>>token2;
+        */
+        pair<string,string> sl=split_line(*lptr);
+        key=sl.first;
+        token2=sl.second;
         PfStyleInputType type_of_this_line=arg_type(token2);
         switch(type_of_this_line)
         {

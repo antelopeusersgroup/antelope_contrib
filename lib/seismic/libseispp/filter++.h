@@ -107,7 +107,7 @@ public:
 	/*! Apply this filter to a ThreeComponentSeismogram object.
 	* A ThreeComponentSeismogram is a data object holding 
 	* three-component seismic data stored in a matrix.  This filters
-	* the data vector in a TimeSeries object.  The filter is applied to 
+	* the data stored in that matrix.  The filter is applied to 
 	* each "channel" of the data matrix.  
 	* The filter alters the data 
 	* and posts the filter parameters as string Metadata accessible with the 
@@ -116,6 +116,21 @@ public:
 	* (e.g. "DEMEAN; BW 0.5 5 2.5 2").
 	*/
 	void apply(ThreeComponentSeismogram& tce);
+        /*! Apply the zero phase version of this filter.
+
+          The filters implemented by this object are minimum phase.   That
+          is, when the apply method is used we get the minimum phase
+          version of the filter.   Use this method if you want the 
+          zero phase equivalent.   Note the current implementation is
+          done by running the minimum phase filter through the data a 
+          second time in reverse.   This is distorts the frequency response 
+          of the filter to be the square of the one pass response.  
+
+          \exception - will throw an exception if the type is anything but
+            lowpass, highpass, or bandpass.   
+          */
+        void zerophase(TimeSeries& ts);
+        void zerophase(ThreeComponentSeismogram& tce);
 #ifndef NO_ANTELOPE
 	/*! Apply this filter to a trace database. */
 	void apply(Dbptr tr);

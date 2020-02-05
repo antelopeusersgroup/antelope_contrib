@@ -99,6 +99,8 @@ int main(int argc, char **argv)
         int k;
         for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
         {
+          //Drop data marked dead 
+          if(!dptr->live) continue;
           if(!accum_mode)
           {
             if(!dptr->components_are_cardinal) 

@@ -520,7 +520,7 @@ long dbsave(ComplexTimeSeries& ts,Dbptr db,
 //\param tw defines the data range to be extracted from parent.
 //\author Gary L. Pavlis
 **/
-TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw);
+TimeSeries WindowData(const TimeSeries& parent, const TimeWindow& tw);
 
 /*!
 // Extracts a requested time window of data from a parent ThreeComponentSeismogram object.
@@ -539,7 +539,7 @@ TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw);
 //\param tw defines the data range to be extracted from parent.
 //\author Gary L. Pavlis
 **/
-ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow& tw);
+ThreeComponentSeismogram WindowData(const ThreeComponentSeismogram& parent, const TimeWindow& tw);
 
 /*! Extract a specified time window from an ensemble.
 // The seispp library defines a fairly generic ensemble object that

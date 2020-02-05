@@ -91,8 +91,12 @@ ThreeComponentEnsemble load_pattern_file(string fname)
   try{
     ThreeComponentEnsemble d;
     /* Require this be binary */
-    StreamObjectReader<ThreeComponentEnsemble> inp('b');
+    StreamObjectReader<ThreeComponentEnsemble> inp(fname,'b');
     d=inp.read();
+    /* Zero the contents */
+    vector<ThreeComponentSeismogram>::iterator dptr;
+    for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
+        dptr->u.zero();
     return d;
   }catch(...){throw;};
 }
@@ -201,6 +205,7 @@ int main(int argc, char **argv)
             ++i;
             if(i>=argc)usage();
             patternfile=string(argv[i]);
+            use_pattern_file=true;
         }
         else if(sarg=="-pf")
         {
@@ -253,6 +258,13 @@ int main(int argc, char **argv)
           if((j>=0) && (j<d.member[i].ns))
           {
             for(k=0;k<3;++k)d.member[i].u(k,j)=impptr->A[k];
+            if(SEISPP_verbose)
+            {
+                cerr << "Inserted vector=";
+                for(k=0;k<3;++k) cerr<<impptr->A[k]<<" ";
+                cerr <<"  at time="<<impptr->time <<" = sample number "
+                    << j<<" in ensemble number number="<<i<<endl;
+            }
           }
           else
           {

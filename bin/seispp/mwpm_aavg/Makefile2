@@ -8,7 +8,7 @@ BIN=mwpm_aavg
 
 cxxflags=-g
 ldflags=-L$(ANTELOPE)/contrib/static
-ldlibs=-lmwtpp -lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp 
+ldlibs=-lmwtpp -lseispp -lgclgrid $(DBLIBS) $(TRLIBS) -lperf -lboost_serialization -lseispp  -lm
 SUBDIR=/contrib
 
 include $(ANTELOPEMAKE) 

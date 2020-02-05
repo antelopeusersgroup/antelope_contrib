@@ -39,7 +39,7 @@ dmatrix::~dmatrix()
 //if(ary!=NULL) delete [] ary;
 }
 
-double &dmatrix::operator()(int rowindex, int colindex)
+double &dmatrix::operator()(int rowindex, int colindex) 
 {
   int out_of_range=0;
   if (rowindex>=nrr) out_of_range=1;
@@ -193,7 +193,7 @@ void dmatrix::zero()
 {
     for(int i=0;i<length;++i) ary[i]=0.0;
 }
-int *dmatrix::size()
+int *dmatrix::size() const
 {
 	int *sz;
 	sz=new int[2];
@@ -203,11 +203,11 @@ int *dmatrix::size()
 }
 // simpler versions of same
 
-int dmatrix::rows()
+int dmatrix::rows() const
 {
 	return(nrr);
 }
-int dmatrix::columns()
+int dmatrix::columns() const
 {
 	return(ncc);
 }

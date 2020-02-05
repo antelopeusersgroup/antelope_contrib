@@ -1,0 +1,25 @@
+# To adapt this to a similar program 1 to 3 of the following will need to
+# be done:
+#  1.  You always need to do a global search and change pick_ensembles to the
+#      name of the new program
+#  2.  Edit ldflags and ldlibs if needed
+#  3.  If the program has multiple source files edit the OBJ line
+BIN=pick_ensembles
+PF=pick_ensembles.pf
+cxxflags=-g -I$(ANTELOPE)/contrib/include -I$(XMOTIFINCLUDE)
+ldflags=-L$(ANTELOPE)/contrib/static
+ldlibs=-lseispp -lgclgrid $(DBLIBS) $(TRLIBS) \
+       -L$(XMOTIFLIB) $(X11LIBS) -lseisppplot -lXm -lXt -lseisw \
+       -lboost_thread -lboost_system \
+       -lperf -lboost_serialization
+SUBDIR=/contrib
+
+include $(ANTELOPEMAKE) 
+include $(ANTELOPEMAKELOCAL)
+CXXFLAGS += -I$(BOOSTINCLUDE)
+
+OBJS=pick_ensembles.o
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+LDFLAGS += -L$(BOOSTLIB)

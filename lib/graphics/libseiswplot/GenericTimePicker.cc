@@ -71,7 +71,7 @@ vector<SeismicPick> GenericTimePicker::pick_all()
     XtAddCallback(this->seisw[0],ExmNbtn2Callback,GTPBtn2Callback,this);
     /* This will loop until we enter x on the display or hit the exit menu
     item in the SeismicPlot gui.   Simple solution requiring no new widgets */
-    cerr << "GenericTimePicker is active"<<endl;
+    //cerr << "GenericTimePicker is active"<<endl;
     lastcount=0;
     while(this->EventLoopIsActive)
     {

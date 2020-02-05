@@ -1,11 +1,11 @@
 originator     Frank Vernon, UCSD
-last_modified  2014-09-14
+last_modified  2018-11-28
 
 category	Geospace
-configuration	GS30CT
+configuration	GS32CT
 
-description	GS30CT
-dfile	gs30ct
+description	GS32CT
+dfile	gs32ct
 
 rsptype                 V       # velocity instrument
 band                    s       # short period
@@ -21,5 +21,5 @@ orientations	&Tbl{
 Z	0	0
 }
 
-response	&datafile(responses/gs30ct) 
+response	&datafile(responses/gs32ct) 
 

@@ -34,6 +34,9 @@ use strict 'vars' ;
 # debug
 #use diagnostics;
 
+no if $] >= 5.018, warnings => qw( experimental::smartmatch );
+
+
 our ( $opt_a, $opt_d, $opt_t, $opt_s, $opt_e, $opt_l, $opt_p, $opt_P, $opt_v, $opt_V, $opt_y);
 our ( $host, $pgm, $usage) ;
 our ( %pf ) ;
@@ -398,7 +401,8 @@ sub build_dbj { # ( $filename, $refj, $refj_event, $refnetmag, $refstamag ) = &b
     } 
 
 # check to make sure corrected filename does not exceed 32 characters (max length of dfile)
-    elog_die ("Filename, $filename, exceeds 32 characters!\n") if (length($filename) > 32 ) ;   
+    my ($fdir,$fbase,$fsuffix) = parsepath($filename);
+    elog_die ("Filename, $filename, exceeds 32 characters!\n") if (length($fbase) > 32 ) ; 
 
 
 #

@@ -3,8 +3,8 @@
 #include <string>
 #include <iostream>
 #include <memory>
-#include "PMTimeSeries.h"
 #include "seispp.h"
+//#include "PMTimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #include "ensemble.h"
 #include "PfStyleMetadata.h"
@@ -33,7 +33,7 @@ void usage()
  * to set a list of allowed objects.   This could be a library
  * procedure, but with this one can customize the set of objects
  * supported. */
-enum AllowedObjects {TCS, TCE,  TS, TSE, PMTS};
+enum AllowedObjects {TCS, TCE,  TS, TSE};
 AllowedObjects get_object_type(string otype)
 {
     if(otype=="ThreeComponentSeismogram")
@@ -44,8 +44,6 @@ AllowedObjects get_object_type(string otype)
         return TS;
     else if(otype=="TimeSeriesEnsemble")
         return TSE;
-    else if(otype=="PMTimeSeries")
-        return PMTS;
     else
     {
         cerr << "Do not know how to handle object type="<<otype
@@ -57,6 +55,7 @@ AllowedObjects get_object_type(string otype)
 the data are private we can't handle the problem the same way.
 We do a different thing here and set a gap for area outside the
 specified window  */
+/* Commented out for now - untested and causes compilation errors 
 int window_pmts(TimeWindow cutwin, bool binary_data)
 {
     try{
@@ -73,13 +72,10 @@ int window_pmts(TimeWindow cutwin, bool binary_data)
             {
               if(d.tref==relative)
               {
-                /* In either of these cases we mark the data dead */
                 if( (d.t0>cutwin.end) || (d.endtime()<cutwin.start))
                    d.live=false;
                 else
                 {
-                  /*In both of these cases we extend teh tap definition
-                  by a sample to avoid roudoff errors */
                   if(cutwin.start>d.t0)
                   {
                     d.add_gap(TimeWindow(d.t0-d.dt,cutwin.start));
@@ -102,6 +98,7 @@ int window_pmts(TimeWindow cutwin, bool binary_data)
         return count;
     }catch(...){throw;};
 }
+*/
 
 template <typename DataType> int window_objects(TimeWindow cutwin, bool binary_data)
 {
@@ -120,7 +117,7 @@ template <typename DataType> int window_objects(TimeWindow cutwin, bool binary_d
             {
               if(d.tref==relative)
               {
-                d=WindowData(d,cutwin);
+                d=SEISPP::WindowData(d,cutwin);
               }
               else
               {

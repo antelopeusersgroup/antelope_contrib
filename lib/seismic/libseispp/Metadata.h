@@ -261,6 +261,23 @@ called PfStyleMetadata.
   \param mdold - parent object to copy
   */
 	Metadata& operator=(const Metadata& mdold);
+/*! Append additional metadata with replacement.
+
+A plus operator implies addition, but this overloading does something very 
+different.  A simple way to describe the effect is that on completion the 
+left hand side Metadata object will contain a duplicate of the right hand 
+side plus any attributes in the rhs that were not present on the lhs.   
+Another way to clarify this is to describe the algorithm.   We take each 
+attribute on the right and search for it in the lhs.  If it is not in the lhs
+it will be added.  If it is there already, the rhs value will replace the old
+value on the lhs.   This is most useful when an algorithm creates a new set of
+attributes that we want to use in downstream processing but retain all the 
+other attributes.   
+
+\param rhs is the new metadata to be insert/replace on the lhs.
+*/
+        Metadata& operator+=(const Metadata& rhs);
+        const Metadata operator+(const Metadata& other) const;
 	// In this implementation destructor can be defaulted.
 	// There is thus no need to declare it.
         // ~Metadata();
@@ -271,21 +288,21 @@ called PfStyleMetadata.
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        double get_double(string key) throw(MetadataGetError);
+        double get_double(string key) const throw(MetadataGetError);
 /*!
 // Get an integer from the Metadata object.
 //
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        int get_int(string key)throw(MetadataGetError);
+        int get_int(string key)const throw(MetadataGetError);
 /*!
 // Get a long integer from the Metadata object.
 //
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        long get_long(string key)throw(MetadataGetError);
+        long get_long(string key)const throw(MetadataGetError);
 /*!
 // Get a string from the Metadata object.
 //
@@ -296,7 +313,7 @@ called PfStyleMetadata.
 //\exception MetadataGetError if requested parameter is not found.
 //\param key keyword associated with requested metadata member.
 **/
-        string get_string(string key)throw(MetadataGetError);
+        string get_string(string key)const throw(MetadataGetError);
 /*!
 // Get a  boolean parameter from the Metadata object.
 //
@@ -305,7 +322,7 @@ called PfStyleMetadata.
 //
 //\param key keyword associated with requested metadata member.
 **/
-        bool get_bool(string key) throw(MetadataGetError);
+        bool get_bool(string key) const throw(MetadataGetError);
 /*! Generic get interface.
 
   This is a generic interface most useful for template procedures
@@ -321,7 +338,7 @@ called PfStyleMetadata.
   \exception - will throw a MetadataGetError (child of SeisppError) for
      type mismatch or in an overflow or underflow condition.
      */
-      template <typename T> T get(string key) throw(MetadataGetError);
+  template <typename T> T get(string key) const throw(MetadataGetError);
       /*! \brief Generic get interface for C char array.
 
         This is a generic interface most useful for template procedures
@@ -336,7 +353,7 @@ called PfStyleMetadata.
         \exception - will throw a MetadataGetError (child of SeisppError) for
            type mismatch or in an overflow or underflow condition.
            */
-      template <typename T> T get(const char *key) throw(MetadataGetError)
+      template <typename T> T get(const char *key) const throw(MetadataGetError) 
       {
         try{
           T val;
@@ -508,7 +525,7 @@ private:
 };
 /* Anything but specializations of this template (found in Metadata.cc)  will lead
    to an exception - unsupported type*/
-template <typename T> T Metadata::get(string key) throw(MetadataGetError)
+template <typename T> T Metadata::get(string key) const throw(MetadataGetError) 
 {
   const string base_error("Metadata generic get template: ");
   throw MetadataGetError(typeid(T).name(),key,base_error+"Unsupported type");
@@ -525,8 +542,8 @@ template <typename T> T Metadata::get(string key) throw(MetadataGetError)
 //\param mdlist object containing a typed list of Metadata components
 //  to copy from mdin to mdout.
 **/
-void copy_selected_metadata(Metadata& mdin, Metadata& mdout,
-	MetadataList& mdlist) throw(MetadataError);
+void copy_selected_metadata(const Metadata& mdin, Metadata& mdout,
+	const MetadataList& mdlist) throw(MetadataError);
 #ifndef NO_ANTELOPE
 /*!
 // Build a MetadataList from a parameter file.

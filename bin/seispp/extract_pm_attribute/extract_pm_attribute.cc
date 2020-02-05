@@ -12,7 +12,8 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-    cerr << "extract_pm_attribute < in [(-dir outdir | -o outfile) -a attribute_type -mec -save_error xxx -t0shift -v --help -text]"
+    cerr << "extract_pm_attribute < in [(-dir outdir | -o outfile) -a attribute_type -mec "<<endl
+        << "-save_error xxx -t0shift -file_string_key skey -file_integer_key ikey -v --help -text]"
         <<endl
         << "extracts one of a set of supported attributes from PMTimeSeries objects"<<endl
         << "Results are written as either a set of text files in directory defined by -dir "<<endl
@@ -35,6 +36,9 @@ void usage()
         << "  (Note: this flag is ignored if the -dir option is used)"<<endl
         << " -t0shift - shift all output by wavelet duratio/2 to align attribute times to leading edge of wavelet"<<endl
         << "  (default puts time reference at center of each wavelet)"<<endl
+        << " -file_string_key - set string key used to define unique file names for text files (default is sta)"<<endl
+        << " -file_integer_key - set key for integer variable used to define unique text file name (default evid)"<<endl
+        << " (Note -file_string_key and -file_integer_key are ignored when output is TimeSeries objects)"<<endl
         << " -v - be more verbose"<<endl
         << " --help - prints this message"<<endl
         << " -text - switch to text input and output (default is binary)"<<endl
@@ -70,7 +74,7 @@ PMAttributeType GetPMAType(string name)
   return pmat;
 }
 /* builds a file name to save text format for use by matlab, gnuplot, or gmt. */
-string build_filename(Metadata& d,PMAttributeType pmat)
+string build_filename(Metadata& d,PMAttributeType pmat,string skey, string ikey)
 {
     string atype;
     switch(pmat)
@@ -97,10 +101,10 @@ string build_filename(Metadata& d,PMAttributeType pmat)
           atype="Rect";
           break;
     };
-    /* This is a fragile approach but this program is not intended to be
-     * particularly generic.   */
-    string sta=d.get_string("sta");
-    long evid=d.get<long>("evid");
+    /* variable names reflect default - args can change actual values */
+    string sta=d.get_string(skey);
+    long evid=d.get<long>(ikey);
+    /* This is frozen for mwpm data */
     int band=d.get<int>("band");
     stringstream ss;
     ss<<atype<<"_"<<evid<<"_"<<sta<<"_"<<band;
@@ -283,6 +287,10 @@ TimeSeries amptodb(TimeSeries& d)
         {
             ddb.s[i]=0.0;
         }
+        else if(d.s[i]==0.0)
+        {
+            ddb.s[i]=-999.9;
+        }
         else
         {
             ddb.s[i]=20.0*log10(d.s[i]);
@@ -290,7 +298,7 @@ TimeSeries amptodb(TimeSeries& d)
     }
     return ddb;
 }
-/* PMTimeSeries store angles in radians.  We need to convert to 
+/* PMTimeSeries store angles in radians.  We need to convert to
  * degrees to produce rational plots*/
 TimeSeries radian_to_degree(TimeSeries& d)
 {
@@ -342,6 +350,8 @@ int main(int argc, char **argv)
     string outdir(".");
     string outfile("BAD");
     bool apply_t0shift(false);
+    /* New options to change file naming convention from default */
+    string file_string_key("sta"),file_integer_key("evid");
     if(argc>1)
       if(string(argv[1])=="--help") usage();
 
@@ -395,6 +405,18 @@ int main(int argc, char **argv)
         }
         else if(sarg=="-t0shift")
             apply_t0shift=true;
+        else if(sarg=="-file_string_key")
+        {
+          ++i;
+          if(i>=argc)usage();
+          file_string_key=string(argv[i]);
+        }
+        else if(sarg=="-file_integer_key")
+        {
+          ++i;
+          if(i>=argc)usage();
+          file_integer_key=string(argv[i]);
+        }
         else if(sarg=="-text")
         {
             binary_data=false;
@@ -404,6 +426,7 @@ int main(int argc, char **argv)
         else
             usage();
     }
+
     if(save_error && use_error_cutoff)
     {
       cerr << "extract_pm_attribute:  illegal argument combination"<<endl
@@ -434,7 +457,7 @@ int main(int argc, char **argv)
         {
             double t0shift;
             t0shift=d.get_wavelet_duration();
-            t0shift/=2.0;  // shift is by half length 
+            t0shift/=2.0;  // shift is by half length
             d.shift(-t0shift);
         }
         derr=extract_attribute_error_data(d,pmat);
@@ -495,7 +518,7 @@ int main(int argc, char **argv)
          else
          {
              /*This creates the file name */
-             string fname=build_filename(d,pmat);
+             string fname=build_filename(d,pmat,file_string_key,file_integer_key);
              number_saved=atw.write(fname,dout,derr);
              if(number_saved<=0)
              {

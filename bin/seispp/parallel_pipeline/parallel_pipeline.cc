@@ -7,12 +7,13 @@
 #include "seispp.h"
 #include "ThreeComponentSeismogram.h"
 #include "PfStyleMetadata.h"
-#include "ParallelReader.h"
-#include "PipelineProcessor.h"
-#include "StreamObjectWriter.h"
 #include <mpi.h>
 #include <boost/mpi.hpp>
 namespace mpi=boost::mpi;
+#include "MPIForeman.h"
+#include "ParallelReader.h"
+#include "PipelineProcessor.h"
+#include "StreamObjectWriter.h"
 using namespace std;
 using namespace SEISPP;
 void usage()

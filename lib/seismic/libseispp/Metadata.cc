@@ -267,12 +267,12 @@ namespace SEISPP
     //
     // These functions get and convert values
     //
-    template<> double Metadata::get(string s) throw(MetadataGetError)
+    template<> double Metadata::get(string s) const throw(MetadataGetError)
     {
-        map<string,double>::iterator iptr;
+        map<string,double>::const_iterator iptr;
         iptr=mreal.find(s);
         if(iptr!=mreal.end()) return((*iptr).second);
-        map<string,string>::iterator pfstyle;
+        map<string,string>::const_iterator pfstyle;
         pfstyle=mstring.find(s);
         if(pfstyle==mstring.end())
             throw MetadataGetError("real",s,"");
@@ -280,7 +280,7 @@ namespace SEISPP
         string valstring=(*pfstyle).second;
         return (  atof(valstring.c_str()) );
     }
-    template<> int Metadata::get(string s) throw(MetadataGetError)
+    template<> int Metadata::get(string s) const throw(MetadataGetError)
     {
         try {
             const string base_error("Metadata::get_int:  long to int conversion error ->");
@@ -296,32 +296,32 @@ namespace SEISPP
             return(static_cast<int>(lival));
         } catch (MetadataGetError& mderr){throw mderr;};
     }
-    template<> long Metadata::get(string s) throw(MetadataGetError)
+    template<> long Metadata::get(string s) const throw(MetadataGetError)
     {
-        map<string,long>::iterator iptr;
+        map<string,long>::const_iterator iptr;
         iptr=mint.find(s);
         if(iptr!=mint.end()) return((*iptr).second);
-        map<string,string>::iterator pfstyle;
+        map<string,string>::const_iterator pfstyle;
         pfstyle=mstring.find(s);
         if(pfstyle==mstring.end())
             throw MetadataGetError("int",s,"");
         string valstring=(*pfstyle).second;
         return (  atol(valstring.c_str()) );
     }
-    template<> string Metadata::get(string s) throw(MetadataGetError)
+    template<> string Metadata::get(string s) const throw(MetadataGetError)
     {
-        map<string,string>::iterator iptr;
+        map<string,string>::const_iterator iptr;
         iptr=mstring.find(s);
         if(iptr==mstring.end())
             throw MetadataGetError("string",s,"");
         return((*iptr).second);
     }
-    template<> bool Metadata::get(string s) throw(MetadataGetError)
+    template<> bool Metadata::get(string s) const throw(MetadataGetError)
     {
-        map<string,bool>::iterator iptr;
+        map<string,bool>::const_iterator iptr;
         iptr=mbool.find(s);
         if(iptr!=mbool.end()) return((*iptr).second);
-        map<string,string>::iterator pfstyle;
+        map<string,string>::const_iterator pfstyle;
         pfstyle=mstring.find(s);
         if(pfstyle==mstring.end()) return (false);
         if( ((*pfstyle).second==string("t"))
@@ -331,7 +331,7 @@ namespace SEISPP
         return(false);
     }
 /* These specializations extend the original interface */
-template<> float Metadata::get(string key) throw(MetadataGetError)
+template<> float Metadata::get(string key) const throw(MetadataGetError) 
 {
   try{
     double dval;
@@ -339,7 +339,7 @@ template<> float Metadata::get(string key) throw(MetadataGetError)
     return((float)dval);
   }catch(...){throw;};
 }
-template<> short Metadata::get(string key) throw(MetadataGetError)
+template<> short Metadata::get(string key) const throw(MetadataGetError) 
 {
   try{
     const string base_error("Metadata::get<short> method conversion error:  ");
@@ -353,31 +353,31 @@ template<> short Metadata::get(string key) throw(MetadataGetError)
 }
     /* Old interface had these explicit names.  These are now just wrappers 
        for the specialized templates. */
-    double Metadata::get_double(string key) throw(MetadataGetError)
+    double Metadata::get_double(string key) const  throw(MetadataGetError)
     {
       try{
         return(this->get<double>(key));
       }catch(...){throw;};
     }
-    int Metadata::get_int(string key) throw(MetadataGetError)
+    int Metadata::get_int(string key) const throw(MetadataGetError)
     {
       try{
         return(this->get<int>(key));
       }catch(...){throw;};
     }
-    long Metadata::get_long(string key) throw(MetadataGetError)
+    long Metadata::get_long(string key) const throw(MetadataGetError)
     {
       try{
         return(this->get<long>(key));
       }catch(...){throw;};
     }
-    string Metadata::get_string(string key) throw(MetadataGetError)
+    string Metadata::get_string(string key) const throw(MetadataGetError)
     {
       try{
         return(this->get<string>(key));
       }catch(...){throw;};
     }
-    bool Metadata::get_bool(string key) throw(MetadataGetError)
+    bool Metadata::get_bool(string key) const throw(MetadataGetError)
     {
       try{
         return(this->get<bool>(key));
@@ -595,11 +595,11 @@ template<> short Metadata::get(string key) throw(MetadataGetError)
     //to another.  This function allows selective copy driven by a list
     //
 
-    void  copy_selected_metadata(Metadata& mdin, Metadata& mdout,
-        MetadataList& mdlist)
+    void  copy_selected_metadata(const Metadata& mdin, Metadata& mdout,
+        const MetadataList& mdlist)
         throw(MetadataError)
     {
-        MetadataList::iterator mdti;
+        MetadataList::const_iterator mdti;
         int count;
 
         for(mdti=mdlist.begin(),count=0;mdti!=mdlist.end();++mdti,++count)
@@ -661,6 +661,81 @@ template<> short Metadata::get(string key) throw(MetadataGetError)
         }
         return(*this);
     }
+    Metadata& Metadata::operator+=(const Metadata& rhs)
+    {
+      if(this==&rhs) return *this;
+      list<string> keys;
+      list<string>::iterator kptr;
+      map<string,double>::const_iterator dptr;
+      map<string,long>::const_iterator iptr;
+      map<string,string>::const_iterator sptr;
+      map<string,bool>::const_iterator bptr;
+      /* This could have been done with is_attribute_set but this approach
+         preserves numeric values in numeric containers instead of reverting to
+         string values.  This should be more bulletproof as duplicates in the string
+         section could be problematic.
+
+         first load the list container with keys from the rhs to allow a loop
+         for the replace/add section*/
+      for(dptr=rhs.mreal.begin();dptr!=rhs.mreal.end();++dptr) keys.push_back(dptr->first);
+      for(kptr=keys.begin();kptr!=keys.end();++kptr)
+      {
+        dptr=rhs.mreal.find(*kptr);
+        /* if this key is found in the string section delete it so this will
+           override it.  That is necessary because Metadata uses string as a fallback
+           for typed entries and for ease of use with pf file */
+        sptr=this->mstring.find(*kptr);
+        if(sptr!=(this->mstring.end())) this->mstring.erase(sptr);
+        /* The map insert operator has the property that if the key is already 
+           present this value will overwrite it, which is what += is defined
+           as here.  Hence, this one line adds this entry if it isn't already 
+           there and overwrites if it is. This is a bit obscure because
+           dptr points to a pair*/
+        this->mreal.insert(*dptr);
+      }
+      /* The comparable sections for int and bool are painfully similar and probably 
+         should be done with a template */
+      keys.clear();
+      for(iptr=rhs.mint.begin();iptr!=rhs.mint.end();++iptr) keys.push_back(iptr->first);
+      for(kptr=keys.begin();kptr!=keys.end();++kptr)
+      {
+        iptr=rhs.mint.find(*kptr);
+        /* if this key is found in the string section delete it so this will
+           override it.  That is necessary because Metadata uses string as a fallback
+           for typed entries and for ease of use with pf file */
+        sptr=this->mstring.find(*kptr);
+        if(sptr!=(this->mstring.end())) this->mstring.erase(sptr);
+        this->mint.insert(*iptr);
+      }
+      keys.clear();
+      for(bptr=rhs.mbool.begin();bptr!=rhs.mbool.end();++bptr) keys.push_back(bptr->first);
+      for(kptr=keys.begin();kptr!=keys.end();++kptr)
+      {
+        bptr=rhs.mbool.find(*kptr);
+        /* if this key is found in the string section delete it so this will
+           override it.  That is necessary because Metadata uses string as a fallback
+           for typed entries and for ease of use with pf file */
+        sptr=this->mstring.find(*kptr);
+        if(sptr!=(this->mstring.end())) this->mstring.erase(sptr);
+        this->mbool.insert(*bptr);
+      }
+      /* Since the above cleared the string of duplicates we can now just 
+         run the same algorithm (sans the string test) for string attributes*/
+      keys.clear();
+      for(sptr=rhs.mstring.begin();sptr!=rhs.mstring.end();++sptr) keys.push_back(sptr->first);
+      for(kptr=keys.begin();kptr!=keys.end();++kptr)
+      {
+        sptr=rhs.mstring.find(*kptr);
+        this->mstring.insert(*sptr);
+      }
+      return (*this);
+    }
+const Metadata Metadata::operator+(const Metadata& other) const
+{
+  Metadata result(*this);
+  result += other;
+  return result;
+}
     // output stream operator.  Originally was in ignorance made
     // a named function called print_all_metadata (older versions may
     // have this as debris.
