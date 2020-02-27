@@ -1,5 +1,5 @@
 """
-Utility functions and classes for dbwfserver.
+Utility functions and classes for pydbwfserver.
 
 Used by resource.QueryParserResource and other items
 """
@@ -20,7 +20,7 @@ import antelope.stock as stock
 logger = logging.getLogger(__name__)
 
 
-def isNumber(test):
+def is_numeric(test):
     """Test if the string is a valid number.
 
     Return the converted number or None if string is not a number.
@@ -30,15 +30,15 @@ def isNumber(test):
         if "." in test:
             try:
                 return float(test)
-            except Exception:
+            except ValueError:
                 return None
 
         else:
             try:
                 return int(test)
-            except Exception:
+            except ValueError:
                 return None
-    except Exception:
+    except ValueError:
         return None
 
 
@@ -51,19 +51,19 @@ class ProgressLogger:
         total_ticks,
         time_interval=1,
         tick_interval=False,
-        logger=logging.getLogger(__name__),
+        logger_instance=logging.getLogger(__name__),
         level=logging.INFO,
     ):
         """Initialize the ProgressLogger instance."""
+        self.logger = logger_instance
         self.name = name
         self.total_ticks = total_ticks
         if self.total_ticks <= 0:
-            logger.warning("Total ticks is %d, should be > 0. Using 1")
+            self.logger.warning("Total ticks is %d, should be > 0. Using 1")
             self.total_ticks = 1
         self.tick_interval = tick_interval
         self.time_interval = time_interval
 
-        self.logger = logger
         self.last_output = -1
         self.start_time = time.time()
         self.current_tick = 0
@@ -80,16 +80,16 @@ class ProgressLogger:
 
     def tick(self):
         """
-        Iterate the progress logger by one tick.
+        Iterate the progress logger_instance by one tick.
 
         If the tick_interval or time_interval have been reached, output a log
         message
         """
         self.current_tick += 1
         time_now = time.time()
-        if ((self.tick_interval > 0) and (self.tick % self.tick_interval == 0)) or (
-            time_now - self.last_output > self.time_interval
-        ):
+        if (
+            (self.tick_interval > 0) and (self.current_tick % self.tick_interval == 0)
+        ) or (time_now - self.last_output > self.time_interval):
             self.logger.log(self.level, self.name + self._get_tick_text(time_now))
             self.last_output = time_now
 
@@ -121,19 +121,21 @@ def load_template(template_path):
     return Template(open(template_path).read())
 
 
-class Db_nulls:
+class DbNulls:
     """Stores null values for every field in the schema."""
 
-    def __init__(self, config, db, tables=[]):
+    def __init__(self, config, db, tables=None):
         """
         Load class and test databases.
 
         This should be a dbcentral object
         """
 
+        if tables is None:
+            tables = []
         self.dbcentral = db
         self.tables = tables
-        self.debug = self.config.debug
+        self.debug = config.debug
         self.null_vals = defaultdict(lambda: defaultdict(dict))
         self.logger = logging.getLogger(__name__)
 
@@ -246,8 +248,8 @@ class Stations:
 
     def __getitem__(self, i):
         """Act as an Iteration context."""
-
-        return self.stachan_cache.keys()[i]
+        k = list(self.stachan_cache.keys())
+        return k[i]
 
     def next(self):
         """Produce items unitl StopIteration is raised."""
@@ -259,7 +261,7 @@ class Stations:
 
         else:
 
-            return self.stachan_cache.keys()[self.offset]
+            return list(self.stachan_cache.keys())[self.offset]
 
     def __str__(self):
         """Nicely format elements in class."""
@@ -330,7 +332,9 @@ class Stations:
 
             self.logger.debug("Starting wfdisc processing of %d records" % records)
             prog = ProgressLogger(
-                "Stations: processing wfdisc record ", records, logger=self.logger
+                "Stations: processing wfdisc record ",
+                records,
+                logger_instance=self.logger,
             )
             for j in range(records):
                 prog.tick()
@@ -364,12 +368,15 @@ class Stations:
                 sys.exit(reactor.stop())
 
             prog = ProgressLogger(
-                "Stations: processing stachan record ", records, logger=self.logger
+                "Stations: processing stachan record ",
+                records,
+                logger_instance=self.logger,
             )
             for j in range(records):
                 prog.tick()
 
                 ssc.record = j
+                sta = chan = ondate = offdate = None
                 try:
                     sta, chan, ondate, offdate = ssc.getv(
                         "sta", "chan", "ondate", "offdate"
@@ -423,7 +430,7 @@ class Stations:
         """
         Determine start and end times for a station.
 
-        Get list of valid dates
+        Get station_patterns of valid dates
         """
 
         if not start:
@@ -451,22 +458,24 @@ class Stations:
 
                     else:
 
-                        if date[0] <= start and start <= date[1]:
+                        if date[0] <= start <= date[1]:
                             cache[sta] = 1
-                        if date[0] <= end and end <= date[1]:
+                        if date[0] <= end <= date[1]:
                             cache[sta] = 1
                         if start <= date[0] and date[1] <= end:
                             cache[sta] = 1
 
-        self.logger.info("cache.keys: ".str(cache.keys()))
+        self.logger.info("cache.keys: %s", str(cache.keys()))
         return cache.keys()
 
     def dates(self):
         """Return start and end times for a station."""
         return list(self.wfdates.keys())
 
-    def channels(self, station=[]):
-        """Get unique list of channels."""
+    def channels(self, station=None):
+        """Get unique station_patterns of channels."""
+        if station is None:
+            station = []
         chans = {}
 
         if station:
@@ -490,15 +499,17 @@ class Stations:
 
         return list(chans.keys())
 
-    def convert_sta(self, list=[r".*"]):
-        """Get list of stations for the query."""
+    def convert_sta(self, station_patterns=None):
+        """Get station_patterns of stations for the query."""
 
+        if station_patterns is None:
+            station_patterns = [r".*"]
         stations = []
         keys = {}
 
-        self.logger.debug("Stations(): convert_sta(%s)" % list)
+        self.logger.debug("Stations(): convert_sta(%s)" % station_patterns)
 
-        for test in list:
+        for test in station_patterns:
 
             if re.search(r"^\w*$", test):
                 stations.extend([x for x in self.stachan_cache if x == test])
@@ -517,7 +528,9 @@ class Stations:
 
         stations = keys.keys()
 
-        self.logger.debug("Stations(): convert_sta(%s) => %s" % (list, stations))
+        self.logger.debug(
+            "Stations(): convert_sta(%s) => %s" % (station_patterns, stations)
+        )
 
         return stations
 
@@ -547,7 +560,7 @@ class Events:
         # Load null class
         #
         self.logger.debug("Events(): self.nulls")
-        self.nulls = Db_nulls(
+        self.nulls = DbNulls(
             self.config, db, ["events", "event", "origin", "assoc", "arrival"]
         )
 
@@ -556,7 +569,7 @@ class Events:
     def __getitem__(self, i):
         """Produce iteration context of Events."""
 
-        return self.event_cache.keys()[i]
+        return list(self.event_cache.keys())[i]
 
     def next(self):
         """Produce items util Stopiteration is raised."""
@@ -569,7 +582,7 @@ class Events:
         else:
 
             self.offset += 1
-            return self.event_cache.keys()[self.offset]
+            return list(self.event_cache.keys())[self.offset]
 
     def __str__(self):
         """Nicely format elements in class."""
@@ -583,7 +596,7 @@ class Events:
     def __call__(self, value):
         """Intercept data requests."""
 
-        value = isNumber(value)
+        value = is_numeric(value)
 
         if not value:
             return "Not a valid number in function call: %s" % value
@@ -594,11 +607,11 @@ class Events:
 
         else:
 
-            self.warning("Events(): %s not in database." % value)
+            self.logger.warning("Events(): %s not in database." % value)
             return self.list
 
     def list(self):
-        """Produce list of event key names."""
+        """Produce station_patterns of event key names."""
         return list(self.event_cache.keys())
 
     def table(self):
@@ -620,7 +633,7 @@ class Events:
         if self.config.simple:
             return results
 
-        orid_time = isNumber(orid_time)
+        orid_time = is_numeric(orid_time)
 
         if not orid_time:
             self.logger.error("Not a valid number in function call: %s" % orid_time)
@@ -631,7 +644,7 @@ class Events:
 
         dbname = self.dbcentral(orid_time)
 
-        if not self.db:
+        if not dbname:
             self.logger.error(
                 "No match for orid_time in dbcentral object: (%s,%s)"
                 % (orid_time, self.dbcentral(orid_time))
@@ -666,11 +679,11 @@ class Events:
 
                 db.record = i
 
-                (orid, time) = db.getv("orid", "time")
+                (orid, record_time) = db.getv("orid", "time")
 
-                orid = isNumber(orid)
-                time = isNumber(time)
-                results[orid] = time
+                orid = is_numeric(orid)
+                record_time = is_numeric(record_time)
+                results[orid] = record_time
 
         return results
 
@@ -684,6 +697,8 @@ class Events:
             self.logger.debug("Events(): dbname: %s" % dbname)
 
             # Get min max for wfdisc table first
+            start = end = None
+            db = None
             try:
                 db = datascope.dbopen(dbname, "r")
                 db = db.lookup(table="wfdisc")
@@ -710,10 +725,8 @@ class Events:
                 elif self.end < end:
                     self.end = end
 
-            try:
+            if db:
                 db.close()
-            except Exception:
-                pass
 
             try:
                 db = datascope.dbopen(dbname, "r")
@@ -880,65 +893,52 @@ class Events:
         if not dbname:
             return phases
 
-        try:
-            db = datascope.dbopen(dbname, "r")
-            db = db.lookup(table="arrival")
-            db = db.join("assoc")
-            nrecs = db.query(datascope.dbRECORD_COUNT)
+        open_dbviews = []
+        with datascope.closing(datascope.dbcreate(dbname, "r")) as db:
+            with datascope.freeing(db.lookup(table="arrival")) as db_arrivals:
+                try:
+                    db_arrival_assoc = db_arrivals.join("assoc")
+                    open_dbviews.append(db_arrival_assoc)
+                    dbv = db_arrival_assoc
+                except datascope.DatascopeException:
+                    dbv = db_arrivals
 
-        except Exception:
-            try:
-                db = datascope.dbopen(dbname, "r")
-                db = db.lookup(table="arrival")
-                nrecs = db.query(datascope.dbRECORD_COUNT)
+                # This "try/finally" block is to emulate a context manager for a successful join with the assoc table.
+                try:
+                    nrecs = dbv.query(datascope.dbRECORD_COUNT)
 
-            except Exception as e:
-                self.logger.exception(
-                    "Events: Exception %s on phases(): %s" % (e, phases)
-                )
-                return phases
+                    if not nrecs:
+                        return dict(phases)
 
-        if not nrecs:
-            try:
-                db.close()
-            except Exception:
-                pass
-            return dict(phases)
+                    try:
+                        db = db.subset(
+                            "%s <= time && time <= %s" % (float(min), float(max))
+                        )
+                        nrecs = db.query(datascope.dbRECORD_COUNT)
+                    except datascope.DatascopeException:
+                        nrecs = 0
 
-        try:
-            db = db.subset("%s <= time && time <= %s" % (float(min), float(max)))
-            nrecs = db.query(datascope.dbRECORD_COUNT)
-        except Exception:
-            nrecs = 0
+                    if not nrecs:
+                        return dict(phases)
 
-        if not nrecs:
-            try:
-                db.close()
-            except Exception:
-                pass
-            return dict(phases)
+                    for p in range(nrecs):
+                        db.record = p
 
-        for p in range(nrecs):
+                        if assoc:
+                            phase_field = "phase"
+                        else:
+                            phase_field = "iphase"
 
-            db.record = p
+                        Sta, Chan, ArrTime, Phase = db.getv(
+                            "sta", "chan", "time", phase_field
+                        )
+                        StaChan = Sta + "_" + Chan
+                        phases[StaChan][ArrTime] = Phase
 
-            if assoc:
-
-                Sta, Chan, ArrTime, Phase = db.getv("sta", "chan", "time", "phase")
-                StaChan = Sta + "_" + Chan
-                phases[StaChan][ArrTime] = Phase
-
-            else:
-
-                Sta, Chan, ArrTime, Phase = db.getv("sta", "chan", "time", "iphase")
-                StaChan = Sta + "_" + Chan
-                phases[StaChan][ArrTime] = "_" + Phase
-
-            self.logger.debug("Phases(%s):%s" % (StaChan, Phase))
-        try:
-            db.close()
-        except Exception:
-            pass
+                        self.logger.debug("Phases(%s):%s" % (StaChan, Phase))
+                finally:
+                    for view in open_dbviews:
+                        view.close()
 
         self.logger.debug("Events: phases(): t1=%s t2=%s [%s]" % (min, max, phases))
 
