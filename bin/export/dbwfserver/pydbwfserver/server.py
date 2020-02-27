@@ -1,6 +1,6 @@
 """main server resource for pydbwfserver."""
 
-from __main__ import config
+from pydbwfserver.main import config
 from pydbwfserver.resource import FaviconResource, QueryParserResource
 from twisted.application import internet, service
 from twisted.python.log import ILogObserver, PythonLoggingObserver
