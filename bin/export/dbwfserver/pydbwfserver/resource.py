@@ -194,7 +194,7 @@ class QueryParserResource(twisted.web.resource.Resource):
         request.setHeader("content-type", "text/html")
         request.setResponseCode(response_code)
         self.logger.debug("_render_loading returning: \n" + html)
-        return html
+        return html.encode()
 
     def render_GET(self, request):
         """Render a GET request."""
@@ -475,8 +475,13 @@ class QueryParserResource(twisted.web.resource.Resource):
         response_meta["meta_query"]["time_end"] = query["end"]
         response_meta["meta_query"]["page"] = query["page"]
 
+        self.logger.debug("Request Args: %s", request.args)
+
         if request.args is not None:
-            response_meta["setupUI"] = json.dumps(request.args)
+            decoded_args = {
+                k.decode(): [vv.decode() for vv in v] for k, v in request.args.items()
+            }
+            response_meta["setupUI"] = json.dumps(decoded_args)
 
         response_meta["meta_query"] = json.dumps(str(response_meta["meta_query"]))
 
