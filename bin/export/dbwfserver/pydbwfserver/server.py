@@ -1,7 +1,7 @@
-"""main server resource for dbwfserver."""
+"""main server resource for pydbwfserver."""
 
 from __main__ import config
-from dbwfserver.resource import FaviconResource, QueryParserResource
+from pydbwfserver.resource import FaviconResource, QueryParserResource
 from twisted.application import internet, service
 from twisted.python.log import ILogObserver, PythonLoggingObserver
 from twisted.web import server, static
@@ -18,9 +18,9 @@ for port, db in config.run_server.items():
 
     site.displayTracebacks = config.display_tracebacks
 
-    application = service.Application("dbwfserver")
+    application = service.Application("pydbwfserver")
 
-    observer = PythonLoggingObserver("dbwfserver.twisted.port" + str(port))
+    observer = PythonLoggingObserver("pydbwfserver.twisted.port" + str(port))
 
     application.setComponent(ILogObserver, observer.emit)
 

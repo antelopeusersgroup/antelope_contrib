@@ -1,4 +1,4 @@
-"""Model dbwfserver configuration."""
+"""Model pydbwfserver configuration."""
 import getopt
 import os
 import sys
@@ -6,43 +6,36 @@ import sys
 from antelope import stock
 
 
-class Config_Server:
-    """Object to hold the dbwfserver configuration."""
+def usage():
+    """Display a usage banner."""
+
+    print(
+        "\n\tUsage: pydbwfserver [-drevV] [-n nickname] "
+        + "[-p pfname] [-P port] dbname\n"
+    )
+
+
+class DbwfserverConfig:
+    """Object to hold the pydbwfserver configuration."""
 
     def __init__(self):
-        """Initialize the Config_Server object."""
+        """Initialize the DbwfserverConfig object."""
         self.event = "false"
         self.pfname = "dbwfserver"
-        self.style = "cupertino"
         self.nickname = ""
         self.application_title = ""
-        self.static_dir = ""
-        self.jquery_dir = ""
-        self.template = ""
-        self.plot_template = ""
-        self.local_data = ""
-        self.antelope = ""
         self.dbname = ""
-        self.proxy_url = ""
-        self.port = -1
-        self.max_traces = -1
-        self.max_points = -1
+        self.port = None
         self.realtime = "false"
-        self.apply_calib = False
-        self.display_tracebacks = False
-        self.display_arrivals = True
-        self.display_points = False
         self.verbose = False
         self.debug = False
         self.daemonize = False
-        self.default_time_window = -1
-        self.filters = []
         self.run_server = {}
 
         try:
             opts, pargs = getopt.getopt(sys.argv[1:], "dp:P:vVern:")
         except getopt.GetoptError:
-            self.usage()
+            usage()
             sys.exit(-1)
 
         if len(pargs) == 1:
@@ -81,77 +74,26 @@ class Config_Server:
         #
         pf = stock.pfread(self.pfname)
 
-        if self.port == -1:
-            self.port = pf.get("port")
+        if self.port is None:
+            self.port = pf.get("port", 80)
 
-        try:
-            self.max_points = pf.get("max_points")
-        except Exception:
-            pass
-        try:
-            self.max_traces = pf.get("max_traces")
-        except Exception:
-            pass
-        try:
-            self.jquery_dir = pf.get("jquery_dir")
-        except Exception:
-            pass
-        try:
-            self.static_dir = pf.get("static_dir")
-        except Exception:
-            pass
-        try:
-            self.template = pf.get("template")
-        except Exception:
-            pass
-        try:
-            self.plot_template = pf.get("plot_template")
-        except Exception:
-            pass
-        try:
-            self.local_data = pf.get("local_data")
-        except Exception:
-            pass
-        try:
-            self.style = pf.get("jquery_ui_style")
-        except Exception:
-            pass
-        try:
-            self.antelope = pf.get("antelope")
-        except Exception:
-            pass
-        try:
-            self.application_title = pf.get("application_title")
-        except Exception:
-            pass
-        try:
-            self.proxy_url = pf.get("proxy_url")
-        except Exception:
-            pass
-        try:
-            self.apply_calib = pf.get("apply_calib")
-        except Exception:
-            pass
-        try:
-            self.display_tracebacks = pf.get("display_tracebacks")
-        except Exception:
-            pass
-        try:
-            self.display_arrivals = pf.get("display_arrivals")
-        except Exception:
-            pass
-        try:
-            self.display_points = pf.get("display_points")
-        except Exception:
-            pass
-        try:
-            self.default_time_window = pf.get("default_time_window")
-        except Exception:
-            pass
-        try:
-            self.filters = list(pf.get("filters"))
-        except Exception:
-            pass
+        self.max_points = pf.get("max_points", -1)
+        self.max_traces = pf.get("max_traces", -1)
+        self.jquery_dir = pf.get("jquery_dir", "")
+        self.static_dir = pf.get("static_dir", "")
+        self.template = pf.get("template", "")
+        self.plot_template = pf.get("plot_template", "")
+        self.local_data = pf.get("local_data", "")
+        self.style = pf.get("jquery_ui_style", "cupertino")
+        self.antelope = pf.get("antelope", "")
+        self.application_title = pf.get("application_title")
+        self.proxy_url = pf.get("proxy_url", "")
+        self.apply_calib = pf.get("apply_calib", False)
+        self.display_tracebacks = pf.get("display_tracebacks", False)
+        self.display_arrivals = pf.get("display_arrivals", True)
+        self.display_points = pf.get("display_points", False)
+        self.default_time_window = pf.get("default_time_window", -1)
+        self.filters = list(pf.get("filters", []))
 
     def configure(self):
         """Fix paths and sanity check arguments before handoff to Twisted."""
@@ -181,7 +123,7 @@ class Config_Server:
 
         else:
 
-            self.usage()
+            usage()
             sys.exit(
                 "\n\nERROR: Not a valid db:port setup. (%s,%s)\n"
                 % (self.dbname, self.port)
@@ -196,7 +138,7 @@ class Config_Server:
         argv_remap.append("-y")
         argv_remap.append(
             os.path.join(
-                os.environ["ANTELOPE"], "contrib/data/python/dbwfserver/server.py"
+                os.environ["ANTELOPE"], "contrib/data/python/pydbwfserver/server.py"
             )
         )
 
@@ -210,13 +152,6 @@ class Config_Server:
         return argv_remap
 
     # }}}
-    def usage(self):
-        """Display a usage banner."""
-
-        print(
-            "\n\tUsage: dbwfserver [-drevV] [-n nickname] "
-            + "[-p pfname] [-P port] dbname\n"
-        )
 
     def __getattr__(self, attrname):
         """Return various internal state items."""

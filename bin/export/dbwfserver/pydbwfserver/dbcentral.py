@@ -39,8 +39,8 @@ self.type to "dbcentral".
      # return string value for nickname
      element.nickname
      j
-     # return list of databases
-     element.list()
+     # return station_patterns of databases
+     element.station_patterns()
 
      # return database matching the epoch time
      element(epoch)
@@ -74,26 +74,26 @@ class DbcentralException(Exception):
     """Base exception type for Dbcentral."""
 
     def __init__(self, msg):
-        """Initialze DbcenteralException."""
+        """Initialize DbcentralException."""
         self.msg = msg
 
     def __repr__(self):
         """Make a copy of self."""
-        return "DbcentralException(msg=%r)" % (self.msg)
+        return "DbcentralException(msg=%r)" % self.msg
 
 
 class UnknownVolumeTypeException(DbcentralException):
     """The Dbcentral cluster database contains an unknown Volume type."""
 
-    def __init__(self, volumetype):
+    def __init__(self, volume_type):
         """Initialize class."""
-        self.volumetype = volumetype
-        msg = 'Volume type "%s" in cluster database not understood' % volumetype
-        DbcentralException.__init__(msg)
+        self.volumetype = volume_type
+        msg = 'Volume type "%s" in cluster database not understood' % volume_type
+        DbcentralException.__init__(self, msg=msg)
 
     def __repr__(self):
         """Make a copy of self."""
-        return "UnknownVolumeTypeException(volumetype=%r)" % self.volumetype
+        return "UnknownVolumeTypeException(volume_type=%r)" % self.volumetype
 
 
 class NoDatabaseException(DbcentralException):
@@ -109,7 +109,7 @@ class Dbcentral:
     """
     Represent the contents of an Antelope DBCentral database.
 
-    DBCentral databases are a meta-list of other Antelope databases.
+    DBCentral databases are a meta-station_patterns of other Antelope databases.
     They allow a large database to be split up into a collection of smaller
     databases.
 
@@ -130,8 +130,8 @@ class Dbcentral:
 
         @param debug sets the logging level
 
-        @param required_tables is a list of table names to validate in each database.
-        A database is automatically dropped from the list of available
+        @param required_tables is a station_patterns of table names to validate in each database.
+        A database is automatically dropped from the station_patterns of available
         databases if it does not contain these tables, or if those tables do
         not have any records.
         """
@@ -172,18 +172,19 @@ class Dbcentral:
 
     def __repr__(self):
         """Duplicate self."""
-        return (
-            "%s(dbname=%r, nickname=%r, debug=%r, required_tables=%r,"
-            + " type=%r, dbs=%r)"
-            % (
-                self.__class__.__name__,
-                self.path,
-                self.nickname,
-                self.debug,
-                self.required_tables,
-                self.type,
-                self.dbs,
-            )
+        format_string = (
+            "{classname}(dbname={dbname}, nickname={nickname}, debug={debug},"
+        )
+        " required_tables={required_tables}, type={type}, dbs={dbs})"
+
+        return format_string.format(
+            classname=self.__class__.__name__,
+            dbname=self.path,
+            nickname=self.nickname,
+            debug=self.debug,
+            required_tables=",".join(self.required_tables.join),
+            type=self.type,
+            dbs=",".join(self.dbs),
         )
 
     def __str__(self):
@@ -201,7 +202,7 @@ class Dbcentral:
         self.logger.info("Dbcentral.nickname => %s" % self.nickname)
         self.logger.info("Dbcentral.type => %s" % self.type)
         self.logger.info("Dbcentral.path => %s" % self.path)
-        self.logger.info("Dbcentral.list => %s" % self.list())
+        self.logger.info("Dbcentral.station_patterns => %s" % self.list())
         for element in sorted(self.dbs):
             self.logger.info("%s => %s" % (element, self.dbs[element]["times"]))
 
@@ -214,7 +215,7 @@ class Dbcentral:
 
         try:
             time = float(time)
-        except Exception:
+        except ValueError:
             print(
                 "\n*Dbcentral*: Dbcentral() => error in time=>[%s] %s"
                 % (time, time.__class__,)
@@ -223,7 +224,7 @@ class Dbcentral:
             for element in sorted(self.dbs):
                 start = self.dbs[element]["times"][0]
                 end = self.dbs[element]["times"][1]
-                if start < time and time < end:
+                if start < time < end:
                     return element
 
         raise DbcentralException("No db match for time=>[%s]" % time)
@@ -314,24 +315,20 @@ class Dbcentral:
             if volumes == "single":
 
                 dbname = stock.epoch2str(time, dbname_template)
-                self._test_db(time, endtime, dbname)
+                self._test_db(time, dbname)
 
             elif volumes == "year":
 
                 for y in range(start_year, end_year + 1):
-
                     voltime = stock.str2epoch("1/1/%s 00:00:00" % y)
-                    volendtime = stock.str2epoch("12/31/%s 23:59:59" % y)
                     dbname = stock.epoch2str(voltime, dbname_template)
 
-                    self._test_db(voltime, volendtime, dbname)
+                    self._test_db(voltime, dbname)
 
             elif volumes == "month":
 
                 vol_month = start_month
                 vol_year = start_year
-                vol_endmonth = end_month
-                vol_endyear = end_year
 
                 while vol_year < end_year or (
                     vol_year == end_year and vol_month <= end_month
@@ -345,12 +342,9 @@ class Dbcentral:
                         vol_year = vol_year + 1
                         vol_month = 1
 
-                    volendtime = (
-                        stock.str2epoch("%d/1/%d" % (vol_endmonth, vol_endyear)) - 1
-                    )
                     dbname = stock.epoch2str(int(voltime), dbname_template)
 
-                    self._test_db(voltime, volendtime, dbname)
+                    self._test_db(voltime, dbname)
 
             elif volumes == "day":
 
@@ -362,10 +356,9 @@ class Dbcentral:
                 while vol_day <= end_day:
 
                     voltime = stock.epoch(vol_day)
-                    volendtime = voltime + 86399  # full day -1 sec
                     dbname = stock.epoch2str(voltime, dbname_template)
 
-                    if self._test_db(voltime, volendtime, dbname):
+                    if self._test_db(voltime, dbname):
                         self.dbs[dbname] = {"times": [time, endtime]}
 
                     vol_day = stock.yearday((stock.epoch(vol_day) + 86400))
@@ -375,7 +368,7 @@ class Dbcentral:
 
         self.logger.debug("DBS=%s" % self.dbs.keys())
 
-    def _test_db(self, time, endtime, dbname):
+    def _test_db(self, time, dbname):
         """
         Verify that the db is valid before saving the value.
 
@@ -393,9 +386,10 @@ class Dbcentral:
 
         # if self.glob("%s.*" % dbname):
         #    self.dbs[dbname] = {'times': [time,endtime]}
-        #    self.logger.warning( "No descriptor file for (%s)." % dbname )
+        #    self.logger_instance.warning( "No descriptor file for (%s)." % dbname )
         #    return
-
+        db = None
+        dbtbl = None
         try:
             db = datascope.dbopen(dbname, "r")
         except datascope.DatascopeError:
@@ -421,11 +415,13 @@ class Dbcentral:
                         )
                         return False
                 finally:
-                    datascope.dbfree(dbtbl)
+                    if dbtbl is not None:
+                        datascope.dbfree(dbtbl)
         finally:
-            datascope.dbclose(db)
+            if db is not None:
+                datascope.dbclose(db)
 
-        # If we get here, the database passes our tests. Add it to the list
+        # If we get here, the database passes our tests. Add it to the station_patterns
         return True
 
     def after(self, time):
@@ -435,7 +431,7 @@ class Dbcentral:
 
         try:
             time = float(time)
-        except Exception:
+        except ValueError:
             self.logger.error("error in time=>[%s] %s" % (time, time.__class__))
         else:
             for element in sorted(self.dbs):
@@ -460,7 +456,7 @@ class Dbcentral:
 
         try:
             del self.dbs[tbl]
-        except Exception:
+        except ValueError:
             pass
 
 
