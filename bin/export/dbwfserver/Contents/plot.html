@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html>
@@ -7,7 +7,7 @@
 
     <title>$application_title</title>
 
-    <script src="http://www.google.com/jsapi" language="javascript" type="text/javascript"></script>
+    <script src="//www.google.com/jsapi" language="javascript" type="text/javascript"></script>
     <script language="javascript" type="text/javascript">
         google.load("jquery", "1.5.0",{uncompressed:true} ); // Load jQuery
         google.load("jqueryui", "1.8.9",{uncompressed:true} ); // Load jQuery UI
@@ -27,7 +27,7 @@
 
     <script type="text/javascript" src="$proxy_url/static/jquery/dbwfserver.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="/static/css/dbwfserver.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/dbwfserver.css"></link>
 
 </head>
 
@@ -35,12 +35,12 @@
 
 <div id="content">
 
-    <div id="errors" style='margin-top:5px;margin-bottom:5px' class="ui-helper-hidden ui-widget-content ui-corner-all ui-state-error">
+	<div id="errors" style='margin-top:5px;margin-bottom:5px' class="ui-helper-hidden ui-widget-content ui-corner-all ui-state-error"></div>
     <div id="loading"></div>
 
     <div id="wforms"></div>
 
-    <div id="load_bar" class='ui-state-highlight ui-corner-all ui-helper-hidden' style="padding: 5px; margin-top: 5px; margin-bottom: 5px"> 
+	<div id="load_bar" class='ui-state-highlight ui-corner-all ui-helper-hidden' style="padding: 5px; margin-top: 5px; margin-bottom: 5px"></div>
 
 </div>
 
@@ -48,7 +48,7 @@
 
     $(document).ready( function(){
 
-        init(); 
+        init();
 
         var setup_ui    =  $setupUI ;
         var meta_query =  $meta_query ;

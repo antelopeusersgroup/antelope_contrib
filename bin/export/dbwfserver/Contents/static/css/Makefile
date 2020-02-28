@@ -1,6 +1,6 @@
 DATADIR = www/dbwfserver/static/css
 
-DATA = dbwfserver.css
+DATA = $(wildcard *.css)
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
