@@ -26,7 +26,7 @@ import twisted.web.static
 from antelope import stock
 
 from .dbcentral import Dbcentral
-from .util import Events, Stations, is_numeric, load_template
+from .util import Events, Stations, load_template
 
 
 class FaviconResource(twisted.web.static.File):
@@ -563,12 +563,10 @@ class QueryParserResource(twisted.web.resource.Resource):
             uri["page"] = args[5].decode()
 
         #
-        # Fix start
+        # Fix start, and sanitize bad values while we're at it.
         #
-        if uri["start"]:
-            if is_numeric(uri["start"]):
-                uri["start"] = is_numeric(uri["start"])
-            elif uri["start"] == "hour":
+        if "start" in uri and uri["start"] is not None:
+            if uri["start"] == "hour":
                 uri["start"] = 0
                 time_window = 3600
             elif uri["start"] == "day":
@@ -581,15 +579,19 @@ class QueryParserResource(twisted.web.resource.Resource):
                 uri["start"] = 0
                 time_window = 2629743
             else:
-                uri["start"] = 0
+                try:
+                    uri["start"] = float(uri["start"])
+                except ValueError:
+                    self.logger.warning(
+                        "Invalid value '%s' for start time received.", uri["start"]
+                    )
+                    uri["start"] = 0
 
         #
-        # Fix end
+        # Fix end, and sanitize bad values while we're at it.
         #
-        if uri["end"]:
-            if is_numeric(uri["end"]):
-                uri["end"] = is_numeric(uri["end"])
-            elif uri["end"] == "hour":
+        if "end" in uri and uri["end"] is not None:
+            if uri["end"] == "hour":
                 uri["end"] = 0
                 time_window = 3600
             elif uri["end"] == "day":
@@ -602,7 +604,13 @@ class QueryParserResource(twisted.web.resource.Resource):
                 uri["end"] = 0
                 time_window = 2629743
             else:
-                uri["end"] = 0
+                try:
+                    uri["end"] = float(uri["end"])
+                except ValueError:
+                    self.logger.warning(
+                        "Invalid value '%s' for end time received.", uri["end"]
+                    )
+                    uri["end"] = None
 
         #
         # Build missing times if needed
@@ -612,10 +620,7 @@ class QueryParserResource(twisted.web.resource.Resource):
                 uri["end"] = self.stations.max_time()
                 uri["start"] = uri["end"] - time_window
 
-                uri["end"] = is_numeric(uri["end"])
-                uri["start"] = is_numeric(uri["start"])
-
-            if not uri["end"]:
+            if not uri["end"]:  # should handle both None and 0
                 uri["end"] = uri["start"] + time_window
 
         self.logger.debug(
@@ -671,9 +676,15 @@ class QueryParserResource(twisted.web.resource.Resource):
             response_data = "Not valid channel value "
             self.logger.error(response_data)
             return {"ERROR": response_data}
+        try:
+            start = float(query["start"])
+        except ValueError:
+            start = None
 
-        start = is_numeric(query["start"])
-        end = is_numeric(query["end"])
+        try:
+            end = float(query["end"])
+        except ValueError:
+            end = None
 
         if not start:
             temp_dic = self.stations(query["sta"][0])

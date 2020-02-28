@@ -20,28 +20,6 @@ import antelope.stock as stock
 logger = logging.getLogger(__name__)
 
 
-def is_numeric(test):
-    """Test if the string is a valid number.
-
-    Return the converted number or None if string is not a number.
-    """
-    try:
-        test = str(test)
-        if "." in test:
-            try:
-                return float(test)
-            except ValueError:
-                return None
-
-        else:
-            try:
-                return int(test)
-            except ValueError:
-                return None
-    except ValueError:
-        return None
-
-
 class ProgressLogger:
     """Output a log message every time_interval seconds or tick_interval."""
 
@@ -596,17 +574,14 @@ class Events:
     def __call__(self, value):
         """Intercept data requests."""
 
-        value = is_numeric(value)
-
-        if not value:
+        try:
+            value = float(value)
+        except ValueError:
             return "Not a valid number in function call: %s" % value
 
         if value in self.event_cache:
-
             return self.event_cache[value]
-
         else:
-
             self.logger.warning("Events(): %s not in database." % value)
             return self.list
 
@@ -633,11 +608,11 @@ class Events:
         if self.config.simple:
             return results
 
-        orid_time = is_numeric(orid_time)
-
-        if not orid_time:
+        try:
+            orid_time = float(orid_time)
+        except ValueError:
             self.logger.error("Not a valid number in function call: %s" % orid_time)
-            return
+            return None
 
         start = float(orid_time) - float(window)
         end = float(orid_time) + float(window)
@@ -649,7 +624,7 @@ class Events:
                 "No match for orid_time in dbcentral object: (%s,%s)"
                 % (orid_time, self.dbcentral(orid_time))
             )
-            return
+            return None
 
         try:
             db = datascope.dbopen(dbname, "r")
@@ -660,7 +635,7 @@ class Events:
                 "Exception on Events() time(%s): "
                 + "Error on db pointer %s [%s]" % (orid_time, db, e)
             )
-            return
+            return None
 
         db = db.subset("time >= %f" % start)
         db = db.subset("time <= %f" % end)
@@ -670,7 +645,7 @@ class Events:
             db = db.lookup(table="wfdisc")
             records = db.query(datascope.dbRECORD_COUNT)
 
-        except Exception:
+        except datascope.DatascopeException:
             records = 0
 
         if records:
@@ -681,8 +656,14 @@ class Events:
 
                 (orid, record_time) = db.getv("orid", "time")
 
-                orid = is_numeric(orid)
-                record_time = is_numeric(record_time)
+                try:
+                    orid = int(orid)
+                except ValueError:
+                    orid = None
+                try:
+                    record_time = float(record_time)
+                except ValueError:
+                    record_time = None
                 results[orid] = record_time
 
         return results
