@@ -197,6 +197,7 @@ data_window_parameters	&Arr{
 }
 data_window_start	-60.0
 initial_time_stamp	2003355:00:00:00.0
+require_snetsta true
 network_name	TA
 phase_processing_parameters	&Arr{
     P	&Arr{
