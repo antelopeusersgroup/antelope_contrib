@@ -81,6 +81,7 @@ DATA= \
     mbb2.pf \
     mb2000_fil.pf \
     mb2000_raw.pf \
+    mb3a.pf \
     ncpa.pf \
     paroP.pf \
     paroT.pf \
