@@ -61,6 +61,9 @@ Successfully installed obspy-1.1.1
 http://www.obspy.org
 .fi
 .SH "BUGS AND CAVEATS"
+The pip install of obspy requires compiler access on the machine in question, as well as proper system administration of all the components 
+on which compilation processes depend -- furthermore in the forms expected by the downloaded obspy package. If installation fails, first 
+recourse should be to local system administrators and to a review of obspy build requirements.
 .SH AUTHOR
 .nf
 Kent Lindquist
