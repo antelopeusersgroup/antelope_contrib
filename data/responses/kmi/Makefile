@@ -38,6 +38,7 @@ DATA= \
     fba23_6damp_50hz \
     fba23_7damp_50hz \
     fba23_7damp_100hz \
+    mbb2 \
     ranger \
     range_vel \
     sh \

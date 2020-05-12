@@ -1,0 +1,23 @@
+# MBB-2   Miniature Broadband Seismometer
+# Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
+# 1                   type
+# 2                   num of zeroes
+# 6                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 5.46606E+12         normalization factor
+# 1.0                 gain
+# sensitivity  750 v/m/sec
+theoretical   1 sensor   paz    pz6seismo
+5.46606E+12
+6             Poles
+-3.7000E-02   3.7000E-02    0.0000E+00    0.0000E+00
+-3.7000E-02   -.3700E-01    0.0000E+00    0.0000E+00
+-1.9000E+02   6.2000E+02    0.0000E+00    0.0000E+00
+-1.9000E+02   -.6200E+03    0.0000E+00    0.0000E+00
+-2.0000E+03   3.0000E+03    0.0000E+00    0.0000E+00
+-2.0000E+03   -.3000E+04    0.0000E+00    0.0000E+00
+2             Zeros
+ 0.0000E+00   0.0000E+00    0.0000E+00    0.0000E+00
+ 0.0000E+00   0.0000E+00    0.0000E+00    0.0000E+00
