@@ -1,11 +1,23 @@
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @file genutils.c
  *
  * General utility functions.
  *
- * @author Chad Trabant, IRIS Data Management Center
+ * This file is part of the DataLink Library.
  *
- * Version: 2008.192
+ * Copyright (c) 2020 Chad Trabant, IRIS Data Management Center
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  ***************************************************************************/
 
 #include <stdio.h>
@@ -14,7 +26,7 @@
 
 #include "libdali.h"
 
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Split a stream ID into separate components: "W_X_Y_Z/TYPE"
  *
  * Split stream ID into separate components from the composite form:
@@ -35,80 +47,79 @@ dl_splitstreamid (char *streamid, char *w, char *x, char *y, char *z, char *type
 {
   char *id;
   char *ptr, *top, *next;
-  
-  if ( ! streamid )
+
+  if (!streamid)
     return -1;
-  
+
   /* Duplicate stream ID */
-  if ( ! (id = strdup(streamid)) )
+  if (!(id = strdup (streamid)))
     return -1;
-  
+
   /* First truncate after the type if included */
-  if ( (ptr = strrchr (id, '/')) )
-    {
-      *ptr++ = '\0';
-      
-      /* Copy the type if requested */
-      if ( type )
-        strcpy (type, ptr);
-    }
-  
+  if ((ptr = strrchr (id, '/')))
+  {
+    *ptr++ = '\0';
+
+    /* Copy the type if requested */
+    if (type)
+      strcpy (type, ptr);
+  }
+
   /* W */
   top = id;
-  if ( (ptr = strchr (top, '_')) )
-    {
-      next = ptr + 1;
-      *ptr = '\0';
-      
-      if ( w )
-        strcpy (w, top);
-      
-      top = next;
-    }
+  if ((ptr = strchr (top, '_')))
+  {
+    next = ptr + 1;
+    *ptr = '\0';
+
+    if (w)
+      strcpy (w, top);
+
+    top = next;
+  }
   /* X */
-  if ( (ptr = strchr (top, '_')) )
-    {
-      next = ptr + 1;
-      *ptr = '\0';
+  if ((ptr = strchr (top, '_')))
+  {
+    next = ptr + 1;
+    *ptr = '\0';
 
-      if ( x )
-        strcpy (x, top);
-      
-      top = next;
-    }
+    if (x)
+      strcpy (x, top);
+
+    top = next;
+  }
   /* Y */
-  if ( (ptr = strchr (top, '_')) )
-    {
-      next = ptr + 1;
-      *ptr = '\0';
-      
-      if ( y )
-        strcpy (y, top);
-      
-      top = next;
-    }
+  if ((ptr = strchr (top, '_')))
+  {
+    next = ptr + 1;
+    *ptr = '\0';
+
+    if (y)
+      strcpy (y, top);
+
+    top = next;
+  }
   /* Z */
-  if ( *top && z )
-    {
-      strcpy (z, top);
-    }
-  
+  if (*top && z)
+  {
+    strcpy (z, top);
+  }
+
   /* Free duplicated stream ID */
-  if ( id )
+  if (id)
     free (id);
-  
+
   return 0;
-}  /* End of dl_splitstreamid() */
+} /* End of dl_splitstreamid() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Determine byte order of host machine
  *
  * Determine the byte order of the host machine.  Due to the lack of
  * portable defines to determine host byte order this run-time test is
  * provided.  The code actually tests for little-endianess, the only
  * other alternative is assumed to be big endian.
- * 
+ *
  * @return 0 if the host is little endian, otherwise 1.
  ***************************************************************************/
 int
@@ -116,28 +127,26 @@ dl_bigendianhost ()
 {
   int16_t host = 1;
   return !(*((int8_t *)(&host)));
-}  /* End of dl_bigendianhost() */
+} /* End of dl_bigendianhost() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Return absolute value of double value
  *
  * Determine the absolute value of an input double, actually just test
  * if the input double is positive multiplying by -1.0 if not and
  * return it.
- * 
+ *
  * @return Positive value of input double.
  ***************************************************************************/
 double
 dl_dabs (double value)
 {
-  if ( value < 0.0 )
+  if (value < 0.0)
     value *= -1.0;
   return value;
-}  /* End of dl_dabs() */
+} /* End of dl_dabs() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Read a line from a file stream
  *
  * Read characters from a stream (specified as a file descriptor)
@@ -152,30 +161,30 @@ int
 dl_readline (int fd, char *buffer, int buflen)
 {
   int nread = 0;
-  
-  if ( ! buffer )
+
+  if (!buffer)
     return -1;
-  
+
   /* Read data from stream until newline character or max characters */
-  while ( nread < (buflen-1) )
+  while (nread < (buflen - 1))
+  {
+    /* Read a single character from the stream */
+    if (read (fd, buffer + nread, 1) != 1)
     {
-      /* Read a single character from the stream */
-      if ( read (fd, buffer+nread, 1) != 1 )
-        {
-          return -1;
-        }
-      
-      /* Trap door for newline character */
-      if ( buffer[nread] == '\n' )
-        {
-          break;
-        }
-      
-      nread++;
+      return -1;
     }
-  
+
+    /* Trap door for newline character */
+    if (buffer[nread] == '\n')
+    {
+      break;
+    }
+
+    nread++;
+  }
+
   /* Terminate string in buffer */
   buffer[nread] = '\0';
-  
+
   return nread;
-}  /* End of dl_readline() */
+} /* End of dl_readline() */

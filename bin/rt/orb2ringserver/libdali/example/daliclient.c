@@ -5,10 +5,6 @@
  *
  * Connects to a DataLink server, configures a connection and collects
  * data.  Detailed information about the data received can be printed.
- *
- * Written by Chad Trabant, IRIS Data Management Center
- *
- * modified 2013.210
  ***************************************************************************/
 
 #include <stdio.h>
@@ -18,11 +14,7 @@
 
 #include <libdali.h>
 
-#ifndef WIN32
-  #include <signal.h>
-
-  static void term_handler (int sig);
-#else
+#ifdef WIN32
   #define strcasecmp _stricmp
 #endif
 
@@ -49,24 +41,7 @@ main (int argc, char **argv)
   char *infobuf = 0;
   int infolen;
   int endflag = 0;
-  
-#ifndef WIN32
-  /* Signal handling, use POSIX calls with standardized semantics */
-  struct sigaction sa;
-  
-  sigemptyset (&sa.sa_mask);
-  sa.sa_flags   = SA_RESTART;
-  
-  sa.sa_handler = term_handler;
-  sigaction (SIGINT, &sa, NULL);
-  sigaction (SIGQUIT, &sa, NULL);
-  sigaction (SIGTERM, &sa, NULL);
-  
-  sa.sa_handler = SIG_IGN;
-  sigaction (SIGHUP, &sa, NULL);
-  sigaction (SIGPIPE, &sa, NULL);
-#endif
-  
+
   /* Process given parameters (command line and parameter file) */
   if ( parameter_proc (argc, argv) < 0 )
     {
@@ -74,28 +49,28 @@ main (int argc, char **argv)
       fprintf (stderr, "Try '-h' for detailed help\n");
       return -1;
     }
-  
+
   /* Connect to server */
   if ( dl_connect (dlconn) < 0 )
     {
       fprintf (stderr, "Error connecting to server\n");
       return -1;
     }
-  
+
   /* Reposition connection */
   if ( dlconn->pktid > 0 )
     {
       if ( dl_position (dlconn, dlconn->pktid, dlconn->pkttime) < 0 )
 	return -1;
     }
-  
+
   /* Send match pattern if supplied */
   if ( matchpattern )
     {
       if ( dl_match (dlconn, matchpattern) < 0 )
 	return -1;
     }
-  
+
   /* Send reject pattern if supplied */
   if ( rejectpattern )
     {
@@ -111,9 +86,9 @@ main (int argc, char **argv)
 	  dl_log (2, 0, "Problem requesting INFO from server\n");
 	  return -1;
 	}
-      
+
       printf ("%.*s\n", infolen, infobuf);
-      
+
       if ( infobuf )
 	free (infobuf);
     }
@@ -124,23 +99,23 @@ main (int argc, char **argv)
       while ( dl_collect (dlconn, &dlpack, packetdata, sizeof(packetdata), endflag) == DLPACKET )
 	{
 	  dl_dltime2seedtimestr (dlpack.datastart, timestr, 1);
-	  
-	  dl_log (0, 0, "Received %s (%lld), %s, %d\n",
+
+	  dl_log (0, 0, "Received %s (%" PRId64 "), %s, %d\n",
 		  dlpack.streamid, dlpack.pktid, timestr, dlpack.datasize);
 	}
     }
-  
+
   /* Make sure everything is shut down and save the state file */
   if ( dlconn->link != -1 )
     dl_disconnect (dlconn);
-  
+
   /* Save the state file */
   if ( statefile )
     dl_savestate (dlconn, statefile);
 
   if ( dlconn )
     dl_freedlcp (dlconn);
-  
+
   return 0;
 }  /* End of main() */
 
@@ -158,7 +133,7 @@ parameter_proc (int argcount, char **argvec)
   char *address = 0;
   int keepalive = -1;
   int optind;
-  
+
   /* Process all command line arguments */
   for (optind = 1; optind < argcount; optind++)
     {
@@ -211,7 +186,7 @@ parameter_proc (int argcount, char **argvec)
 	  exit (1);
 	}
     }
-  
+
   /* Make sure a server was specified */
   if ( ! address )
     {
@@ -221,25 +196,25 @@ parameter_proc (int argcount, char **argvec)
       fprintf(stderr, "Try '-h' for detailed help\n");
       exit (1);
     }
-  
+
   /* Allocate and initialize a new connection description */
   dlconn = dl_newdlcp (address, argvec[0]);
-  
+
   /* Set keepalive parameter, allow for valid value of 0 */
   if ( keepalive >= 0 )
     dlconn->keepalive = keepalive;
-  
+
   /* Initialize the verbosity for the dl_log function */
   dl_loginit (verbose, NULL, NULL, NULL, NULL);
-  
+
   /* Report the program version */
   dl_log (0, 1, "%s version: %s\n", PACKAGE, VERSION);
-  
+
   /* Load the match stream list from a file if the argument starts with '@' */
   if ( matchpattern && *matchpattern == '@' )
     {
       char *filename = matchpattern + 1;
-      
+
       if ( ! (matchpattern = dl_read_streamlist (dlconn, filename)) )
 	{
 	  dl_log (2, 0, "Cannot read matching list file: %s\n", filename);
@@ -251,14 +226,14 @@ parameter_proc (int argcount, char **argvec)
   if ( rejectpattern && *rejectpattern == '@' )
     {
       char *filename = rejectpattern + 1;
-      
+
       if ( ! (rejectpattern = dl_read_streamlist (dlconn, filename)) )
 	{
 	  dl_log (2, 0, "Cannot read rejecting list file: %s\n", filename);
 	  exit (1);
 	}
     }
-  
+
   /* Recover from the state file and reposition */
   if ( statefile )
     {
@@ -268,7 +243,7 @@ parameter_proc (int argcount, char **argvec)
 	  exit (1);
 	}
     }
-  
+
   return 0;
 }  /* End of parameter_proc() */
 
@@ -295,18 +270,5 @@ usage (void)
 	   " [host][:][port]  Address of the DataLink server in host:port format\n"
 	   "                  if host is omitted (i.e. ':16000'), localhost is assumed\n"
 	   "                  if :port is omitted (i.e. 'localhost'), 16000 is assumed\n\n");
-  
+
 }  /* End of usage() */
-
-#ifndef WIN32
-/***************************************************************************
- * term_handler:
- * Signal handler routine. 
- ***************************************************************************/
-static void
-term_handler (int sig)
-{
-  dl_terminate (dlconn);
-}
-#endif
-
