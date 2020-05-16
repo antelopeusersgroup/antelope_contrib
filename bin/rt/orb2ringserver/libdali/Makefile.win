@@ -1,13 +1,11 @@
 #
-#
-# Nmake File - MS Visual C++ version
+# Nmake File - MS Visual C/C++
 # Use 'nmake -f Makefile.win'
 
 NODEBUG=1
 
-!include <ntwin32.mak>
-
 INCS = /I.
+OPTS = -D_CRT_SECURE_NO_WARNINGS
 LIB = libdali.lib
 DLL = libdali.dll
 
@@ -19,7 +17,8 @@ OBJS=	timeutils.obj	\
 	statefile.obj	\
 	config.obj	\
 	portable.obj	\
-	connection.obj	
+	connection.obj  \
+        gmtime64.obj
 
 all: lib
 
@@ -30,8 +29,7 @@ dll: $(OBJS)
 	link.exe /dll /nologo /out:$(DLL) $(OBJS)
 
 .c.obj:
-	$(cc) /nologo $(cflags) $(cdebug) $(cvarsmt) $(tflags) $(INCS) $<
-
+	$(CC) /nologo $(CFLAGS) $(INCS) $(OPTS) /c $<
 
 # Clean-up directives
 clean:

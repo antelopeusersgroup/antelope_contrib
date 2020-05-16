@@ -1,0 +1,25 @@
+
+The library requires that C99 integer types are available on the
+target computer.  Specifically the int8_t, int16_t, int32_t, int64_t
+and their unsigned counterpart types.  If these data types are not
+available guesses are made in lmplatform.h.
+
+-- Unix --
+
+A simple 'make' on most Unix-like systems should build the library.
+
+The included Makefile should work for most Unix-like environments and
+most make variants; it is know to work with GNU make.
+
+The CC and CFLAGS environment variables can be set to control the build.
+
+By default a statically linked version of the library is built: 'libslink.a'.
+
+With GCC, clang or compatible build tools it is possible to build a shared
+library with 'make shared'.
+
+-- Windows --
+
+On a Windows platform the library can be compiled by using the
+Nmake compatible Makefile.win (e.g. 'nmake -f Makefile.win').  The
+default target is a static library 'libslink.lib'.
