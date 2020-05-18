@@ -1,22 +1,34 @@
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @file connection.c
  *
  * Routines for managing a connection with a DataLink server.
  *
- * @author Chad Trabant, IRIS Data Management Center
+ * This file is part of the DataLink Library.
  *
- * modified: 2013.210
+ * Copyright (c) 2020 Chad Trabant, IRIS Data Management Center
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  ***************************************************************************/
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "libdali.h"
 #include "portable.h"
 
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Create a new DataLink Connection Parameter (DLCP) structure
  *
  * Allocate, initialze and return a pointer to a new DLCP struct.
@@ -30,38 +42,38 @@ DLCP *
 dl_newdlcp (char *address, char *progname)
 {
   DLCP *dlconn;
-  
-  dlconn = (DLCP *) malloc (sizeof(DLCP));
-  
-  if ( dlconn == NULL )
-    {
-      dl_log_r (NULL, 2, 0, "dl_newdlcp(): error allocating memory\n");
-      return NULL;
-    }
-  
+
+  dlconn = (DLCP *)malloc (sizeof (DLCP));
+
+  if (dlconn == NULL)
+  {
+    dl_log_r (NULL, 2, 0, "dl_newdlcp(): error allocating memory\n");
+    return NULL;
+  }
+
   /* Set defaults */
-  strncpy (dlconn->addr, address, sizeof(dlconn->addr));
-  dlp_genclientid (progname, dlconn->clientid, sizeof(dlconn->clientid));
-  dlconn->keepalive    = 600;
-  dlconn->iotimeout    = 60;
-  dlconn->link         = -1;
-  dlconn->serverproto  = 0.0;
-  dlconn->maxpktsize   = 0;
-  dlconn->writeperm    = 0;
-  dlconn->pktid        = 0;
-  dlconn->pkttime      = 0;
+  strncpy (dlconn->addr, address, sizeof (dlconn->addr) - 1);
+  if (dlp_genclientid (progname, dlconn->clientid, sizeof (dlconn->clientid)) < 0)
+    dlconn->clientid[0] = '\0';
+  dlconn->keepalive      = 600;
+  dlconn->iotimeout      = 60;
+  dlconn->link           = -1;
+  dlconn->serverproto    = 0.0;
+  dlconn->maxpktsize     = 0;
+  dlconn->writeperm      = 0;
+  dlconn->pktid          = 0;
+  dlconn->pkttime        = 0;
   dlconn->keepalive_trig = -1;
-  dlconn->keepalive_time = 0.0;
-  dlconn->terminate    = 0;
-  dlconn->streaming    = 0;
-  
+  dlconn->keepalive_time = 0;
+  dlconn->terminate      = 0;
+  dlconn->streaming      = 0;
+
   dlconn->log = NULL;
-  
+
   return dlconn;
-}  /* End of dl_newdlcp() */
+} /* End of dl_newdlcp() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Free a DataLink Connection Parameter (DLCP) structure
  *
  * Free all memory associated with a DLCP struct.
@@ -71,14 +83,13 @@ dl_newdlcp (char *address, char *progname)
 void
 dl_freedlcp (DLCP *dlconn)
 {
-  if ( dlconn->log )
+  if (dlconn->log)
     free (dlconn->log);
-  
+
   free (dlconn);
-}  /* End of dl_freedlcp() */
+} /* End of dl_freedlcp() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Send the ID command to the DataLink server and parse response
  *
  * Send the ID command including the client ID and optionally parse
@@ -94,125 +105,123 @@ dl_freedlcp (DLCP *dlconn)
 int
 dl_exchangeIDs (DLCP *dlconn, int parseresp)
 {
-  char sendstr[255];		/* Buffer for command strings */
-  char respstr[255];		/* Buffer for server response */  
-  char *capptr;                 /* Pointer to capabilities flags */  
+  char sendstr[255]; /* Buffer for command strings */
+  char respstr[255]; /* Buffer for server response */
+  char *capptr;      /* Pointer to capabilities flags */
   int respsize;
   int ret = 0;
 
-  if ( ! dlconn )
+  if (!dlconn)
     return -1;
-  
+
   /* Sanity check that connection is not in streaming mode */
-  if ( dlconn->streaming )
-    {
-      dl_log_r (dlconn, 1, 1, "[%s] dl_exchangeIDs(): Connection in streaming mode, cannot continue\n",
-		dlconn->addr);
-      return -1;
-    }
-  
+  if (dlconn->streaming)
+  {
+    dl_log_r (dlconn, 1, 1, "[%s] dl_exchangeIDs(): Connection in streaming mode, cannot continue\n",
+              dlconn->addr);
+    return -1;
+  }
+
   /* Send ID command including client ID */
-  snprintf (sendstr, sizeof(sendstr), "ID %s",
-	    (dlconn->clientid) ? dlconn->clientid : "");
+  snprintf (sendstr, sizeof (sendstr), "ID %s", dlconn->clientid);
   dl_log_r (dlconn, 1, 2, "[%s] sending: %s\n", dlconn->addr, sendstr);
-  
+
   respsize = dl_sendpacket (dlconn, sendstr, strlen (sendstr), NULL, 0,
-			    respstr, sizeof(respstr));
-  
+                            respstr, sizeof (respstr));
+
   /* Check for errors */
-  if ( respsize < 0 )
-    {
-      return -1;
-    }
-  
+  if (respsize < 0)
+  {
+    return -1;
+  }
+
   /* Check minimum server ID response size */
-  if ( respsize < 11 )
-    {
-      dl_log_r (dlconn, 1, 2, "[%s] Server ID response too short: %d\n",
-		dlconn->addr, respstr);
-      return -1;
-    }
-  
+  if (respsize < 11)
+  {
+    dl_log_r (dlconn, 1, 2, "[%s] Server ID response too short: %d bytes\n",
+              dlconn->addr, respsize);
+    return -1;
+  }
+
   /* Make sure the response string is terminated */
   respstr[respsize] = '\0';
-  
+
   /* Verify DataLink signature in server response */
-  if ( strncasecmp (respstr, "ID DATALINK", 11) )
-    {
-      dl_log_r (dlconn, 1, 1,
-                "[%s] dl_exchangeIDs(): Unrecognized server ID: %11.11s\n",
-                dlconn->addr, respstr);
-      return -1;
-    }
-  
+  if (strncasecmp (respstr, "ID DATALINK", 11))
+  {
+    dl_log_r (dlconn, 1, 1,
+              "[%s] dl_exchangeIDs(): Unrecognized server ID: %11.11s\n",
+              dlconn->addr, respstr);
+    return -1;
+  }
+
   /* Parse the response from the server if requested */
-  if ( parseresp )
-    {
-      /* Search for capabilities flags in server ID by looking for "::"
+  if (parseresp)
+  {
+    /* Search for capabilities flags in server ID by looking for "::"
        * The expected format of the complete server ID is:
        * "ID DataLink <optional text> <:: optional capability flags>"
        */
-      capptr = strstr (respstr, "::");
-      if ( capptr )
-	{
-	  /* Truncate server ID portion of string */
-	  *capptr = '\0';
-	  
-	  /* Move pointer to beginning of flags */
-	  capptr += 2;
-	  
-	  /* Move capptr up to first non-space character */
-	  while ( *capptr == ' ' )
-	    capptr++;
-	}
-      
-      /* Report received server ID (without the initial "ID ") */
-      dl_log_r (dlconn, 1, 1, "[%s] connected to: %s\n", dlconn->addr, respstr+3);
-      if ( capptr )
-	dl_log_r (dlconn, 1, 1, "[%s] capabilities: %s\n", dlconn->addr, capptr);
-      
-      /* Check capabilities flags */
-      if ( capptr )
-	{
-	  char *tptr;
-	  
-	  /* Parse protocol version flag: "DLPROTO:<#.#>" if present */
-	  if ( (tptr = strstr(capptr, "DLPROTO")) )
-	    {
-	      /* Parse protocol version as a float */
-	      ret = sscanf (tptr, "DLPROTO:%f", &dlconn->serverproto);
-	      
-	      if ( ret != 1 )
-		dl_log_r (dlconn, 1, 1,
-			  "[%s] dl_exchangeIDs(): could not parse protocol version from DLPROTO flag: %s\n",
-			  dlconn->addr, tptr);
-	    }
-	  
-	  /* Parse server packet size flag: "PACKETSIZE:<#>" if present */
-	  if ( (tptr = strstr(capptr, "PACKETSIZE")) )
-	    {
-	      /* Parse protocol version as an integer */
-	      ret = sscanf (tptr, "PACKETSIZE:%d", &dlconn->maxpktsize);
-	      
-	      if ( ret != 1 )
-		dl_log_r (dlconn, 1, 1,
-			  "[%s] dl_exchangeIDs(): could not parse packet size from PACKETSIZE flag: %s\n",
-			  dlconn->addr, tptr);
-	    }
-	  
-	  /* Search for write permission flag */
-	  if ( (tptr = strstr(capptr, "WRITE")) )
-	    {
-	      dlconn->writeperm = 1;
-	    }
-	}
+    capptr = strstr (respstr, "::");
+    if (capptr)
+    {
+      /* Truncate server ID portion of string */
+      *capptr = '\0';
+
+      /* Move pointer to beginning of flags */
+      capptr += 2;
+
+      /* Move capptr up to first non-space character */
+      while (*capptr == ' ')
+        capptr++;
     }
-  
+
+    /* Report received server ID (without the initial "ID ") */
+    dl_log_r (dlconn, 1, 1, "[%s] connected to: %s\n", dlconn->addr, respstr + 3);
+    if (capptr)
+      dl_log_r (dlconn, 1, 1, "[%s] capabilities: %s\n", dlconn->addr, capptr);
+
+    /* Check capabilities flags */
+    if (capptr)
+    {
+      char *tptr;
+
+      /* Parse protocol version flag: "DLPROTO:<#.#>" if present */
+      if ((tptr = strstr (capptr, "DLPROTO")))
+      {
+        /* Parse protocol version as a float */
+        ret = sscanf (tptr, "DLPROTO:%f", &dlconn->serverproto);
+
+        if (ret != 1)
+          dl_log_r (dlconn, 1, 1,
+                    "[%s] dl_exchangeIDs(): could not parse protocol version from DLPROTO flag: %s\n",
+                    dlconn->addr, tptr);
+      }
+
+      /* Parse server packet size flag: "PACKETSIZE:<#>" if present */
+      if ((tptr = strstr (capptr, "PACKETSIZE")))
+      {
+        /* Parse protocol version as an integer */
+        ret = sscanf (tptr, "PACKETSIZE:%d", &dlconn->maxpktsize);
+
+        if (ret != 1)
+          dl_log_r (dlconn, 1, 1,
+                    "[%s] dl_exchangeIDs(): could not parse packet size from PACKETSIZE flag: %s\n",
+                    dlconn->addr, tptr);
+      }
+
+      /* Search for write permission flag */
+      if ((tptr = strstr (capptr, "WRITE")))
+      {
+        dlconn->writeperm = 1;
+      }
+    }
+  }
+
   return 0;
-}  /* End of dl_exchangeIDs() */
+} /* End of dl_exchangeIDs() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Position the client read position
  *
  * Set the client read position to a specified packet ID and packet
@@ -242,65 +251,64 @@ dl_position (DLCP *dlconn, int64_t pktid, dltime_t pkttime)
   int headerlen;
   int replylen;
   int rv;
-  
-  if ( ! dlconn )
+
+  if (!dlconn)
     return -1;
-  
-  if ( dlconn->link < 0 )
+
+  if (dlconn->link < 0)
     return -1;
-  
-  if ( pktid < 0 && pktid != LIBDALI_POSITION_EARLIEST && pktid != LIBDALI_POSITION_LATEST )
+
+  if (pktid < 0 && pktid != LIBDALI_POSITION_EARLIEST && pktid != LIBDALI_POSITION_LATEST)
     return -1;
-  
+
   /* Sanity check that connection is not in streaming mode */
-  if ( dlconn->streaming )
-    {
-      dl_log_r (dlconn, 1, 1, "[%s] dl_position(): Connection in streaming mode, cannot continue\n",
-		dlconn->addr);
-      return -1;
-    }
-  
+  if (dlconn->streaming)
+  {
+    dl_log_r (dlconn, 1, 1, "[%s] dl_position(): Connection in streaming mode, cannot continue\n",
+              dlconn->addr);
+    return -1;
+  }
+
   /* When positioning to earliest or latest packet in the ring, ignore pkttime */
-  if ( pktid == LIBDALI_POSITION_EARLIEST )
-    {
-      /* Create packet header with command: "POSITION SET EARLIEST" */
-      headerlen = snprintf (header, sizeof(header), "POSITION SET EARLIEST");
-    }
-  else if ( pktid == LIBDALI_POSITION_LATEST )
-    {
-      /* Create packet header with command: "POSITION SET LATEST" */
-      headerlen = snprintf (header, sizeof(header), "POSITION SET LATEST");
-    }
-  else 
-    {
-      /* Create packet header with command: "POSITION SET pktid pkttime" */
-      headerlen = snprintf (header, sizeof(header), "POSITION SET %lld %lld",
-			    (long long int)pktid, (long long int)pkttime);
-    }
-  
+  if (pktid == LIBDALI_POSITION_EARLIEST)
+  {
+    /* Create packet header with command: "POSITION SET EARLIEST" */
+    headerlen = snprintf (header, sizeof (header), "POSITION SET EARLIEST");
+  }
+  else if (pktid == LIBDALI_POSITION_LATEST)
+  {
+    /* Create packet header with command: "POSITION SET LATEST" */
+    headerlen = snprintf (header, sizeof (header), "POSITION SET LATEST");
+  }
+  else
+  {
+    /* Create packet header with command: "POSITION SET pktid pkttime" */
+    headerlen = snprintf (header, sizeof (header), "POSITION SET %lld %lld",
+                          (long long int)pktid, (long long int)pkttime);
+  }
+
   /* Send command to server */
   replylen = dl_sendpacket (dlconn, header, headerlen, NULL, 0,
-			    reply, sizeof(reply));
-  
-  if ( replylen <= 0 )
-    {
-      dl_log_r (dlconn, 2, 0, "[%s] dl_position(): problem sending POSITION command\n",
-		dlconn->addr);
-      return -1;
-    }
-  
+                            reply, sizeof (reply));
+
+  if (replylen <= 0)
+  {
+    dl_log_r (dlconn, 2, 0, "[%s] dl_position(): problem sending POSITION command\n",
+              dlconn->addr);
+    return -1;
+  }
+
   /* Reply message, if sent, will be placed into the reply buffer */
-  rv = dl_handlereply (dlconn, reply, sizeof(reply), &replyvalue);
-  
+  rv = dl_handlereply (dlconn, reply, sizeof (reply), &replyvalue);
+
   /* Log server reply message */
-  if ( rv >= 0 )
+  if (rv >= 0)
     dl_log_r (dlconn, 1, 1, "[%s] %s\n", dlconn->addr, reply);
 
-  return ( rv < 0 || replyvalue < 0 ) ? -1 : replyvalue;
-}  /* End of dl_position() */
+  return (rv < 0 || replyvalue < 0) ? -1 : replyvalue;
+} /* End of dl_position() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Position the client read position based on data time
  *
  * Set the client read position to the first packet with a data end
@@ -322,48 +330,47 @@ dl_position_after (DLCP *dlconn, dltime_t datatime)
   int headerlen;
   int replylen;
   int rv;
-  
-  if ( ! dlconn )
+
+  if (!dlconn)
     return -1;
-  
-  if ( dlconn->link < 0 )
+
+  if (dlconn->link < 0)
     return -1;
-  
+
   /* Sanity check that connection is not in streaming mode */
-  if ( dlconn->streaming )
-    {
-      dl_log_r (dlconn, 1, 1, "[%s] dl_position_after(): Connection in streaming mode, cannot continue\n",
-		dlconn->addr);
-      return -1;
-    }
-  
+  if (dlconn->streaming)
+  {
+    dl_log_r (dlconn, 1, 1, "[%s] dl_position_after(): Connection in streaming mode, cannot continue\n",
+              dlconn->addr);
+    return -1;
+  }
+
   /* Create packet header with command: "POSITION AFTER datatime" */
-  headerlen = snprintf (header, sizeof(header), "POSITION AFTER %lld",
-			(long long int)datatime);
-  
+  headerlen = snprintf (header, sizeof (header), "POSITION AFTER %lld",
+                        (long long int)datatime);
+
   /* Send command to server */
   replylen = dl_sendpacket (dlconn, header, headerlen, NULL, 0,
-			    reply, sizeof(reply));
-  
-  if ( replylen <= 0 )
-    {
-      dl_log_r (dlconn, 2, 0, "[%s] dl_position_after(): problem sending POSITION command\n",
-		dlconn->addr);
-      return -1;
-    }
-  
+                            reply, sizeof (reply));
+
+  if (replylen <= 0)
+  {
+    dl_log_r (dlconn, 2, 0, "[%s] dl_position_after(): problem sending POSITION command\n",
+              dlconn->addr);
+    return -1;
+  }
+
   /* Reply message, if sent, will be placed into the reply buffer */
-  rv = dl_handlereply (dlconn, reply, sizeof(reply), &replyvalue);
-  
+  rv = dl_handlereply (dlconn, reply, sizeof (reply), &replyvalue);
+
   /* Log server reply message */
-  if ( rv >= 0 )
+  if (rv >= 0)
     dl_log_r (dlconn, 1, 1, "[%s] %s\n", dlconn->addr, reply);
-  
-  return ( rv < 0 ) ? -1 : replyvalue;
-}  /* End of dl_position_after() */
 
+  return (rv < 0) ? -1 : replyvalue;
+} /* End of dl_position_after() */
 
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Set the packet match parameters for a connection
  *
  * Send new match pattern to server or reset matching.  If @a
@@ -390,51 +397,50 @@ dl_match (DLCP *dlconn, char *matchpattern)
   int headerlen;
   int replylen;
   int rv;
-  
-  if ( ! dlconn )
+
+  if (!dlconn)
     return -1;
-  
-  if ( dlconn->link < 0 )
+
+  if (dlconn->link < 0)
     return -1;
-  
+
   /* Sanity check that connection is not in streaming mode */
-  if ( dlconn->streaming )
-    {
-      dl_log_r (dlconn, 1, 1, "[%s] dl_match(): Connection in streaming mode, cannot continue\n",
-		dlconn->addr);
-      return -1;
-    }
-  
-  patternlen = ( matchpattern ) ? strlen(matchpattern) : 0;
-  
+  if (dlconn->streaming)
+  {
+    dl_log_r (dlconn, 1, 1, "[%s] dl_match(): Connection in streaming mode, cannot continue\n",
+              dlconn->addr);
+    return -1;
+  }
+
+  patternlen = (matchpattern) ? strlen (matchpattern) : 0;
+
   /* Create packet header with command: "MATCH size" */
-  headerlen = snprintf (header, sizeof(header), "MATCH %ld",
-			patternlen);
-  
+  headerlen = snprintf (header, sizeof (header), "MATCH %ld",
+                        patternlen);
+
   /* Send command and pattern to server */
   replylen = dl_sendpacket (dlconn, header, headerlen,
-			    matchpattern, patternlen,
-			    reply, sizeof(reply));
-  
-  if ( replylen <= 0 )
-    {
-      dl_log_r (dlconn, 2, 0, "[%s] dl_match(): problem sending MATCH command\n",
-		dlconn->addr);
-      return -1;
-    }
-  
+                            matchpattern, patternlen,
+                            reply, sizeof (reply));
+
+  if (replylen <= 0)
+  {
+    dl_log_r (dlconn, 2, 0, "[%s] dl_match(): problem sending MATCH command\n",
+              dlconn->addr);
+    return -1;
+  }
+
   /* Reply message, if sent, will be placed into the reply buffer */
-  rv = dl_handlereply (dlconn, reply, sizeof(reply), &replyvalue);
- 
+  rv = dl_handlereply (dlconn, reply, sizeof (reply), &replyvalue);
+
   /* Log server reply message */
-  if ( rv >= 0 )
+  if (rv >= 0)
     dl_log_r (dlconn, 1, 1, "[%s] %s\n", dlconn->addr, reply);
-  
-  return ( rv < 0 ) ? -1 : replyvalue;
-}  /* End of dl_match() */
 
+  return (rv < 0) ? -1 : replyvalue;
+} /* End of dl_match() */
 
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Set the packet reject parameters for a connection
  *
  * Send new reject pattern to server or reset rejecting.  If @a
@@ -461,51 +467,50 @@ dl_reject (DLCP *dlconn, char *rejectpattern)
   int headerlen;
   int replylen;
   int rv;
-  
-  if ( ! dlconn )
-    return -1;
-  
-  if ( dlconn->link < 0 )
-    return -1;
-  
-  /* Sanity check that connection is not in streaming mode */
-  if ( dlconn->streaming )
-    {
-      dl_log_r (dlconn, 1, 1, "[%s] dl_reject(): Connection in streaming mode, cannot continue\n",
-		dlconn->addr);
-      return -1;
-    }
 
-  patternlen = ( rejectpattern ) ? strlen(rejectpattern) : 0;
-  
+  if (!dlconn)
+    return -1;
+
+  if (dlconn->link < 0)
+    return -1;
+
+  /* Sanity check that connection is not in streaming mode */
+  if (dlconn->streaming)
+  {
+    dl_log_r (dlconn, 1, 1, "[%s] dl_reject(): Connection in streaming mode, cannot continue\n",
+              dlconn->addr);
+    return -1;
+  }
+
+  patternlen = (rejectpattern) ? strlen (rejectpattern) : 0;
+
   /* Create packet header with command: "REJECT size" */
-  headerlen = snprintf (header, sizeof(header), "REJECT %ld",
-			patternlen);
-  
+  headerlen = snprintf (header, sizeof (header), "REJECT %ld",
+                        patternlen);
+
   /* Send command and pattern to server */
   replylen = dl_sendpacket (dlconn, header, headerlen,
-			    rejectpattern, patternlen,
-			    reply, sizeof(reply));
-  
-  if ( replylen <= 0 )
-    {
-      dl_log_r (dlconn, 2, 0, "[%s] dl_reject(): problem sending REJECT command\n",
-		dlconn->addr);
-      return -1;
-    }
-  
+                            rejectpattern, patternlen,
+                            reply, sizeof (reply));
+
+  if (replylen <= 0)
+  {
+    dl_log_r (dlconn, 2, 0, "[%s] dl_reject(): problem sending REJECT command\n",
+              dlconn->addr);
+    return -1;
+  }
+
   /* Reply message, if sent, will be placed into the reply buffer */
-  rv = dl_handlereply (dlconn, reply, sizeof(reply), &replyvalue);
-  
+  rv = dl_handlereply (dlconn, reply, sizeof (reply), &replyvalue);
+
   /* Log server reply message */
-  if ( rv >= 0 )
+  if (rv >= 0)
     dl_log_r (dlconn, 1, 1, "[%s] %s\n", dlconn->addr, reply);
-  
-  return ( rv < 0 ) ? -1 : replyvalue;
-}  /* End of dl_reject() */
 
+  return (rv < 0) ? -1 : replyvalue;
+} /* End of dl_reject() */
 
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Send a packet to the DataLink server
  *
  * Send a packet to the server and optionally request and process an
@@ -531,87 +536,86 @@ dl_reject (DLCP *dlconn, char *rejectpattern)
  ***************************************************************************/
 int64_t
 dl_write (DLCP *dlconn, void *packet, int packetlen, char *streamid,
-	  dltime_t datastart, dltime_t dataend, int ack)
+          dltime_t datastart, dltime_t dataend, int ack)
 {
   int64_t replyvalue = 0;
   char reply[255];
   char header[255];
-  char *flags = ( ack ) ? "A" : "N";
+  char *flags = (ack) ? "A" : "N";
   int headerlen;
   int replylen;
   int rv;
-  
-  if ( ! dlconn || ! packet || ! streamid )
-    {
-      dl_log_r (dlconn, 1, 1, "dl_write(): dlconn || packet || streamid is not anticipated value \n");
-      return -1;
-    }
-  
-  if ( dlconn->link < 0 )
-    {
-      dl_log_r (dlconn, 1, 3, "[%s] dl_write(): dlconn->link = %d, expect >=0 \n", dlconn->addr, dlconn->link);
-      return -1;
-    }
-  
+
+  if (!dlconn || !packet || !streamid)
+  {
+    dl_log_r (dlconn, 1, 1, "dl_write(): dlconn || packet || streamid is not anticipated value \n");
+    return -1;
+  }
+
+  if (dlconn->link < 0)
+  {
+    dl_log_r (dlconn, 1, 3, "[%s] dl_write(): dlconn->link = %d, expect >=0 \n", dlconn->addr, dlconn->link);
+    return -1;
+  }
+
   /* Sanity check that connection is not in streaming mode */
-  if ( dlconn->streaming )
-    {
-      dl_log_r (dlconn, 1, 1, "[%s] dl_write(): Connection in streaming mode, cannot continue\n",
-		dlconn->addr);
-      return -1;
-    }
-  
+  if (dlconn->streaming)
+  {
+    dl_log_r (dlconn, 1, 1, "[%s] dl_write(): Connection in streaming mode, cannot continue\n",
+              dlconn->addr);
+    return -1;
+  }
+
   /* Sanity check that packet data is not larger than max packet size if known */
-  if ( dlconn->maxpktsize > 0 && packetlen > dlconn->maxpktsize )
-    {
-      dl_log_r (dlconn, 1, 1, "[%s] dl_write(): Packet length (%d) greater than max packet size (%d)\n",
-		dlconn->addr, packetlen, dlconn->maxpktsize);
-      return -1;
-    }
-  
+  if (dlconn->maxpktsize > 0 && packetlen > dlconn->maxpktsize)
+  {
+    dl_log_r (dlconn, 1, 1, "[%s] dl_write(): Packet length (%d) greater than max packet size (%d)\n",
+              dlconn->addr, packetlen, dlconn->maxpktsize);
+    return -1;
+  }
+
   /* Create packet header with command: "WRITE streamid hpdatastart hpdataend flags size" */
-  headerlen = snprintf (header, sizeof(header),
-			"WRITE %s %lld %lld %s %d",
-			streamid, (long long int)datastart, (long long int)dataend,
-			flags, packetlen);
-  
+  headerlen = snprintf (header, sizeof (header),
+                        "WRITE %s %lld %lld %s %d",
+                        streamid, (long long int)datastart, (long long int)dataend,
+                        flags, packetlen);
+
   /* Send command and packet to server */
   replylen = dl_sendpacket (dlconn, header, headerlen,
-			    packet, packetlen,
-			    (ack)?reply:NULL, (ack)?sizeof(reply):0);
-  
-  if ( replylen < 0 )
+                            packet, packetlen,
+                            (ack) ? reply : NULL, (ack) ? sizeof (reply) : 0);
+
+  if (replylen < 0)
+  {
+    dl_log_r (dlconn, 2, 0, "[%s] dl_write(): problem sending WRITE command\n",
+              dlconn->addr);
+    return -1;
+  }
+  else if (replylen > 0)
+  {
+    /* Reply message, if sent, will be placed into the reply buffer */
+    rv = dl_handlereply (dlconn, reply, sizeof (reply), &replyvalue);
+
+    /* Log server reply message */
+    if (rv == 0)
     {
-      dl_log_r (dlconn, 2, 0, "[%s] dl_write(): problem sending WRITE command\n",
-		dlconn->addr);
-      return -1;
+      dl_log_r (dlconn, 1, 3, "[%s] %s\n", dlconn->addr, reply);
     }
-  else if ( replylen > 0 )
+    else if (rv == 1)
     {
-      /* Reply message, if sent, will be placed into the reply buffer */
-      rv = dl_handlereply (dlconn, reply, sizeof(reply), &replyvalue);
-      
-      /* Log server reply message */
-      if ( rv == 0 )
-	{
-	  dl_log_r (dlconn, 1, 3, "[%s] %s\n", dlconn->addr, reply);
-	}
-      else if ( rv == 1 )
-	{
-	  dl_log_r (dlconn, 1, 0, "[%s] %s\n", dlconn->addr, reply);
-	  replyvalue = -1;
-	}
-      else
-	{
-	  replyvalue = -1;
-	}
+      dl_log_r (dlconn, 1, 0, "[%s] %s\n", dlconn->addr, reply);
+      replyvalue = -1;
     }
-  
+    else
+    {
+      replyvalue = -1;
+    }
+  }
+
   return replyvalue;
-}  /* End of dl_write() */
+} /* End of dl_write() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Request a packet from the DataLink server
  *
  * Request a specific packet from the server.
@@ -635,148 +639,146 @@ dl_write (DLCP *dlconn, void *packet, int packetlen, char *streamid,
  ***************************************************************************/
 int
 dl_read (DLCP *dlconn, int64_t pktid, DLPacket *packet, void *packetdata,
-	 size_t maxdatasize)
+         size_t maxdatasize)
 {
+  char *discard;
   char header[255];
   int headerlen;
   int rv = 0;
-  
+
   long long int spktid;
   long long int spkttime;
   long long int sdatastart;
   long long int sdataend;
-  long long int sdatasize;
-  
-  if ( ! dlconn || ! packet || ! packetdata )
+  long int sdatasize;
+
+  if (!dlconn || !packet || !packetdata)
     return -1;
-  
-  if ( dlconn->link < 0 )
+
+  if (dlconn->link < 0)
     return -1;
-  
+
   /* Sanity check that connection is not in streaming mode */
-  if ( dlconn->streaming )
+  if (dlconn->streaming)
+  {
+    dl_log_r (dlconn, 1, 1, "[%s] dl_read(): Connection in streaming mode, cannot continue\n",
+              dlconn->addr);
+    return -1;
+  }
+
+  /* Request a specific packet */
+  if (pktid > 0)
+  {
+    /* Create packet header with command: "READ pktid" */
+    headerlen = snprintf (header, sizeof (header), "READ %lld", (long long int)pktid);
+
+    /* Send command and packet to server */
+    if (dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0)
     {
-      dl_log_r (dlconn, 1, 1, "[%s] dl_read(): Connection in streaming mode, cannot continue\n",
-		dlconn->addr);
+      dl_log_r (dlconn, 2, 0, "[%s] dl_read(): problem sending READ command\n",
+                dlconn->addr);
       return -1;
     }
-  
-  /* Request a specific packet */
-  if ( pktid > 0 )
-    {
-      /* Create packet header with command: "READ pktid" */
-      headerlen = snprintf (header, sizeof(header), "READ %lld", (long long int)pktid);
-      
-      /* Send command and packet to server */
-      if ( dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0 )
-	{
-	  dl_log_r (dlconn, 2, 0, "[%s] dl_read(): problem sending READ command\n",
-		    dlconn->addr);
-	  return -1;
-	}
-    }
-  
+  }
+
   /* Receive packet header, blocking until received */
-  if ( (rv = dl_recvheader (dlconn, header, sizeof(header), 1)) < 0 )
+  if ((rv = dl_recvheader (dlconn, header, sizeof (header), 1)) < 0)
+  {
+    /* Only log an error if the connection was not shut down */
+    if (rv < -1)
+      dl_log_r (dlconn, 2, 0, "[%s] dl_read(): problem receving packet header\n",
+                dlconn->addr);
+    return -1;
+  }
+
+  if (!strncmp (header, "PACKET", 6))
+  {
+    /* Parse PACKET header */
+    rv = sscanf (header, "PACKET %s %lld %lld %lld %lld %ld",
+                 packet->streamid, &spktid, &spkttime,
+                 &sdatastart, &sdataend, &sdatasize);
+
+    if (rv != 6)
+    {
+      dl_log_r (dlconn, 2, 0, "[%s] dl_read(): cannot parse PACKET header\n",
+                dlconn->addr);
+      return -1;
+    }
+
+    packet->pktid     = spktid;
+    packet->pkttime   = spkttime;
+    packet->datastart = sdatastart;
+    packet->dataend   = sdataend;
+    packet->datasize  = sdatasize;
+
+    /* Check that the packet data size is not beyond the max receive buffer size */
+    if (packet->datasize > (int64_t)maxdatasize)
+    {
+      dl_log_r (dlconn, 2, 0,
+                "[%s] dl_read(): packet data larger (%d) than receiving buffer (%" PRIsize_t ")\n",
+                dlconn->addr, packet->datasize, maxdatasize);
+
+      /* Allocate temporary buffer */
+      if (!(discard = (char *)malloc (packet->datasize)))
+      {
+        dl_log_r (dlconn, 2, 0,
+                  "[%s] dl_read(): cannot allocate %d bytes for temporary buffer\n",
+                  dlconn->addr, packet->datasize);
+        return -1;
+      }
+
+      /* Consume packet data */
+      if ((rv = dl_recvdata (dlconn, discard, packet->datasize, 1)) != packet->datasize)
+      {
+        /* Only log an error if the connection was not shut down */
+        if (rv < -1)
+          dl_log_r (dlconn, 2, 0, "[%s] dl_read(): problem receiving packet data\n",
+                    dlconn->addr);
+        return -1;
+      }
+
+      if (discard)
+        free (discard);
+
+      return 0;
+    }
+
+    /* Receive packet data, blocking until complete */
+    if ((rv = dl_recvdata (dlconn, packetdata, packet->datasize, 1)) != packet->datasize)
     {
       /* Only log an error if the connection was not shut down */
-      if ( rv < -1 )
-	dl_log_r (dlconn, 2, 0, "[%s] dl_read(): problem receving packet header\n",
-		  dlconn->addr);
+      if (rv < -1)
+        dl_log_r (dlconn, 2, 0, "[%s] dl_read(): problem receiving packet data\n",
+                  dlconn->addr);
       return -1;
     }
-  
-  if ( ! strncmp (header, "PACKET", 6) )
-    {
-      /* Parse PACKET header */
-      rv = sscanf (header, "PACKET %s %lld %lld %lld %lld %lldd",
-		   packet->streamid, &spktid, &spkttime,
-		   &sdatastart, &sdataend, &sdatasize);
-      
-      if ( rv != 6 )
-	{
-	  dl_log_r (dlconn, 2, 0, "[%s] dl_read(): cannot parse PACKET header\n",
-		    dlconn->addr);
-	  return -1;
-	}
-      
-      packet->pktid = spktid;
-      packet->pkttime = spkttime;
-      packet->datastart = sdatastart;
-      packet->dataend = sdataend;
-      packet->datasize = sdatasize;
-      
-      /* Check that the packet data size is not beyond the max receive buffer size */
-      if ( packet->datasize > maxdatasize )
-	{
-	  char *discard;
-	  
-	  dl_log_r (dlconn, 2, 0,
-		    "[%s] dl_read(): packet data larger (%ld) than receiving buffer (%ld)\n",
-		    dlconn->addr, packet->datasize, maxdatasize);
-	  
-	  /* Allocate temporary buffer */
-	  if ( ! (discard = (char *) malloc (packet->datasize)) )
-	    {
-	      dl_log_r (dlconn, 2, 0,
-			"[%s] dl_read(): cannot allocate %d bytes for temporary buffer\n",
-			dlconn->addr, packet->datasize);
-	      return -1;
-	    }
-	  
-	  /* Consume packet data */
-	  if ( (rv = dl_recvdata (dlconn, discard, packet->datasize, 1)) != packet->datasize )
-	    {
-	      /* Only log an error if the connection was not shut down */
-	      if ( rv < -1 )
-		dl_log_r (dlconn, 2, 0, "[%s] dl_read(): problem receiving packet data\n",
-			  dlconn->addr);
-	      return -1;
-	    }
-	  
-	  if ( discard )
-	    free (discard);
-	  
-	  return 0;
-	}
-      
-      /* Receive packet data, blocking until complete */
-      if ( (rv = dl_recvdata (dlconn, packetdata, packet->datasize, 1)) != packet->datasize )
-	{
-	  /* Only log an error if the connection was not shut down */
-	  if ( rv < -1 )
-	    dl_log_r (dlconn, 2, 0, "[%s] dl_read(): problem receiving packet data\n",
-		      dlconn->addr);
-	  return -1;
-	}
-      
-      /* Update most recently received packet ID and time */
-      dlconn->pktid = packet->pktid;
-      dlconn->pkttime = packet->pkttime;
-    }
-  else if ( ! strncmp (header, "ERROR", 5) )
-    {
-      /* Reply message, if sent, will be placed into the header buffer */
-      rv = dl_handlereply (dlconn, header, sizeof(header), NULL);
-      
-      /* Log server reply message */
-      if ( rv >= 0 )
-	dl_log_r (dlconn, 2, 0, "[%s] %s\n", dlconn->addr, header);
-      
-      return -1;
-    }
+
+    /* Update most recently received packet ID and time */
+    dlconn->pktid   = packet->pktid;
+    dlconn->pkttime = packet->pkttime;
+  }
+  else if (!strncmp (header, "ERROR", 5))
+  {
+    /* Reply message, if sent, will be placed into the header buffer */
+    rv = dl_handlereply (dlconn, header, sizeof (header), NULL);
+
+    /* Log server reply message */
+    if (rv >= 0)
+      dl_log_r (dlconn, 2, 0, "[%s] %s\n", dlconn->addr, header);
+
+    return -1;
+  }
   else
-    {
-      dl_log_r (dlconn, 2, 0, "[%s] dl_read(): Unrecognized reply string %.6s\n",
-		dlconn->addr, header);
-      return -1;
-    }
-  
+  {
+    dl_log_r (dlconn, 2, 0, "[%s] dl_read(): Unrecognized reply string %.6s\n",
+              dlconn->addr, header);
+    return -1;
+  }
+
   return packet->datasize;
-}  /* End of dl_read() */
+} /* End of dl_read() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Request information from the DataLink server
  *
  * Request and receive information from the server using the DataLink
@@ -800,125 +802,124 @@ dl_read (DLCP *dlconn, int64_t pktid, DLPacket *packet, void *packetdata,
  ***************************************************************************/
 int
 dl_getinfo (DLCP *dlconn, const char *infotype, char *infomatch,
-	    char **infodata, size_t maxinfosize)
+            char **infodata, size_t maxinfosize)
 {
   char header[255];
   char type[255];
   int headerlen;
   int infosize = 0;
-  int rv = 0;
-  
-  if ( ! dlconn || ! infotype || ! infodata )
+  int rv       = 0;
+
+  if (!dlconn || !infotype || !infodata)
     return -1;
-  
-  if ( maxinfosize && ! *infodata )
+
+  if (maxinfosize && !*infodata)
     return -1;
-  
-  if ( dlconn->link < 0 )
+
+  if (dlconn->link < 0)
     return -1;
-  
+
   /* Sanity check that connection is not in streaming mode */
-  if ( dlconn->streaming )
-    {
-      dl_log_r (dlconn, 1, 1, "[%s] dl_getinfo(): Connection in streaming mode, cannot continue\n",
-		dlconn->addr);
-      return -1;
-    }
-  
+  if (dlconn->streaming)
+  {
+    dl_log_r (dlconn, 1, 1, "[%s] dl_getinfo(): Connection in streaming mode, cannot continue\n",
+              dlconn->addr);
+    return -1;
+  }
+
   /* Request information */
   /* Create packet header with command: "INFO type" */
-  headerlen = snprintf (header, sizeof(header), "INFO %s %s", infotype,
-			(infomatch)?infomatch:"");
-  
+  headerlen = snprintf (header, sizeof (header), "INFO %s %s", infotype,
+                        (infomatch) ? infomatch : "");
+
   /* Send command and packet to server */
-  if ( dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0 )
+  if (dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0)
+  {
+    dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): problem sending INFO command\n",
+              dlconn->addr);
+    return -1;
+  }
+
+  /* Receive packet header, blocking until complete: INFO <size> */
+  if ((rv = dl_recvheader (dlconn, header, sizeof (header), 1)) < 0)
+  {
+    /* Only log an error if the connection was not shut down */
+    if (rv < -1)
+      dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): problem receving packet header\n",
+                dlconn->addr);
+    return -1;
+  }
+
+  if (!strncmp (header, "INFO", 4))
+  {
+    /* Parse INFO header */
+    rv = sscanf (header, "INFO %s %d", type, &infosize);
+
+    if (rv != 2)
     {
-      dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): problem sending INFO command\n",
-		dlconn->addr);
+      dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): cannot parse INFO header\n",
+                dlconn->addr);
       return -1;
     }
-  
-  /* Receive packet header, blocking until complete: INFO <size> */
-  if ( (rv = dl_recvheader (dlconn, header, sizeof(header), 1)) < 0 )
+
+    if (strncasecmp (infotype, type, strlen (infotype)))
+    {
+      dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): requested type %s but received type %s\n",
+                dlconn->addr, infotype, type);
+      return -1;
+    }
+
+    /* If a maximum buffer size was specified check that it's large enough */
+    if (maxinfosize && infosize > (int64_t)maxinfosize)
+    {
+      dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): INFO data larger (%d) than the maximum size (%" PRIsize_t ")\n",
+                dlconn->addr, infosize, maxinfosize);
+      return -1;
+    }
+
+    /* Allocate the infobuffer if needed */
+    if (maxinfosize == 0)
+    {
+      if (!(*infodata = malloc (infosize)))
+      {
+        dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): error allocating receving buffer of %d bytes\n",
+                  dlconn->addr, infosize);
+        return -1;
+      }
+    }
+
+    /* Receive INFO data, blocking until complete */
+    if ((rv = dl_recvdata (dlconn, *infodata, infosize, 1)) != infosize)
     {
       /* Only log an error if the connection was not shut down */
-      if ( rv < -1 )
-	dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): problem receving packet header\n",
-		  dlconn->addr);
+      if (rv < -1)
+        dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): problem receiving INFO data\n",
+                  dlconn->addr);
       return -1;
     }
-  
-  if ( ! strncmp (header, "INFO", 4) )
-    {
-      /* Parse INFO header */
-      rv = sscanf (header, "INFO %s %d", type, &infosize);
-      
-      if ( rv != 2 )
-	{
-	  dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): cannot parse INFO header\n",
-		    dlconn->addr);
-	  return -1;
-	}
-      
-      if ( strncasecmp (infotype, type, strlen(infotype)) )
-	{
-	  dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): requested type %s but received type %s\n",
-		    dlconn->addr, infotype, type);
-	  return -1;
-	}
-      
-      /* If a maximum buffer size was specified check that it's large enough */
-      if ( maxinfosize && infosize > maxinfosize )
-	{
-	  dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): INFO data larger (%d) than the maximum size (%d)\n",
-		    dlconn->addr, infosize, maxinfosize);
-	  return -1;
-	}
-      
-      /* Allocate the infobuffer if needed */
-      if ( maxinfosize == 0 )
-	{
-	  if ( ! (*infodata = malloc (infosize)) )
-	    {
-	      dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): error allocating receving buffer of %d bytes\n",
-			dlconn->addr, infosize);
-	      return -1;
-	    }
-	}
-      
-      /* Receive INFO data, blocking until complete */
-      if ( (rv = dl_recvdata (dlconn, *infodata, infosize, 1)) != infosize )
-	{
-	  /* Only log an error if the connection was not shut down */
-	  if ( rv < -1 )
-	    dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): problem receiving INFO data\n",
-		      dlconn->addr);
-	  return -1;
-	}
-    }
-  else if ( ! strncmp (header, "ERROR", 5) )
-    {
-      /* Reply message, if sent, will be placed into the header buffer */
-      rv = dl_handlereply (dlconn, header, sizeof(header), NULL);
-      
-      /* Log server reply message */
-      if ( rv >= 0 )
-	dl_log_r (dlconn, 2, 0, "[%s] %s\n", dlconn->addr, header);
-      
-      return -1;
-    }
+  }
+  else if (!strncmp (header, "ERROR", 5))
+  {
+    /* Reply message, if sent, will be placed into the header buffer */
+    rv = dl_handlereply (dlconn, header, sizeof (header), NULL);
+
+    /* Log server reply message */
+    if (rv >= 0)
+      dl_log_r (dlconn, 2, 0, "[%s] %s\n", dlconn->addr, header);
+
+    return -1;
+  }
   else
-    {
-      dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): Unrecognized reply string %.6s\n",
-		dlconn->addr, header);
-      return -1;
-    }
-  
+  {
+    dl_log_r (dlconn, 2, 0, "[%s] dl_getinfo(): Unrecognized reply string %.6s\n",
+              dlconn->addr, header);
+    return -1;
+  }
+
   return infosize;
-}  /* End of dl_getinfo() */
+} /* End of dl_getinfo() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Collect packets streaming from the DataLink server
  *
  * Collect packets streaming from the DataLink server.  If the
@@ -945,219 +946,217 @@ dl_getinfo (DLCP *dlconn, const char *infotype, char *infomatch,
  ***************************************************************************/
 int
 dl_collect (DLCP *dlconn, DLPacket *packet, void *packetdata,
-	    size_t maxdatasize, int8_t endflag)
+            size_t maxdatasize, int8_t endflag)
 {
   dltime_t now;
   char header[255];
-  int  headerlen;
-  int  rv;
+  int headerlen;
+  int rv;
 
   long long int spktid;
   long long int spkttime;
   long long int sdatastart;
   long long int sdataend;
-  long long int sdatasize;
-  
+  long int sdatasize;
+
   /* For select()ing during the read loop */
   struct timeval select_tv;
-  fd_set         select_fd;
-  int            select_ret;
-  
-  if ( ! dlconn || ! packet || ! packetdata )
+  fd_set select_fd;
+  int select_ret;
+
+  if (!dlconn || !packet || !packetdata)
     return DLERROR;
-  
-  if ( dlconn->link == -1 )
+
+  if (dlconn->link == -1)
     return DLERROR;
-  
+
   /* If not streaming send the STREAM command */
-  if ( ! dlconn->streaming && ! endflag )
+  if (!dlconn->streaming && !endflag)
+  {
+    /* Create packet header with command: "STREAM" */
+    headerlen = snprintf (header, sizeof (header), "STREAM");
+
+    /* Send command to server */
+    if (dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0)
     {
-      /* Create packet header with command: "STREAM" */
-      headerlen = snprintf (header, sizeof(header), "STREAM");
-      
-      /* Send command to server */
-      if ( dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0 )
-	{
-	  dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): problem sending STREAM command\n",
-		    dlconn->addr);
-	  return DLERROR;
-	}
-      
-      dlconn->streaming = 1;
-      dlconn->keepalive_trig = -1;
-      dl_log_r (dlconn, 1, 2, "[%s] STREAM command sent to server\n", dlconn->addr);
+      dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): problem sending STREAM command\n",
+                dlconn->addr);
+      return DLERROR;
     }
-  
+
+    dlconn->streaming      = 1;
+    dlconn->keepalive_trig = -1;
+    dl_log_r (dlconn, 1, 2, "[%s] STREAM command sent to server\n", dlconn->addr);
+  }
+
   /* If streaming and end is requested send the ENDSTREAM command */
-  if ( dlconn->streaming == 1 && endflag )
+  if (dlconn->streaming == 1 && endflag)
+  {
+    /* Create packet header with command: "ENDSTREAM" */
+    headerlen = snprintf (header, sizeof (header), "ENDSTREAM");
+
+    /* Send command to server */
+    if (dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0)
     {
-      /* Create packet header with command: "ENDSTREAM" */
-      headerlen = snprintf (header, sizeof(header), "ENDSTREAM");
-      
-      /* Send command to server */
-      if ( dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0 )
-	{
-	  dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): problem sending ENDSTREAM command\n",
-		    dlconn->addr);
-	  return DLERROR;
-	}
-      
-      dlconn->streaming = -1;
-      dlconn->keepalive_trig = -1;
-      dl_log_r (dlconn, 1, 2, "[%s] ENDSTREAM command sent to server\n", dlconn->addr);
+      dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): problem sending ENDSTREAM command\n",
+                dlconn->addr);
+      return DLERROR;
     }
-  
+
+    dlconn->streaming      = -1;
+    dlconn->keepalive_trig = -1;
+    dl_log_r (dlconn, 1, 2, "[%s] ENDSTREAM command sent to server\n", dlconn->addr);
+  }
+
   /* Start the primary loop */
-  while ( ! dlconn->terminate )
+  while (!dlconn->terminate)
+  {
+    /* Check if a keepalive packet needs to be sent */
+    if (dlconn->keepalive && dlconn->keepalive_trig > 0)
     {
-      /* Check if a keepalive packet needs to be sent */
-      if ( dlconn->keepalive && dlconn->keepalive_trig > 0 )
-	{
-	  dl_log_r (dlconn, 1, 2, "[%s] Sending keepalive packet\n", dlconn->addr);
-	  
-	  /* Send ID as a keepalive packet exchange */
-	  headerlen = snprintf (header, sizeof(header), "ID %s",
-				(dlconn->clientid) ? dlconn->clientid : "");
-	  
-	  if ( dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0 )
-	    {
-	      dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): problem sending keepalive packet\n",
-			dlconn->addr);
-	      return DLERROR;
-	    }
-	  
-	  dlconn->keepalive_trig = -1;
-	}
-      
-      /* Poll the socket for available data */
-      FD_ZERO (&select_fd);
-      FD_SET ((unsigned int)dlconn->link, &select_fd);
-      select_tv.tv_sec = 0;
-      select_tv.tv_usec = 500000;  /* Block up to 0.5 seconds */
-      
-      select_ret = select ((dlconn->link + 1), &select_fd, NULL, NULL, &select_tv);
-      
-      /* Check the return from select(), an interrupted system call error
+      dl_log_r (dlconn, 1, 2, "[%s] Sending keepalive packet\n", dlconn->addr);
+
+      /* Send ID as a keepalive packet exchange */
+      headerlen = snprintf (header, sizeof (header), "ID %s", dlconn->clientid);
+
+      if (dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0)
+      {
+        dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): problem sending keepalive packet\n",
+                  dlconn->addr);
+        return DLERROR;
+      }
+
+      dlconn->keepalive_trig = -1;
+    }
+
+    /* Poll the socket for available data */
+    FD_ZERO (&select_fd);
+    FD_SET ((unsigned int)dlconn->link, &select_fd);
+    select_tv.tv_sec  = 0;
+    select_tv.tv_usec = 500000; /* Block up to 0.5 seconds */
+
+    select_ret = select ((dlconn->link + 1), &select_fd, NULL, NULL, &select_tv);
+
+    /* Check the return from select(), an interrupted system call error
 	 will be reported if a signal handler was used.  If the terminate
 	 flag is set this is not an error. */
-      if ( select_ret > 0 )
-	{
-	  if ( ! FD_ISSET (dlconn->link, &select_fd) )
-	    {
-	      dl_log_r (dlconn, 2, 0, "[%s] select() reported data but socket not in set!\n",
-			dlconn->addr);
-	    }
-	  else
-	    {
-	      /* Receive packet header, blocking until complete */
-	      if ( (rv = dl_recvheader (dlconn, header, sizeof(header), 1)) < 0 )
-		{
-		  if ( rv == -1 )
-		    return DLENDED;
-		  
-		  dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): problem receving packet header\n",
-			    dlconn->addr);
-		  return DLERROR;
-		}
-	      
-	      /* Reset keepalive trigger */
-	      dlconn->keepalive_trig = -1;
-	      
-	      if ( ! strncmp (header, "PACKET", 6) )
-		{
-		  /* Parse PACKET header */
-		  rv = sscanf (header, "PACKET %s %lld %lld %lld %lld %lld",
-			       packet->streamid, &spktid, &spkttime,
-			       &sdatastart, &sdataend, &sdatasize);
-		  
-		  if ( rv != 6 )
-		    {
-		      dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): cannot parse PACKET header\n",
-				dlconn->addr);
-		      return DLERROR;
-		    }
-		  
-		  packet->pktid = spktid;
-		  packet->pkttime = spkttime;
-		  packet->datastart = sdatastart;
-		  packet->dataend = sdataend;
-		  packet->datasize = sdatasize;
-		  
-		  if ( packet->datasize > maxdatasize )
-		    {
-		      dl_log_r (dlconn, 2, 0,
-				"[%s] dl_collect(): packet data larger (%ld) than receiving buffer (%ld)\n",
-				dlconn->addr, packet->datasize, maxdatasize);
-		      return DLERROR;
-		    }
-		  
-		  /* Receive packet data, blocking until complete */
-		  if ( (rv = dl_recvdata (dlconn, packetdata, packet->datasize, 1)) != packet->datasize )
-		    {
-		      if ( rv == -1 )
-			return DLENDED;
-		      
-		      dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): problem receiving packet data\n",
-				dlconn->addr);
-		      return DLERROR;
-		    }
-		  
-		  /* Update most recently received packet ID and time */
-		  dlconn->pktid = packet->pktid;
-		  dlconn->pkttime = packet->pkttime;
-		  
-		  return DLPACKET;
-		}
-	      else if ( ! strncmp (header, "ID", 2) )
-		{
-		  dl_log_r (dlconn, 1, 2, "[%s] Received keepalive from server\n",
-			    dlconn->addr);
-		}
-	      else if ( ! strncmp (header, "ENDSTREAM", 9) )
-		{
-		  dl_log_r (dlconn, 1, 2, "[%s] Received end-of-stream from server\n",
-			    dlconn->addr);
-		  dlconn->streaming = 0;
-		  return DLENDED;
-		}
-	      else
-		{
-		  dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): Unrecognized packet header %.6s\n",
-			    dlconn->addr, header);
-		  return DLERROR;
-		}
-	    }
-	}
-      else if ( select_ret < 0 && ! dlconn->terminate )
-	{
-	  dl_log_r (dlconn, 2, 0, "[%s] select() error: %s\n", dlconn->addr, dlp_strerror ());
-	  return DLERROR;
-	}
-      
-      /* Update timing variables */
-      now = dlp_time ();
-      
-      /* Keepalive/heartbeat interval timing logic */
-      if ( dlconn->keepalive )
-	{
-	  if ( dlconn->keepalive_trig == -1 )  /* reset timer */
-	    {
-	      dlconn->keepalive_time = now;
-	      dlconn->keepalive_trig = 0;
-	    }
-	  else if ( dlconn->keepalive_trig == 0 &&
-		    (now - dlconn->keepalive_time) > (dlconn->keepalive * DLTMODULUS) )
-	    {
-	      dlconn->keepalive_trig = 1;
-	    }
-	}
-    }  /* End of primary loop */
-  
+    if (select_ret > 0)
+    {
+      if (!FD_ISSET (dlconn->link, &select_fd))
+      {
+        dl_log_r (dlconn, 2, 0, "[%s] select() reported data but socket not in set!\n",
+                  dlconn->addr);
+      }
+      else
+      {
+        /* Receive packet header, blocking until complete */
+        if ((rv = dl_recvheader (dlconn, header, sizeof (header), 1)) < 0)
+        {
+          if (rv == -1)
+            return DLENDED;
+
+          dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): problem receving packet header\n",
+                    dlconn->addr);
+          return DLERROR;
+        }
+
+        /* Reset keepalive trigger */
+        dlconn->keepalive_trig = -1;
+
+        if (!strncmp (header, "PACKET", 6))
+        {
+          /* Parse PACKET header */
+          rv = sscanf (header, "PACKET %s %lld %lld %lld %lld %ld",
+                       packet->streamid, &spktid, &spkttime,
+                       &sdatastart, &sdataend, &sdatasize);
+
+          if (rv != 6)
+          {
+            dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): cannot parse PACKET header\n",
+                      dlconn->addr);
+            return DLERROR;
+          }
+
+          packet->pktid     = spktid;
+          packet->pkttime   = spkttime;
+          packet->datastart = sdatastart;
+          packet->dataend   = sdataend;
+          packet->datasize  = sdatasize;
+
+          if (packet->datasize > (int64_t)maxdatasize)
+          {
+            dl_log_r (dlconn, 2, 0,
+                      "[%s] dl_collect(): packet data larger (%d) than receiving buffer (%" PRIsize_t ")\n",
+                      dlconn->addr, packet->datasize, maxdatasize);
+            return DLERROR;
+          }
+
+          /* Receive packet data, blocking until complete */
+          if ((rv = dl_recvdata (dlconn, packetdata, packet->datasize, 1)) != packet->datasize)
+          {
+            if (rv == -1)
+              return DLENDED;
+
+            dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): problem receiving packet data\n",
+                      dlconn->addr);
+            return DLERROR;
+          }
+
+          /* Update most recently received packet ID and time */
+          dlconn->pktid   = packet->pktid;
+          dlconn->pkttime = packet->pkttime;
+
+          return DLPACKET;
+        }
+        else if (!strncmp (header, "ID", 2))
+        {
+          dl_log_r (dlconn, 1, 2, "[%s] Received keepalive from server\n",
+                    dlconn->addr);
+        }
+        else if (!strncmp (header, "ENDSTREAM", 9))
+        {
+          dl_log_r (dlconn, 1, 2, "[%s] Received end-of-stream from server\n",
+                    dlconn->addr);
+          dlconn->streaming = 0;
+          return DLENDED;
+        }
+        else
+        {
+          dl_log_r (dlconn, 2, 0, "[%s] dl_collect(): Unrecognized packet header %.6s\n",
+                    dlconn->addr, header);
+          return DLERROR;
+        }
+      }
+    }
+    else if (select_ret < 0 && !dlconn->terminate)
+    {
+      dl_log_r (dlconn, 2, 0, "[%s] select() error: %s\n", dlconn->addr, dlp_strerror ());
+      return DLERROR;
+    }
+
+    /* Update timing variables */
+    now = dlp_time ();
+
+    /* Keepalive/heartbeat interval timing logic */
+    if (dlconn->keepalive)
+    {
+      if (dlconn->keepalive_trig == -1) /* reset timer */
+      {
+        dlconn->keepalive_time = now;
+        dlconn->keepalive_trig = 0;
+      }
+      else if (dlconn->keepalive_trig == 0 &&
+               (now - dlconn->keepalive_time) > (dlconn->keepalive * DLTMODULUS))
+      {
+        dlconn->keepalive_trig = 1;
+      }
+    }
+  } /* End of primary loop */
+
   return DLENDED;
-}  /* End of dl_collect() */
+} /* End of dl_collect() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Collect packets streaming from the DataLink server without blocking
  *
  * Collect packets streaming from the DataLink server.  If the
@@ -1186,189 +1185,187 @@ dl_collect (DLCP *dlconn, DLPacket *packet, void *packetdata,
  ***************************************************************************/
 int
 dl_collect_nb (DLCP *dlconn, DLPacket *packet, void *packetdata,
-	       size_t maxdatasize, int8_t endflag)
+               size_t maxdatasize, int8_t endflag)
 {
   dltime_t now;
   char header[255];
-  int  headerlen;
-  int  rv;
-  
+  int headerlen;
+  int rv;
+
   long long int spktid;
   long long int spkttime;
   long long int sdatastart;
   long long int sdataend;
-  long long int sdatasize;
+  long int sdatasize;
 
-  if ( ! dlconn || ! packet || ! packetdata )
+  if (!dlconn || !packet || !packetdata)
     return DLERROR;
-  
-  if ( dlconn->link == -1 )
+
+  if (dlconn->link == -1)
     return DLERROR;
-  
+
   /* If not streaming send the STREAM command */
-  if ( ! dlconn->streaming && ! endflag )
+  if (!dlconn->streaming && !endflag)
+  {
+    /* Create packet header with command: "STREAM" */
+    headerlen = snprintf (header, sizeof (header), "STREAM");
+
+    /* Send command to server */
+    if (dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0)
     {
-      /* Create packet header with command: "STREAM" */
-      headerlen = snprintf (header, sizeof(header), "STREAM");
-      
-      /* Send command to server */
-      if ( dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0 )
-	{
-	  dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): problem sending STREAM command\n",
-		    dlconn->addr);
-	  return DLERROR;
-	}
-      
-      dlconn->streaming = 1;
-      dlconn->keepalive_trig = -1;
-      dl_log_r (dlconn, 1, 2, "[%s] STREAM command sent to server", dlconn->addr);
-    }
-  
-  /* If streaming and end is requested send the ENDSTREAM command */
-  if ( dlconn->streaming == 1 && endflag )
-    {
-      /* Create packet header with command: "ENDSTREAM" */
-      headerlen = snprintf (header, sizeof(header), "ENDSTREAM");
-      
-      /* Send command to server */
-      if ( dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0 )
-	{
-	  dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): problem sending ENDSTREAM command\n",
-		    dlconn->addr);
-	  return DLERROR;
-	}
-      
-      dlconn->streaming = -1;
-      dlconn->keepalive_trig = -1;
-      dl_log_r (dlconn, 1, 2, "[%s] ENDSTREAM command sent to server", dlconn->addr);
-    }
-  
-  if ( ! dlconn->terminate )
-    {
-      /* Check if a keepalive packet needs to be sent */
-      if ( dlconn->keepalive && dlconn->keepalive_trig > 0 )
-	{
-	  dl_log_r (dlconn, 1, 2, "[%s] Sending keepalive packet\n", dlconn->addr);
-	  
-	  /* Send ID as a keepalive packet exchange */
-	  headerlen = snprintf (header, sizeof(header), "ID %s",
-				(dlconn->clientid) ? dlconn->clientid : "");
-	  
-	  if ( dl_sendpacket (dlconn, header, headerlen,
-			      NULL, 0, NULL, 0) < 0 )
-	    {
-	      dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): problem sending keepalive packet\n",
-			dlconn->addr);
-	      return DLERROR;
-	    }
-	  
-	  dlconn->keepalive_trig = -1;
-	}
-    }
-  
-  /* Receive packet header if it's available */
-  if ( (rv = dl_recvheader (dlconn, header, sizeof(header), 0)) < 0 )
-    {
-      if ( rv == -1 )
-	return DLENDED;
-      
-      dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): problem receving packet header\n",
-		dlconn->addr);
+      dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): problem sending STREAM command\n",
+                dlconn->addr);
       return DLERROR;
     }
-  
-  /* Process data if header received */
-  if ( rv > 0 )
+
+    dlconn->streaming      = 1;
+    dlconn->keepalive_trig = -1;
+    dl_log_r (dlconn, 1, 2, "[%s] STREAM command sent to server", dlconn->addr);
+  }
+
+  /* If streaming and end is requested send the ENDSTREAM command */
+  if (dlconn->streaming == 1 && endflag)
+  {
+    /* Create packet header with command: "ENDSTREAM" */
+    headerlen = snprintf (header, sizeof (header), "ENDSTREAM");
+
+    /* Send command to server */
+    if (dl_sendpacket (dlconn, header, headerlen, NULL, 0, NULL, 0) < 0)
     {
-      /* Reset keepalive trigger */
-      dlconn->keepalive_trig = -1;
-      
-      if ( ! strncmp (header, "PACKET", 6) )
-	{
-	  /* Parse PACKET header */
-	  rv = sscanf (header, "PACKET %s %lld %lld %lld %lld %lld",
-		       packet->streamid, &spktid, &spkttime,
-		       &sdatastart, &sdataend, &sdatasize);
-	  
-	  if ( rv != 6 )
-	    {
-	      dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): cannot parse PACKET header\n",
-			dlconn->addr);
-	      return DLERROR;
-	    }
-	  
-	  packet->pktid = spktid;
-	  packet->pkttime = spkttime;
-	  packet->datastart = sdatastart;
-	  packet->dataend = sdataend;
-	  packet->datasize = sdatasize;
-	  
-	  if ( packet->datasize > maxdatasize )
-	    {
-	      dl_log_r (dlconn, 2, 0,
-			"[%s] dl_collect_nb(): packet data larger (%ld) than receiving buffer (%ld)\n",
-			dlconn->addr, packet->datasize, maxdatasize);
-	      return DLERROR;
-	    }
-	  
-	  /* Receive packet data, blocking until complete */
-	  if ( (rv = dl_recvdata (dlconn, packetdata, packet->datasize, 1)) != packet->datasize )
-	    {
-	      if ( rv == -1 )
-		return DLENDED;
-	      
-	      dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): problem receiving packet data\n",
-			dlconn->addr);
-	      return DLERROR;
-	    }
-	  
-	  /* Update most recently received packet ID and time */
-	  dlconn->pktid = packet->pktid;
-	  dlconn->pkttime = packet->pkttime;
-	  
-	  return DLPACKET;
-	}
-      else if ( ! strncmp (header, "ID", 2) )
-	{
-	  dl_log_r (dlconn, 1, 2, "[%s] Received keepalive (ID) from server\n", dlconn->addr);
-	}
-      else if ( ! strncmp (header, "ENDSTREAM", 9) )
-	{
-	  dl_log_r (dlconn, 1, 2, "[%s] Received end-of-stream from server\n", dlconn->addr);
-	  dlconn->streaming = 0;
-	  return DLENDED;
-	}
-      else
-	{
-	  dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): Unrecognized packet header %.6s\n",
-		    dlconn->addr, header);
-	  return DLERROR;
-	}
+      dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): problem sending ENDSTREAM command\n",
+                dlconn->addr);
+      return DLERROR;
     }
-  
+
+    dlconn->streaming      = -1;
+    dlconn->keepalive_trig = -1;
+    dl_log_r (dlconn, 1, 2, "[%s] ENDSTREAM command sent to server", dlconn->addr);
+  }
+
+  if (!dlconn->terminate)
+  {
+    /* Check if a keepalive packet needs to be sent */
+    if (dlconn->keepalive && dlconn->keepalive_trig > 0)
+    {
+      dl_log_r (dlconn, 1, 2, "[%s] Sending keepalive packet\n", dlconn->addr);
+
+      /* Send ID as a keepalive packet exchange */
+      headerlen = snprintf (header, sizeof (header), "ID %s", dlconn->clientid);
+
+      if (dl_sendpacket (dlconn, header, headerlen,
+                         NULL, 0, NULL, 0) < 0)
+      {
+        dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): problem sending keepalive packet\n",
+                  dlconn->addr);
+        return DLERROR;
+      }
+
+      dlconn->keepalive_trig = -1;
+    }
+  }
+
+  /* Receive packet header if it's available */
+  if ((rv = dl_recvheader (dlconn, header, sizeof (header), 0)) < 0)
+  {
+    if (rv == -1)
+      return DLENDED;
+
+    dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): problem receving packet header\n",
+              dlconn->addr);
+    return DLERROR;
+  }
+
+  /* Process data if header received */
+  if (rv > 0)
+  {
+    /* Reset keepalive trigger */
+    dlconn->keepalive_trig = -1;
+
+    if (!strncmp (header, "PACKET", 6))
+    {
+      /* Parse PACKET header */
+      rv = sscanf (header, "PACKET %s %lld %lld %lld %lld %ld",
+                   packet->streamid, &spktid, &spkttime,
+                   &sdatastart, &sdataend, &sdatasize);
+
+      if (rv != 6)
+      {
+        dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): cannot parse PACKET header\n",
+                  dlconn->addr);
+        return DLERROR;
+      }
+
+      packet->pktid     = spktid;
+      packet->pkttime   = spkttime;
+      packet->datastart = sdatastart;
+      packet->dataend   = sdataend;
+      packet->datasize  = sdatasize;
+
+      if (packet->datasize > (int64_t)maxdatasize)
+      {
+        dl_log_r (dlconn, 2, 0,
+                  "[%s] dl_collect_nb(): packet data larger (%d) than receiving buffer (%" PRIsize_t ")\n",
+                  dlconn->addr, packet->datasize, maxdatasize);
+        return DLERROR;
+      }
+
+      /* Receive packet data, blocking until complete */
+      if ((rv = dl_recvdata (dlconn, packetdata, packet->datasize, 1)) != packet->datasize)
+      {
+        if (rv == -1)
+          return DLENDED;
+
+        dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): problem receiving packet data\n",
+                  dlconn->addr);
+        return DLERROR;
+      }
+
+      /* Update most recently received packet ID and time */
+      dlconn->pktid   = packet->pktid;
+      dlconn->pkttime = packet->pkttime;
+
+      return DLPACKET;
+    }
+    else if (!strncmp (header, "ID", 2))
+    {
+      dl_log_r (dlconn, 1, 2, "[%s] Received keepalive (ID) from server\n", dlconn->addr);
+    }
+    else if (!strncmp (header, "ENDSTREAM", 9))
+    {
+      dl_log_r (dlconn, 1, 2, "[%s] Received end-of-stream from server\n", dlconn->addr);
+      dlconn->streaming = 0;
+      return DLENDED;
+    }
+    else
+    {
+      dl_log_r (dlconn, 2, 0, "[%s] dl_collect_nb(): Unrecognized packet header %.6s\n",
+                dlconn->addr, header);
+      return DLERROR;
+    }
+  }
+
   /* Update timing variables */
   now = dlp_time ();
-  
+
   /* Keepalive/heartbeat interval timing logic */
-  if ( dlconn->keepalive )
+  if (dlconn->keepalive)
+  {
+    if (dlconn->keepalive_trig == -1) /* reset timer */
     {
-      if ( dlconn->keepalive_trig == -1 )  /* reset timer */
-	{
-	  dlconn->keepalive_time = now;
-	  dlconn->keepalive_trig = 0;
-	}
-      else if ( dlconn->keepalive_trig == 0 &&
-		(now - dlconn->keepalive_time) > (dlconn->keepalive * DLTMODULUS) )
-	{
-	  dlconn->keepalive_trig = 1;
-	}
+      dlconn->keepalive_time = now;
+      dlconn->keepalive_trig = 0;
     }
-  
-  return ( dlconn->terminate ) ? DLENDED: DLNOPACKET;
-}  /* End of dl_collect_nb() */
+    else if (dlconn->keepalive_trig == 0 &&
+             (now - dlconn->keepalive_time) > (dlconn->keepalive * DLTMODULUS))
+    {
+      dlconn->keepalive_trig = 1;
+    }
+  }
 
+  return (dlconn->terminate) ? DLENDED : DLNOPACKET;
+} /* End of dl_collect_nb() */
 
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Handle the server reply to a command
  *
  * Handle the server reply to a command.  This routine is used by
@@ -1392,81 +1389,80 @@ dl_handlereply (DLCP *dlconn, void *buffer, int buflen, int64_t *value)
 {
   char status[10];
   char *cbuffer = buffer;
-  long long int pvalue;
-  long long int size = 0;
-  int rv = 0;
-  
-  if ( ! dlconn || ! buffer )
+  int64_t pvalue;
+  int64_t size = 0;
+  int rv       = 0;
+
+  if (!dlconn || !buffer)
     return -1;
-  
+
   /* Make sure buffer if terminated */
   cbuffer[buflen] = '\0';
-  
+
   /* Parse reply header */
-  if ( sscanf (buffer, "%10s %lld %lld", status, &pvalue, &size) != 3 )
+  if (sscanf (buffer, "%10s %" SCNd64 " %" SCNd64, status, &pvalue, &size) != 3)
+  {
+    dl_log_r (dlconn, 2, 0, "[%s] dl_handlereply(): Unable to parse reply header: '%s'\n",
+              dlconn->addr, (char *)buffer);
+    return -1;
+  }
+
+  /* Store reply value if requested */
+  if (value)
+    *value = pvalue;
+
+  /* Check that reply message will fit into buffer */
+  if (size > buflen)
+  {
+    dl_log_r (dlconn, 2, 0, "[%s] dl_handlereply(): Reply message too large (%" PRId64 ") for buffer (%d)\n",
+              dlconn->addr, size, buflen);
+    return -1;
+  }
+
+  /* Receive reply message if included */
+  if (size > 0)
+  {
+    /* Receive reply message, blocking until complete */
+    if ((rv = dl_recvdata (dlconn, buffer, (size_t)size, 1)) != size)
     {
-      dl_log_r (dlconn, 2, 0, "[%s] dl_handlereply(): Unable to parse reply header: '%s'\n",
-		dlconn->addr, buffer);
+      /* Only log an error if the connection was not shut down */
+      if (rv < -1)
+        dl_log_r (dlconn, 2, 0, "[%s] dl_handlereply(): Problem receiving reply message\n",
+                  dlconn->addr);
       return -1;
     }
-  
-  /* Store reply value if requested */
-  if ( value )
-    *value = pvalue;
-  
-  /* Check that reply message will fit into buffer */
-  if ( size > buflen )
-    {
-      dl_log_r (dlconn, 2, 0, "[%s] dl_handlereply(): Reply message too large (%d) for buffer (%d)\n",
-		dlconn->addr, size, buflen);
-      return -1;      
-    }
-  
-  /* Receive reply message if included */
-  if ( size > 0 )
-    {
-      /* Receive reply message, blocking until complete */
-      if ( (rv = dl_recvdata (dlconn, buffer, size, 1)) != size )
-	{
-	  /* Only log an error if the connection was not shut down */
-	  if ( rv < -1 )
-	    dl_log_r (dlconn, 2, 0, "[%s] dl_handlereply(): Problem receiving reply message\n",
-		      dlconn->addr);
-	  return -1;
-	}
-      
-      if ( size < buflen )
-	cbuffer[size] = '\0';
-      else
-	cbuffer[buflen-1] = '\0';
-    }
+
+    if (size < buflen)
+      cbuffer[size] = '\0';
+    else
+      cbuffer[buflen - 1] = '\0';
+  }
   /* Make sure buffer is terminated */
   else
-    {
-      cbuffer[0] = '\0';
-    }
-  
+  {
+    cbuffer[0] = '\0';
+  }
+
   /* Check for "OK" status in reply header */
-  if ( ! strncmp (status, "OK", 2) )
-    {
-      rv = 0;
-    }
-  else if ( ! strncmp (status, "ERROR", 5) )
-    {
-      rv = 1;
-    }
+  if (!strncmp (status, "OK", 2))
+  {
+    rv = 0;
+  }
+  else if (!strncmp (status, "ERROR", 5))
+  {
+    rv = 1;
+  }
   else
-    {
-      dl_log_r (dlconn, 2, 0, "[%s] dl_handlereply(): Unrecognized reply string %.5s\n",
-		dlconn->addr, buffer);
-      rv = -1;
-    }
-  
+  {
+    dl_log_r (dlconn, 2, 0, "[%s] dl_handlereply(): Unrecognized reply string %.5s\n",
+              dlconn->addr, (char *)buffer);
+    rv = -1;
+  }
+
   return rv;
-}  /* End of dl_handlereply() */
+} /* End of dl_handlereply() */
 
-
-/***********************************************************************//**
+/***********************************************************************/ /**
  * @brief Set the terminate parameter of a DataLink connection
  *
  * Set the terminate parameter/flag in the @a DLCP and log a
@@ -1479,6 +1475,6 @@ void
 dl_terminate (DLCP *dlconn)
 {
   dl_log_r (dlconn, 1, 1, "[%s] Terminating connection\n", dlconn->addr);
-  
+
   dlconn->terminate = 1;
-}  /* End of dl_terminate() */
+} /* End of dl_terminate() */

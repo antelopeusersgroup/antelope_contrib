@@ -1,0 +1,12 @@
+/**
+@page page-examples Examples
+
+@tableofcontents
+
+@section example-simple Simple client
+
+A simple DataLink client:
+
+@include daliclient.c
+
+*/

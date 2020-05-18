@@ -1,16 +1,17 @@
-BIN=	orb2ringserver
+BIN     = orb2ringserver
+MAN1    = $(BIN).1
 
-CLEAN= 		# Extra files which should be removed during a "make clean"
+cflags  = -Ilibmseed -Ilibdali
+ldflags = -Llibmseed -Llibdali
+ldlibs  = $(ORBLIBS) -lmseed -ldali
 
-cflags= -Ilibmseed -Ilibdali
-ldflags= -Llibmseed -Llibdali
-ldlibs= $(ORBLIBS) -lmseed -ldali
-
+SUBDIR = /contrib
 include $(ANTELOPEMAKE) # This line must appear following the definitions above, 
 			# and before the DIRS definition below..
-DIRS=	libmseed libdali
 
-OBJS=	orb2ringserver.o
+DIRS   = libmseed libdali
+
+OBJS   = orb2ringserver.o
 
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

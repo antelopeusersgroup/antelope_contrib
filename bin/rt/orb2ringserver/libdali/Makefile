@@ -3,60 +3,99 @@
 # environment variables:
 #   CC : Specify the C compiler to use
 #   CFLAGS : Specify compiler options to use
+#   LDFLAGS : Specify linker options to use
+#   CPPFLAGS : Specify c-preprocessor options to use
 
-# GCC specific parameters
-GCC = gcc
-GCCFLAGS = -O2 -Wall
+# Extract version from libdali.h, expected line should include LIBDALI_VERSION "#.#.#"
+MAJOR_VER = $(shell grep LIBDALI_VERSION libdali.h | grep -Eo '[0-9]+.[0-9]+.[0-9]+' | cut -d . -f 1)
+FULL_VER = $(shell grep LIBDALI_VERSION libdali.h | grep -Eo '[0-9]+.[0-9]+.[0-9]+')
+COMPAT_VER = $(MAJOR_VER).0.0
 
-LIB_OBJS = timeutils.o genutils.o strutils.o \
-           logging.o network.o statefile.o config.o \
-           portable.o connection.o
+# Default settings for install target
+PREFIX ?= /usr/local
+EXEC_PREFIX ?= $(PREFIX)
+LIBDIR ?= $(EXEC_PREFIX)/lib
+INCLUDEDIR ?= $(PREFIX)/include
+DATAROOTDIR ?= $(PREFIX)/share
+DOCDIR ?= $(DATAROOTDIR)/doc/libdali
+MANDIR ?= $(DATAROOTDIR)/man
+MAN3DIR ?= $(MANDIR)/man3
 
-CURRENT_VER = 1.3
-COMPAT_VER = 1.3
+LIB_SRCS = timeutils.c genutils.c strutils.c \
+           logging.c network.c statefile.c config.c \
+           portable.c connection.c gmtime64.c
 
-LIB_A = libdali.a
-LIB_SO = libdali.so.$(CURRENT_VER)
-LIB_SO_ALIAS = libdali.so
-LIB_DYN = libdali.$(CURRENT_VER).dylib
-LIB_DYN_ALIAS = libdali.dylib
+LIB_OBJS = $(LIB_SRCS:.c=.o)
+LIB_LOBJS = $(LIB_SRCS:.c=.lo)
+
+LIB_NAME = libdali
+LIB_A = $(LIB_NAME).a
+
+OS := $(shell uname -s)
+
+# Build dynamic (.dylib) on macOS/Darwin, otherwise shared (.so)
+ifeq ($(OS), Darwin)
+	LIB_SO_BASE = $(LIB_NAME).dylib
+	LIB_SO_MAJOR = $(LIB_NAME).$(MAJOR_VER).dylib
+	LIB_SO = $(LIB_NAME).$(FULL_VER).dylib
+	LIB_OPTS = -dynamiclib -compatibility_version $(COMPAT_VER) -current_version $(FULL_VER) -install_name $(LIB_SO)
+else
+	LIB_SO_BASE = $(LIB_NAME).so
+	LIB_SO_MAJOR = $(LIB_NAME).so.$(MAJOR_VER)
+	LIB_SO = $(LIB_NAME).so.$(FULL_VER)
+	LIB_OPTS = -shared -Wl,--version-script=libdali.map -Wl,-soname,$(LIB_SO_MAJOR)
+endif
 
 all: static
 
 static: $(LIB_A)
 
-shared: $(LIB_SO)
+shared dynamic: $(LIB_SO)
 
-dynamic: $(LIB_DYN)
-
+# Build static library
 $(LIB_A): $(LIB_OBJS)
-	ar -rcs $(LIB_A) $(LIB_OBJS)
+	@echo "Building static library $(LIB_A)"
+	$(RM) -f $(LIB_A)
+	$(AR) -crs $(LIB_A) $(LIB_OBJS)
 
-$(LIB_SO): $(LIB_OBJS)
-	$(CC) -shared -Wl,-soname -Wl,$(LIB_SO_ALIAS) -o $(LIB_SO) $(LIB_OBJS)
-	ln -s $(LIB_SO) $(LIB_SO_ALIAS)
+# Build shared/dynamic library
+$(LIB_SO): $(LIB_LOBJS)
+	@echo "Building shared library $(LIB_SO)"
+	$(RM) -f $(LIB_SO) $(LIB_SO_MAJOR) $(LIB_SO_BASE)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIB_OPTS) -o $(LIB_SO) $(LIB_LOBJS)
+	ln -s $(LIB_SO) $(LIB_SO_BASE)
+	ln -s $(LIB_SO) $(LIB_SO_MAJOR)
 
-$(LIB_DYN): $(LIB_OBJS)
-	$(CC) -dynamiclib -compatibility_version $(COMPAT_VER) -current_version $(CURRENT_VER) -install_name $(LIB_DYN_ALIAS) -o $(LIB_DYN) $(LIB_OBJS)
-	ln -s $(LIB_DYN) $(LIB_DYN_ALIAS)
-
-cc:
-	@$(MAKE) "CC=$(CC)" "CFLAGS=$(CFLAGS)"
-
-gcc:
-	@$(MAKE) "CC=$(GCC)" "CFLAGS=$(GCCFLAGS)"
-
-debug:
-	$(MAKE) "CC=$(CC)" "CFLAGS=-g $(CFLAGS)"
-
-gccdebug:
-	$(MAKE) "CC=$(GCC)" "CFLAGS=-g $(GCCFLAGS)"
+test check: static FORCE
+	@$(MAKE) -C test test
 
 clean:
-	rm -f $(LIB_OBJS) $(LIB_A) $(LIB_SO) $(LIB_SO_ALIAS) $(LIB_DYN) $(LIB_DYN_ALIAS)
+	@$(RM) $(LIB_OBJS) $(LIB_LOBJS) $(LIB_A) $(LIB_SO) $(LIB_SO_MAJOR) $(LIB_SO_BASE)
+	@echo "All clean."
 
-install:
-	@echo
-	@echo "No install method, copy the library, header file, and"
-	@echo "documentation to the preferred install location"
-	@echo
+install: shared
+	@echo "Installing into $(PREFIX)"
+	@mkdir -p $(DESTDIR)$(PREFIX)/include
+	@cp libdali.h $(DESTDIR)$(PREFIX)/include
+	@mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig
+	@cp -a $(LIB_SO_BASE) $(LIB_SO_MAJOR) $(LIB_SO_NAME) $(LIB_SO) $(DESTDIR)$(LIBDIR)
+	@sed -e 's|@PREFIX@|$(PREFIX)|g' \
+	     -e 's|@EXEC_PREFIX@|$(EXEC_PREFIX)|g' \
+	     -e 's|@LIBDIR@|$(LIBDIR)|g' \
+	     -e 's|@INCLUDEDIR@|$(PREFIX)/include|g' \
+	     -e 's|@VERSION@|$(FULL_VER)|g' \
+	     dali.pc.in > $(DESTDIR)$(LIBDIR)/pkgconfig/dali.pc
+	@mkdir -p $(DESTDIR)$(DOCDIR)/example
+	@cp -r example $(DESTDIR)$(DOCDIR)/
+
+.SUFFIXES: .c .o .lo
+
+# Standard object building
+.c.o:
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+# Standard object building for shared library using -fPIC
+.c.lo:
+	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $< -o $@
+
+FORCE:

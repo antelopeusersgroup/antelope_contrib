@@ -1,0 +1,222 @@
+/** @mainpage libdali: the DataLink client library
+
+@section Purpose
+
+The purpose of this library is to provide all needed functionality for
+communicating via the @subpage datalink-protocol in a generalized way.
+This library facilitates rapid DataLink client development as the client
+does not need to know any details of the DataLink protocol.  The library is
+written in C.
+
+@section usage The DataLink Connection Parameters
+
+The usage philosophy is that each connection to DataLink server is
+associated with a DataLink Connection Parameters (DLCP) descriptor
+which contains both connection paramters and state information.  In
+libdali the DLCP is implemented as a C struct which is used by most of
+the utility functions.  The struct is given below with descriptions of
+each parameter:
+
+\code
+  typedef struct DLCP_s
+  {
+    char        addr[100];
+    char        clientid[200];
+    int         keepalive;
+    int         iotimeout;
+  
+    int         link;
+    float       serverproto;
+    int32_t     maxpktsize;
+    int8_t      writeperm;
+    int64_t     pktid;
+    dltime_t    pkttime;
+    int8_t      keepalive_trig;
+    dltime_t    keepalive_time;
+    int8_t      terminate;
+    int8_t      streaming;
+  
+    DLLog      *log;
+  } DLCP;
+\endcode
+
+@param addr The address of the DataLink server to connect to in 
+		'host:port' format.  example: "localhost:16000".
+		The host or port specifications are both optional, they
+		will default to 'localhost' and '16000' respectively.
+
+@param clientid Client identification sent to the server during initial
+  		handshake.  This ID is populated in a call to dl_newdlcp().
+		Normally this takes the form of: "progname:username:pid:arch",
+		for example: "dalitool:rt:6055:SunOS-5.10"
+
+@param keepalive Interval in seconds to send keepalive packets to the server
+  		when no data is being received with either dl_collect() or
+		dl_collect_nb().  Default interval is 600 seconds, 0 to disable.
+
+@param iotimeout Network I/O timeout in seconds.  Send and receive operations
+  		will be interrupted after this timeout to avoid hung socket
+		connections.  Default timeout is 60 seconds, 0 to disable.
+
+The following parameters are maintained by the library routines and should
+generally not be set externally.
+		
+@param link     This is the file descriptor associated with the connected
+		network socket.  This value will be -1 when not connected
+		to a server.
+
+@param serverproto The DataLink protocol version of the connected server.  This
+  		is set during connection handshake and will be 0.0 if it
+		was not supplied by the server.
+
+@param maxpktsize The maximum packet size supported by the connected server.
+    		This is set during connection handshake and will be 0 if it
+		was not supplied by the server.
+
+@param writeperm A flag indicating if the server has granted the client write
+                permission. This is set during connection handshake and will
+                be 1 if write permission is granted and 0 otherwise.
+
+@param pktid    Packet ID of the last packet received.  A packet ID is a
+  		large integer uniquely identifying a packet in a DataLink
+		server instance.
+
+@param pkttime  Packet time of the last packet received.  Each DataLink
+  		packet has an associated packet creation time which,
+		when combined with the pktid, can be used to uniquely
+		identify a packet in a DataLink server instance.
+
+@param keepalive_trig
+@param keepalive_time These are used to trigger and track the sending of keep-
+  		  alive packets.
+
+@param terminate Used internally to indicate connection termination.
+
+@param streaming Used to indicate status of streaming mode, set to either 
+  		true (1) or false (0).  Streaming mode is activated when
+		either dl_collect() or dl_collect_nb() is initially called,
+		a specific call to those functions will deactivate streaming.
+  		When a connection is in streaming mode most server query
+		functions will not work.
+
+@param log      Logging parameters specific to this connection.
+
+
+@section config Configuring a DataLink connection
+
+There are a number of functions to assist with the creation of a DLCP
+struct and the configuration of a connection (see the man pages for
+programming details):
+
+  dl_newdlcp()  : Allocate and initialize a DLCP struct with default values.
+
+  dl_freedlcp() : Free all memory associated with a DLCP struct.
+
+  dl_position() : Position the connection to a specific packet in the
+  		  DataLink server based on packet ID and packet time.
+
+  dl_position_after() : Position the connection to a specific packet in
+  		  DataLink server based on data time.
+
+  dl_match()    : Send a new regular expression matching pattern to the
+  		  DataLink server.  Used to limit packets to specific
+		  stream IDs for packet transfer or stream listing.
+
+  dl_reject()   : Send a new regular expression rejecting pattern to the
+    		  DataLink server, the antithesis of the matching pattern.
+
+
+@section basic Fundamental read, write and query
+
+  dl_read()     : Read a specific packet from a DataLink server.
+
+  dl_write()    : Write a supplied packet to a DataLink server.
+
+  dl_getinfo()  : Submit an INFO request to and collect the response from
+  		  a DataLink server.  Responses are in XML.  Request types
+		  include STATUS, STREAMS and CONNECTIONS.
+
+
+@section connmanager Using the connection manager
+
+Two primary functions are provided to collect packets from a DataLink
+server in streaming mode: dl_collect() and dl_collect_nb().
+
+  dl_collect() : Collect and return a packet each time called.  Keepalive
+        packets are sent at the keepalive interval when no packets are being
+	sent from the server.  If a connection is not currently configured
+	in streaming mode, the first call to dl_collect() will turn this mode
+	on.  Designed to run in a tight loop at the heart of a client program
+	this routine blocks until a packet is received.
+
+  dl_collect_nb() : This is a non-blocking version of dl_collect(), it will
+	always return whether a packet is received or not.
+
+  dl_terminate() : Set the terminate flag in the connection parameters.
+	This will cause dl_collect()/dl_collect_nb() to return DLENDED.
+	This is commonly used in a signal handler to smoothly exit from
+	a packet collection loop.
+
+
+@section statefiles Using state files
+
+The DataLink protocol is made stateful by tracking packet IDs and
+packet times.  The state of a connection can be saved and recovered
+using state files and the following routines:
+
+  dl_savestate() : Save current packet ID and time to a file.
+
+  dl_recoverstate() : Recover packet ID and time from a file.
+
+
+@section logging Controlling output from the library functions
+
+All of the log and diagnostic messages emitted by the library functions
+use the same interface.  The output from this interface can be controlled.
+This is useful when the library will be embedded in a larger system with
+a custom logging facility.  See the man page for more details.
+
+  dl_loginit() : initialize the verbosity level of the library
+	functions, also set the functions and prefixes used for log,
+	diagnostic and error messages.
+
+  dl_log() : the central logging facility.  Behavior is controlled by the
+	settings specified with dl_loginit().
+
+The default destination for log messages is standard output (stdout),
+while all diagnostic (including error) messages go to standard error
+(stderr).  Most of the internal messages emmited by the library are
+considered diagnostic and will, by default, go to standard error.
+
+The default prefix for log and diagnostic messages is nothing.  The
+default prefix for diagnostic error messages is "error: ".
+
+There are reentrant versions of these functions that operation either
+on the logging parameters in a DLCP struct or directly on a logging
+parameter DLLog struct.  They are intended for use in threaded
+programs or where a complex logging scheme is desired.  See the man
+pages for more details.
+
+@section threads Threaded programming
+	
+The library is generally thread-safe on Unix-like platforms as long as
+each thread manages it's own DataLink Connection Parameters (see
+below).  The one exeception is the handling of network I/O timeouts.
+On systems where the SO_RCVTIMEO and SO_SNDTIMEO socket options are
+not supported (e.g. Solaris) an alarm timer is used (see setitimer(2))
+which, on most systems, utilizes the SIGALARM signal which can be
+misdirected to an unexpected thread.  In this case it is suggested to
+disable the libdali timeout (set DLCP.iotimeout = 0) and implement
+another timeout mechanism if desired.  The library is definitely not
+thread-safe under Win32.
+
+@section example Programming example
+
+See the @subpage page-examples for a DataLink client included with the
+library (in the "example" directory) that illustrates a simple client.
+
+@section protocol DataLink protocol
+
+Reference for the @subpage datalink-protocol.
+
+*/
