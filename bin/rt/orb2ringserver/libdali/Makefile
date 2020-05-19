@@ -73,7 +73,10 @@ clean:
 	@$(RM) $(LIB_OBJS) $(LIB_LOBJS) $(LIB_A) $(LIB_SO) $(LIB_SO_MAJOR) $(LIB_SO_BASE)
 	@echo "All clean."
 
-install: shared
+install: static
+	@echo "No install target for bundled $(LIB_A)"
+
+noinstall: shared
 	@echo "Installing into $(PREFIX)"
 	@mkdir -p $(DESTDIR)$(PREFIX)/include
 	@cp libdali.h $(DESTDIR)$(PREFIX)/include

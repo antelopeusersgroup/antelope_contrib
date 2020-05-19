@@ -77,7 +77,10 @@ clean:
 	@$(MAKE) -C test clean
 	@echo "All clean."
 
-install: shared
+install: static
+	@echo "No install target for bundled $(LIB_A)"
+
+noinstall: shared
 	@echo "Installing into $(PREFIX)"
 	@mkdir -p $(DESTDIR)$(PREFIX)/include
 	@cp libmseed.h $(DESTDIR)$(PREFIX)/include
