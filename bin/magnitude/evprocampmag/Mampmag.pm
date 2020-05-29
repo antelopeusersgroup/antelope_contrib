@@ -1014,15 +1014,27 @@ sub process_network {
     my $magtype= $self->{params}{output_magtype};
     dbputv ( @dborigin, "auth", $auth . $magtype ) ;
     
-    if (defined $self->{m_median} ) {
-        if (lc ($magtype) eq "mb" ) {
-            dbputv ( @dborigin, "mb", $self->{m_median}, "mbid", $self->{magid} ) ;
-        } elsif (lc($magtype) eq "ml") {
-            dbputv ( @dborigin, "ml", $self->{m_median}, "mlid", $self->{magid} ) ;
-        } elsif (lc($magtype) eq "ms") {
-            dbputv ( @dborigin, "ms", $self->{m_median}, "msid", $self->{magid} ) ;
-        }
-    }
+    if (isyes $self->{params}{mean_magnitude} ) {
+		if (defined $self->{m_mean} ) {
+			if (lc ($magtype) eq "mb" ) {
+				dbputv ( @dborigin, "mb", $self->{m_mean}, "mbid", $self->{magid} ) ;
+			} elsif (lc($magtype) eq "ml") {
+				dbputv ( @dborigin, "ml", $self->{m_mean}, "mlid", $self->{magid} ) ;
+			} elsif (lc($magtype) eq "ms") {
+				dbputv ( @dborigin, "ms", $self->{m_mean}, "msid", $self->{magid} ) ;
+			}
+		}
+	} else {
+		if (defined $self->{m_median} ) {
+			if (lc ($magtype) eq "mb" ) {
+				dbputv ( @dborigin, "mb", $self->{m_median}, "mbid", $self->{magid} ) ;
+			} elsif (lc($magtype) eq "ml") {
+				dbputv ( @dborigin, "ml", $self->{m_median}, "mlid", $self->{magid} ) ;
+			} elsif (lc($magtype) eq "ms") {
+				dbputv ( @dborigin, "ms", $self->{m_median}, "msid", $self->{magid} ) ;
+			}
+		}
+	}
 
     return $ret ;
 }
