@@ -2,7 +2,7 @@
 set nonomatch
 
 set mybins=""
-set patterns="*.c *.cpp *.F *.f *.sh *.csh *.tcl *.xpl *.xppl *.xpls *.xtcl *.xwish *.xvwish *.xwish8 *.xpy"
+set patterns="*.c *.cpp *.F *.f *.sh *.csh *.tcl *.xpl *.xppl *.xpls *.xtcl *.xwish *.xvwish *.xwish8 *.xpy *.xbqpy"
 foreach pat ($patterns)
     set ft=( $pat )
     if (-e $ft[1] ) then
@@ -41,4 +41,4 @@ end
 
 echo 'include $(ANTELOPEMAKE)' 
 echo 'DIRS='
-echo 'SUBDIR=/local'
+echo 'SUBDIR=/contrib'
