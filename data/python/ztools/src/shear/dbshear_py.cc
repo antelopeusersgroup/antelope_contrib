@@ -136,9 +136,16 @@ static struct PyMethodDef methods[] =
     {NULL, NULL, 0, NULL}
 };
 
+static struct PyModuleDef dbshear_moddef = {
+    PyModuleDef_HEAD_INIT,
+    "dbshear", /* name of module */
+    "",        /* module documentation */
+    -1,        /* size of per-interpreter state of the module, or -1 if the moduel keeps state in global variables */
+    methods
+};
 
-PyMODINIT_FUNC initdbshear (void)
+
+PyMODINIT_FUNC PyInit_dbshear (void)
 {
-    (void)Py_InitModule("dbshear", methods);
-    import_array();
+    return PyModule_Create(&dbshear_moddef);
 }
