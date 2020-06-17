@@ -5,7 +5,7 @@ import re
 import logging
 from multiprocessing import Manager, Process, Queue
 from collections import deque
-from Queue import Empty
+from queue import Empty
 from numpy import arange,\
                   array
 from antelope.orb import Orb,\
