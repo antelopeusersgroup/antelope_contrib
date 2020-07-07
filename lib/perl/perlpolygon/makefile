@@ -1,7 +1,7 @@
 AUTHOR_FIELD=Nikolaus Horn <nikolaus.horn\@zamg.ac.at>
 PERLMAKEFILE = perl_makefile
 MAN3P=perlpolygon.3p
-CLEAN=  Makefile.PL runmake $(PERLMAKEFILE).old $(PERLMAKEFILE).PL $(PERLMAKEFILE) polygon.bs polygon.c pm_to_blib 
+CLEAN=  Makefile.PL MYMETA.yml MYMETA.json runmake $(PERLMAKEFILE).old $(PERLMAKEFILE).PL $(PERLMAKEFILE) polygon.bs polygon.c pm_to_blib 
 
 PD=$(ANTELOPE)/contrib/data/perl
 PM=$(ANTELOPE)/contrib/man
