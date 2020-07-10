@@ -5,6 +5,8 @@
 #include "orb.h"
 #include "brttpkt.h"
 
+#define MAX_REGEX_LEN 200
+
 Arr *Rrd_files = 0;
 double  Status_stepsize_sec = 0;
 char    *Rrdfile_pattern = 0;
@@ -20,7 +22,7 @@ static void
 usage( void )
 {
     cbanner( "$Date$",
-        "[-vV] [-d cachedaemon] [-s statefile] [-p pffile] [-m match] [-f from]  orbname dbcache\n",
+        "[-vV] [-d cachedaemon] [-s statefile] [-p pffile] [-m match] [-r reject] [-f from]  orbname dbcache\n",
         "Dr. Kent Lindquist",
         "Lindquist Consulting, Inc.",
         "kent@lindquistconsulting.com" );
@@ -238,54 +240,55 @@ main( int argc, char **argv )
     int errflag = 0;
     int orb;
     int stop = 0;
-    long    nrecs;
-    char    *match = ".*/pf/st";
-    char    *from = 0;
-    char    *statefile = 0;
-    char    *pfname = "orb2rrdc";
-    char    *orbname;
-    char    *dbcache;
-    char    *rrdtool;
-    char    command[STRSZ];
-    char    net[STRSZ];
-    char    sta[STRSZ];
-    char    rrdvar[STRSZ];
-    char    key[STRSZ];
-    char    path[FILENAME_MAX];
-    Dbptr   db;
-    Dbptr   dbt;
-    Pf  *pf;
-    char    *Default_network;
+    long nrecs;
+    char *match = ".*/pf/st";
+    char *reject = NULL;
+    char *from = 0;
+    char *statefile = 0;
+    char *pfname = "orb2rrdc";
+    char *orbname;
+    char *dbcache;
+    char *rrdtool;
+    char command[STRSZ];
+    char net[STRSZ];
+    char sta[STRSZ];
+    char rrdvar[STRSZ];
+    char key[STRSZ];
+    char path[FILENAME_MAX];
+    Dbptr db;
+    Dbptr dbt;
+    Pf *pf;
+    char *Default_network;
     Tbl *dlslines;
     Arr *Dls_vars_dsparams;
     Arr *Dls_vars_rras;
     Tbl *Dls_vars_keys;
-    char    *line;
-    char    *dls_var;
-    char    *dsparams;
+    unsigned char *line;
+    char *dls_var;
+    char *dsparams;
     Tbl *rras;
     int i;
     int j;
     OrbreapThr *ort;
     int pktid;
-    char    srcname[ORBSRCNAME_SIZE];
-    double  time = 0;
-    char    *packet = 0;
+    char srcname[ORBSRCNAME_SIZE];
+    double time = 0;
+    char *packet = 0;
     int nbytes = 0;
     int bufsize = 0;
-    Packet  *pkt = 0;
+    Packet *pkt = 0;
     int rc;
-    char    *s;
-    Pf  *dlspf;
+    char *s;
+    Pf *dlspf;
     Tbl *dlspfkeys;
-    char    *element;
+    char *element;
     Tbl *parts;
-    double  val;
-    Pf  *pfval = 0;
+    double val;
+    Pf *pfval = 0;
 
     elog_init( argc, argv );
 
-    while( ( c = getopt( argc, argv, "vVd:s:p:m:f:" ) ) != -1 ) {
+    while( ( c = getopt( argc, argv, "vVd:s:p:m:r:f:" ) ) != -1 ) {
         switch( c ) {
         case 'd':
             CacheDaemon = optarg;
@@ -295,6 +298,9 @@ main( int argc, char **argv )
             break;
         case 'm':
             match = optarg;
+            break;
+        case 'r':
+            reject = optarg;
             break;
         case 'p': 
             pfname = optarg;
@@ -374,6 +380,10 @@ main( int argc, char **argv )
     }
 
     orbselect( orb, match );
+
+    if ( reject && ( strnlen( reject, MAX_REGEX_LEN ) ) > 0 ) {
+        orbreject( orb, reject );
+    }
 
     if( from != NULL && statefile == NULL ) {
         pktid = orbposition( orb, from );
@@ -455,8 +465,8 @@ main( int argc, char **argv )
     for( i = 0; i < maxtbl( dlslines ); i++ ) {
         line = gettbl( dlslines, i );
 
-        strtr( line, "\t", " " );
-        rras = split( line, ' ' );
+        strtr( line, (unsigned const char*) "\t", (unsigned const char*) " " );
+        rras = split( (char*) line, ' ' );
 
         dls_var = shifttbl( rras );
         dsparams = shifttbl( rras );
@@ -467,7 +477,7 @@ main( int argc, char **argv )
 
     ort = orbreapthr_new( orb, -1., 0 );
 
-    for( ; stop == 0; ) {
+    while ( 1 ) {
         orbreapthr_get( ort, &pktid, srcname, &time, &packet, &nbytes, &bufsize );
 
         if( statefile ) {
