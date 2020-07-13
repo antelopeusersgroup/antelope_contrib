@@ -343,7 +343,6 @@ void ShearPicker::pick(const vector<double> &tr, double &s_pick, double &snr) {
     start = idx - int(0.25/dt);
     it = kurt.begin() + start;
     it = max_element(it, it+int(0.5/dt));
-    std::cout << *it << std::endl;
 
     return;
 
