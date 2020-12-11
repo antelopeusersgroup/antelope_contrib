@@ -38,8 +38,7 @@ main (int argc, char **argv)
 	Tbl *sortkeys;
 			
 	Dbptr dbin,dbout,dbi,dbo,dbs;
-	long i,from,to,nv;
-	long vertex;
+	long i,nv;
 	
     elog_init ( argc, argv ) ; 
     while ((c = getopt (argc, argv, "s:vV")) != -1) {

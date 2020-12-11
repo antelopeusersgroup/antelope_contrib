@@ -43,7 +43,6 @@ main (int argc, char **argv)
 			
 	Dbptr dbin,dbout,dbi,dbo,dbg,dbs,dbb;
 	long i,from,to,nv;
-	long vertex;
 	
     elog_init ( argc, argv ) ; 
     while ((c = getopt (argc, argv, "vV")) != -1) {
@@ -92,24 +91,24 @@ main (int argc, char **argv)
 	if (verbose) elog_notify(0,"creating database descriptor %s",dboutname);
 	
 	if (dbcreate(dboutname,"polygon1.2",0,0,0)) {
-		elog_die(1,"cannot create database %s",dboutname);
+		elog_die(1,"cannot create database %s", dboutname);
 	}
 	dbopen(dboutname,"r+",&dbout);
 	dbo=dblookup(dbout,0,"polygon",0,0);
 	
 	for (i=0; i< nregions; i++) {
 		dbg.record=i;
-		dbgetv(dbg,0,"regname",name,"bundle",&dbb,NULL );
-		dbget_range(dbb,&from,&to);
+		dbgetv(dbg,0,"regname",name, "bundle",&dbb,NULL );
+		dbget_range(dbb, &from, &to);
 		nvertices= to - from;
-		if (verbose) elog_notify(0,"%s (%i nvertices)",name,nvertices);
+		if (verbose) elog_notify(0,"%s (%li nvertices)", name, nvertices);
 		poly=malloc(2 * nvertices * sizeof(double));
 		nv=0;
 
 		for (dbs.record=from; dbs.record<to; dbs.record++) {
 			dbgetv(dbs,0,
 					"regname",name,
-					"vertex",&vertex,
+					//"vertex",&vertex,
 					"lat",&lat,"lon",&lon,
 					NULL );
 			poly[nv].lat=lat;
