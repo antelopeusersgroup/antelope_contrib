@@ -312,7 +312,7 @@ long            writePolygonData (Dbptr db, Point * poly, long npoints, char *pn
     }
     if (dfile == NULL) {
         dfile = strdup (default_dfile);
-        free_dfile = 0;
+        free_dfile = 1;
     }
     if (dbputv (db, 0, "pid", pid, "dir", dir, "dfile", dfile, NULL) == dbINVALID) {
         elog_log (0, "writePolygonData: error putting dir %s & dfile %s", dir, dfile);
@@ -539,9 +539,10 @@ Dbptr           inWhichPolygons (Dbptr db, Point P)
         dbs = db;
     }
     /*
-     * would be better to check only on closed polygons..., but breaks too many
-     * programs (older versions of the polygon-schema)
-     * sprintf(expr,"closed=~/y/ && north >= %f && south <= %f && east >= %f && west <= %f",
+     * would be better to check only on closed polygons..., but breaks too
+     * many programs (older versions of the polygon-schema)
+     * sprintf(expr,"closed=~/y/ && north >= %f && south <= %f && east >= %f
+     * && west <= %f",
      */
     if (db.record < 0) {
         sprintf (expr, "north >= %f && south <= %f && east >= %f && west <= %f",
@@ -655,13 +656,13 @@ char           *windrose (double azimuth)
 
 /*
  * // orientation2D_Polygon(): tests the orientation of a simple polygon //
- * Input:  int n = the number of vertices in the polygon //
- * Pofoint* V = an array of n+1 vertices with V[n]=V[0] //    Return: >0 for
- * counterclockwise //            =0 for none (degenerate) //            <0
- * for clockwise //    Note: this algorithm is faster than computing the
- * signed area. int orientation2D_Polygon( int n, Point* V ) { // first find
- * rightmost lowest vertex of the polygon int rmin = 0; int xmin = V[0].lon;
- * int ymin = V[0].lat;
+ * Input:  int n = the number of vertices in the polygon // Pofoint* V = an
+ * array of n+1 vertices with V[n]=V[0] //    Return: >0 for counterclockwise
+ * //            =0 for none (degenerate) //            <0 for clockwise //
+ * Note: this algorithm is faster than computing the signed area. int
+ * orientation2D_Polygon( int n, Point* V ) { // first find rightmost lowest
+ * vertex of the polygon int rmin = 0; int xmin = V[0].lon; int ymin =
+ * V[0].lat;
  * 
  * for (int i=1; i<n; i++) { if (V[i].lat > ymin) continue; if (V[i].lat ==
  * ymin) {    // just as low if (V[i].lon < xmin)   // and to left continue;
@@ -760,8 +761,8 @@ double          distanceToPolygon (Dbptr db, Point P)
     double          dist, mindist;
     mindist = 1.0e99;
 
-    if (db.table <0) {
-        db=dblookup(db,0,"polygon",0,0);
+    if (db.table < 0) {
+        db = dblookup (db, 0, "polygon", 0, 0);
     }
     if (db.record < 0) {
         dbquery (db, dbRECORD_COUNT, &nrec);
