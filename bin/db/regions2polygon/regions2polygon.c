@@ -10,7 +10,7 @@
 
 static void usage ()
 {
-    char *usage = "[-v] dbin dbout";
+    char *usage = "[-v] [-d dir] [-f dfile] [-a auth] [-t type] dbin dbout";
     char *version = "1.1";
     char *author = "Nikolaus Horn";
     char *location = "ZAMG / Vienna";
@@ -41,8 +41,28 @@ int main (int argc, char **argv)
     long i, from, to, nv;
 
     elog_init (argc, argv);
-    while ((c = getopt (argc, argv, "vV")) != -1) {
+    while ((c = getopt (argc, argv, "vVa:d:f:t:")) != -1) {
         switch (c) {
+
+        case 'a':
+            free(auth);
+            auth = optarg;
+            break;
+
+        case 'd':
+            free(dir);
+            dir = optarg;
+            break;
+
+        case 'f':
+            free(dfile);
+            dfile = optarg;
+            break;
+
+        case 't':
+            free(ptype);
+            ptype = optarg;
+            break;
 
         case 'v':
             verbose++;

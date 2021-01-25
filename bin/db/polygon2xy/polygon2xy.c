@@ -14,7 +14,7 @@
 static void
 usage()
 {
-	char           *usage = "[-subset expr] db";
+	char           *usage = "[-n] [-subset expr] db";
 	char           *version = "1.0";
 	char           *author = "Nikolaus Horn";
 	char           *location = "ZAMG / Vienna";
@@ -26,7 +26,7 @@ usage()
 int
 main(int argc, char **argv)
 {
-	int             verbose = 0 ;
+	int             verbose = 0;
 
 
 	char           *dbname= NULL;
@@ -38,6 +38,7 @@ main(int argc, char **argv)
 	long 		 	nrecs;
 	char           *subset_expr=NULL;
 	char            pname[STRSZ], closed[STRSZ];
+    int             give_pnames = 0;
 
 	elog_init(argc, argv);
 
@@ -51,6 +52,8 @@ main(int argc, char **argv)
 				exit(1);
 			}
 			subset_expr = *argv;
+		} else if (!strcmp(*argv, "-n")) {
+			give_pnames = 1;
 		} else if (!strcmp(*argv, "-v")) {
 			verbose++;
 		} else if (**argv != '-') {
@@ -84,14 +87,18 @@ main(int argc, char **argv)
 		nvertices = readPolygon(db, &poly);
 		if (nvertices > 0) {
 			dbgetv(db, 0, "pname", &pname, "closed", &closed, NULL );
-			printf(">\n");
+            if (give_pnames) {
+                printf("> %s\n", pname);
+            } else {
+                printf(">\n");
+            }
 			for (i = 0; i < nvertices; i++) {
-				printf("%.4f %.4f\n", poly[i].lon, poly[i].lat);
+				printf("%.6f %.6f\n", poly[i].lon, poly[i].lat);
 			}
 			if (yesno(closed) == -1 &&
 			    ((poly[0].lat != poly[nvertices - 1].lat) ||
 			     (poly[0].lon != poly[nvertices - 1].lon))) {
-				printf("%.4f %.4f\n", poly[0].lon, poly[0].lat);
+				printf("%.6f %.6f\n", poly[0].lon, poly[0].lat);
 			}
 		}
 	}

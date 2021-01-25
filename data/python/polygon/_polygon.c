@@ -14,12 +14,14 @@
 static PyObject *python_inwhichpolygons( PyObject *self, PyObject *args );
 static PyObject *python_distancetopolygon( PyObject *self, PyObject *args );
 static PyObject *python_readpolygon( PyObject *self, PyObject *args );
+static PyObject *python_writepolygon( PyObject *self, PyObject *args );
 static PyObject *python_windrose( PyObject *self, PyObject *args );
 
 static struct PyMethodDef _polygon_methods[] = {
 	{ "_inwhichpolygons",  	python_inwhichpolygons,   METH_VARARGS, "find polygon enclosing point" },
 	{ "_distancetopolygon", python_distancetopolygon, METH_VARARGS, "find minimum distance to polygon" },
-	{ "_readpolygon",       python_distancetopolygon, METH_VARARGS, "read polygon from database" },
+	{ "_readpolygon",       python_readpolygon,       METH_VARARGS, "read polygon from database" },
+//	{ "_writepolygon",      python_writpolygon,       METH_VARARGS, "read polygon from database" },
 	{ "_windrose",  	    python_windrose,   	      METH_VARARGS, "windrose, 3 chars indicating direction" },
 	{ NULL, NULL, 0, NULL }
 };
@@ -79,6 +81,7 @@ python_distancetopolygon( PyObject *self, PyObject *args ) {
 	obj =  Py_BuildValue( "d", mindist );
 	return obj;
 }
+
 static PyObject *
 python_readpolygon( PyObject *self, PyObject *args ) {
 	char    *usage = "Usage: dbout= _polygon._readpolygon( dbin )\n";

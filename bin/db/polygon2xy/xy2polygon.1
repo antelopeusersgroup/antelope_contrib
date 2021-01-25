@@ -3,7 +3,7 @@
 xy2polygon \- import polygon data from \fBGMT\fP linefiles.
 .SH SYNOPSIS
 .nf
-\fBxy2polygon \fP[-v] [-close_polygons] [-pname \fIname\fP] [-level \fIlevel\fP]
+\fBxy2polygon \fP[-v] [-close_polygons] [-ptype \fIt\fP] [-pname \fIname\fP] [-level \fIlevel\fP]
                 [-auth \fIauth\fP] [-dir \fIdir\fP] [-dfile \fIdfile\fP]
                 \fIdatafile\fP \fIdb\fP
 .fi
@@ -16,6 +16,8 @@ Verbose flag.
 make sure the saved polygons are all closed. Use this flag only if the input contains only polygons. Note that if the first and last point of an object from the \fIdatafile\fP are the same, they are flagged as closed in any case.
 .IP "-pname pname"
 Name of polygon in database. By default \fIdatafile\fP is used here. If multiple objects are found in the file, increasing numbers are appended to create unique names.
+.IP "-ptype t"
+Type of polygon. E.g cb for country border etc. 
 .IP "-level level"
 This number can be used to distinguish polygons of different precision. Defaults to 0.
 .IP "-auth auth"
