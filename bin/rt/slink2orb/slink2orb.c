@@ -18,7 +18,7 @@
 
 #include "mseed2orbpkt.h"
 
-static char   *version     = "4.3 (2018.219)";
+static char   *version     = "4.4 (2021.028)";
 static char   *package     = "slink2orb";
 static char    verbose     = 0;
 static char    remap       = 0;      /* remap sta and chan from SEED tables */
@@ -79,7 +79,7 @@ main(int argc, char **argv)
   /* Process given parameters (command line and parameter file) */
   if (parameter_proc(argc, argv) < 0)
     {
-      sl_log(1, 0, "Parameter processing failed.\n");
+      sl_log(2, 0, "Parameter processing failed.\n");
       return -1;
     }
 
@@ -91,7 +91,7 @@ main(int argc, char **argv)
   orb = orbopen(orbaddr, "w&");
   if (orb < 0)
     {
-      sl_log(1, 0, "%s: orbopen() error for %s\n", package, orbaddr);
+      sl_log(2, 0, "%s: orbopen() error for %s\n", package, orbaddr);
       exit(1);
     }
 
@@ -100,7 +100,7 @@ main(int argc, char **argv)
     {
       if (dbopen(mappingdb, "r+", &dbase) == dbINVALID)
 	{
-	  sl_log(1, 0, "dbopen(%s) failed\n", mappingdb);
+	  sl_log(2, 0, "dbopen(%s) failed\n", mappingdb);
 	  exit(1);
 	}
       finit_db(dbase);
@@ -182,7 +182,7 @@ packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
       {
         if (sl_msr_parse (slconn->log, msrecord, &msr, 1, 0) == NULL)
         {
-          sl_log (1, 0, "sl_msr_parse() failed\n");
+          sl_log (2, 0, "sl_msr_parse() failed\n");
           return;
         }
 
@@ -201,7 +201,7 @@ packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
         {
           if (swap_integer_payload (msrecord, msr, headerswapflag))
           {
-            sl_log (1, 0, "swap_integer_payload() failed\n");
+            sl_log (2, 0, "swap_integer_payload() failed\n");
             return;
           }
         }
@@ -211,7 +211,7 @@ packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
 			      remap, srcname, &time, &packet, &nbytes,
 			      &bufsize);
 
-      if ( verbose >= 3)
+      if (verbose >= 3)
 	{
 	  char *s = strydtime(time);
 	  sl_log (0, 3, "Received %s %s seq %d\n",
@@ -222,11 +222,11 @@ packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
       if (mseedret == 0)
 	{
 	  if (orbput(orb, srcname, time, packet, nbytes))
-	    sl_log(1, 0, "orbput() failed: %s(%d)\n", srcname, nbytes);
+	    sl_log(2, 0, "orbput() failed: %s(%d)\n", srcname, nbytes);
 	}
       else
 	{
-	  sl_log(0, 0, "record not forwared, mseed2orbpkt returned: %d\n",
+	  sl_log(2, 0, "record not forwared, mseed2orbpkt returned: %d\n",
 		 mseedret);
 	}
     }
@@ -405,7 +405,7 @@ parameter_proc(int argcount, char **argvec)
   elog_init(argcount, argvec);
 
   /* Initialize the verbosity for the libslink functions */
-  sl_loginit (verbose, &elog_printlog, NULL, &elog_printerr, NULL);
+  sl_loginit (verbose, &elog_printlog, " ", &elog_printerr, "!");
 
   sl_log (0,0, "%s version %s\n", package, version);
 
@@ -426,7 +426,7 @@ parameter_proc(int argcount, char **argvec)
   /* Read parameter file */
   if ( (pfread(paramfile, &pf)) < 0 )
     {
-      sl_log (1, 0, "error reading parameter file: %s\n", paramfile);
+      sl_log (2, 0, "error reading parameter file: %s\n", paramfile);
       exit (1);
     }
   else
@@ -467,7 +467,7 @@ parameter_proc(int argcount, char **argvec)
       stakeys = keysarr(stations);
       if (maxtbl(stakeys) <= 0)
 	{
-	  sl_log(1, 0, "'stations' array in pf is empty!\n");
+	  sl_log(2, 0, "'stations' array in pf is empty!\n");
 	  return -1;
 	}
 
@@ -479,7 +479,7 @@ parameter_proc(int argcount, char **argvec)
 	  /* Parse out the net/sta pair */
 	  if ((stap = strchr(netp, '_')) == NULL)
 	    {
-	      sl_log(1, 0, "Not in 'NET_STA' format: %s\n", netp);
+	      sl_log(2, 0, "Not in 'NET_STA' format: %s\n", netp);
 	      return -1;
 	    }
 	  *stap++ = '\0';
@@ -487,12 +487,12 @@ parameter_proc(int argcount, char **argvec)
 	  /* Check the net/sta pair */
 	  if (strlen(netp) > 5 || strlen(netp) <= 0)
 	    {
-	      sl_log(1, 0, "Problem with network code: %s\n", key);
+	      sl_log(2, 0, "Problem with network code: %s\n", key);
 	      return -1;
 	    }
 	  if (strlen(stap) > 5 || strlen(stap) <= 0)
 	    {
-	      sl_log(1, 0, "Problem with station code: %s\n", key);
+	      sl_log(2, 0, "Problem with station code: %s\n", key);
 	      return -1;
 	    }
 
@@ -534,7 +534,7 @@ parameter_proc(int argcount, char **argvec)
     {
       if (sl_recoverstate (slconn, statefile) < 0)
 	{
-	  sl_log (1, 0, "state recovery failed\n");
+	  sl_log (2, 0, "state recovery failed\n");
 	}
     }
 
@@ -655,7 +655,8 @@ dummy_handler(int sig)
 static void
 elog_printlog (char const *msg)
 {
-  elog_notify(0, "%s", msg);
+  if (msg)
+    elog_notify(0, "%s", msg+1);
 }
 
 
@@ -666,7 +667,13 @@ elog_printlog (char const *msg)
 static void
 elog_printerr (char const *msg)
 {
-  elog_complain(0, "%s", msg);
+  if (msg)
+    {
+      if (msg[0] == '!')
+        elog_complain(0, "%s", msg+1);
+      else
+        elog_notify(0, "%s", msg+1);
+    }
 }
 
 
