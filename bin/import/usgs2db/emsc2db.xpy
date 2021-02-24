@@ -8,16 +8,15 @@
 """
 
 
-# Import Antelope modules
-
-import antelope.datascope as ds
-import antelope.stock as stock
 import getopt
 import codecs
-import urllib3
+import requests
 import json
-import pprint
-import datetime
+import warnings
+
+# Import Antelope modules
+import antelope.datascope as ds
+import antelope.stock as stock
 
 
 def usage():
@@ -40,7 +39,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:k:p:u:v", "")
     except getopt.GetoptError:
-        print("illegal option")
+        elog.die("illegal option")
         usage()
         sys.exit(2)
 
@@ -78,7 +77,7 @@ def main():
     if os.path.exists(descname):
         schemaname = kdb.query("dbSCHEMA_NAME")
         if schemaname != keyschema:
-            print(
+            elog.die(
                 "keydb %s has wrong schema %s, should be %s"
                 % (keydbname, schemaname, keyschema)
             )
@@ -91,15 +90,48 @@ def main():
     try:
         idmatch = kdb.lookup(table="idmatch")
     except Exception as e:
-        print("Error :", e)
+        elog.die("fatal problem with key database:", e)
 
-    if prox_url == "":
-        http = urllib3.PoolManager(timeout=10.0)
+    if proxy_url != "":
+        if proxy_url.startswith("https"):
+            proxy = {"https": proxy_url}
+        else:
+            proxy = {"http": proxy_url}
+        with warnings.catch_warnings():
+            warnings.simplefilter(
+                "ignore"
+            )  # ignore silly warnings on SSL verification, especially needed on 5.9
+            try:
+                req = requests.get(BASE_URL, proxies=proxy, verify=False, timeout=30)
+                req.raise_for_status()
+            except requests.exceptions.HTTPError as herr:
+                elog.die("problem requesting data from %s:%s" % (BASE_URL, herr)
+            except requests.exceptions.Timeout:
+                elog.die("timeout requesting data from %s" % BASE_URL)
+            except requests.exceptions.TooManyRedirects:
+                elog.die("too many retries requesting data from %s" % BASE_URL)
+            except requests.exceptions.RequestException as e:
+                elog.die("fatal problem requesting data from %s" % BASE_URL)
+            except:
+                elog.die("unspecific problem requesting data from %s" % BASE_URL)
     else:
-        http = urllib3.ProxyManager(proxy_url, timeout=10.0)
-
-    request = http.request("GET", BASE_URL)
-    obj = json.loads(request.data.decode("utf-8"))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            try:
+                req = requests.get(BASE_URL, verify=False, timeout=30)
+                req.raise_for_status()
+            except requests.exceptions.HTTPError as herr:
+                elog.die("problem requesting data from %s:%s" % (BASE_URL, herr)
+            except requests.exceptions.Timeout:
+                elog.die("timeout requesting data from %s" % BASE_URL)
+            except requests.exceptions.TooManyRedirects:
+                elog.die("too many retries requesting data from %s" % BASE_URL)
+            except requests.exceptions.RequestException as e:
+                elog.die("fatal problem requesting data from %s" % BASE_URL)
+            except:
+                elog.die("unspecific problem requesting data from %s" % BASE_URL)
+    req.encoding = "utf8"
+    obj = req.json()
     data = obj["features"]
     i = len(data)
     for index in range(i):
@@ -178,7 +210,7 @@ def main():
         try:
             kmatch.putv(("fkey", fkey))
         except Exception as e:
-            print("Error :", e)
+            elog.die("problem writing key %s to database :", (fkey, e))
 
         matcher = kmatch.matches(idmatch, "fkey")
         rec_list = matcher()
@@ -186,7 +218,7 @@ def main():
         evid = 0
         updated_event = False
         if len(rec_list) > 1:
-            print("found too many keys, sth strange goes on here")
+            elog.notify("found too many keys for %s, sth strange goes on here" % fkey)
         if len(rec_list) > 0:
             for rec in rec_list:
                 idmatch.record = rec
@@ -205,7 +237,7 @@ def main():
 
         if new_event:
             if verbose:
-                print("new event %s" % code)
+                elog.notify("new event %s" % code)
             evid = dborigin.nextid("evid")
             orid = dborigin.nextid("orid")
             orecno = dborigin.addv(
@@ -246,14 +278,14 @@ def main():
             )
         elif updated_event:
             if verbose:
-                print("updated event %s" % code)
+                elog.notify("updated event %s" % code)
             idmatch.putv(("ftime", updated))
             kmatch = db.lookup(table="event", record="dbSCRATCH")
             kmatch.putv(("evid", evid))
             evmatcher = kmatch.matches(dbevent, "evid")
             evlist = evmatcher()
             if len(evlist) > 1:
-                print("strange, found a few matching events for evid %d " % evid)
+                elog.notify("strange, found a few matching events for evid %d " % evid)
             if len(evlist) > 0:
                 dbevent.record = evlist[0]
                 [prefor] = dbevent.getv("prefor")
@@ -263,7 +295,7 @@ def main():
                 ormatcher = kmatch.matches(dborigin, "orid")
                 orlist = ormatcher()
                 if len(orlist) > 1:
-                    print("strange, found a few origind for orid %d" % prefor)
+                    elog.notify("strange, found a few origind for orid %d" % prefor)
                 if len(orlist) > 0:
                     dborigin.record = orlist[0]
                     dborigin.putv(
@@ -284,7 +316,9 @@ def main():
                     magmatcher = kmatch.matches(dbnetmag, "orid")
                     maglist = magmatcher()
                     if len(maglist) > 1:
-                        print("strange, found a few netmags for origin %d" % prefor)
+                        elog.notify(
+                            "strange, found a few netmags for origin %d" % prefor
+                        )
                     if len(maglist) > 0:
                         dbnetmag.record = maglist[0]
                         dbnetmag.putv(
