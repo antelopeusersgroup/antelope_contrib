@@ -105,7 +105,7 @@ def main():
                 req = requests.get(BASE_URL, proxies=proxy, verify=False, timeout=30)
                 req.raise_for_status()
             except requests.exceptions.HTTPError as herr:
-                elog.die("problem requesting data from %s:%s" % (BASE_URL, herr)
+                elog.die("problem requesting data from %s:%s" % (BASE_URL, herr))
             except requests.exceptions.Timeout:
                 elog.die("timeout requesting data from %s" % BASE_URL)
             except requests.exceptions.TooManyRedirects:
@@ -121,7 +121,7 @@ def main():
                 req = requests.get(BASE_URL, verify=False, timeout=30)
                 req.raise_for_status()
             except requests.exceptions.HTTPError as herr:
-                elog.die("problem requesting data from %s:%s" % (BASE_URL, herr)
+                elog.die("problem requesting data from %s:%s" % (BASE_URL, herr))
             except requests.exceptions.Timeout:
                 elog.die("timeout requesting data from %s" % BASE_URL)
             except requests.exceptions.TooManyRedirects:
