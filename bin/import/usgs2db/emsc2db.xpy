@@ -130,7 +130,7 @@ def main():
                 elog.die("fatal problem requesting data from %s" % BASE_URL)
             except:
                 elog.die("unspecific problem requesting data from %s" % BASE_URL)
-    req.encoding = "utf8"
+    req.encoding = "utf8" # maybe not necessary...
     obj = req.json()
     data = obj["features"]
     i = len(data)
