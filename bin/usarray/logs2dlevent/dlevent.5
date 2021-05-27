@@ -1,0 +1,35 @@
+.TH DLEVENT 5 
+.SH NAME
+dlevent, dlevent_schema\- schema extentions table to track interesting events recorded in q330 datalogger log files 
+.SH DESCRIPTION
+The schema extension \fBdlevent\fP defines the dlevent table which tracks interactions 
+with the datalogger.  Development was driven by the need to track excessive mass recenters
+for the USArray TA.  This schema incorporates time values detailing the
+time that the event was logged, what type of event it was, and a capture of the actual log message. 
+
+.SH "FIELDS"
+.IP "dlname"
+Normally the compound net_sta for a given datalogger.
+.IP "time"
+Time event was noted in the log.
+.IP "dlevtype"
+Type of interaction/event with the datalogger.  Examples include "station visit", "mass recenter", 
+reboot, calibration, etc.  See logs2dlevent(1)
+.IP "dlcomment"
+Normally the captured log output regarding the event.
+.IP "lddate"
+Modification time.
+.SH "BUGS AND CAVEATS"
+This was developed for in-house use at the ANF.  It might not capture all information that a
+datacenter might need.
+.SH "SEE ALSO"
+.nf
+logs2dlevent(1)
+.fi
+.SH AUTHOR
+.nf
+Jennifer Eakins
+.br
+Univ. of California, San Diego
+.fi
+
