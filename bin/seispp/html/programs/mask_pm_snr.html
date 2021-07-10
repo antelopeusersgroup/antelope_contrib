@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>template</title>
+  </head>
+  <body>
+    <h1>mask_pm_snr</h1>
+    <h3>Usage:</h3>
+    <p>mask_pm_snr [-v --help -text -pffile] &lt; in &gt; out<br>
+    </p>
+    <h3>Algorithm:</h3>
+    This program should be viewed as a preprocessor for <a
+      href="./mwpmavg.html">mwpmavg.</a>&nbsp; The input to the program
+    is a serialized file of PMTimeSeries objects.&nbsp;&nbsp; The output
+    is a modified set of the same data that would normally be passed
+    directly to <a
+href="file:///opt/antelope/5.9/src/contrib/bin/seispp/html/programs/mwpmavg.html">mwpmavg.</a><br>
+    <br>
+    The first this program does is scan a time window (defined by the pf
+    file) that is assumed to represent a section of background (random)
+    noise.&nbsp;&nbsp; Amplitude is defined by the length of the major
+    axis of the particle ellipse estimated at each (noise) time
+    step.&nbsp;&nbsp; The noise level is set as the median of the
+    lengths of that set of vectors.&nbsp; The program then computes a
+    minimum amplitude that it should consider signal from the parameter
+    <i>snr_floor</i>.&nbsp; The computed signal level is then used to
+    establish times of valid signal.&nbsp;&nbsp; Sections of the signal
+    where the level drops below that floor are considered
+    noise.&nbsp;&nbsp; Note there are complexities that can enter in the
+    special case when the preevent noise window is very
+    short.&nbsp;&nbsp; That feature was added to support active source
+    data where preevent times can be very short.&nbsp; It should never
+    be an issue with modern passive recording with continuous
+    data.&nbsp;&nbsp; See the pf file section for a description of how
+    to handle this special case.&nbsp;&nbsp; <br>
+    <br>
+    The program defines invalid times (below the floor) as marked time
+    gaps in the output.&nbsp;&nbsp; That is the reason the program name
+    has the keyword mask as the idea is those sections of data are then
+    masked from subsequent processing with <a
+href="file:///opt/antelope/5.9/src/contrib/bin/seispp/html/programs/mwpmavg.html">mwpmavg.</a>&nbsp;
+    There are several features that it was necessary to add to this idea
+    to make the results stable:<br>
+    <ol>
+      <li>Normally all data from the beginning (first sample of the
+        vector of particle motion ellipses) to the end of the defined
+        noise time window are marked as a gap.&nbsp;&nbsp; The
+        assumption is that all is preevent noise and shouldn't be
+        handled.</li>
+      <li>To avoid large numbers of very short gap definitions when the
+        signal level is close to the floor, the number of samples in the
+        gap must be larger than that defined by the parameter <i>minimum_samples_per_gap</i>.&nbsp;&nbsp;
+        <br>
+      </li>
+    </ol>
+    <h3>Options:</h3>
+    <p><i>-pf</i> <i>pffile<br>
+      </i>Use <i>pffile </i>instead of default (always the name of the
+      main program)<br>
+    </p>
+    <p>Standard arguments:&nbsp; DELETE THIS LINE FOR OTHER THAN
+      TEMPLATE file<br>
+    </p>
+    <h3> </h3>
+    <i>-text<br>
+    </i>Write the output in text format.&nbsp; Default is binary
+    serialized file.<br>
+    <br>
+    <i>-v<br>
+    </i>Be more verbose.&nbsp; Note all log information goes to stderr
+    so it is best to use this option only for debugging problems.<br>
+    <br>
+    --<i>help<br>
+    </i>Echo the usage line.&nbsp; <br>
+    <br>
+    <h3>Parameter file:</h3>
+    <i>snr_floor<br>
+    </i>This parameter specifies the signal level that is considered
+    valid (see above).&nbsp;&nbsp; Note the units of this parameter are
+    in decibels defined in the usual way as 20log_10
+    (A_signal/A_noise).&nbsp;&nbsp; The signal-to-noise as an amplitude
+    ratio is then 10^(snr_floor/20).&nbsp;&nbsp; <br>
+    <br>
+    <i>noise_window_start_time </i>and <i>noise_window_end_time<br>
+    </i>This pair of parameters define the time period that defines the
+    noise window for processing.&nbsp;&nbsp; Note this is useful only if
+    defined in relative time.&nbsp;&nbsp; Normally this program can only
+    work if the data are in relative time.&nbsp; That usually means the
+    output of mwpm has to be passed through the <a href="./ator.html">ator</a>
+    filter.<br>
+    <i></i><br>
+    <i>minimum_noise_samples<br>
+    </i>Defines the smallest number of samples that are allowed in a
+    valid data gap. (see above for motivation)&nbsp; <br>
+    <br>
+    <i>noise_level_key<br>
+    </i>The computed noise level is saved to the Metadata area of the
+    output data with this string access key.<br>
+    <br>
+    <i>absolute_snr_floor, force_absolute_snr_floor, </i><i>scan_for_zeros,
+    </i>and<i> floor_to_define_zero<br>
+    </i>This set of parameters are relevant only for active source data
+    where the preevent time may be short and/or the data are zero padded
+    at the front to reduce edge effects.&nbsp;&nbsp; When <i>force_absolute_snr_floor
+    </i>is true (default is false) the noise floor calculation is
+    ignored and the critical signal level is set to the value defined by
+    this parameter in a very different way.&nbsp;&nbsp; That is, the
+    program finds the largest major axis amplitude in the input and
+    computes the floor as that amplitude divided by <i>absolute_snr_floor.
+      &nbsp; </i>(Apologies for the inconsistence.&nbsp; This value is
+    NOT in dB). &nbsp; <br>
+    <br>
+    <i>scan_for_zeros</i> and <i>floor_to_define_zero</i> are a related
+    feature to handle front zero padding.&nbsp;&nbsp; <i>floor_to_define_zero
+      sets an absolute value to define a hard zero.&nbsp;&nbsp; </i>When
+    used with<i> </i><i>scan_for_zeros</i> set as true any data in the
+    preevent period with amplitude less than <i>floor_to_define_zero </i>are
+    set as a data gap in the output.&nbsp;&nbsp; <br>
+    <i></i><i></i><i></i><i></i>
+  </body>
+</html>

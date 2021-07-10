@@ -127,7 +127,7 @@ SeismicArray::SeismicArray(string fnamebase,string form)
 }
 #ifndef NO_ANTELOPE
 SeismicArray::SeismicArray(DatabaseHandle& dbi,
-	double time, string arrayname)
+	double time, string arrayname,bool require_snetsta)
 {
         const string base_error("SeismicArray database constructor:  ");
 	name=arrayname;
@@ -135,11 +135,15 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	// this constructor is call rarely or this approach is
 	// inefficient.  
 	DatascopeHandle dbh(dynamic_cast<DatascopeHandle&>(dbi));
-	dbh.natural_join("site","snetsta");
-	int ndbrows=dbh.number_tuples();
-        if(ndbrows<=0) throw SeisppError(base_error
+        dbh.lookup("site");
+        if(require_snetsta)
+        {
+	  dbh.natural_join("site","snetsta");
+          if(dbh.number_tuples()<=0) throw SeisppError(base_error
                 +"natural join of site and snetsta channel is empty\n"
                 +"You probably need an snetsta table");
+        }
+	int ndbrows=dbh.number_tuples();
 	int jdate=yearday(time);
 	int ondate=0,offdate=0;
 	dbh.rewind();
@@ -171,7 +175,10 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 				deast=dbh.get_double("deast");
 				staname=dbh.get_string("sta");
 				refsta=dbh.get_string("refsta");
-				netname=dbh.get_string("snet");
+				if(require_snetsta)
+                                    netname=dbh.get_string("snet");
+                                else
+                                    netname=arrayname;
 				// convert from external degrees to radians
 				lat=rad(lat);
 				lon=rad(lon);

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <sstream>
 #include "seispp.h"
 #include "StreamObjectReader.h"
 #include "dmatrix.h"
@@ -14,15 +15,24 @@ using namespace SEISPP;
 
 void usage()
 {
-    cerr << "export_to_matlab [-x1 x1f -x2 x2f -x3 x3f -time tfile -pf pffile] < in  "
+    cerr << "export_to_matlab_3C [-x1 x1f -x2 x2f -x3 x3f -key xx -time tfile -pf pffile] < in  "
         <<endl
-        << "Exports serialized seispp 3C ensemble to 3 matlab matrices in 3 files"<<endl
-        << "Use -x1, -x2, or -x3 to set file names for components 1, 2, 3"<<endl
-        << "Default files are x1=T.dat, x2=R.dat, and x3=L.dat"<<endl
-        << "Default names can also be changed by editing default pf file "
-        << "export_to_matlab.pf"<<endl
-        << "-time is optional.  When found a matrix of times will saved in tfile"
+        << "Exports serialized seispp 3C ensembles to 3 text files for ensemble"
         <<endl
+        << "These files can be read into matlab with load command"<<endl
+        << "WARNING:   this program can generate huge numbers of tiny files - 3 pr ensemble"
+        <<endl
+        << "Use -x1, -x2, or -x3 to set base file names for components 1, 2, 3"<<endl
+        << "Default files are x1=EW, x2=NS, and x3=Z"<<endl
+        << "Default names can be changed by editing default pf file "
+        << "export_to_matlab_3C.pf"<<endl
+        << "Use -key xx to set metadata key used to construct file names"<<endl
+        << "File names are created as basename_key.mat (e.g. EW_224.mat)"<<endl
+        << "WARNING:  key must be unique for each ensemble or data may be lost"
+        <<endl
+        << "-time is optional.  When found a matrix of times will saved in tfile_key.mat "
+        <<endl
+        << "(i.e. adds a 4th file for each ensemble"<<endl
         << "(Note:  tfile cannot be set with pf - only through command line"
         <<endl
         << "(Accepts only binary format input)"<<endl;
@@ -38,7 +48,7 @@ vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
   double dt;
   for(i=0,dptr=d.member.begin();dptr!=d.member.end();++dptr)
   {
-    if(dptr->tref == absolute) dptr->ator(dptr->t0);
+    //if(dptr->tref == absolute) dptr->ator(dptr->t0);
     if(i==0)
     {
       tmin=dptr->time(0);
@@ -53,7 +63,7 @@ vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
       sample rates */
       if(fabs(dt-dptr->dt)>0.0001)
       {
-        cerr << "export_to_matlab:  Mixmatched sample rates in Three C ensemble"<<endl
+        cerr << "export_to_matlab_3C:  Mixmatched sample rates in Three C ensemble"<<endl
           << "This program requires fixed sample rate"<<endl
           << "Member "<<i<<" has dt="<<dptr->dt<<" put previous members had dt="
           << dt<<endl<<"No output will be generated"<<endl;
@@ -61,7 +71,14 @@ vector<dmatrix> convert_to_matrices(ThreeComponentEnsemble& d)
       }
     }
   }
-  cout << "Relative time range of output data is "<<tmin <<" to "<<tmax<<endl;
+  /* Assume we don't have a mix of absolute and relative time */
+  bool is_absolute(false);
+  if(d.member[0].tref == absolute) is_absolute=true;
+  if(is_absolute)
+      cout << "Time range of output data is "<<strtime(tmin) <<" to "
+          << strtime(tmax)<<endl;
+  else
+      cout << "Relative time range of output data is "<<tmin <<" to "<<tmax<<endl;
   int n=d.member.size();
   int m=(tmax-tmin)/dt;
   cout << "Output matrices will be of size "<<m<<"X"<<n<<endl;
@@ -114,15 +131,41 @@ dmatrix time_matrix(ThreeComponentEnsemble& d,int nrows)
         return tmat;
     }catch(...){throw;};
 }
+string make_fname(string base,ThreeComponentEnsemble& d,string mdkey)
+{
+    int mdval;
+    try{
+        mdval=d.get<int>(mdkey);
+    }catch(SeisppError& serr)
+    {
+        cerr << "export_to_matlab_3C:"
+          <<"  error trying to extract integer value from ensemble with key="
+          <<mdkey<<endl
+          <<"Attempting to extract value from first member of ensemble"<<endl;
+        try{
+            mdval=d.member[0].get<int>(mdkey);
+            cerr << "Success - will try to continue"<<endl;
+        }catch(SeisppError& serr)
+        {
+            cerr << "Failed to find data for key="<<mdkey<<endl
+                << "Exiting - use listhdr to select a different attribute"
+                <<endl;
+            exit(-1);
+        }
+    }
+    stringstream ss;
+    ss<<base<<"_"<<mdval<<".mat";
+    return ss.str();
+}
 
 bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
 
     int i;
-    char *pffile=strdup("export_to_matlab");
+    char *pffile=strdup("export_to_matlab_3C");
     bool save_time_matrix(false);
-    string timefile("");
+    string timefbase("");
 
     /* We have to pass through the arg list twice - the first pass 
        is just to set alterntive pf if requested */
@@ -144,9 +187,10 @@ int main(int argc, char **argv)
           exit(-1);
         }
         Metadata control(pf);
-        string x1file=control.get_string("component1_filename");
-        string x2file=control.get_string("component2_filename");
-        string x3file=control.get_string("component3_filename");
+        string x1base=control.get_string("component1_basename");
+        string x2base=control.get_string("component2_basename");
+        string x3base=control.get_string("component3_basename");
+        string key=control.get_string("ensemble_metadata_key");
         for(i=1;i<argc;++i)
         {
           string sarg(argv[i]);
@@ -160,19 +204,25 @@ int main(int argc, char **argv)
           {
             ++i;
             if(i>=argc)usage();
-            x1file=string(argv[i]);
+            x1base=string(argv[i]);
           }
           else if(sarg=="-x2")
           {
             ++i;
             if(i>=argc)usage();
-            x2file=string(argv[i]);
+            x2base=string(argv[i]);
           }
           else if(sarg=="-x3")
           {
             ++i;
             if(i>=argc)usage();
-            x3file=string(argv[i]);
+            x3base=string(argv[i]);
+          }
+          else if(sarg=="-key")
+          {
+            ++i;
+            if(i>=argc)usage();
+            key=string(argv[i]);
           }
           else if(sarg=="-time")
           {
@@ -180,31 +230,41 @@ int main(int argc, char **argv)
             if(i>=argc)usage();
 
             save_time_matrix=true;
-            timefile=string(argv[i]);
+            timefbase=string(argv[i]);
           }
           else
             usage();
         }
         StreamObjectReader<ThreeComponentEnsemble> ia;
         ThreeComponentEnsemble d;
-        d=ia.read();
-        vector<dmatrix> dmat=convert_to_matrices(d);
         ofstream ofs;
-        ofs.open(x1file.c_str(),ios::out);
-        ofs<<dmat[0];
-        ofs.close();
-        ofs.open(x2file.c_str(),ios::out);
-        ofs<<dmat[1];
-        ofs.close();
-        ofs.open(x3file.c_str(),ios::out);
-        ofs<<dmat[2];
-        ofs.close();
-        if(save_time_matrix)
+        string x1file,x2file,x3file,timefile;
+        while(ia.good())
         {
-            dmatrix t=time_matrix(d,dmat[0].rows());
-            ofs.open(timefile.c_str(),ios::out);
-            ofs<<t;
-            ofs.close();
+          d=ia.read();
+          vector<dmatrix> dmat=convert_to_matrices(d);
+          x1file=make_fname(x1base,d,key);
+          ofs.open(x1file.c_str(),ios::out);
+          ofs<<dmat[0];
+          ofs.close();
+          x2file=make_fname(x2base,d,key);
+          ofs.open(x2file.c_str(),ios::out);
+          ofs<<dmat[1];
+          ofs.close();
+          x3file=make_fname(x3base,d,key);
+          ofs.open(x3file.c_str(),ios::out);
+          ofs<<dmat[2];
+          ofs.close();
+          if(save_time_matrix)
+          {
+              //Assume if the first is absolute all are
+              if(d.member[0].tref == absolute) ofs<<std::setprecision(15);
+              dmatrix t=time_matrix(d,dmat[0].rows());
+              timefile=make_fname(timefbase,d,key);
+              ofs.open(timefile.c_str(),ios::out);
+              ofs<<t;
+              ofs.close();
+          }
         }
     }catch(SeisppError& serr)
     {

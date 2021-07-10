@@ -197,8 +197,9 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 	        double treference=str2epoch(const_cast<char *>
 	                        (time_stamp.c_str()));
 		netname=global_md.get_string("network_name");
+                bool require_snetsta=global_md.get_bool("require_snetsta");
 		stations= SeismicArray(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
-                                        treference,netname);
+                                        treference,netname,require_snetsta);
 		if(stations.array.size()<=0)
 			throw SeisppError(base_error
 			  + string("Found no stations marked on at event time"));
@@ -1804,9 +1805,17 @@ void XcorProcessingEngine::UpdateGeometry(TimeWindow twin)
 	}
 	else
 	{
+            /* This is done with a get because this was a retrofit.  
+             * Previously require_snetsta was not in the SeismicArray 
+             * constructor */
+            bool require=global_md.get_bool("require_snetsta");
+            if(require)
 		stations=SeismicArray(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
-			twin.start,netname);
-		load_subarrays_from_pf(stations,pf_used_by_engine);
+			twin.start,netname,true);
+            else
+		stations=SeismicArray(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
+			twin.start,netname,false);
+	    load_subarrays_from_pf(stations,pf_used_by_engine);
 	}
 	if(stations.array.size()<=0)
 		throw SeisppError(string("XcorProcessingEngine::UpdateGeometry -- network name=")

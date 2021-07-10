@@ -249,7 +249,7 @@ dvector operator*(const dmatrix& x1,const dvector& b)
 	dvector prod(nrx1);
 	for(i=0;i<nrx1;i++)
 		prod(i)=ddot(nrb,
-			const_cast<dmatrix&>(x1).get_address(i,0),ncx1,
+			const_cast<dmatrix&>(x1).get_address(i,0),nrx1,
 			const_cast<dvector&>(b).get_address(0,0),1);
 	return prod;
 }

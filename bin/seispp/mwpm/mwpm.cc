@@ -155,6 +155,7 @@ int main(int argc, char **argv)
              should be a parameter. */ 
             for(j=0;j<nbands;++j)
             {
+             try{
               PMTimeSeries pmts;
               if(avlen>1)
                 pmts=PMTimeSeries(*dmwt,j,pmdt,avlen,confidence,bsmultiplier,
@@ -172,6 +173,15 @@ int main(int argc, char **argv)
                   << pmts.dt<<" "<<pmts.ns<<" "<<pmts.t0<<endl;
                   */
               out->write(pmts);
+             }catch(SeisppError& serr)
+             {
+               cerr << "Error in processing for object number "<<n
+                   <<" for band="<<endl
+                   << "The following error message was posted:"<<endl;
+               serr.log_error();
+               cerr << "No output will be created for this seismogram and band"
+                   <<endl;
+             }
             }
             ++n;
         }
@@ -183,10 +193,12 @@ int main(int argc, char **argv)
     }catch(SeisppError& serr)
     {
         serr.log_error();
+        exit(-1);
     }
     catch(std::exception& stexc)
     {
         cerr << stexc.what()<<endl;
+        exit(-2);
     }
 }
 
