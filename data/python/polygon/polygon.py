@@ -26,10 +26,25 @@ def readpolygon(db):
     retval = _polygon._readpolygon(mydb)
     return retval
 
-def writepolygon(db, polygon, pname, closed, level, ptype, auth, mydir="polygons", dfile="polygon.bin"):
+
+def writepolygon(
+    db,
+    polygon,
+    pname,
+    closed,
+    level,
+    ptype,
+    auth,
+    mydir="polygons",
+    dfile="polygon.bin",
+):
     mydb = [db.database, db.table, db.field, db.record]
-    retval = _polygon._writepolygon(mydb, polygon, pname, closed, level, ptype, auth, mydir, dfile)
+
+    retval = _polygon._writepolygon(
+        mydb, polygon, pname, closed, level, ptype, auth, mydir, dfile
+    )
     return retval
+
 
 def windrose(azimuth):
     """windrose"""
