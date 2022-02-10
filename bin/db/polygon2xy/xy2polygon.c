@@ -35,7 +35,7 @@ main(int argc, char **argv)
 	int             level = 0;
 	int             closed = 0, close = 0;
 	int             maxpoints = 50000;
-	Point          *poly = malloc(maxpoints * sizeof(double));
+	Point          *poly = malloc(2 * maxpoints * sizeof(double));
 	double          lat, lon;
 
 	long             npoints;
@@ -189,7 +189,7 @@ main(int argc, char **argv)
 			lat = atof(str2);
 			if (npoints > maxpoints - 2) {
 				maxpoints += 5000;
-				poly = realloc(poly, maxpoints);
+				poly = realloc(poly, 2 * maxpoints);
 			}
 			poly[npoints].lat = lat;
 			poly[npoints].lon = lon;
