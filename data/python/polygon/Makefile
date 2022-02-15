@@ -3,9 +3,9 @@ DLIB=python__polygon$(DSUFFIX)
 
 DATADIR= python/zamg
 
-DATA= $(DSDLIB) polygon.py __init__.py 
+DATA= $(DSDLIB) polygon.py polygon_utils.py __init__.py 
 
-MAN3Y= pythonpolygon.3y
+MAN3Y= pythonpolygon.3y polygon_utils.3y
 
 CLEAN= *.pyc *.so
 

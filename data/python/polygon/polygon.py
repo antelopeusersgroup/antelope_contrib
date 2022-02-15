@@ -22,6 +22,7 @@ def distancetopolygon(db, lat, lon):
 
 
 def readpolygon(db):
+
     mydb = [db.database, db.table, db.field, db.record]
     retval = _polygon._readpolygon(mydb)
     return retval
