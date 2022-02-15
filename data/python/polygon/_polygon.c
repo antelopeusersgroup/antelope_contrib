@@ -94,10 +94,9 @@ static PyObject *python_readpolygon (PyObject * self, PyObject * args)
     char *usage = "Usage: poly = _polygon._readpolygon( dbin )\n";
     Dbptr db;
     Point *poly;
-    //char pname[STRSZ];
-    long npolygons, nvertices;
+    long nvertices;
     PyObject *obj;
-    PyObject *poby;
+    PyObject *pobj;
 
     if (!PyArg_ParseTuple (args, "O&", parse_to_Dbptr, &db)) {
 
@@ -108,21 +107,33 @@ static PyObject *python_readpolygon (PyObject * self, PyObject * args)
     if (db.table < 0) {
         db = dblookup (db, 0, "polygon", 0, 0);
     }
-    dbquery (db, dbRECORD_COUNT, &npolygons);
-    obj = PyList_New (npolygons);
-    //could check here if we have more than one polygon
-    for (db.record = 0; db.record < npolygons; db.record++) {
+        
+    if (db.record < 0) {    
+        long npolygons;
+        dbquery (db, dbRECORD_COUNT, &npolygons);
+        obj = PyList_New (npolygons);
+        for (db.record = 0; db.record < npolygons; db.record++) {
+            nvertices = readPolygon (db, &poly);
+            pobj = PyList_New (nvertices);
+            for (int i = 0; i < nvertices; i++) {
+                PyObject *item = PyTuple_New (2);
+                PyTuple_SET_ITEM (item, 0, PyFloat_FromDouble (poly[i].lon));
+                PyTuple_SET_ITEM (item, 1, PyFloat_FromDouble (poly[i].lat));
+                PyList_SetItem (pobj, i, item);
+            }
+            free (poly);
+            PyList_SetItem (obj, db.record, pobj);
+        }
+    } else {
         nvertices = readPolygon (db, &poly);
-        poby = PyList_New (nvertices);
-        //dbgetv(db, 0, "pname", &pname); 
+        obj = PyList_New (nvertices);
         for (int i = 0; i < nvertices; i++) {
             PyObject *item = PyTuple_New (2);
             PyTuple_SET_ITEM (item, 0, PyFloat_FromDouble (poly[i].lon));
             PyTuple_SET_ITEM (item, 1, PyFloat_FromDouble (poly[i].lat));
-            PyList_SetItem (poby, i, item);
+            PyList_SetItem (obj, i, item);
         }
         free (poly);
-        PyList_SetItem (obj, db.record, poby);
     }
 
     return obj;
