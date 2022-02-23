@@ -17,20 +17,29 @@ dbf = p.inwhichpolygons(db, 47, 16)
 for dbf.record in range(dbf.query(ds.dbRECORD_COUNT)):
     [pid,pname]=dbf.getv('pid','pname')
     print("place (47/46) found in %s (%d)" % (pname,pid))
+
+dbname = "polygondb"     
+ds.dbcreate(dbname,"polygon1.2")
+db2 = ds.dbopen(dbname, "r+")
+myrecord = p.writepolygon(db2, pd[0], "Hallo2", False, 0,"cm","Niko","polygons","myfile.bin")
 .fi
 .SH DESCRIPTION
 Python interface to the polygon library
 
-.SH OPTIONS
+.SH FUNCTIONS
 .SS inwhichpolygons
 return database view with all polygons enclosing the point specified by \fBlat\fP and \fBlon\fP.
 .SS windrose
 return azimuthal direction in textual form 90->E, 135->SE and so on.
 .SS distancetopolygon
 return minimum distance to polygon(s) in a database
+.SS readpolygon
+return polygons found
+.SS writepolygon
+write polygons
 .SH "SEE ALSO"
 .nf
-antelope_python(3y), polygon(3)
+antelope_python(3y), polygon_utilities(3y), polygon(3)
 .fi
 .SH "BUGS AND CAVEATS"
 This interface probably adds a few bugs to the polygon library.
