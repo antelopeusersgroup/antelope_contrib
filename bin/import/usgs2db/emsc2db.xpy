@@ -130,7 +130,7 @@ def main():
                 elog.die("fatal problem requesting data from %s" % BASE_URL)
             except:
                 elog.die("unspecific problem requesting data from %s" % BASE_URL)
-    req.encoding = "utf8" # maybe not necessary...
+    req.encoding = "utf8"  # maybe not necessary...
     obj = req.json()
     data = obj["features"]
     i = len(data)
@@ -236,46 +236,81 @@ def main():
             new_event = True
 
         if new_event:
+            problem = False
             if verbose:
                 elog.notify("new event %s" % code)
             evid = dborigin.nextid("evid")
             orid = dborigin.nextid("orid")
-            orecno = dborigin.addv(
-                ("time", etime),
-                ("lat", lat),
-                ("lon", lon),
-                ("depth", depth),
-                ("evid", evid),
-                ("orid", orid),
-                ("jdate", jdate),
-                ("mb", mb),
-                ("ml", ml),
-                ("ms", ms),
-                ("nass", 0),
-                ("ndef", 0),
-                ("auth", auth),
-                ("grn", gr),
-                ("srn", sr),
-            )
-            erecno = dbevent.addv(
-                ("evid", evid),
-                ("prefor", orid),
-                ("evname", evname[:evname_width]),
-                ("auth", auth),
-            )
-            nmrecno = dbnetmag.addv(
-                ("evid", evid),
-                ("orid", orid),
-                ("magnitude", mag),
-                ("magtype", magtype),
-                ("auth", auth),
-            )
-            idmatch.addv(
-                ("fkey", fkey),
-                ("keyname", "evid"),
-                ("keyvalue", evid),
-                ("ftime", updated),
-            )
+            try:
+                orecno = dborigin.addv(
+                    ("time", etime),
+                    ("lat", lat),
+                    ("lon", lon),
+                    ("depth", depth),
+                    ("evid", evid),
+                    ("orid", orid),
+                    ("jdate", jdate),
+                    ("mb", mb),
+                    ("ml", ml),
+                    ("ms", ms),
+                    ("nass", 0),
+                    ("ndef", 0),
+                    ("auth", auth),
+                    ("grn", gr),
+                    ("srn", sr),
+                )
+            except Exception as __:
+                problem = True
+                if verbose:
+                    elog.notify(
+                        "problem adding origin for event at %s" % stock.strtime(etime)
+                    )
+
+            if not problem:
+                try:
+                    erecno = dbevent.addv(
+                        ("evid", evid),
+                        ("prefor", orid),
+                        ("evname", evname[:evname_width]),
+                        ("auth", auth),
+                    )
+                except Exception as __:
+                    if verbose:
+                        problem = True
+                        elog.notify(
+                            "problem adding event for events at %s"
+                            % stock.strtime(etime)
+                        )
+            if not problem:
+                try:
+                    nmrecno = dbnetmag.addv(
+                        ("evid", evid),
+                        ("orid", orid),
+                        ("magnitude", mag),
+                        ("magtype", magtype),
+                        ("auth", auth),
+                    )
+                except Exception as __:
+                    if verbose:
+                        problem = True
+                        elog.notify(
+                            "problem adding netmap for event at %s"
+                            % stock.strtime(etime)
+                        )
+            if not problem:
+                try:
+                    idmatch.addv(
+                        ("fkey", fkey),
+                        ("keyname", "evid"),
+                        ("keyvalue", evid),
+                        ("ftime", updated),
+                    )
+                except Exception as __:
+                    if verbose:
+                        problem = True
+                        elog.notify(
+                            "problem adding id for event at %s" % stock.strtime(etime)
+                        )
         elif updated_event:
             if verbose:
                 elog.notify("updated event %s" % code)
