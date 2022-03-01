@@ -1,5 +1,6 @@
 
 # reb2db for IMS1.0, IMS1.0:SHORT, and GSE2.0 format REB bulletins
+# this version modified by Nikolaus Horn also for IMS2.0, IMS2.0:SHORT and ARRIVALS
 #
 # Kent Lindquist
 # Geophysical Institute
@@ -11,7 +12,9 @@
 # March 2006 case insensitive state switching, following data seen from ISC
 # July 2006	 no assocs, no stamags for arrivals that have been forced
 #            no arrivals if preceeeding event had NO origins (seen on ISC webpage)!
-#			 allow for multiple origins, assuming last one is preferred (ISC practice)
+#	 		 allow for multiple origins, assuming last one is preferred (ISC practice)
+# Niko Horn
+# March 2022: IMS2.0 and such
 
 use Datascope;
 
@@ -55,7 +58,7 @@ sub init_globals {
     $State = "startup";
 
     # format change ~ Aug 2005
-    #$Event_unpack{"IMS1.0-line1"} = "A22 A1 x A5 x A5 x A8 x A9 A1 x A4 " .
+    #   $Event_unpack{"IMS1.0-line1"} = "A22 A1 x A5 x A5 x A8 x A9 A1 x A4 " .
     $Event_unpack{"IMS1.0-line1"} =
         "A22 A1 x A5 x A5 x A8 x A9 A1 A5 "
       . "x A5 x A3 x A5 A1 x A4 x A4 x A4 x A3 x A6 x A6 x A1 x A1 x A2 "
@@ -71,8 +74,12 @@ sub init_globals {
     ];
 
     $Event_unpack{"IMS1.0:SHORT-line1"} = $Event_unpack{"IMS1.0-line1"};
+    $Event_unpack{"IMS2.0-line1"}       = $Event_unpack{"IMS1.0-line1"};
+    $Event_unpack{"IMS2.0:SHORT-line1"} = $Event_unpack{"IMS1.0-line1"};
 
     $Event_names{"IMS1.0:SHORT-line1"} = $Event_names{"IMS1.0-line1"};
+    $Event_names{"IMS2.0-line1"}       = $Event_names{"IMS1.0-line1"};
+    $Event_names{"IMS2.0:SHORT-line1"} = $Event_names{"IMS1.0-line1"};
 
     $Event_unpack{"GSE2.0-line1"} =
         "A21 x A1 x2 A8 x A9 x A1 x2 A5 x "
@@ -99,7 +106,7 @@ sub init_globals {
     ];
 
     $Phase_unpack{"IMS1.0"} = "A5 x A6 x A5 x A8 x A12 x A5 x A5 x A5 x "
-      . "A6 x A6 x A1 A1 A1 x A5 x A9 x A5 x A1 A1 A1 x A5 A1 A4 x A9";
+      . "A6 x A6 x A1 A1 A1 x A5 x A9 x A5 x A1 A1 A1 x A5 A1 A4 x A8";
 
     $Phase_names{"IMS1.0"} = [
         "ph_sta",     "ph_delta",   "ph_esaz",    "ph_code",
@@ -111,8 +118,12 @@ sub init_globals {
     ];
 
     $Phase_unpack{"IMS1.0:SHORT"} = $Phase_unpack{"IMS1.0"};
+    $Phase_unpack{"IMS2.0"}       = $Phase_unpack{"IMS1.0"};
+    $Phase_unpack{"IMS2.0:SHORT"} = $Phase_unpack{"IMS1.0"};
 
     $Phase_names{"IMS1.0:SHORT"} = $Phase_names{"IMS1.0"};
+    $Phase_names{"IMS2.0"}       = $Phase_names{"IMS1.0"};
+    $Phase_names{"IMS2.0:SHORT"} = $Phase_names{"IMS1.0"};
 
     $Phase_unpack{"GSE2.0"} = "A5 x A6 x A5 x A1 A1 A1 x A7 x A21 x A5 x "
       . "A5 x A6 x A5 x A5 x A1 A1 A1 x A5 x A9 x A5 x A2 A4 x A2 A4 x A8";
@@ -134,8 +145,12 @@ sub init_globals {
     ];
 
     $Mag_unpack{"IMS1.0:SHORT"} = $Mag_unpack{"IMS1.0"};
+    $Mag_unpack{"IMS2.0"}       = $Mag_unpack{"IMS1.0"};
+    $Mag_unpack{"IMS2.0:SHORT"} = $Mag_unpack{"IMS1.0"};
 
     $Mag_names{"IMS1.0:SHORT"} = $Mag_names{"IMS1.0"};
+    $Mag_names{"IMS2.0"}       = $Mag_names{"IMS1.0"};
+    $Mag_names{"IMS2.0:SHORT"} = $Mag_names{"IMS1.0"};
 
     use vars qw(%Phase_unpack %Event_unpack %Mag_unpack
       $or_strike $or_antype $or_deptherr $or_smaj $or_smin
@@ -163,6 +178,8 @@ sub stateswitch {
         $format = uc($1);
         if (   $format ne "IMS1.0"
             && $format ne "IMS1.0:SHORT"
+            && $format ne "IMS2.0"
+            && $format ne "IMS2.0:SHORT"
             && $format ne "GSE2.0" )
         {
             die(    "File $ARGV Not in IMS1.0, IMS1.0:SHORT, "
@@ -192,6 +209,7 @@ sub stateswitch {
         $subformat = uc($1);
         $format    = uc($2);
         if (   $format ne "IMS1.0"
+            && $format ne "IMS2.0"
             && $format ne "GSE2.0"
             && $subformat ne "AUTOMATIC"
             && $subformt ne "REVIEWED"
@@ -393,7 +411,11 @@ sub write_net_magnitude {
         write_netmag_row( $or_magtype2, $or_mag2, $or_magnsta2, $or_mag2err );
         write_netmag_row( $or_magtype3, $or_mag3, $or_magnsta3, $or_mag3err );
 
-    } elsif ( $format eq "IMS1.0" || $format eq "IMS1.0:SHORT" ) {
+    } elsif ( $format eq "IMS1.0"
+        || $format eq "IMS1.0:SHORT"
+        || $format eq "IMS2.0"
+        || $format eq "IMS2.0:SHORT" )
+    {
 
         write_netmag_row( $mag_type, $mag_val, $mag_nsta, $mag_err );
 
@@ -443,13 +465,16 @@ sub write_hypocenter {
             "jdate", yearday( str2epoch($or_timestr) ),
             "nass",  $or_ndef,
             "ndef",  $or_ndef,
+
             #	"ndp", ndp,
             "grn",   grn( $or_lat, $or_lon ),
             "srn",   srn( $or_lat, $or_lon ),
             "etype", etype(),
+
             #	"review", review,
             #	"depdp", depdp,
             "dtype", dtype(),
+
             #	"mb", mb,
             #	"mbid", mbid,
             #	"ms", ms,
@@ -458,6 +483,7 @@ sub write_hypocenter {
             #	"mlid", mlid,
             "algorithm", loc_algorithm(),
             "auth",      $or_auth
+
               #	"commid", commid
         );
     };
@@ -573,8 +599,11 @@ sub write_phase {
     # sometimes returned that echo the magnitude field:
     if ( $ph_sta eq "" ) { return; }
 
-    if ( $format eq "IMS1.0" || $format eq "IMS1.0:SHORT" ) {
-
+    if (   $format eq "IMS1.0"
+        || $format eq "IMS1.0:SHORT"
+        || $format eq "IMS2.0"
+        || $format eq "IMS2.0:SHORT" )
+    {
         # Another problem seen with data from ISC:
         # almost blank lines with amplitude and phase,
         # without time and phasename
@@ -755,9 +784,9 @@ sub event {
 
     local ($key);
 
-    if ( $line =~ /^\s*Date\s+Time/ )           { return; }
-    if ( $line =~ /^\s*rms\s+OT_Error/ )        { return; }
-    if ( $line =~ /^\s*\(.*\)\s*$/ )            { return; }    # comment
+    if ( $line =~ /^\s*Date\s+Time/ )    { return; }
+    if ( $line =~ /^\s*rms\s+OT_Error/ ) { return; }
+    if ( $line =~ /^\s*\(.*\)\s*$/ )     { return; }    # comment
     if ( $format eq "GSE2.0" && $line !~ /\d/ ) { return; }    # gregion name
 
     if ( $format eq "GSE2.0" ) {
@@ -774,6 +803,8 @@ sub event {
 
     if (   $format eq "IMS1.0"
         || $format eq "IMS1.0:SHORT"
+        || $format eq "IMS2.0"
+        || $format eq "IMS2.0:SHORT"
         || ( $format eq "GSE2.0" && $Event_line == 2 ) )
     {
 
@@ -825,7 +856,7 @@ if ( $#ARGV < 1 ) {
     die "Usage: reb2db filename [filename ...] dbname\n";
 } else {
     $dbname = pop(@ARGV);
-    @Db     = dbopen( $dbname, "r+" );
+    @Db = dbopen( $dbname, "r+" );
 }
 
 init_globals;
