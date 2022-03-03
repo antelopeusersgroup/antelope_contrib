@@ -617,8 +617,15 @@ sub write_phase {
 
         $origin_time = str2epoch($or_timestr);
 
-        $arrival_time =
-          str2epoch( strdate($origin_time) ) + str2epoch($ph_arrtime);
+        # wrap around a know issue with the perl interface
+        if ( $ph_arrtime eq "00:00:00.000" ) {
+            $arrival_time = $origin_time;
+        } else {
+            $arrival_time = $origin_time + str2epoch($ph_arrtime);
+        }
+
+        #        $arrival_time =
+        #          str2epoch( strdate($origin_time) ) + str2epoch($ph_arrtime);
 
         if ( $arrival_time < $origin_time ) {
 
