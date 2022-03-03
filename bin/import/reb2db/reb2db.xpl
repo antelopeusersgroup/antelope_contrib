@@ -18,13 +18,13 @@
 
 use Datascope;
 
-use vars qw($opt_d);
+use vars qw($opt_d $opt_v);
 
 use Getopt::Std;
 
-if ( !getopts('d') || @ARGV < 2 ) {
+if ( !getopts('dv') || @ARGV < 2 ) {
 
-    die("Usage: $0 [-d] filename [filename ...] database\n");
+    die("Usage: $0 [-avd] filename [filename ...] database\n");
 
 }
 
@@ -191,7 +191,8 @@ sub stateswitch {
     if ( $line =~ /^\s*EVENT\s+(\d+)/i ) {
         $evid = $1;
         if ( $State eq "startup" ) {
-            print STDERR "No DATA_TYPE line--assume IMS1.0 format\n";
+            print STDERR "No DATA_TYPE line--assume IMS1.0 format\n"
+              if ($opt_v);
             $format = "IMS1.0";
         }
         $State       = "event";
@@ -490,9 +491,11 @@ sub write_hypocenter {
     if ($@) {
 
         # ISC gives multiple origins, and sometimes the last one is a repetition
-        print STDERR "\nWarning: problem adding origin:\n $@";
-        print STDERR
+        if ($opt_v) {
+            print STDERR "\nWarning: problem adding origin:\n $@";
+            print STDERR
 "...Forcing the addition of orid $orid from file '$ARGV' (evid $evid auth $or_auth)\n\n";
+        }
         $Db[3] = dbaddnull(@Db);
         dbputv(
             @Db,
@@ -680,9 +683,11 @@ sub write_phase {
     };
 
     if ($@) {
-        print STDERR "\nWarning: problem adding phase:\n $@";
-        print STDERR
+        if ($opt_v) {
+            print STDERR "\nWarning: problem adding phase:\n $@";
+            print STDERR
 "...Forcing the addition of arid $ph_arid from file '$ARGV' (orid $orid evid $evid)\n\n";
+        }
         $Db[3] = dbaddnull(@Db);
         dbputv(
             @Db,
