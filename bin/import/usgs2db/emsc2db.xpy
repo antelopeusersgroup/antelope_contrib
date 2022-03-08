@@ -17,13 +17,16 @@ import warnings
 # Import Antelope modules
 import antelope.datascope as ds
 import antelope.stock as stock
+import antelope.elog as elog
 
 
-def usage():
-    print(sys.argv[0], "[-v] [-p proxy_url]  [-a auth] [-k keydb] [-u url] dbname")
+def usage(progname):
+    print(progname, "[-v] [-p proxy_url]  [-a auth] [-k keydb] [-u url] dbname")
 
 
 def main():
+    progname = sys.argv[0].split("/")[-1]
+    elog.init(progname)
     BASE_URL = (
         "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
     )
@@ -40,7 +43,7 @@ def main():
         opts, args = getopt.getopt(sys.argv[1:], "a:k:p:u:v", "")
     except getopt.GetoptError:
         elog.die("illegal option")
-        usage()
+        usage(progname)
         sys.exit(2)
 
     for o, a in opts:
@@ -56,7 +59,7 @@ def main():
             proxy_url = a
 
     if len(args) > 1 or len(args) < 1:
-        usage()
+        usage(progname)
         sys.exit(1)
 
     if len(args) > 0:
@@ -142,11 +145,18 @@ def main():
         lon = float(coordinates[0])
         lat = float(coordinates[1])
         depth = float(coordinates[2])
-        if depth < 0.0:
-            depth = depth * -1.0
+        depth *= -1.0
         properties = fdata["properties"]
         mb = ms = ml = mlnull
-        time = status = cdi = place = code = felt = mag = magtype = net = evtype = ""
+        time = (
+            status
+        ) = (
+            cdi
+        ) = (
+            place
+        ) = (
+            code
+        ) = felt = mag = magtype = net = evtype = auth_str = unid = source_id = ""
         ml = mb = ms = mlnull
         # be sure to convert unicode objects to string objects by calling "str(xxx)",
         # this prevents datascope  from CRASHING
@@ -175,11 +185,11 @@ def main():
             elif propk == "net":
                 net = str(propv)
             elif propk == "auth":
-                net = str(propv)
-            elif propk == "code":
-                code = str(propv)
+                auth_str = str(propv)
+            elif propk == "unid":
+                unid = str(propv)
             elif propk == "source_id":
-                code = str(propv)
+                source_id = str(propv)
             elif propk == "updated":
                 updated = propv / 1000.0
             elif propk == "lastupdate":
@@ -204,13 +214,13 @@ def main():
         sr = stock.srnumber(lat, lon)
         jdate = stock.epoch2str(etime, "%Y%j")
 
-        fkey = str("%s%s" % (net, code))
+        # fkey = str("%s%s" % (net, code))
 
         kmatch = idmatch.lookup(table="idmatch", record="dbSCRATCH")
         try:
-            kmatch.putv(("fkey", fkey))
+            kmatch.putv(("fkey", unid))
         except Exception as e:
-            elog.die("problem writing key %s to database :", (fkey, e))
+            elog.die("problem writing key %s to matcher :", (unid, e))
 
         matcher = kmatch.matches(idmatch, "fkey")
         rec_list = matcher()
@@ -218,7 +228,7 @@ def main():
         evid = 0
         updated_event = False
         if len(rec_list) > 1:
-            elog.notify("found too many keys for %s, sth strange goes on here" % fkey)
+            elog.notify("found too many keys for %s, sth strange goes on here" % unid)
         if len(rec_list) > 0:
             for rec in rec_list:
                 idmatch.record = rec
@@ -300,7 +310,7 @@ def main():
             if not problem:
                 try:
                     idmatch.addv(
-                        ("fkey", fkey),
+                        ("fkey", unid),
                         ("keyname", "evid"),
                         ("keyvalue", evid),
                         ("ftime", updated),
