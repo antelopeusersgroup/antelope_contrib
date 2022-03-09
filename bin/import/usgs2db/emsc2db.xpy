@@ -248,7 +248,7 @@ def main():
         if new_event:
             problem = False
             if verbose:
-                elog.notify("new event %s" % code)
+                elog.notify("new event %s" % unid)
             evid = dborigin.nextid("evid")
             orid = dborigin.nextid("orid")
             try:
@@ -323,7 +323,7 @@ def main():
                         )
         elif updated_event:
             if verbose:
-                elog.notify("updated event %s" % code)
+                elog.notify("updated event %s" % unid)
             idmatch.putv(("ftime", updated))
             kmatch = db.lookup(table="event", record="dbSCRATCH")
             kmatch.putv(("evid", evid))
