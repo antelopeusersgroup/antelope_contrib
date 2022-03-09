@@ -1,3 +1,36 @@
+2019.108: 1.8
+	- Finish initial documentation generation system.
+
+2019.223:
+	- Allow host and port to be separated with '@', e.g. host@port to 
+	allow for numeric IPv6 address usage.
+
+2019.201:
+	- Change licensing to Apache License 2.
+	- Update Makefile to include an install method, common shared target.
+	- Remove support for Watcom-related wmake files.
+	- Fix internal time calculation for years beyond 2038.
+
+2019.199:
+	- Support for IPv6 connections, conversion to pure getaddrinfo() usage.
+	- Incorporate platform-specific declarations into libdali.h.
+
+2017.066:
+	- Properly the add client ID in exchanges with the server.  Thanks
+	to Keven Frechette for reporting this.
+
+2016.291: 1.7
+	- Change socket type to SOCKET and set appropriately for platform.
+	- Modernize portable.[ch], change DLP_WIN32 to DLP_WIN and DLP_GLIBC2
+	to DLP_WIN and re-oragnize includes.
+	- Change host name resolution to use getaddrinfo() on all platforms
+	except Windows.  Support is now nearly ubiquitous.  Still limited to
+	IPv4 addresses.
+	- Cleanup make files, remove unused targets and need for ntwin32.mak.
+	- Add target for Cygwin to portable.h.
+	- Clarify licensing to be LGPLv3, include LICENSE.txt and INSTALL.
+	- Reformat all source code using included clang-format profile.
+
 2013.210: 1.6
 	- dl_position(): return 0 when packet was not found.  Differentiates
 	between successful request (but no match) and function error.

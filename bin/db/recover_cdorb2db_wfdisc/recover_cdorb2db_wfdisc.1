@@ -6,7 +6,7 @@ recover_cdorb2db_wfdisc \- create wfdisc table from s4 files written by cdorb2db
 \fBrecover_cdorb2db_wfdisc \fP{-d \fIdirs\fP | -f \fIfiles\fP } [-v] \fInewdb\fP 
 .fi
 .SH DESCRIPTION
-\fBrecover_cdorb2db_wfdisc \fP collects a listing of s4 files written by \fBcdorb2db(1)\fR
+\fBrecover_cdorb2db_wfdisc \fP collects a listing of s4 files written by \fBcdorb2db\fR
 and creates wfdisc records which reference those files in the output database \fInewdb\fP.
 If \fI-d\fP  is used, then all files below that directory are examined.  Files are expected 
 to follow the \fBcdorb2db\fR naming convention which is:  YYYY/JJJ/STA.CHAN.YYYY.JJJ.00.00.00=.
@@ -62,7 +62,6 @@ Be more verbose.
 .ft R
 .SH "SEE ALSO"
 .nf
-cdorb2db(1)
 miniseed2db(1)
 db2msd(1)
 .fi

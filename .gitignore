@@ -18,3 +18,4 @@ certify.log
 core.*
 core
 GNUmakefile
+MYMETA.json

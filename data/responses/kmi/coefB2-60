@@ -1,3 +1,15 @@
+# Kinemetrics coefB2-60 FIR filter parameter file  
+#
+# coefficients are symetric, listed in time order 
+# type                  B  
+# npoles                0  
+# input sample rate     10000  
+# decimal factor        2 
+# normalization factor  1.0 
+# gain factor           1.000000 
+theoretical  2  anti_alias   fir    coef_conv 
+10000 2
+60
 -8.987262845039367E-7
 2.37487256526947E-6
 1.092022284865379E-5
@@ -58,3 +70,4 @@
 1.092022284865379E-5
 2.37487256526947E-6
 -8.987262845039367E-7
+0

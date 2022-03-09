@@ -1,0 +1,62 @@
+# css3.0 extension
+
+# Include css3.0  # uncomment to complete schema
+
+Attribute newsnet
+	String (8)
+	Format ( "%-8s" )
+	Null ( "-" )
+	Description ( "unique network identifier" )
+	Detail {
+		This is a network code from SEED.  It may 
+                need to be combined with a statoin code to form a  
+                unique key in local databases.
+	}
+	;
+
+Attribute newsta
+	String (14)
+	Format ( "%-6s" )
+	Null ( "-" )
+	Description ( "station" )
+	Detail {
+		This is the common code-name of a seismic observatory. 
+		Generally only three or four characters are used.
+	}
+	;
+
+Attribute atype   
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "adoption type (EARN, transition, backbone, ...)" )
+        Detail {
+                This is a freeform description of the type of transfer 
+                that occurred.  Examples include:  EARN, backbone, transition
+		to regional network, transition to state, landowner purchase, 
+		industry buyout, etc.  The auth field should indicate the new 
+		operator of the site (i.e. PNSN, DOGAMI, OK, UC, etc.).
+        }
+        ;
+
+
+Relation adoption  
+	Fields ( snet sta time newsnet newsta atype auth lddate )
+	Primary ( snet sta time )
+	Description ( "Track stations which have changed ownership" )
+	Detail {
+                Table designed to handle more detail in station operations including:
+                 - the original snet and sta of the station
+                 - the new snet and sta of the station 
+                 - time the switchover occurred
+                 - type of transfer (freeform comment) 
+		 - data center now responsible for acquisition (likely not the datacenter
+                   maintaining this relation)
+
+		This was developed for use at the ANF where the TA stations 
+		can be taken over by regional network operators, moved into the
+		"backbone" network, transition to EARN (collected by ANF but owned
+		by other group), etc.
+	}
+	;
+

@@ -1,4 +1,11 @@
 sensors &Arr{
+    sts5a  &Arr{
+        duration       7200    # duration <= 16380; q330 limitation
+        settling_time  900 
+        trailer_time   900 
+        waveform       white 
+        amplitude      4        # V = 0.3125 - amplitude in volts is equal to 5 V / 2 ** amplitude
+    }
     sts4_b &Arr{
         duration       7200    # duration <= 16380; q330 limitation
         settling_time  900 
@@ -28,6 +35,13 @@ sensors &Arr{
         amplitude      4        # V = 0.3125 - amplitude in volts is equal to 5 V / 2 ** amplitude
     }
     trillium_120 &Arr{
+        duration       7200    # duration <= 16380; q330 limitation
+        settling_time  900 
+        trailer_time   900 
+        waveform       white 
+        amplitude      4        # V = 0.3125 - amplitude in volts is equal to 5 V / 2 ** amplitude
+    }
+    trillium_120PH &Arr{
         duration       7200    # duration <= 16380; q330 limitation
         settling_time  900 
         trailer_time   900 

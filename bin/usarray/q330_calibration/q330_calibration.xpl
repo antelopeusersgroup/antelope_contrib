@@ -79,8 +79,7 @@
     #
     %pf = getparam( $opt_p || $pgm ) ;
 
-    foreach $snmodel ( keys $pf{sensors} ) {
-        #foreach $field (qw/duration settling_time trailer_time waveform period amplitude/) {
+    foreach $snmodel ( keys %{ $pf{sensors} } ) {
         foreach $field (qw/duration settling_time trailer_time waveform amplitude/) {
             unless ( defined $pf{sensors}{$snmodel}{$field} ) {
                 log_complain("parameter [$field] missing from file for [$snmodel].");

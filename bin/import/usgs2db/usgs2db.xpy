@@ -8,6 +8,9 @@
 
 
 import requests
+import urllib.request, urllib.error, urllib.parse
+import json
+import pprint
 
 # Import Antelope modules
 
@@ -17,8 +20,7 @@ import getopt
 
 
 def usage():
-    print(sys.argv[0], "[-v] [-c] [-a auth] [-k keydb] [-u url] dbname")
-
+    print(sys.argv[0], "[-v] [-a auth] [-k keydb] [-u url] dbname") 
 
 def main():
     # BASE_URL="http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
@@ -109,15 +111,15 @@ def main():
         # be sure to convert unicode objects to string objects by calling "str(xxx)",
         # this prevents datascope  from CRASHING
         for propk, propv in properties.items():
-            if propk == "time":
-                etime = float(propv) / 1000.0
-            elif propk == "mag":
-                mag = float(propv)
-            elif propk == "magType":
-                magtype = str(propv)
-            elif propk == "place":
-                evname = str(propv)
-            elif propk == "cdi":
+            if propk ==   'time':
+                etime=float(propv) / 1000.
+            elif propk == 'mag':
+                mag=float(propv)
+            elif propk == 'magType':
+                magtype=str(propv)
+            elif propk == 'place':
+                evname=str(propv)
+            elif propk == 'cdi':
                 if propv is not None:
                     cdi = float(propv)
                     inull = float(propv)
@@ -147,17 +149,17 @@ def main():
 
         kmatch = idmatch.lookup(table="idmatch", record="dbSCRATCH")
         try:
-            kmatch.putv(("fkey", fkey))
+            kmatch.putv(('fkey', fkey))
         except Exception as e:
-            print("Error :", e)
+            print("Error :",e)
 
-        matcher = kmatch.matches(idmatch, "fkey")
-        rec_list = matcher()
-        new_event = False
-        evid = 0
-        updated_event = False
+        matcher=kmatch.matches(idmatch,'fkey')        
+        rec_list=matcher()
+        new_event=False
+        evid=0
+        updated_event=False
         if len(rec_list) > 1:
-            print("found too many keys, sth strange goes on here")
+            print("found too many keys, sth strange goes on here") 
         if len(rec_list) > 0:
             for rec in rec_list:
                 idmatch.record = rec

@@ -1,3 +1,15 @@
+# Kinemetrics coefA3-60.coe FIR filter parameter file  
+#
+# coefficients are symetric, listed in time order 
+# type                  A  
+# npoles                0  
+# input sample rate     30000  
+# decimal factor        3 
+# normalization factor  1.0 
+# gain factor           1.000000 
+theoretical  1  anti_alias   fir    coef_conv 
+30000 3
+30
 7.916241884231567E-9
 2.300366759300232E-7
 -3.213062882423401E-7
@@ -28,3 +40,4 @@
 -3.213062882423401E-7
 2.300366759300232E-7
 7.916241884231567E-9
+0

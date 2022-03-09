@@ -78,8 +78,10 @@ DATA= \
     le-3d5s.pf \
     le-3dlite.pf \
     le3d_20sec.pf \
+    mbb2.pf \
     mb2000_fil.pf \
     mb2000_raw.pf \
+    mb3a.pf \
     ncpa.pf \
     paroP.pf \
     paroT.pf \

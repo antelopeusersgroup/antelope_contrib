@@ -4,42 +4,27 @@
 #   CC : Specify the C compiler to use
 #   CFLAGS : Specify compiler options to use
 
-# GCC specific parameters
-GCC = gcc
-GCCFLAGS = -O2 -Wall -I..
-
 # Required compiler parameters
 CFLAGS += -I..
- 
+
 LDFLAGS = -L..
 LDLIBS = -ldali
 
-# For SunOS/Solaris uncomment the following line
-#LDLIBS = -ldali -lsocket -lnsl -lrt
+# Build all *.c source as independent programs
+SRCS := $(sort $(wildcard *.c))
+BINS := $(SRCS:%.c=%)
 
-BIN = daliclient
- 
-OBJS = daliclient.o
+all: $(BINS)
 
-all: $(BIN)
-
-$(BIN): $(OBJS)
-	$(CC) $(CFLAGS) -o $(BIN) $(OBJS) $(LDFLAGS) $(LDLIBS)
-
-static: $(OBJS)
-	$(CC) -static $(CFLAGS) -o $(BIN) $(OBJS) $(LDFLAGS) $(LDLIBS)
-
-cc:
-	@$(MAKE) "CC=$(CC)" "CFLAGS=$(CFLAGS)"
-
-gcc:
-	@$(MAKE) "CC=$(GCC)" "CFLAGS=$(GCCFLAGS)"
-
-debug:
-	$(MAKE) "CC=$(CC)" "CFLAGS=-g $(CFLAGS)"
-
-gccdebug:
-	$(MAKE) "CC=$(GCC)" "CFLAGS=-g $(GCCFLAGS)"
+# Build programs and check for executable
+$(BINS) : % : %.c
+	@printf 'Building $<\n';
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) $(LDLIBS) 
 
 clean:
-	rm -f $(OBJS) $(BIN)
+	rm -rf *.o $(BINS) *.dSYM
+
+install:
+	@echo
+	@echo "No install target, copy the executable(s) as needed"
+	@echo

@@ -1,0 +1,40 @@
+originator     Mathias Franke, Kinemetrics
+last_modified  2017-12-11
+
+#
+#
+
+category	Metrozet
+configuration	MBB-2
+
+info 	&Literal{
+The instrument parameters are derived from MBB-2 User Manual, Rev. 2.00, Nov 2016
+}
+
+description	Metrozet MBB-2
+dfile	mbb2
+
+rsptype                 V       # velocity instrument
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	7.5e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/mbb2)
+
+caldrive        c
+active          yes
+calgen          1
+cal2rsp         1
+calper          1
+

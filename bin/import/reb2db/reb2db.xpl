@@ -60,12 +60,12 @@ sub init_globals {
     # format change ~ Aug 2005
     #   $Event_unpack{"IMS1.0-line1"} = "A22 A1 x A5 x A5 x A8 x A9 A1 x A4 " .
     $Event_unpack{"IMS1.0-line1"} =
-        "A22 A1 x A5 x A5 x A8 x A9 A1 A5 "
+        "A10 x A11 A1 x A5 x A5 x A8 x A9 A1 A5 "
       . "x A5 x A3 x A5 A1 x A4 x A4 x A4 x A3 x A6 x A6 x A1 x A1 x A2 "
       . "x A9 x A8";
 
     $Event_names{"IMS1.0-line1"} = [
-        "or_timestr",  "or_fixedtime", "or_timeerr",  "or_rms",
+        "or_datestr", "or_timestr",  "or_fixedtime", "or_timeerr",  "or_rms",
         "or_lat",      "or_lon",       "or_fixedepi", "or_smaj",
         "or_smin",     "or_strike",    "or_depth",    "or_fixdpth",
         "or_deptherr", "or_ndef",      "or_nsta",     "or_gap",
@@ -82,12 +82,12 @@ sub init_globals {
     $Event_names{"IMS2.0:SHORT-line1"} = $Event_names{"IMS1.0-line1"};
 
     $Event_unpack{"GSE2.0-line1"} =
-        "A21 x A1 x2 A8 x A9 x A1 x2 A5 x "
+        "A10 x A10 x A1 x2 A8 x A9 x A1 x2 A5 x "
       . "A1 x2 A4 x A4 x A3 x2 A2 A4 x A2 x2 A2 A4 x A2 x2 A2 A4 x A2 x2 "
       . "A8 x2 A8";
 
     $Event_names{"GSE2.0-line1"} = [
-        "or_timestr",  "or_fixedtime", "or_lat",      "or_lon",
+        "or_datestr", "or_timestr",  "or_fixedtime", "or_lat",      "or_lon",
         "or_fixedepi", "or_depth",     "or_fixdpth",  "or_ndef",
         "or_nsta",     "or_gap",       "or_magtype1", "or_mag1",
         "or_magnsta1", "or_magtype2",  "or_mag2",     "or_magnsta2",
@@ -453,6 +453,7 @@ sub write_hypocenter {
 
     #@Db = dblookup( @Db, "", "origin", "", "" );
     @Db = @Db_origin;
+	eval { $or_epoch = str2epoch("$or_datestr $or_timestr") };
 
     eval {
         dbaddv(
@@ -460,10 +461,12 @@ sub write_hypocenter {
             "lat",   $or_lat,
             "lon",   $or_lon,
             "depth", $or_depth,
-            "time",  str2epoch($or_timestr),
+            "time",  $or_epoch,
+			#str2epoch("$or_datestr $or_timestr"),
             "orid",  $orid,
             "evid",  $evid,
-            "jdate", yearday( str2epoch($or_timestr) ),
+            "jdate", yearday( $or_epoch ),
+			#str2epoch("or_datestr $or_timestr") ),
             "nass",  $or_ndef,
             "ndef",  $or_ndef,
 
@@ -502,10 +505,12 @@ sub write_hypocenter {
             "lat",   $or_lat,
             "lon",   $or_lon,
             "depth", $or_depth,
-            "time",  str2epoch($or_timestr),
+            "time",  $or_epoch,
+			#str2epoch($or_timestr),
             "orid",  $orid,
             "evid",  $evid,
-            "jdate", yearday( str2epoch($or_timestr) ),
+            "jdate", yearday( $or_epoch ),
+			#str2epoch($or_timestr) ),
             "nass",  $or_ndef,
             "ndef",  $or_ndef,
 
@@ -618,17 +623,18 @@ sub write_phase {
 
         $arrival_auth = $or_auth;
 
-        $origin_time = str2epoch($or_timestr);
+        $origin_time = str2epoch("$or_datestr $or_timestr");
 
-        # wrap around a know issue with the perl interface
-        if ( $ph_arrtime eq "00:00:00.000" ) {
-            $arrival_time = $origin_time;
-        } else {
-            $arrival_time = $origin_time + str2epoch($ph_arrtime);
-        }
-
-        #        $arrival_time =
-        #          str2epoch( strdate($origin_time) ) + str2epoch($ph_arrtime);
+		$arrival_time = str2epoch("$or_datestr $ph_arrtime");
+#        # wrap around a know issue with the perl interface
+#        if ( $ph_arrtime eq "00:00:00.000" ) {
+#            $arrival_time = $origin_time;
+#        } else {
+#            $arrival_time = $origin_time + str2epoch($ph_arrtime);
+#        }
+		#
+#		 #        $arrival_time =
+#        #          str2epoch( strdate($origin_time) ) + str2epoch($ph_arrtime);
 
         if ( $arrival_time < $origin_time ) {
 
@@ -640,7 +646,7 @@ sub write_phase {
         $arrival_time = str2epoch("$ph_date $ph_time");
         $arrival_auth = $ph_auth;
     } else {
-        $arrival_time = str2epoch($ph_arrtime);
+        $arrival_time = str2epoch("$or_datestr $ph_arrtime");
     }
 
     @Db = @Db_arrival;

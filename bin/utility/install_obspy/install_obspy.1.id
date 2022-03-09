@@ -1,0 +1,67 @@
+.TH INSTALL_OBSPY 1
+.SH NAME
+install_obspy \- install the ObsPy package 
+.SH SYNOPSIS
+.nf
+\fBinstall_obspy\fP
+.fi
+.SH DESCRIPTION
+
+The \fBinstall_obspy\fP program installs the ObsPy Python Framework for Seismology from
+\fIhttp://www.obspy.org/\fP. 
+.SH CONSTRUCTORS
+.SH METHODS
+.SH "OBJECT CONFIGURATION PARAMETERS"
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+% \fBinstall_obspy\fP
+Collecting obspy
+  Downloading https://files.pythonhosted.org/packages/b4/fa/87a6b3612d7060c585cb0aec518ede6a75fc5b002897d3991633d857fc19/obspy-1.1.1.zip (23.9MB)
+    100% |........................| 23.9MB 336kB/s
+Requirement already satisfied: future>=0.12.4 in /opt/antelope/$python/lib/$python_mainversion/site-packages (from obspy) (0.17.1)
+Requirement already satisfied: numpy>=1.6.1 in /opt/antelope/$python/lib/$python_mainversion/site-packages (from obspy) (1.16.2)
+Requirement already satisfied: scipy>=0.9.0 in /opt/antelope/$python/lib/$python_mainversion/site-packages (from obspy) (1.2.1)
+Requirement already satisfied: matplotlib>=1.1.0 in /opt/antelope/$python/lib/$python_mainversion/site-packages/matplotlib-3.0.3-py3.6-macosx-10.13-x86_64.egg (from obspy) (3.0.3)
+Requirement already satisfied: lxml in /opt/antelope/$python/lib/$python_mainversion/site-packages (from obspy) (4.3.2)
+Requirement already satisfied: setuptools in /opt/antelope/$python/lib/$python_mainversion/site-packages/setuptools-39.2.0-py3.6.egg (from obspy) (39.2.0)
+Requirement already satisfied: sqlalchemy in /opt/antelope/$python/lib/$python_mainversion/site-packages (from obspy) (1.3.1)
+Requirement already satisfied: decorator in /opt/antelope/$python/lib/$python_mainversion/site-packages (from obspy) (4.3.0)
+Requirement already satisfied: requests in /opt/antelope/$python/lib/$python_mainversion/site-packages (from obspy) (2.18.4)
+Requirement already satisfied: cycler>=0.10 in /opt/antelope/$python/lib/$python_mainversion/site-packages (from matplotlib>=1.1.0->obspy) (0.10.0)
+Requirement already satisfied: kiwisolver>=1.0.1 in /opt/antelope/$python/lib/$python_mainversion/site-packages (from matplotlib>=1.1.0->obspy) (1.0.1)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.1 in /opt/antelope/$python/lib/$python_mainversion/site-packages (from matplotlib>=1.1.0->obspy) (2.2.0)
+Requirement already satisfied: python-dateutil>=2.1 in /opt/antelope/$python/lib/$python_mainversion/site-packages (from matplotlib>=1.1.0->obspy) (2.6.1)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /opt/antelope/$python/lib/$python_mainversion/site-packages (from requests->obspy) (3.0.4)
+Requirement already satisfied: idna<2.7,>=2.5 in /opt/antelope/$python/lib/$python_mainversion/site-packages (from requests->obspy) (2.6)
+Requirement already satisfied: urllib3<1.23,>=1.21.1 in /opt/antelope/$python/lib/$python_mainversion/site-packages (from requests->obspy) (1.22)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/antelope/$python/lib/$python_mainversion/site-packages (from requests->obspy) (2018.4.16)
+Requirement already satisfied: six in /opt/antelope/$python/lib/$python_mainversion/site-packages (from cycler>=0.10->matplotlib>=1.1.0->obspy) (1.11.0)
+Building wheels for collected packages: obspy
+  Building wheel for obspy (setup.py) ... done
+  Stored in directory: /Users/auser/Library/Caches/pip/wheels/11/d6/40/c448464ae42229b2f9fb46b71be0213e10e9628346b7f1198f
+Successfully built obspy
+Installing collected packages: obspy
+Successfully installed obspy-1.1.1
+%
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+http://www.obspy.org
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+.fi

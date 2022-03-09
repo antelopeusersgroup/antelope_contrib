@@ -11,7 +11,7 @@ CLEAN= *.pyc *.so
 
 cflags= -I$(PYTHONINCLUDE) -I$(ANTELOPE)/contrib/include
 fflags=
-ldflags=-L$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/static
+ldflags=-Wl,-rpath,$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/static
 ldlibs= $(PYTHONLIBS) -lpyutil -lpolygon
 
 include $(ANTELOPEMAKE)
