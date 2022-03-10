@@ -1,5 +1,6 @@
 DATADIR=instruments/sensors
 DATA= \
+	AC-23_0_05mg.pf AC-23_0_25mg.pf \
     BH1.pf \
     KS2000M.pf \
     chaparral.pf \
@@ -8,6 +9,7 @@ DATA= \
     cmg1t_120sec.pf \
     cmg1t_360sec.pf \
     cmg3esp.pf \
+   	cmg3espc.pf \
     cmg3esp_100sec.pf \
     cmg3esp_120sec.pf \
     cmg3esp_30sec.pf \
@@ -49,6 +51,7 @@ DATA= \
     fba23_2g.pf\
     fba23_2g_100hz.pf \
     fba23_4g.pf \
+   	gs11-3d.pf \
     gs13.pf \
     gs13e.pf \
     gs13n.pf \
@@ -65,6 +68,7 @@ DATA= \
     hyperion.pf \
     ia_500ug.pf \
     ia_50ug.pf \
+   	ifs_3000.pf \
     ks54000.pf \
     l22.pf \
     l28.pf \
@@ -102,6 +106,7 @@ DATA= \
     s13n.pf \
     s13z.pf \
     s6000.pf \
+   	seismonitor.pf \
     setra278.pf \
     setra278HA.pf \
     setra278offset.pf \
@@ -118,6 +123,7 @@ DATA= \
     sts2_g2.pf \
     sts2_g3.pf \
     sts2_5.pf \
+   	sts3.pf \
     sts4_b.pf \
     sts5a.pf \
     sv1.pf \
@@ -142,7 +148,6 @@ DATA= \
     unknown-velocity-1d.pf \
     unknown-velocity.pf \
     validyne.pf \
-    wr1.pf
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)

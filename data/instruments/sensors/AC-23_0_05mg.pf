@@ -1,0 +1,31 @@
+originator     Nikolaus Horn, ZAMG
+last_modified  2017-04-19
+
+info    &Literal{
+
+	SMACH Accelerometer AC-23, sold together with SMACH SM-2 Recorders
+}
+category    GeoSig
+configuration   AC-23_0.05 mg LSB
+
+description	SIG AC-23 0.05mg LSB
+dfile		ac23_005
+
+rsptype                 A       # accelerometer
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code 
+sensor_type_code        N       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	2.039432e-10
+iunits		nm/s**2
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/dummy)
+

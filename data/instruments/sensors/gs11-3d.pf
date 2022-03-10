@@ -1,0 +1,33 @@
+originator     Nikolaus Horn, ZAMG
+last_modified  2018-02-14
+info    &Literal{
+
+        Geospace 3C Geophone
+		https://www.passcal.nmt.edu/content/instrumentation/sensors/high-frequency-sensors/y-28-gs11-3d-hf-sensor	
+}
+
+
+category	Geospace
+configuration	GS11-3D
+
+description	Geospace GS11-3D Geophone
+dfile	gs113d
+
+rsptype                 V       # velocity instrument
+band                    s       # short period
+short_period_sensor     yes     # Sets first character of SEED channel code
+sensor_type_code        P       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	32.0e-9
+iunits		nm/s
+ounits		V
+
+orientations    &Tbl{
+Z       0       0
+N       0       90
+E       90      90
+}
+
+response	&datafile(responses/gs113d) 
+
