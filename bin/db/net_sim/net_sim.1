@@ -1,0 +1,117 @@
+.TH NET_SIM 1
+.SH NAME
+net_sim \- estimate network magnitude threshold
+.SH SYNOPSIS
+.nf
+\fBnet_sim \fP[-v] [-n \fInsta\fP] [-p \fIpf\fP] [-i \fIsta\fP[,\fIsta2\fP]]
+				[-s \fIsnr\fP] [-r \fIrmsdb\fP | -R \fIrms\fP] [-t \fItime\fP]
+			   	[-S \fIsta/lat/lon/rms\fP] [-f \fIgridfilename\fP] \fIdbname\fP [\fIplotfile\fP]
+.fi
+
+.SH DESCRIPTION
+net_sim estimates network magnitude threshold by calculation of magnitudes based on measures or assumed \fIrms\fP and a specified \fIsnr\fP.
+The number of stations required is selectable.
+Two plots describe the network capabilty. One shows the distance to the \fBn\fPth closest station or the maximum distance to \fBn\fP stations.
+The second plot shows for each gridpoint the lowest magnitude observed at \fBn\fP stations using either measured or theoretical signal. The actual input signal is the multiplication of \fIrms\fP and some suser selectable \fIsnr\fP - signal to noise ratio.
+
+.SH OPTIONS
+.IP "-v"
+verbose flag
+.IP "-f file"
+Filename for output gridfile. The file contains data in four columns: lon, lat, minimum magnitude and distance to nth closest stations in km.
+.IP "-p pf"
+parameter file
+.IP "-i sta"
+Stations to ignore. Multiple stations can be separated by a comma ',' or by repeating the argument. Note that specifing this overrides the stations ignored from the parameter file.
+.IP "-n nsta"
+Minumum number of stations for detection. Overrides \fInsta\fP from the parameter file.
+.IP "-r db"
+Specify a database for \fIrms\fP values. These values are read form the table wfrms. The \fItime\fP for \fIrms\fP values can be specified the the option -t.
+.IP "-R rms"
+Specify a \fIrms\fP value used all stations. This has no effect if a database for \fIrms\fP values is specified.
+.IP "-S sta/lat/lon/rms"
+Add a virtual station. Multiple stations can be specified by repeating the argument.
+.IP "-s snr"
+specify \fIsnr\fP. This overrides the value from the paramter file.
+.IP "-t time"
+Time for \fIrms\fP values when a database is used to lookup the \fIrms\fP values. If not specified, the program looks for recent values. How recent exactly is infuenced by the \fIsnr_latency\fP from the parameter file.
+.IP "dbname"
+Name of database with station coordinates in a site table. This argument is required.
+.IP plotfilename
+If a name is specified, the resulting plot is saved to a file. The default is to show the plot.
+
+.SH PARAMETER FILE
+
+The following is a sample parameter file.
+.in 2c
+.ft CW
+.nf
+
+.ne 10
+nsta         5
+snr          4
+default_rms  5
+snr_latency  3800
+nx	         100
+ny	         100
+c0      -0.304
+c1	     1.66
+magtype  Ml
+rms_filter_spec BW 1.0 5 10.0 5
+stations_used &Tbl{
+}
+stations_ignored &Tbl{
+        CSNA
+}
+station_rms &Arr{
+	STA1 1.5
+}
+
+.fi
+.ft R
+.in
+
+.IP nsta
+Minimum number of stations for detection. This results in showing the nstath closest distance or the nstath lowest magnitude
+.IP "nx,ny"
+Specifies number of gridpoints
+.IP "xmax,ymin,ymax,ymin"
+Specifies plotting region in degrees. Note that computations take into account all station, not only those in the area plotted. 
+If this is not specified, the program will automatically determine the plotting region.
+.IP snr
+Signal to noise ratio. The amplitude used in magnitude computation here is \fIrms\fP times \fIsnr\fP. For a simulation of manual processing, this can realistically be a low as 2, but for simulation of automatic detection, this should be something around 4 to 5.
+.IP default_rms
+Default \fIrms\fP value used for all stations. Used only if \fIrms\fP values are not read from a database. For good stations in austria, this can be as low as 3 with an average of about 15. Not that this default value can be overriden on a per-staion basis with \fBstation_rms\fP in the parameter-file. 
+.IP "c0,c1"
+Coefficients in magnitude formula. The actual formula is \fBc0\fP+log10(\fBamp\fP)+\fBc1\fP*log10(\fIdelta\fP). Units for amp are nm/sec while the units for delta are degrees.
+.IP magtype
+Magtype for display.
+.IP stations_used
+List of stations to be used for network simulation. If this is not specified, all stations are used.
+.IP stations_ignored.
+List of stations to be ignored. If this is not specified, all stations are used. Not that the commandline parameter \fI-i\fP overrides this list.
+.IP station_rms
+List of individual rms values. This can be useful for simulations. If a value is found here, this overrides the default rms value for that station. For monitoring purposes this can also be used if recent rms values are not available for all stations.
+
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+net_sim $ANTELOPE/demo/socalif/dbmaster/scdemo
+
+.fi
+.ft R
+.in
+
+.SH "BUGS AND CAVEATS"
+The programm assumes the earth is a sphere. The magnitude computation is a bit simple and does not allow for station corrections. The plots would need some fixup, at the moment they are rather ugly. 
+.SH "SEE ALSO"
+.nf
+orbwfrms(1), antelope(1), rtexec(1), antelope_python(3Y) 
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2017
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
