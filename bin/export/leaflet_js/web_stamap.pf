@@ -1,0 +1,25 @@
+filebase	stations
+title O&Ouml;W Station Map
+
+logo_url https://geoweb.zamg.ac.at/images/zamg_logo_vert.png
+logo_alt ZAMG Logo 
+leaflet_css https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css 
+leaflet_js https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js 
+dontshow	S[123456]TA|BSTA|CUVW|CXYZ|CO[ABCD]|VB[1-3]|AAA[0-9].*
+layers &Tbl{
+	&Arr{
+		stations ABNA|ABTA|ARSA|BIOA|CONA|CSNA|DAVA|FETA|KBA|KMR|LESA|MOA|MOTA|MYKA|OBKA|RETA|RONA|SOKA|SESA|SQTA|VIE|WATA|WINA|WTTA|UNNA
+		icon 	https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png
+		description Austrian Broadband ( Q330 + STS-2/STS-2.5 )
+	}
+	&Arr{
+		stations OBSA|RKSA|RSNA|RWNA|KMWA|ADSA|ZETA|UMWA|FRTA|NATA|LFVA|WOTA|PROA|LMSA|WIWA|GUKA|KEKA|KMKA|BITA|SNWA|ROSA|BSTA|SOSA
+		icon 	https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png
+		description Austrian Realtime Strong Motion Stations (Basalt or Etna2)
+	}
+	&Arr{
+		stations 
+		icon 	https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png
+		description Foreign Stations
+	}
+}
