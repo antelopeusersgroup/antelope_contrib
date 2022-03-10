@@ -1,0 +1,66 @@
+Attribute effectid
+    Integer (8)
+    Format ( "%8d" )
+    Null ( "-1" )
+    Description ( "unique id to the table meval (macroseismic evaluation)" )
+    Detail {
+        This field holds a reference to the table effects
+    }
+    ;
+Attribute levname
+    String (100)
+    Format ( "%-100s" )
+    Null ( "-" )
+    Description ( "long/full name of a a seismic event" )
+    Detail {
+        this is the full name of an event
+    }
+    ;
+Attribute sevname
+    String (20)
+    Format ( "%-20s" )
+    Null ( "-" )
+    Description ( "short eventname" )
+    Detail {
+        short name of an event
+    }
+    ;
+Attribute placeid
+    Integer (8)
+    Format ( "%8d" ) 
+    Null ( "-1" )
+    Range ( "placeid > 0" )
+    Description ( "place id" )
+    Detail {
+        unique key to the relation gazeteer
+        this id identifies a place
+    }
+    ;
+Attribute puburl
+    String (100)
+    Format ( "%-100s" )
+    Null ( "-" )
+    Description ( "public URL")
+    Detail {
+       html link to some public webpace holding information on an event 
+    }
+    ;
+Attribute privurl
+    String (100)
+    Format ( "%-100s" )
+    Null ( "-" )
+    Description ( "private URL")
+    Detail {
+       html link to some public webpace holding information on an event 
+    }
+    ;
+Relation evinfo
+    Fields ( evid etype levname sevname placeid puburl privurl magnitude magtype magid auth effectid commid lddate )
+    Primary ( evid )
+    Foreign ( evid magid placeid magid effectid commid ) 
+    Description ( "additional information on a seismic event" )
+    Detail {
+        This relation is used to hold various information on an event that does not fit into 
+            the event or other tables
+    }
+    ;

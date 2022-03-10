@@ -19,7 +19,8 @@ DATA = \
 	wfoffset \
 	wfsrb \
 	windturbine \
-	tortrk
+	tortrk \
+	evinfo mreport mreport_work filehash origqual pregion
 
 DATADIR = schemas/css3.0.ext
 
