@@ -40,9 +40,9 @@ retrieve remark for specified record.
 create database descriptor with specified schema and return specified table
 Useful for non-default schemata
 .SS dist = spherical_distance(lat1,lon1, lat2, lon2, degrees=True)
-return great-arc distance between 2 points    
+return great-arc distance between 2 points. Input is in degrees.    
 .SS dist = haversine_distance(lat1,lon1, lat2, lon2, degrees=True)
-return great-arc distance between 2 points, computed using the haversine formula    
+return great-arc distance between 2 points, computed using the haversine formula. Input is in degrees.    
 .SS lastid, lasttime = init_statefile(statefilename)
 read from existing statefile or prepare to use one. Returns id and time
 .SS update_statefile(statefilename, id, time)

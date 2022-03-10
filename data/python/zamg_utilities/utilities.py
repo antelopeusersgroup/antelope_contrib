@@ -178,7 +178,9 @@ def set_remark(db, remark):
         previous_lines = matcher()
         npl = len(previous_lines)
         dbq = db_r.lookup(record="dbNULL")
-        [remark_null, lddate_null, commid_null, lineno_null]=dbq.getv("remark","lddate", "commid", "lineno")
+        [remark_null, lddate_null, commid_null, lineno_null] = dbq.getv(
+            "remark", "lddate", "commid", "lineno"
+        )
         dbq = db_r.lookup(field="remark", record="dbNULL")
         remark_width = dbq.query(ds.dbFIELD_SIZE)
         remark_lines = string_charsplit(remark, remark_width)
@@ -198,7 +200,12 @@ def set_remark(db, remark):
         if nrl < npl:
             for xl in range(nrl, npl):
                 db_r.record = previous_lines[xl]
-                db_r.putv(("lineno",lineno_null),("commid",commid_null),("remark", remark_null),("lddate", lddate_null))
+                db_r.putv(
+                    ("lineno", lineno_null),
+                    ("commid", commid_null),
+                    ("remark", remark_null),
+                    ("lddate", lddate_null),
+                )
 
 
 def get_remark(db):
@@ -281,7 +288,7 @@ def rfc33392epoch(timestring):
 
 
 def epoch2rfc3339(epoch):
-    """convert epoch time to RFC3339 compatible string"""
+    """epoch time as RFC3339 compatible string"""
     return stock.epoch2str(epoch, "%Y-%M-%DT%H:%M:%S.%sZ")
 
 
@@ -293,15 +300,20 @@ def epoch2rfc3339(epoch):
 
 def spherical_distance(lat1, lon1, lat2, lon2, degrees=False):
     """great-arc distance on a sphere, either in degrees or km"""
-    lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
-    p = 0.017453292519943295
+    # lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
+    p_var = 0.017453292519943295
+
     dist = 114.59148343 * np.arcsin(
         np.sqrt(
             0.5
-            - np.cos((lat2 - lat1) * p) / 2
-            + np.cos(lat1 * p) * np.cos(lat2 * p) * (1 - np.cos((lon2 - lon1) * p)) / 2
+            - np.cos((lat1 - lat2) * p_var) / 2
+            + np.cos(lat2 * p_var)
+            * np.cos(lat1 * p_var)
+            * (1 - np.cos((lon1 - lon2) * p_var))
+            / 2
         )
     )
+
     if degrees:
         return dist
     else:

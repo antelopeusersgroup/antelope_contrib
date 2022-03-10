@@ -18,7 +18,7 @@ import antelope.elog as elog
 
 
 def multipartemail(sender, email, subject, html, text=None):
-    """ Email magic: use only standard libs coming with Antelope to produce multipart email """
+    """Email magic: use only standard libs coming with Antelope to produce multipart email"""
 
     if text is None:
         text = html.replace("<br>", "\n")
@@ -68,7 +68,7 @@ def multipartemail(sender, email, subject, html, text=None):
 def send_multipartemail(
     email, subject, html, text=None, myfrom=None, one_email=True, address_separator=","
 ):
-    """ Send email as text and html """
+    """Send email as text and html"""
 
     mypf = stock.pfread("site")
 
@@ -101,12 +101,12 @@ def send_multipartemail(
     if one_email:
         destination = address_separator.join(receivers)
 
-        #fout=open("/tmp/mailscheiss.log","w+")
-        #fout.write("one_email: %s" % destination)
-        #fout.close()
-        #exit
+        # fout=open("/tmp/mailscheiss.log","w+")
+        # fout.write("one_email: %s" % destination)
+        # fout.close()
+        # exit
 
-        #print("to: ", destination)
+        # print("to: ", destination)
         msgbody = multipartemail(sender, destination, subject, html, text)
         try:
             smtp = smtplib.SMTP(mailhost)
@@ -119,11 +119,11 @@ def send_multipartemail(
             smtp.close()
     else:  # one email per receiver
         for destination in receivers:
-            #fout=open("/tmp/mailscheiss.log","w+")
-            #fout.write("many emails: %s" % destination)
-            #fout.close()
-            #exit
-            #print("jeweils to: ", destination)
+            # fout=open("/tmp/mailscheiss.log","w+")
+            # fout.write("many emails: %s" % destination)
+            # fout.close()
+            # exit
+            # print("jeweils to: ", destination)
             msgbody = multipartemail(sender, destination, subject, html, text)
             try:
                 smtp = smtplib.SMTP(mailhost)
