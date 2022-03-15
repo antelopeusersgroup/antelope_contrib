@@ -18,11 +18,11 @@
 
 use Datascope;
 
-use vars qw($opt_d $opt_v);
+use vars qw($opt_d $opt_v $opt_0);
 
 use Getopt::Std;
 
-if ( !getopts('dv') || @ARGV < 2 ) {
+if ( !getopts('dv0') || @ARGV < 2 ) {
 
     die("Usage: $0 [-avd] filename [filename ...] database\n");
 
@@ -106,7 +106,7 @@ sub init_globals {
     ];
 
     $Phase_unpack{"IMS1.0"} = "A5 x A6 x A5 x A8 x A12 x A5 x A5 x A5 x "
-      . "A6 x A6 x A1 A1 A1 x A5 x A9 x A5 x A1 A1 A1 x A5 A1 A4 x A8";
+      . "A6 x A6 x A1 A1 A1 x A5 x A9 x A5 x A1 A1 A1 x A5 A1 A4 x A9";
 
     $Phase_names{"IMS1.0"} = [
         "ph_sta",     "ph_delta",   "ph_esaz",    "ph_code",
@@ -870,10 +870,18 @@ sub startup {
     # intentional null routine
 }
 
+
 if ( $#ARGV < 1 ) {
-    die "Usage: reb2db filename [filename ...] dbname\n";
+    die "Usage: reb2db [-vd] [-0] filename [filename ...] dbname\n";
 } else {
     $dbname = pop(@ARGV);
+    unless ( -e $dbname ) {
+        if ($opt_0 || $opt_O || $opt_o) {
+            dbcreate( $dbname, "css3.0" );
+        } else {
+            dbcreate( $dbname, "css3.1" );
+        }
+    }
     @Db = dbopen( $dbname, "r+" );
 }
 
@@ -894,7 +902,7 @@ while (<ARGV>) {
     next if (/^\s*\(.*\)\s*$/);    # comment
     last
       if (/^STOP$/i)
-      ;    #last line to be processed, avoid confuusing error with ISC data
+      ;    #last line to be processed, avoid confusing error with ISC data
     next if stateswitch($_);
     &$State($_);
 }
