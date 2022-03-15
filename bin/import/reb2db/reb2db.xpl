@@ -18,13 +18,13 @@
 
 use Datascope;
 
-use vars qw($opt_d $opt_v $opt_0);
+use vars qw($opt_d $opt_v $opt_0 $opt_o $opt_O);
 
 use Getopt::Std;
 
-if ( !getopts('dv0') || @ARGV < 2 ) {
+if ( !getopts('dv0oO') || @ARGV < 2 ) {
 
-    die("Usage: $0 [-avd] filename [filename ...] database\n");
+    die("Usage: $0 [-vd] [-0] filename [filename ...] database\n");
 
 }
 
