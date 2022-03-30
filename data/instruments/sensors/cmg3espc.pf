@@ -1,0 +1,35 @@
+originator     Nikolaus Horn, ZAMG
+last_modified  2018-02-14
+info    &Literal{
+
+        Guralp CMG3ESP compact as used by Technical University Vienna
+		Response taken from individual sensor calsheet
+		https://www.gfz-potsdam.de/en/section/geophysical-deep-sounding/infrastructure/geophysical-instrument-pool-potsdam-gipp/pool-components/poles-and-zeros/gueralp-esp-c/
+}
+
+
+category	Guralp
+configuration	CMG-3ESP C
+
+description	Guralp CMG-3ES Compact
+dfile	cmg3espc
+
+rsptype                 V       # velocity instrument
+band                    b       # short period
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	20.0e-7
+iunits		nm/s
+ounits		V
+
+orientations    &Tbl{
+Z       0       0
+N       0       90
+E       90      90
+}
+
+response	&datafile(responses/cmg3espc) 
+
+

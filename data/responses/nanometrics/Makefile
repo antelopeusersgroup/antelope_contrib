@@ -77,7 +77,15 @@ DATA= taurus_inf_aa \
       hrd24_s2 \
       hrd24_s3 \
       hrd24_iir \
-      hrd24aaf
+      hrd24aaf \
+      centaur_100sps_s1 \
+      centaur_100sps_s2 \
+      centaur_100sps_s3 \
+      centaur_200sps_s1 \
+      centaur_200sps_s2 \
+      centaur_200sps_s3 \
+	  trilliumcompact_userguide.pdf \
+      trillium_compact_20
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)

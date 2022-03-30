@@ -1,10 +1,10 @@
 AUTHOR_FIELD=Nikolaus Horn <nikolaus.horn\@zamg.ac.at>
 PERLMAKEFILE = perl_makefile
 MAN3P=perlpolygon.3p
-CLEAN=  Makefile.PL runmake $(PERLMAKEFILE).old $(PERLMAKEFILE).PL $(PERLMAKEFILE) polygon.bs polygon.c pm_to_blib 
+CLEAN=  Makefile.PL MYMETA.yml MYMETA.json runmake $(PERLMAKEFILE).old $(PERLMAKEFILE).PL $(PERLMAKEFILE) polygon.bs polygon.c pm_to_blib 
 
-PD=$(ANTELOPE)/data/perl
-PM=$(ANTELOPE)/man
+PD=$(ANTELOPE)/contrib/data/perl
+PM=$(ANTELOPE)/contrib/man
 
 ldlibs=-lpolygon $(STOCKLIBS)
 SUBDIR=/contrib
@@ -25,7 +25,7 @@ clean::
 	rm -rf blib
 	
 $(PERLMAKEFILE) : Makefile.PL
-	$(PERL) Makefile.PL INSTALLPRIVLIB=$(PD) INSTALLSCRIPT=$(PD) INSTALLSITELIB=$(PD) INSTALLSITELIB=$(PD) INSTALLMAN3DIR=$(PM)/man3
+	$(PERL) Makefile.PL INSTALLPRIVLIB=$(PD) INSTALLSCRIPT=$(PD) INSTALLSITELIB=$(PD) INSTALLSITEARCH=$(PD) DESTINSTALLARCHLIB=$(PD) INSTALLMAN3DIR=$(PM)/man3
 
 Makefile.PL : Makefile.PL.proto 
 	sed -e 's@LinkArguments@$(LDFLAGS) $(LDLIBS)@' \

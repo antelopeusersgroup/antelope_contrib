@@ -300,8 +300,8 @@ Relation polygon
 	;
 	
 Relation remark
-	Fields (  commid lineno remark lddate )
-	Primary (  commid lineno )
+	Fields ( commid lineno remark lddate )
+	Primary ( commid lineno )
 	Defines commid
 	Description ( "free format comment" )
 	Detail {
@@ -312,3 +312,74 @@ Relation remark
 		lineno.
 	}
 	;
+
+Attribute floatval
+	Real (16)
+	Format ( "%16.6f" )
+	Null ( "-999.00000" )
+	Description ( "floating poin value" )
+	Detail {
+        arbitrary attribute of type real
+	}
+	;
+
+Attribute intval
+	Integer (12)
+	Format ( "%12d" )
+	Null ( "-1" )
+	Description ( "integer value" )
+	Detail {
+        arbitrary attribute of type integer
+	}
+	;
+
+Attribute attribute
+	String (40)
+	Format ( "%-40s" )
+	Null ( "-" )
+	Description ( "name of attribute" )
+	Detail {
+		This is the name of an arbitrary attribute
+    }
+    ;
+Attribute value
+	String (120)
+	Format ( "%-40s" )
+	Null ( "-" )
+	Description ( "name of attribute" )
+	Detail {
+		This is the name of an arbitrary attribute
+    }
+
+    ;
+Attribute time
+    Time (17)
+    Format ( "%17.5f" )
+    Null ( "-9999999999.99900" )
+    Units ( "Seconds" )
+    Description ( "epoch time" )
+    Detail {
+        Epochal time given as seconds and fractions of a second
+        since hour 0 January 1, 1970, and stored in a double
+        precision floating number.  Refers to the relation data
+        object with which it is found.  E.g., in arrival - arrival
+        time; in origin - origin time; in wfdisc, - start time of
+        data.  Where date of historical events is known, time is
+        set to the start time of that date; where the date of
+        contemporary arrival measurements is known but no time is
+        given, then the time attribute is set to the NA value.
+        The double-precision floating point number allows 15
+        decimal digits.  At 1 millisecond accuracy this is a range
+        of 3 years.  Where time is unknown, or prior to Feb.  10,
+        1653, set to the NA value.
+    }
+    ;
+Relation attribute
+	Fields ( pid attribute value intval floatval time auth lddate )
+    Primary ( pid attribute )
+    Description ( "additional attributes" )
+    Detail {
+        This table holds additional attributes to polygonal regions like
+        name, zipcode and so on    
+    }
+    ;

@@ -1,3 +1,4 @@
-component1_filename T.dat
-component2_filename R.dat
-component3_filename L.dat
+component1_basename EW
+component2_basename NS
+component3_basename Z
+ensemble_metadata_key evid

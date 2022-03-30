@@ -1,3 +1,4 @@
+.TH MAMPMAG 3P
 .SH NAME
 Mampmag \- magnitude from velocity amplitudes as per NMSOP,  computational class for evproc generalized event processing
 .SH SYNOPSIS
@@ -107,7 +108,7 @@ This  should  be either "tproc", or a noise time window value in seconds for com
 tered noise value. A noise value is computed from the filtered trace data as  1.414  times  the
 standard  deviation  within  the noise time window. The noise time window is noise_twin seconds
 long or equal to the signal processing time winodw if the "tproc" key word is used.
-.IP \fIc2,c3,c4,c5\fP
+.IP "\fIc2\fP, \fIc3\fP, \fIc4\fP, \fIc5\fP"
 these are parameters for magnitude computation in the \fIgeneral\fP magnitude formula used by the ampmag method:
 c0+log10(amp)+c1*log10(delta)+c2*log10(delta*c3+c4)+c5 where delta is the distance in degrees.
 .IP \fIclip_lower\fP
@@ -121,16 +122,16 @@ If no clip checking is required, then this value, along with \fIclip_lower\fP, c
 .IP \fIv_r\fP
 Surface wave velocity to determine surface wave arrival time.
 Only needed when computing \fIMs\fP.
-.IP \fItime0\fP, \fItime_window_factor\fP,\fIminimum_time_window\fP
+.IP "\fItime0\fP, \fItime_window_factor\fP, \fIminimum_time_window\fP"
 The time window for processing waveforms is determined from
 \fItime0\fP and \fItime_window_factor\fP. The processing window is
 \fBcentered\fP around the theoretical arrival time of the onset
 specified by \fItime0\fP and has a width of (S-time - P-time) * \fItime_window_factor\fP.
 The time specified by \fIminimum_time_window\fP allows to mitigate the case when S and P are close together.
-.IP \fImindelta\fP, \fImaxdelta\fP
+.IP "\fImindelta\fP, \fImaxdelta\fP"
 These values in degrees define the distance region for magnitude computations.
 Only stations where the distance from the origin falls into the region defined here are taken into account.
-.IP "c0, c1, c2, c3, c4, c5"
+.IP "\fIc0, \fIc1\fP, \fIc2\fP, \fIc3\fP, \fIc4\fP, \fIc5\fP"
 define whatever you might find appropriate to compute your magnitudes.
 The formula actually used for magnitude computation is the following:
 c0+log10(amp)+c1*log10(delta)+c2*log10(delta*c3+c4)+c5

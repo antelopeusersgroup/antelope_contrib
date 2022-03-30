@@ -126,11 +126,19 @@ object is not for examining geometry changes in time.
 \param netname is network name assigned to the result.  It can be a single SEED
    net code if that is appropriate, but it is probably 
   best viewed as a virtual network name.
+\param require_snetsta can be used to disable join of snetsta used in 
+  antelope to handle colliding station names.  When true, the default, 
+  array will be created using a natural join of site and snetsta.  When 
+  false that join is disabld and all stations will name net assignd to 
+  the netname passed as arg 3.  WARNING - this can associate the wrong
+  location with data if there are duplicate sta names with different net
+  codes in the input db.
 
 \exception SeisppError is throw if there are no live stations
   found at the requested time. 
 **/
-	SeismicArray(DatabaseHandle& dbh,double time, string netname);
+	SeismicArray(DatabaseHandle& dbh,double time, string netname,
+                bool require_snetsta=true);
 /*! Constructs the object from a database, but load only stations from a specified
 list.  
 

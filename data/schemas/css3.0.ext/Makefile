@@ -5,7 +5,6 @@ DATA = \
 	calplot \
 	calib_request \
 	dlcmd_cal \
-	dlevent \
 	gsnspec \
 	q330_calibration_weblog \
 	qctests \
@@ -20,7 +19,8 @@ DATA = \
 	wfoffset \
 	wfsrb \
 	windturbine \
-	tortrk
+	tortrk \
+	evinfo mreport mreport_work filehash origqual pregion
 
 DATADIR = schemas/css3.0.ext
 

@@ -1,0 +1,678 @@
+Attribute mrid
+    Integer (8)
+    Format ( "%8d" )
+    Null ( "-1" )
+    Range ( "mrid > 0" )
+    Description ( "id of macroseismic report" )
+    Detail {
+        unique key to the relation mreport
+    }
+    ;
+Attribute place
+    String (70)
+    Format ( "%-70s" )
+    Null ( "-" )
+    Description ( "full name of a place " )
+    ;
+Attribute prov_id
+    String (16)
+    Format ( "%16" )
+    Null ( "-" )
+    Description ( "provider id" )
+    Detail {
+        id of the data provider
+		This field allows to keep track of the id used by the data provider	
+    }
+    ;
+Attribute questionnaire
+	String (10)
+	Format ( "%10s" )
+	Null ( "-" )
+	Description ( "questionnaire" )
+	Detail {
+		type and version of questionnaire
+	}
+	;
+Attribute techdet
+	String (60)
+	Format ( "%60s" )
+	Null ( "-" )
+	Description ( "technical details of questionnaire" )
+	Detail {
+		technical details as provided by data provider
+        Apps can provide build date, model, platform and version. Gives a loong string    
+	}
+	;
+Attribute activity
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "activity" )
+	Detail {
+		This field describes the activity of 
+	 	the observer during the event
+		s - sitting 
+        u - standing upright
+        l - lying
+        w - walking
+	}
+	;
+Attribute reaction
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "reaction" )
+	Detail {
+		reaction
+		n - not concerned
+        w - worried
+        s - scared  
+        f - fear
+        p - panic
+	}
+	;
+Attribute awake
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "awake" )
+	Detail {
+		awake
+		x - not sleeping
+        n - did not wake up
+        w - woke up  
+        m - more than one person woke up
+	}
+	;
+Attribute sensation
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "sensation" )
+	Detail {
+		sensation
+		n - not felt
+		v - very weak
+        w - weak
+        s - strong
+        c - clearly
+        h - very strong felt/heavy
+	}
+    ;
+Attribute vibration
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "vibration" )
+	Detail {
+		vibration
+		t - tremble
+		j - jolt
+        p - push
+        s - swing
+	}
+    ;
+Attribute where
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "whereabouts during the event" )
+	Detail {
+		whereabout during the event
+        c - cellar    
+		g - ground floor
+		1 - 1st floor
+        v - 5th to 10th floor
+        h - above 10th floor
+        b - balcony
+        t - terrace 
+        o - outdoors
+        s - standing car
+        d - driving car
+        o - other
+	}
+	;
+Attribute country
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "country" )
+	Detail {
+		Country, eventually including Province
+	}
+	;
+Attribute zipcode
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( "ZIP code" )
+	Detail {
+		postal code or ZIP code
+	}
+	;
+Attribute mailaddress
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "mailaddress" )
+	Detail {
+		mailaddress
+	}
+	;
+Attribute emailaddr
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "email" )
+	Detail {
+		email address.
+        The attribute email is already used somewhere else with a different length    
+	}
+	;
+Attribute flee
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "did you flee/run outside" )
+	Detail {
+		this describes if the observer was trying to escape the building. 
+		If other observers were present, this also describes the behaviour of the group.
+		n - no 
+        y - yes
+        s - some persons 
+        m - most persons 
+        a - all	persons
+	}
+	;
+Attribute balance
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "balance" )
+	Detail {
+		did you loose balance
+        n - no problem 
+        w - weak shaking
+        d - problems to stand    
+	}
+	;
+Attribute referencegroup
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "referencegroup" )
+	Detail {
+		referencegroup
+        l - alone
+        n - nobody else
+        s - some 
+        m - many
+        a - all
+	}
+	;
+Attribute reporter
+	String (35)
+	Format ( "%-35s" )
+	Null ( "-" )
+	Description ( "reporter" )
+	Detail {
+		Name of reporter if this is not an original report.
+		If this is an original report, the field
+		fullname specifies the reporing person and theis field 
+		should be left empty.
+	}
+	;
+Attribute rattle_bldg
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "swaying or rattling of building" )
+	Detail {
+		building sways or rattles
+		n - no
+		w - weak
+		c - clear
+		s - strong
+	}
+	;
+Attribute nature
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( "nature" )
+	Detail {
+		nature
+        n - no effects on nature
+        i - unrest of animals inside
+        o - unrest of animals outside
+        p - water splashes from containers, tanks and pools
+        w - ground waves are seen
+        c - cracks
+        l - landslide
+        r - rockfall
+	}
+	;
+Attribute lamps
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "lamps weaving" )
+	Detail {
+		lamps weaving
+		? - keine Angabe
+		n - no
+		w - weak
+		c - clearly
+        s - strongly
+	}
+	;
+Attribute screen
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "screen shaking" )
+	Detail {
+		screen shaking
+		? - keine Angabe
+		n - no
+		w - weak
+		c - clearly
+        s - strongly
+	}
+	;
+Attribute pictures
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "pictures rattling" )
+	Detail {
+		pictures rattling
+		? - keine Angabe
+		n - no
+		w - weak, light
+		c - clearly
+        s - strongly
+	}
+	;
+Attribute liquids
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "liquids moving" )
+	Detail {
+		liquids moving
+		? - not specified
+		n - no
+		w - weak, light
+		c - clearly
+        s - strongly
+	}
+	;
+Attribute glass
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "glass clinking" )
+	Detail {
+		glass clinking
+		? - not specified
+		n - no
+		w - weak, lightly
+        m - moderate 
+		c - clearly
+        s - strongly
+	}
+	;
+Attribute objects
+	String (10)
+	Format ( "%10s" )
+	Null ( "-" )
+	Description ( "effects on objects" )
+	Detail {
+		t - small objects move
+		l - labile (not steady) objects fall
+		s - steady objects fall
+        g - glasses break
+        f - images fall off the wall
+        b - books fall off the shelf
+	}
+	;
+Attribute light_furniture
+	String (5)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "light furniture rattles" )
+	Detail {
+		light furniture rattles
+		? - not specified
+		n - no
+		l - light
+		c - clearly
+        s - strongly
+	}
+	;
+Attribute heavy_furniture
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "heavy furniture rattles" )
+	Detail {
+		heavy furniture rattles
+		? - not specified
+		n - no
+		w - weak, lightly
+		c - clearly
+        s - strongly
+	}
+	;
+Attribute windows
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "windows rattle" )
+	Detail {
+		windows rattle
+		? - not specified
+		n - no
+		w - weak, lightly
+		c - clearly
+        s - strongly
+	}
+	;
+Attribute furniture
+	String (5)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "furniture" )
+	Detail {
+		effects on furniture
+		? - not specified
+		l - light furniture moved
+		h - heavy furniture moved
+		c - windows/doors open or close
+        f - furniture falling down
+        w - wood creaks
+	}
+	;
+Attribute bldg_damage
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "building damage" )
+	Detail {
+		damage on a buildings
+		? - not specified
+		y - yes
+		n - no
+	}
+	;
+Attribute inside
+	String (10)
+	Format ( "%10s" )
+	Null ( "-" )
+	Description ( "effects inside" )
+	Detail {
+		effects inside
+		? - not specified
+        h - hairline crack
+        t - small cracks
+        c - cracks
+        d - deep cracks
+        s - small part of plaster fall down
+        b - bigger parts of plaster fall down 
+        w - windows crack
+        f - partition walls collaps
+	}
+	;
+Attribute outside
+	String (10)
+	Format ( "%10s" )
+	Null ( "-" )
+	Description ( "effects outside" )
+	Detail {
+		effebcts/damage on the outside of the building
+		? - not specified
+        t - thin cracks
+        c - cracks
+        d - deep cracks
+        s - small part of plaster fall down
+        b - bigger parts of plaster fall down 
+        p - partial collaps
+        f - full collapse
+    }
+    ;
+Attribute chimney
+	String (5)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "chimney" )
+	Detail {
+		chimney
+		n - not specified
+		c - cracks
+		p - partial collapse
+        f - parts of the chimney fell down
+		d - destroyed / separated on the basement
+	}
+	;
+Attribute roof
+	String (3)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "roof" )
+	Detail {
+		roof
+		? - not specified
+		s - roof tiles shifted
+		f - roof tiles fell down
+		d - roof damaged
+	}
+	;
+Attribute bldg_class
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "building class" )
+	Detail {
+		building class
+        ? - not specified    
+		d - detached house
+		s - semi-detached house
+		b - block
+		w - office building
+		i - industrial builduing
+        o - other
+	}
+	;
+Attribute bldg_age
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "building age" )
+	Detail {
+		building age
+        ? - not specified    
+        u - unknown
+		v - before 1900
+		o - 1900 - 1950
+		n - newer than 1950
+	}
+    ;
+Attribute bldg_mat
+	String (6)
+	Format ( "%6s" )
+	Null ( "-" )
+	Description ( "building material" )
+	Detail {
+		building material
+        ? - not specified    
+        u - unknown
+		n - natural stone
+		b - brick
+		w - wood
+		p - precast elements
+		s - steel / concrete
+	}
+    ;
+Attribute bldg_cond
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "building cond" )
+	Detail {
+		building cond
+        ? - not specified    
+		v - very good
+		g - good
+		m - medium
+		b - bad
+	}
+    ;
+Attribute fullname
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "full name of a person" )
+	Detail {
+        Full name of a persion, i.e. 
+		name, surname and eventually middle initial
+	}
+	;
+Attribute emailaddress
+	String (60)
+	Format ( "%-60s" )
+	Null ( "-" )
+	Description ( "emailaddress" )
+	Detail {
+		emailaddress
+	}
+	;
+Attribute datetimestr
+	String (26)
+	Format ( "%-26s" )
+	Null ( "-" )
+	Description ( "date and time as string" )
+	Detail {
+		time as given in the report
+	}
+	;
+Attribute sound
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "sound" )
+	Detail {
+		sound
+		n - nothing heard
+        b - bang
+        g - grumble
+        t - thunder
+	}
+	;
+Attribute reporttime 
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999999.99900" )
+	Units ( "Seconds" )
+	Description ( "epoch time" )
+	Detail {
+		Epoch time when the report was filed on the web
+	}
+	;
+Attribute loclat
+	Real (12)
+	Format ( "%12.6f" )
+	Null ( "-999.000000" )
+	Range ( "loclat >= -90.0 && loclat <= 90.0" )
+	Units ( "Degrees" )
+	Description ( "latitude as reported by cellphone" )
+	Detail {
+		This attribute is the geographic latitude.  Locations
+		north of the equator have positive latitudes.
+	}
+	;
+Attribute loclon
+	Real (12)
+	Format ( "%12.6f" )
+	Null ( "-999.000000" )
+	Range ( "loclon >= -180.0 && loclon <= 180.0" )
+	Units ( "Degrees" )
+	Description ( "longitude as reported by cellphone" )
+	Detail {
+		This attribute is the geographic longitude in degrees.
+		Locations are measured positive east of the Greenwich 
+		meridian.
+	}
+	;
+Attribute locprec
+	Real (10)
+	Format ( "%10.4f" )
+	Null ( "-999.0000" )
+	Range ( "locprec > 0.0" )
+	Units ( "Meters" )
+	Description ( "Location precision as reported by the cellphone in meters." )
+	Detail {
+		This attribute is the location accuracy in meters.
+		Cellphones typically claim to be accurate up to tens of meters.
+	}
+	;
+Attribute locupd
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999999.99900" )
+	Units ( "Seconds" )
+	Description ( "epoch time" )
+	Detail {
+		Epoch time when the location was last updated.
+	}
+	;
+Attribute imgindex
+    Integer (3)
+    Format ( "%3d" )
+    Null ( "-1" )
+    Range ( "imgindex > 0" )
+    Description ( "Image Index" )
+    Detail {
+        Intensity classification with sketches numbers. If pictures are presented, 
+	    this is the index of the picture, NOT the intensity.
+    }
+    ;
+Attribute dupmrid
+    Integer (8)
+    Format ( "%8d" )
+    Null ( "-1" )
+    Range ( "dupmrid > 0" )
+    Description ( "id of duplicate entry" )
+    Detail {
+        When duplicates are detected, this refers to the id of the first entry in the 
+		table which is similar to this one.
+		Subsetting the table to unique entries is simple by selecting all 
+		entries with dupmrid==NULL
+    }
+    ;
+Attribute extra
+    String (30)
+    Format ( "%30s" )
+    Null ( "-" )
+    Description ( "extra space -placeholder for later schema modifications" )
+    Detail {
+		When a table needs to be expanded, this incalidates older records. This field
+		holds extra space that could be used later for new fields, easing the transition.	
+    }
+    ;
+Relation mreport
+	Fields ( mrid zipcode place mailaddress country evid datetimestr reporttime
+            where activity sensation vibration reaction awake sound flee balance 
+            referencegroup rattle_bldg nature lamps screen pictures liquids 
+            glass objects light_furniture heavy_furniture windows furniture 
+            bldg_damage inside outside chimney roof bldg_class bldg_age bldg_mat bldg_cond
+            fullname emailaddress prov_id questionnaire techdet loclat loclon locprec locupd imgindex auth dupmrid extra dir dfile commid lddate )
+	Primary ( mrid )
+	Defines mrid
+	Foreign ( commid evid )
+	Description ( "macroseismic report" )
+	Detail {
+		This relation holds the macroseismic reports.
+        Cordinates and time are hold (after verification) in a separate table, mreport_coord    
+	}
+	;

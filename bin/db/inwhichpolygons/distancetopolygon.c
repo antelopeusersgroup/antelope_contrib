@@ -8,7 +8,7 @@ int verbose=0;
 
 void mydist(double lat,double lon) {
 	Dbptr dbs;
-	long nrecords, ninside, pid;
+	long nrecords, pid;
 	char name[1024], bname[1024];	
 	double mindist, dist;
 	Point p;

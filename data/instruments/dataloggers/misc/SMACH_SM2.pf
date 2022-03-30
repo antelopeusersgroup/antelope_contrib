@@ -1,0 +1,44 @@
+originator	Nikolaus Horn, ZAMG
+last_modified	2011-04-11
+
+category	GeoSig
+configuration	SM-2
+
+description	SM-2 digitizer
+dfile sm2
+
+streams		128sps 256sps
+
+# definitions of streams
+ 128sps     128   a/d128 aa_128sps
+ 256sps     256   a/d256 aa_256sps
+
+gains		10000
+
+a/d128	&Arr{
+samprate	128
+gtype		digitizer
+iunits		V
+ounits		counts
+sn			datalogger
+}
+
+aa_128sps &Arr{
+	gtype	Anti-Alias 
+	gain	1
+	response	&datafile(responses/sm2_aa_128sps)
+}
+
+a/d256	&Arr{
+samprate	256
+gtype		digitizer
+iunits		V
+ounits		counts
+sn			datalogger
+}
+
+aa_256sps &Arr{
+	gtype	Anti-Alias 
+	gain	1
+	response	&datafile(responses/sm2_aa_256sps)
+}

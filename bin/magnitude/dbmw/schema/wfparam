@@ -1,4 +1,19 @@
-#  moment magnitudo extension (DST 2006)
+#  DPC package extension for automatic report
+#
+#   Giovanni Costa 2015                        
+#  
+#
+ Attribute dista
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-1.00" )
+        Range ( "dista >= 0.0 && dista <= 40000." )
+        Units ( "Km" )
+        Description ( "distance" )
+        Detail {
+                This attribute gives the source-receiver distance
+        }
+        ;
 
 Attribute PGA
 	Real (15)
@@ -28,7 +43,7 @@ Attribute PSA03
                 This is a PSA03 value on a waveform.
         }
         ;
-		
+
 Attribute PSA10
         Real (15)
         Format ( "%15.6f" )
@@ -69,17 +84,75 @@ Attribute Housner
         }
         ;
 
-Attribute dista
-        Real (7)
-        Format ( "%7.2f" )
-        Null ( "-1.00" )
-        Range ( "dista >= 0.0 && dista <= 40000." )
-        Units ( "Km" )
-        Description ( "distance" )
+Attribute PGD
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "PGD value on a waveform" )
         Detail {
-                This attribute gives the source-receiver distance
+                This is a PGD value on a waveform.      
         }
         ;
+
+Attribute RMSA    
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "RMSA value on a waveform (cm/s**2)" )
+        Detail {
+                This is a RMSA value on a waveform.
+        }
+        ;
+
+Attribute duration  
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "Event duration (s)" )
+        Detail {
+                Event duration  (Trifumac & Brady, 1975)" 
+        }
+        ;
+
+Attribute v0
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "Intensity of zero crossing (1/s)" )
+        Detail {
+                Intensity of zero crossing (Saragoni, 1990)
+        }
+        ;
+
+Attribute Pd  
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "Saragoni factor" )
+        Detail {
+                This is a Saragoni factor  (Saragoni, 1990).
+        }
+        ;
+
+Attribute Id
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "Damage factor" )
+        Detail {
+                Damage factor (Cosenza & Manfredi, 1997).
+        }
+        ;
+
+Relation wfdamage
+        Fields ( sta chan orid PGD duration RMSA Pd v0 Id auth lddate )
+        Primary ( sta chan orid)
+        Description ( "waveform parameters" )
+        Detail {
+                This relation provides the damage parameters extracted from the waveform (Cosenza & Manfredi, 2000)
+        }
+        ;
+
 
 Relation wfparam
 	Fields ( sta chan orid filter time endtime ml dista seaz PGA PGV PSA03 PSA10 PSA30 Arias Housner arid auth lddate )
@@ -88,5 +161,385 @@ Relation wfparam
 	Detail {
                 This relation provides the gran motion parameters extracted from the waveform
 	}
+        ;
+
+Attribute housing
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "housing description" )
+        Detail {
+                This is the desctribion of the station housing is reported.
+        }
+        ;
+Attribute Country 
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Site administrative country" )
+        Detail {
+                This is the site country (Italy)
+        }
+        ;
+Attribute earthquake
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "historical earhquake" )
+        Detail {
+                This is the name of the historical eartquake used for strong motion parameters comparison
+        }
+        ;
+Attribute record
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "historical record name" )
+        Detail {
+                This is the record name of the historical  eartquake used for strong motion parameters comparison
+        }
+        ;
+Attribute Region
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Site administrative region" )
+        Detail {
+                This is the site administrative region. (Friuli Venezia Giulia)
+        }
+        ;
+Attribute Province
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Site province" )
+        Detail {
+                This is the province. (Trieste)
+        }
+        ;
+Attribute Municipality
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Site municipality" )
+        Detail {
+                This is the site municipality. (Sgonico)
+        }
+        ;
+Attribute Village 
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Site village" )
+        Detail {
+                This is the site village. (Borgo Grotta Gigante)
+        }
+        ;
+Attribute addr 
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Site address" )
+        Detail { 
+                This is the site address. (via Pinco 21)
+        }
+        ;
+Attribute Ntel
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Site contact telephone number" )
+        Detail {
+                This is the site contact telephone number. 
+        }
+        ;
+Attribute locat
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "destription of the site area" )
+        Detail { 
+                This is the destription of the area near the site. (Near cemetery)
+        }
+        ;
+Attribute contact
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" ) 
+        Description ( "Contact people for the station" )
+        Detail {
+                This is the contact people for notices of this station)
+        }
+        ;
+Attribute note 
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" ) 
+        Description ( "Note relative to the station" )
+        Detail {
+               Note relative to the station 
+        }
+        ;
+Attribute photos
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" ) 
+        Description ( "Link to the station photos" )
+        Detail {
+               Link to the directory containing the station photos
+        }
+        ;
+Attribute maintenance
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" ) 
+        Description ( "Link to the maintenance station file" )
+        Detail {
+               Link to the maintenance station file
+        }
+        ;
+Attribute topo
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Topography of the site " )
+        Detail {
+               Description of the topography near the station
+        }
+        ;
+Attribute morpho
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" ) 
+        Description ( "Morphology of the site " )
+        Detail {
+               Description of the Morphology near the station
+        }
+        ;
+Attribute geology
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Soil characteristic under the station " )
+        Detail {
+               Description of the geology under the station
+        }
+        ;
+Attribute resp_spect
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Response spectrum file link" )
+        Detail { 
+              Link to the file containing the response spectrum of the station 
+        }
+        ;
+Attribute geo_map
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" ) 
+        Description ( "Geological map file link" )
+        Detail {  
+              Link to the file containing the geological map of the station
+        }
+        ;
+Attribute geo_prof
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Geological profile file link" )
+        Detail {
+              Link to the file containing the geological profile of the station
+        }
+        ;
+Attribute stratigraphy
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "Stratigraphy file link" )
+        Detail {
+              Link to the file containing the stratigraphy under the station
+        }
+        ;
+Attribute Vs30 
+        Real (8)
+        Format ( "%8.3f" )
+        Null ( "-1.000" )
+        Range ( "Vs30 > 0.0" )
+        Units ( "cm/s*s" )
+        Description ( "Vs30 of the station" )
+        Detail {
+                           Average S velocity in the first 30 m of depth
+        }
+        ;
+Attribute f_0 
+        Real (8)
+        Format ( "%8.3f" )
+        Null ( "-1.000" )
+        Range ( "f_0 > 0.0" )
+        Units ( "Hz" )
+        Description ( "f0 of the station site" )
+        Detail {
+              Frequency corresponding to the maximum amplitude of the response spectrum of the site 
+        }
+        ;
+Attribute NEHRP
+        String (3)
+        Format ( "%-3s" )
+        Null ( "-" )
+        Description ( "NEHRP class assigned to the station" )
+        Detail {
+                NEHRP class assigned to the station
+        }
+        ;
+Attribute EC8
+        String (3)
+        Format ( "%-3s" )
+        Null ( "-" )
+        Description ( " EC8 class assigned to the station" )
+        Detail {
+                Eurocode8 class assigned to the station
+        }
+        ;
+Attribute Quality
+        String (3)
+        Format ( "%-3s" )
+        Null ( "-" )
+        Description ( " Quality of the geotechnical data" )
+        Detail {
+                Quality of the geotechnical data
+        }
+        ;
+Attribute ID  
+        Integer (8)
+        Format ( "%8ld" )
+        Null ( "-1" )
+        Range ( "ID > 0" )
+        Description ( "ID number" )
+        Detail {
+                This stores the id number corresponding to the station spectral parameters contained
+                in the official file S_Tabella Parametri Spettrali_GU.txt
+        }
+        ;
+Attribute RTval
+        Integer (8)
+        Format ( "%8ld" )
+        Null ( "-1" )
+        Range ( "30 < RTval < 2475" )
+        Description ( "Return period" )
+        Detail {
+                return period of the spectrum corresponding to the ag Fo and TC 
+        }
+        ;
+Attribute RType
+        String (3)
+        Format ( "%-3s" )
+        Null ( "-" )
+        Description ( " type of RTval " )
+        Detail {
+                Type of RTval ?????
+        }
+        ;
+Attribute ag
+        Real (8)
+        Format ( "%8.3f" )
+        Null ( "-1.000" )
+        Range ( "ag > 0.0" )
+        Description ( "ag spectral parameters" )
+        Detail {
+                This is the ag spectral parameter contained in the Italian GU Spectral Parameters.txt file                           
+        }
+        ;
+Attribute Fo
+        Real (8)
+        Format ( "%8.3f" )
+        Null ( "-1.000" )
+        Range ( "Fo > 0.0" )
+        Description ( "Fo spectral parameters" )
+        Detail {
+                This is the Fo spectral parameter contained in the Italian GU Spectral Parameters.txt file                                
+        }
+        ;
+Attribute TC
+        Real (8)
+        Format ( "%8.3f" )
+        Null ( "-1.000" )
+        Range ( "TC > 0.0" )
+        Description ( "TC spectral parameters" )
+        Detail {
+                This is the TC spectral parameter contained in the Italian GU Spectral Parameters.txt file                                
+        }
+        ;
+Attribute Rlat
+        Real (9)
+        Format ( "%9.4f" )
+        Null ( "-999.0000" )
+        Range ( "Rlat >= -90.0 && Rlat <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "reference latitude" )
+        Detail {
+                This attribute is the geographic latitude of the site
+                where the spectrum parameters are estimated
+        }
+        ;
+Attribute Rlon
+        Real (9)
+        Format ( "%9.4f" )
+        Null ( "-999.0000" )
+        Range ( "Rlon >= -90.0 && Rlon <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "reference latitude" )
+        Detail {
+                This attribute is the geographic longitude of the site
+                where the spectrum parameters are estimated
+        }
+        ;
+Attribute Rdelta
+        Real (8)
+        Format ( "%8.3f" )
+        Null ( "-1.000" )
+        Range ( "delta >= 0.0" )
+        Units ( "Degrees" )
+        Description ( "distance from the reference site" )
+        Detail {
+                distance between the station and the site where the spectrum
+                parameters are estimated.
+        }
+        ;
+Relation Polsite
+        Fields ( sta ondate offdate Country Region Province Municipality Village addr locat contact Ntel note photos maintenance lddate )
+        Primary ( sta ondate offdate )
+        Description ( "Administrative site table" )
+        Detail {
+                This relation is the the table containing administrative information about the station site
+        }
+       	;
+Relation Geosite
+        Fields ( sta staname time housing topo morpho geology resp_spect geo_prof stratigraphy Vs30 f_0 NEHRP EC8 Quality auth lddate )
+
+        Primary ( sta )
+        Description ( "Geotechnical site table" )
+        Detail {
+                This relation is the the table containing geotechnical information about the station site
+        }
+        ;
+Relation Spetpar
+        Fields ( sta RType  RTval  ag Fo TC ID Rlat Rlon Rdelta auth lddate )
+
+        Primary ( sta RType RTval )
+        Description ( "Spectral Parameters GU")
+        Detail {
+                This table contains the Italian GU Spectral Parameters  nearest the station site
+        }
+        ;
+
+Relation Histopar
+        Fields ( earthquake record sta chan PGA PGV PGD RMSA duration Arias v0 Pd Id EC8 auth lddate)
+
+        Primary ( earthquake record )
+        Description ( "historical earthquake table")
+        Detail {
+               historical table for ground motion parameters comparison 
+        }
         ;
 

@@ -6,7 +6,7 @@ def shear_pick(Z, N, E, dt):
     min_dt = pfile['min_dt']
     k_len = pfile['k_len']
     out = algorithm.dbshear(Z, N, E, cov_len, dt, k_len)
-    s1_pick, s2_pick, snr_s1, snr_s2, pol_fltr, S1, S2, K1, K2 = out
+    s1_pick, s2_pick, snr_s1, snr_s2 = out
 
     # Checking for the various possible pick results
     if s1_pick > 0 and s2_pick > 0:

@@ -17,6 +17,7 @@ MAN3= \
 #	 polygon.so.3 \
 
 ldlibs=	$(DBLIBS)
+cflags = -g
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)

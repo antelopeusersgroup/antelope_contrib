@@ -10,6 +10,7 @@ DATA=  \
     cmg1t_120sec \
     cmg1t_360sec \
     cmg3esp \
+	cmg3espc \
     cmg3esp_100sec \
     cmg3esp_120sec \
     cmg3esp_30sec \

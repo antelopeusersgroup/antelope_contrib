@@ -1,0 +1,33 @@
+originator     Nikolaus Horn, ZAMG
+last_modified  2016-05-20
+
+info    &Literal{
+
+Normalization, poles and zeros from Nanometrics-provided calibration sheets.
+See also: http://www.nanometrics.ca/products/trillium-compact-obs
+
+}
+category    Nanometrics
+configuration   trillium_compact_20
+
+description trillium_compact_20
+dfile   tc20     #  if sensitivity varies from sensor to ...
+                 #  sensor put sensor-specific sensitivities in this directory
+
+rsptype         V   # velocity instrument
+band            b   # broadband
+short_period_sensor no  # Sets first character of SEED channel code
+sensor_type_code    H   # 2nd character in SEED channel code
+
+gtype       sensor
+sensitivity 753.10e-9      # nominal
+iunits      nm/s
+ounits      V
+
+orientations    &Tbl{
+Z   0    0
+N   0   90
+E  90   90
+}
+
+response    &datafile(responses/trillium_compact_20)

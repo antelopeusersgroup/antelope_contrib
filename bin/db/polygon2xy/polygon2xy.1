@@ -3,11 +3,13 @@
 polygon2xy \- export polygon data for usage with \fBGMT\fP.
 .SH SYNOPSIS
 .nf
-\fBpolygon2xy \fP[-subset \fIexpr\fP] \fIdb\fP
+\fBpolygon2xy \fP[-n] [-subset \fIexpr\fP] \fIdb\fP
 .fi
 .SH DESCRIPTION
 \fBpolygon2xy\fP writes the vertices of polygons stored in a database to standard out. Polygons are closed by appending the 1st vertex if not already closed.
 .SH OPTIONS
+.IP "-n"
+write polygon name \fBpname\fP to header
 .IP "-subset expr"
 Datascope expression to subset the database. See dbexpressions(5) and polygon1.2(5).
 .IP db

@@ -1,4 +1,7 @@
-#  moment magnitudo extension (DST 2006)
+#  moment magnitudo extension (netmw)
+
+# Giovanni Costa 2014                        
+#
 
 Attribute netmw
         Real (7)

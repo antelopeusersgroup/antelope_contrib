@@ -1,0 +1,25 @@
+# Hyperion IFS 3000  
+#
+# 3                   num of zeroes
+# 3                   num of poles
+# 1                   normalization factor
+# 1.0                 gain
+####### original (in Hz) #####
+# theoretical   1 sensor	  	  paz    Niko  
+# 1.0
+# 3	Poles
+# 1.483E-3    0.0000e+00    0.0000E+00    0.0000E+00
+# 3.387E-3    0.0000e+00    0.0000E+00    0.0000E+00
+# 29.49E-3    0.0000e+00    0.0000E+00    0.0000E+00
+# 0	Zeros
+####### converted (to rad) ##### nawk -f hz2rad filename > newfilename
+theoretical   1 sensor	  	  paz    Niko  
+1
+3	Poles
+-0.009318 0.000000 0	0
+-0.021281 0.000000 0 0
+-0.185291 0.000000 0 0
+3	Zeros
+0	0	0	0
+0	0	0	0
+0	0	0	0

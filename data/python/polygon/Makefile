@@ -1,30 +1,31 @@
-
 DSDLIB= _polygon.so 
 DLIB=python__polygon$(DSUFFIX)
 
-DATADIR= python/antelope
+DATADIR= python/zamg
 
-DATA= $(DSDLIB) polygon.pyc 
+DATA= $(DSDLIB) polygon.py polygon_utils.py __init__.py 
 
-MAN3Y= pythonpolygon.3y
+MAN3Y= pythonpolygon.3y polygon_utils.3y
 
 CLEAN= *.pyc *.so
 
-cflags= -I$(PYTHONINCLUDE)
+cflags= -I$(PYTHONINCLUDE) -I$(ANTELOPE)/contrib/include
 fflags=
-ldflags= 
-ldlibs= -lpyutil -lpolygon $(TRLIBS)
+ldflags=-Wl,-rpath,$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/static
+ldlibs= $(PYTHONLIBS) -lpyutil -lpolygon
 
-SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+SUBDIR= /contrib
 
 DSOBJS= _polygon.o
 
+__init__.py:
+	@touch $@
+
 $(DSDLIB) : $(DSOBJS)
 	$(RM) $@
-	$(DLD) $(CONTRIBDLDFLAGS) -o $(DSDLIB) $(DSOBJS) $(DLDLIBS) 
+	$(DLD) $(DLDFLAGS) -o $(DSDLIB) $(DSOBJS) $(DLDLIBS) 
 
 $(DLIB): $(DSDLIB)
 	$(RM) $@
 	@cp $(DSDLIB) $(DLIB)
-
