@@ -8,6 +8,12 @@ Attribute mrid
         unique key to the relation mreport
     }
     ;
+Attribute place
+    String (70)
+    Format ( "%-70s" )
+    Null ( "-" )
+    Description ( "full name of a place " )
+    ;
 Attribute prov_id
     String (16)
     Format ( "%16" )
