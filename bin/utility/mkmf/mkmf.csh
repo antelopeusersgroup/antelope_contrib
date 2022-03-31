@@ -1,12 +1,13 @@
 
-set nonomatch
+set nonomatch # no error if nothing matches at all
 
 set mybins=""
 set patterns="*.c *.cpp *.F *.f *.sh *.csh *.tcl *.xpl *.xppl *.xpls *.xtcl *.xwish *.xvwish *.xwish8 *.xpy *.xbqpy"
 foreach pat ($patterns)
     set ft=( $pat )
-    if (-e $ft[1] ) then
-        set mybins=`printf "%s %s" $mybins $ft:gr`
+    if ( -e $ft[1] ) then
+        #set mybins=`printf "%s %s" $mybins $ft[1]:gr`
+        set mybins = ($mybins $ft:gr)
     endif
 end
 if ( "${mybins}--" != "--"} ) then
@@ -24,7 +25,7 @@ set patterns="*.h *.i"
 foreach pat ($patterns)
     set ft=( $pat )
     if (-e $ft[1] ) then
-        set myincludes=`printf "%s %s" $myincludes $ft`
+        set myincludes = ($myincludes $ft)
     endif
 end
 if ( "${myincludes}--" != "--" ) then
