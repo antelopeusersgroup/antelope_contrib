@@ -1,15 +1,14 @@
 """
 @author      Nikolaus Horn <Nikolaus.Horn@zamg.ac.at>
 @created     2013-11-25
-@modified    2014-02-15
-@version     1.0
+@modified    2022-03-31
+@version     1.2
 @license     MIT-style license
 @credits     ZAMG for my visit to EGU 2014
 """
 
 
 import getopt
-import codecs
 import requests
 import json
 import warnings
@@ -21,23 +20,28 @@ import antelope.elog as elog
 
 
 def usage(progname):
-    print(progname, "[-v] [-p proxy_url]  [-a auth] [-k keydb] [-u url] dbname")
+    print(progname, "[-v] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
 
 
 def main():
     progname = sys.argv[0].split("/")[-1]
     elog.init(progname)
-    BASE_URL = (
-        "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
-    )
-    BASE_URL = "http://www.seismicportal.eu/fdsnws/event/1/query?limit=100&format=json"
+    if progname == "usgs2db":
+        BASE_URL = (
+            "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_hour.geojson"
+        )
+        auth = "USGS"
+    else:
+        BASE_URL = (
+            "http://www.seismicportal.eu/fdsnws/event/1/query?limit=10&format=json"
+        )
+        auth = "EMSC"
     verbose = 0
     archive = 0
     opts = []
     args = []
     keydbname = "keydb"
     keyschema = "idmatch1.0"
-    auth = "EMSC"
     proxy_url = ""
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:k:p:u:v", "")
@@ -139,6 +143,7 @@ def main():
     i = len(data)
     for index in range(i):
         fdata = data[index]
+        unid = fdata["id"]
         geom_type = fdata["type"]
         geometry = fdata["geometry"]
         coordinates = geometry["coordinates"]
@@ -154,9 +159,7 @@ def main():
             cdi
         ) = (
             place
-        ) = (
-            code
-        ) = felt = mag = magtype = net = evtype = auth_str = unid = source_id = ""
+        ) = code = felt = mag = magtype = net = evtype = auth_str = source_id = ""
         ml = mb = ms = mlnull
         # be sure to convert unicode objects to string objects by calling "str(xxx)",
         # this prevents datascope  from CRASHING
@@ -186,10 +189,12 @@ def main():
                 net = str(propv)
             elif propk == "auth":
                 auth_str = str(propv)
-            elif propk == "unid":
-                unid = str(propv)
-            elif propk == "source_id":
-                source_id = str(propv)
+            # elif propk == "unid": #emsc repeats the id in Features as it "unid"
+            #    unid = str(propv)
+            # elif propk == "code": # usgs calls id code
+            #    code = str(propv)
+            # elif propk == "source_id":
+            #    source_id = str(propv)
             elif propk == "updated":
                 updated = propv / 1000.0
             elif propk == "lastupdate":
@@ -200,21 +205,25 @@ def main():
                 place = str(propv)
 
         # push M to mb, seems to make sense...
-        if magtype.lower() == "m":
+        lmt = magtype.lower()
+        if lmt == "m":
             magtype = "mb"
-
-        if magtype.lower() == "ml":
+        elif lmt == "ml":
             ml = mag
-        elif magtype.lower() == "mb":
+        elif lmt == "mb":
             mb = mag
-        elif magtype.lower() == "ms":
+        elif lmt == "ms":
             ms = mag
-        # grn, srn seems to be unimplemenmted
+
         gr = stock.grnumber(lat, lon)
         sr = stock.srnumber(lat, lon)
         jdate = stock.epoch2str(etime, "%Y%j")
 
         # fkey = str("%s%s" % (net, code))
+        # if net != "" and code != "":
+        #    unid = "%s%s" % (net, code)
+        if verbose:
+            elog.notify("check id %s" % unid)
 
         kmatch = idmatch.lookup(table="idmatch", record="dbSCRATCH")
         try:
