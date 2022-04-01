@@ -86,7 +86,7 @@ def string_charsplit(my_string, bytelen):
 def string_maxbytes(my_string, bytelen):
     """chop encoded string into characters, not bytes"""
     chars = 1
-    while utf8len(my_string[:chars]) <= bytelen:
+    while utf8len(my_string[:chars]) <= bytelen and chars <= len(my_string):
         chars += 1
     return my_string[: chars - 1]
 
