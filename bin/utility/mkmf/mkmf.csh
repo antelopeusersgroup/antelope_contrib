@@ -2,7 +2,7 @@
 set nonomatch # no error if nothing matches at all
 
 set mybins=""
-set patterns="*.c *.cpp *.F *.f *.sh *.csh *.tcl *.xpl *.xppl *.xpls *.xtcl *.xwish *.xvwish *.xwish8 *.xpy *.xbqpy"
+set patterns="*.c *.cpp *.F *.f *.sh *.csh *.tcl *.xpl *.xppl *.xpls *.xtcl *.xwish *.xvwish *.xwish8 *.oxwish *.xpy *.xbqpy *.xbqpyn *.xbqpyx *xpys"
 foreach pat ($patterns)
     set ft=( $pat )
     if ( -e $ft[1] ) then
