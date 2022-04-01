@@ -33,13 +33,18 @@ def main():
             "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_hour.geojson"
         )
         auth = "USGS"
-        help_text = "\nUSGS provides at most 1 month of data on the following URL:\nhttp://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson\ndefault is to retrieve only the most recent events"
+        help_text = """USGS provides at most 1 month of data on the following URL:
+http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson.
+The default is to retrieve events from the last hour with a mgnitude of 2.5 or higher"""
     else:
         BASE_URL = (
             "http://www.seismicportal.eu/fdsnws/event/1/query?limit=10&format=json"
         )
         auth = "EMSC"
-        help_text = "\nEMSC provides at most 1000 events at once on the following URL:\nhttp://www.seismicportal.eu/fdsnws/event/1/query?limit=1000&format=json\ndefault is to retrieve only the most recent events"
+        help_text = """EMSC provides at most 1000 events at once on the following URL:
+http://www.seismicportal.eu/fdsnws/event/1/query?limit=1000&format=json.
+The default default is to retrieve only the most recent events"""
+
     verbose = 0
     archive = 0
     opts = []
@@ -86,6 +91,8 @@ def main():
     [mlnull] = dbq.getv("ml")
     dbq = db.lookup(table="event", field="evname", record="dbNULL")
     evname_width = dbq.query("dbFIELD_SIZE")
+    dbq = db.lookup(table="origin", field="auth", record="dbNULL")
+    auth_width = dbq.query("dbFIELD_SIZE")
 
     kdb = ds.dbopen(keydbname, "r+")
     descname = kdb.query("dbDATABASE_FILENAME")
@@ -158,7 +165,7 @@ def main():
         lon = float(coordinates[0])
         lat = float(coordinates[1])
         depth = float(coordinates[2])
-        #EMSC correctly specifies depth as a negative number :-) 
+        # EMSC correctly specifies depth as a negative number :-)
         if progname == "emsc2db":
             depth *= -1.0
         properties = fdata["properties"]
