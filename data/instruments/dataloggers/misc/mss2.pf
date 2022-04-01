@@ -1,0 +1,27 @@
+# https://www.mertl-research.at/en/projects/macro_seismic_network/
+originator    	Nikolaus Horn, ZAMG 
+last_modified  	2022-04-01
+
+category	MSS
+configuration	Jamstec OBS
+
+description	MacroSeismik Sensor Network 
+dfile 		mss2	# no response, a mystery
+
+streams		100sps
+
+# definitions of streams
+100sps	100 a/d
+
+# gain = counts/V = (1 / 0.000125 V/count)
+gains   8000  
+
+
+# Stages
+a/d	&Arr{
+gtype		digitizer
+samprate	100
+iunits		V
+ounits		counts
+sn		datalogger
+}
