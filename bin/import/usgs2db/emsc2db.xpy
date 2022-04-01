@@ -18,6 +18,8 @@ import antelope.datascope as ds
 import antelope.stock as stock
 import antelope.elog as elog
 
+import zamg.utilities as zu
+
 
 def usage(progname):
     print(progname, "[-v] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
@@ -31,11 +33,13 @@ def main():
             "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_hour.geojson"
         )
         auth = "USGS"
+        help_text = "\nUSGS provides at most 1 month of data on the following URL:\nhttp://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson\ndefault is to retrieve only the most recent events"
     else:
         BASE_URL = (
             "http://www.seismicportal.eu/fdsnws/event/1/query?limit=10&format=json"
         )
         auth = "EMSC"
+        help_text = "\nEMSC provides at most 1000 events at once on the following URL:\nhttp://www.seismicportal.eu/fdsnws/event/1/query?limit=1000&format=json\ndefault is to retrieve only the most recent events"
     verbose = 0
     archive = 0
     opts = []
@@ -44,7 +48,7 @@ def main():
     keyschema = "idmatch1.0"
     proxy_url = ""
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:k:p:u:v", "")
+        opts, args = getopt.getopt(sys.argv[1:], "a:hk:p:u:v", "")
     except getopt.GetoptError:
         elog.die("illegal option")
         usage(progname)
@@ -61,6 +65,10 @@ def main():
             keydbname = a
         elif o == "-p":
             proxy_url = a
+        elif o == "-h":
+            usage(progname)
+            elog.notify(help_text)
+            sys.exit(0)
 
     if len(args) > 1 or len(args) < 1:
         usage(progname)
@@ -290,7 +298,7 @@ def main():
                     erecno = dbevent.addv(
                         ("evid", evid),
                         ("prefor", orid),
-                        ("evname", evname[:evname_width]),
+                        ("evname", zu.string_maxbytes(evname, evname_width)),
                         ("auth", auth),
                     )
                 except Exception as __:
