@@ -1,0 +1,66 @@
+.TH GFZRSS2DB 1 
+.SH NAME
+gfzrss2db \- utility to retrieve earthquake information in text format from \fBFDSN\fP services.
+.SH SYNOPSIS
+.nf
+\fBgfzrss2db\fP [-v] [-a \fIauthor\fP]
+      [-k \fIkeydbname\fP] [-u \fIservice-url\fP] \fIdbname\fP
+.fi
+.SH DESCRIPTION
+\fBgfzrss2db\fP queries the RSS-Feed of GPZ
+and stores the event information in a database.
+The programs keeps track of event ids in a separate table and updates 
+the output database if new information is available.
+.br
+.SH OPTIONS
+.IP \-v
+verbose flag
+.IP -h
+Show help.
+.IP "-k keydbname"
+name of database to keep track of event ids. Since IDs used by GFZ 
+are a mixture of strings and integers, a separate table is needed.
+The database must be in schema \fBidmatch1.0\fP or higher. The database 
+is created upon startup if not originally existing. 
+The database name defaults to keydb.
+.IP \-u
+URL of the data source. The RSS-Feed should have exact the same format as 
+provided by GFZ on http://geofon.gfz-potsdam.de/eqinfo/list.php?fmt=rss.
+Probably it makes no sense not to use the default given above.
+.IP "-a author"
+Author name for event, origin and netmag table. The event flag (A for automatic) is appended. Defaults to GFZ.
+.IP database
+The name of the output database. This argument is required.
+.SH EXAMPLE
+Recent event data from GFZ into a database named \fBgfz\fP:
+.nf
+gfzrss2db -k db/gfz_ids -v gfz
+.fi
+To update event information every 10 minutes, add the following to your rtexec.pf
+.nf
+# update database gfz every 10 minutes
+GFZ   UTC   0,10,20,30,40,50   *  *  *  *  gfzrss2db -k db/gfz_ids db/gfz 
+.fi
+.SH ENVIRONMENT
+The program uses the Python module \fIrequests\fP to retrieve data from a 
+webservice. This module supports proxy configuration based on the standard 
+environment variables \fIhttp_proxy\fP, \fIhttps_proxy\fP. 
+If you need more control over proxy settings, feel free to 
+contact the author, Nikolaus.Horn@zamg.ac.at.
+.SH "SEE ALSO"
+.nf
+
+https://docs.python-requests.org/en/master, USGS2orb(1), antelope_python(3y)
+
+.fi
+.SH "BUGS AND CAVEATS"
+Since the text format for event information does not provide information on 
+when the data has been updated, information on existing events is always 
+overwritten. This is inefficient, but unavoidable. The error handling is simple.
+Since no magnitude type is given, it is set to \fImb\fP.
+I implemented my personal understanding of the data offered. There might 
+be wiser ways to use the save the information in a database. 
+This module uses the python modules requests with all their bugs and 
+limitations. And of course I added many more problems...
+.SH AUTHOR
+Nikolaus Horn (nikolaus.horn@zamg.ac.at)
