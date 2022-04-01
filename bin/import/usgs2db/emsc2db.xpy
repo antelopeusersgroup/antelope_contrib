@@ -158,7 +158,9 @@ def main():
         lon = float(coordinates[0])
         lat = float(coordinates[1])
         depth = float(coordinates[2])
-        depth *= -1.0
+        #EMSC correctly specifies depth as a negative number :-) 
+        if progname == "emsc2db":
+            depth *= -1.0
         properties = fdata["properties"]
         mb = ms = ml = mlnull
         time = (
@@ -181,6 +183,8 @@ def main():
                     etime = stock.str2epoch(dt2)
             elif propk == "mag":
                 mag = float(propv)
+            elif propk == "depth":
+                depth = float(propv)
             elif propk.lower() == "magtype":
                 magtype = str(propv)
             elif propk == "place":
