@@ -3,7 +3,7 @@ originator    	Nikolaus Horn, ZAMG
 last_modified  	2022-04-01
 
 category	MSS
-configuration	Jamstec OBS
+configuration	MacroSeismic Sensor # Oxymoron or contradictio in adjecto
 
 description	MacroSeismik Sensor Network 
 dfile 		mss2	# no response, a mystery
@@ -11,7 +11,7 @@ dfile 		mss2	# no response, a mystery
 streams		100sps
 
 # definitions of streams
-100sps	100 a/d
+100sps	100 a/d lp_12.8l
 
 # gain = counts/V = (1 / 0.000125 V/count)
 gains   8000  
@@ -19,9 +19,14 @@ gains   8000
 
 # Stages
 a/d	&Arr{
-gtype		digitizer
-samprate	100
-iunits		V
-ounits		counts
-sn		datalogger
+	gtype		digitizer
+	samprate	100
+	iunits		V
+	ounits		counts
+	sn		datalogger
+}
+lp_12.8 &Arr{
+	gtype   analog_lp
+	gain    1
+	response        &datafile(responses/lp12_8hz)
 }
