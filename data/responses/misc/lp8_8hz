@@ -1,0 +1,14 @@
+# 8.8Hz lowpass 20dB/Decade
+# All poles and zeroes in radians/sec
+# 1                   type
+# 1                   num of zeroes
+# 0                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 2.010660e+1         normalization factor
+# 1.0                 gain
+theoretical   1 lowpass   paz    pz6seismo
+5.529203E+01
+1             Poles
+5.529203E+01  0.000000E+00  0.000000E+00  0.000000E+00 
+0             Zeros
