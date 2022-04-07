@@ -11,7 +11,7 @@ dfile 		mss2	# no response, a mystery
 streams		100sps
 
 # definitions of streams
-100sps	100 a/d lp_12.8l
+100sps	100 a/d lp_12.8
 
 # gain = counts/V = (1 / 0.000125 V/count)
 gains   8000  
