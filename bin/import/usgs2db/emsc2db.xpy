@@ -22,7 +22,7 @@ import zamg.utilities as zu
 
 
 def usage(progname):
-    print(progname, "[-v] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
+    print(progname, "[-v] [-h] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
 
 
 def main():
@@ -43,9 +43,10 @@ The default is to retrieve events from the last hour with a mgnitude of 2.5 or h
         auth = "EMSC"
         help_text = """EMSC provides at most 1000 events at once on the following URL:
 http://www.seismicportal.eu/fdsnws/event/1/query?limit=1000&format=json.
-The default default is to retrieve only the most recent events"""
+The default default is to retrieve only the most recent 10 events"""
 
-    verbose = 0
+    verbose = False
+    debug = False
     archive = 0
     opts = []
     args = []
@@ -53,7 +54,7 @@ The default default is to retrieve only the most recent events"""
     keyschema = "idmatch1.0"
     proxy_url = ""
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:hk:p:u:v", "")
+        opts, args = getopt.getopt(sys.argv[1:], "a:hk:p:u:vd", "")
     except getopt.GetoptError:
         elog.die("illegal option")
         usage(progname)
@@ -61,7 +62,10 @@ The default default is to retrieve only the most recent events"""
 
     for o, a in opts:
         if o == "-v":
-            verbose = 1
+            verbose = True
+        elif o == "-d":
+            verbose = True
+            debug = True
         elif o == "-a":
             auth = a
         elif o == "-u":
@@ -119,6 +123,8 @@ The default default is to retrieve only the most recent events"""
             proxy = {"https": proxy_url}
         else:
             proxy = {"http": proxy_url}
+        if debug:
+            elog.notify("try to retrieve %s\nvia proxy %s" % (BASE_URL, proxy))
         with warnings.catch_warnings():
             warnings.simplefilter(
                 "ignore"
@@ -137,6 +143,8 @@ The default default is to retrieve only the most recent events"""
             except:
                 elog.die("unspecific problem requesting data from %s" % BASE_URL)
     else:
+        if debug:
+            elog.notify("try to retrieve %s" % BASE_URL)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             try:
@@ -156,6 +164,8 @@ The default default is to retrieve only the most recent events"""
     obj = req.json()
     data = obj["features"]
     i = len(data)
+    if debug:
+        elog.debug("retrieved %d events" % i)
     for index in range(i):
         fdata = data[index]
         unid = fdata["id"]

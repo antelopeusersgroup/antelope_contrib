@@ -12,7 +12,7 @@ import getopt
 import requests
 import warnings
 
-#XML related stuff
+# XML related stuff
 import xml.dom.minidom
 import pprint
 import datetime
@@ -24,6 +24,7 @@ import antelope.elog as elog
 
 import zamg.utilities as zu
 
+
 def getText(nodelist):
     rc = []
     for node in nodelist:
@@ -31,8 +32,9 @@ def getText(nodelist):
             rc.append(node.data)
     return "".join(rc)
 
+
 def usage(progname):
-    print(progname, "[-v] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
+    print(progname, "[-v] [-h] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
 
 
 def main():
@@ -41,9 +43,8 @@ def main():
     BASE_URL = "http://geofon.gfz-potsdam.de/eqinfo/list.php?fmt=rss"
     auth_base = "GFZ"
     help_text = """Not all datacenters provide event information using FDSN webservices
-Unfortunately, RSS or GeoRSS is not fully standardized. I assume this progam is only usefol for obtaining event information from GFZ"""
-    verbose = 0
-    archive = 0
+Unfortunately, RSS or GeoRSS is not fully standardized. I assume this progam is only useful for obtaining event information from GFZ"""
+    verbose = False
     opts = []
     args = []
     keydbname = "keydb"
@@ -58,7 +59,7 @@ Unfortunately, RSS or GeoRSS is not fully standardized. I assume this progam is 
 
     for o, a in opts:
         if o == "-v":
-            verbose = 1
+            verbose = True
         elif o == "-a":
             auth_base = a
         elif o == "-u":
@@ -90,7 +91,6 @@ Unfortunately, RSS or GeoRSS is not fully standardized. I assume this progam is 
     evname_width = dbq.query("dbFIELD_SIZE")
     dbq = db.lookup(table="event", field="auth", record="dbNULL")
     auth_width = dbq.query("dbFIELD_SIZE")
-
 
     kdb = ds.dbopen(keydbname, "r+")
     descname = kdb.query("dbDATABASE_FILENAME")
@@ -198,9 +198,7 @@ Unfortunately, RSS or GeoRSS is not fully standardized. I assume this progam is 
         evid = 0
         updated_event = False
         if len(rec_list) > 1:
-            elog.notify(
-                "found too many keys for %s, sth strange goes on here" % unid
-            )
+            elog.notify("found too many keys for %s, sth strange goes on here" % unid)
         if len(rec_list) > 0:
             for rec in rec_list:
                 idmatch.record = rec
@@ -245,8 +243,7 @@ Unfortunately, RSS or GeoRSS is not fully standardized. I assume this progam is 
                 problem = True
                 if verbose:
                     elog.notify(
-                        "problem adding origin for event at %s"
-                        % stock.strtime(etime)
+                        "problem adding origin for event at %s" % stock.strtime(etime)
                     )
 
             if not problem:
@@ -255,7 +252,7 @@ Unfortunately, RSS or GeoRSS is not fully standardized. I assume this progam is 
                         ("evid", evid),
                         ("prefor", orid),
                         ("evname", zu.string_maxbytes(evname, evname_width)),
-                        ("auth", auth) ,
+                        ("auth", auth),
                     )
                 except Exception as __:
                     if verbose:
@@ -292,8 +289,7 @@ Unfortunately, RSS or GeoRSS is not fully standardized. I assume this progam is 
                     if verbose:
                         problem = True
                         elog.notify(
-                            "problem adding id for event at %s"
-                            % stock.strtime(etime)
+                            "problem adding id for event at %s" % stock.strtime(etime)
                         )
         elif updated_event:
             if verbose:
@@ -304,9 +300,7 @@ Unfortunately, RSS or GeoRSS is not fully standardized. I assume this progam is 
             evmatcher = kmatch.matches(dbevent, "evid")
             evlist = evmatcher()
             if len(evlist) > 1:
-                elog.notify(
-                    "strange, found a few matching events for evid %d " % evid
-                )
+                elog.notify("strange, found a few matching events for evid %d " % evid)
             if len(evlist) > 0:
                 dbevent.record = evlist[0]
                 [prefor] = dbevent.getv("prefor")
@@ -343,7 +337,9 @@ Unfortunately, RSS or GeoRSS is not fully standardized. I assume this progam is 
                     if len(maglist) > 0:
                         dbnetmag.record = maglist[0]
                         dbnetmag.putv(
-                            ("magnitude", mag), ("magtype", magtype), ("auth", auth),
+                            ("magnitude", mag),
+                            ("magtype", magtype),
+                            ("auth", auth),
                         )
 
     return 0
