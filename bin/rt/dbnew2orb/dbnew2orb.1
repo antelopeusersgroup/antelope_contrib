@@ -10,7 +10,7 @@ dbnew2orb \- send new or updated database rows to an orbserver
 .SH DESCRIPTION
 \fBdbnew2orb\fP watches a database for modifications and sends modified rows to an orbserver. 
 It allows to transfer a database so that it can be used on the receiving side with programs 
-that keep the database open like e.g. dbevents.
+that keep the database open like e.g. dbevents. The database can be in any database schema.
 .SH OPTIONS
 .IP "-sleep seconds"
 \fIseconds\fP specifies the number of \fIseconds\fP to wait between iterations over all database 
@@ -100,6 +100,7 @@ save the demo database on the other side:
 .SH "BUGS AND CAVEATS"
 The current version of the program transfers external files, i.e. those referenced by the fields dir and dfile \fIdfile\fP. 
 This could result in large data volume transferred.
+It can happen that orb2orb refuses to transfer database rows whose format is unknown on the instance transferring the data. This can be solved by installing database extensions on the transmitting machine as well, not only on the sending and receiving sides.
 Sometimes one might see strange log entries coming from orb2dbt on the receiving side. While this looks
 frigthening, it still seems to work fine.
 
