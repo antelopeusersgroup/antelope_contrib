@@ -23,7 +23,7 @@ import zamg.utilities as zu
 
 
 def usage(progname):
-    print(progname, "[-v] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
+    print(progname, "[-v] [-h] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
 
 
 def main():
@@ -36,8 +36,7 @@ def main():
     https://www.fdsn.org/datacenters
     Unfortunately, there is no general overview if these services provide event information and also support the text format.
     You mut check each webservice individually"""
-    verbose = 0
-    archive = 0
+    verbose = False
     opts = []
     args = []
     keydbname = "keydb"
@@ -52,7 +51,7 @@ def main():
 
     for o, a in opts:
         if o == "-v":
-            verbose = 1
+            verbose = True
         elif o == "-a":
             auth = a
         elif o == "-u":
@@ -84,7 +83,6 @@ def main():
     evname_width = dbq.query("dbFIELD_SIZE")
     dbq = db.lookup(table="event", field="auth", record="dbNULL")
     auth_width = dbq.query("dbFIELD_SIZE")
-
 
     kdb = ds.dbopen(keydbname, "r+")
     descname = kdb.query("dbDATABASE_FILENAME")
@@ -176,7 +174,6 @@ def main():
             if auth != "":
                 oauth = auth
                 magauth = auth
-
 
             ml = mb = ms = mlnull
 
@@ -355,7 +352,9 @@ def main():
                         if len(maglist) > 0:
                             dbnetmag.record = maglist[0]
                             dbnetmag.putv(
-                                ("magnitude", mag), ("magtype", magtype), ("auth", zu.string_maxbytes(magauth, auth_width)),
+                                ("magnitude", mag),
+                                ("magtype", magtype),
+                                ("auth", zu.string_maxbytes(magauth, auth_width)),
                             )
 
     return 0

@@ -20,112 +20,6 @@ marker_template = (
 icon_template = """var %s = new LeafIcon({iconUrl: '%s'});"""
 marker_html_template = "%s - %s<p>%.2f %.2f %.0fm<p>%s"
 
-# note we need to escape percents %-> %% 
-html_template = """
-<!DOCTYPE html>
-<html>
-<head>
-	<title>%s</title>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="%s" />
-    <link rel="stylesheet" href="/leaflet/leaflet.draw.css" />
-    <link rel="stylesheet" href="/leaflet/leaflet.measurecontrol.css" />
-	<script src="%s"></script>
-    <script src="/leaflet/leaflet.draw.js"></script>
-    <script src="/leaflet/leaflet.measurecontrol.min.js"></script>
-    <style>
-        body { padding:0; margin:0; }
-        html, body, #map { height:100%%; }
-    .logospace{position: relative; right: 0px; top: -5px; }
-    .txtspace{position: relative; right: 0px;top: -5px; background:white; }
-    @media all and (max-device-width: 480px) { .logospace{display: none; } }
-    </style>        
-</head>
-<body>
-	<div id="map"></div>
-	<script>
-        var LeafIcon = L.Icon.extend({
-            options: {
-                iconSize:     [26, 26],
-                iconAnchor:   [12, 25],
-                popupAnchor:  [0, -25]
-                }
-            });
-        %s    
-
-        %s
-
-        %s
-
-        var osm_Attr='&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> Contributors',
-            esri_Attr='&copy; <a href="http://www.esri.com/">Esri</a> i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-            BMAT_Attr='Datenquelle: <a href="http://www.basemat.at/">basemap.at</a>';
-
-        var normal =  L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                {maxZoom: 18,   attribution: osm_Attr});    
-        var zamg =    L.tileLayer('http://wmsx.zamg.ac.at/osmtiles/{z}/{x}/{y}.png',
-                {maxZoom: 8,   attribution: osm_Attr});    
-        var mq_zamg = L.tileLayer('http://wmsx.zamg.ac.at/osmtiles/mapquest/{z}/{x}/{y}.jpg',
-                {maxZoom: 8,   attribution: osm_Attr});
-        var ESRI =    L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                {maxZoom: 18,   attribution: esri_Attr});    
-        var BMAT = L.tileLayer('https://maps{s}.wien.gv.at/basemap/geolandbasemap/normal/google3857/{z}/{y}/{x}.{format}',
-                {maxZoom: 19,   format:'png', attribution: BMAT_Attr,
-                subdomains: ["", "1", "2", "3", "4"], format: 'png',
-                bounds: [[46.35877, 8.782379], [49.037872, 17.189532]] });  
-        var BasemapAT_orthofoto = L.tileLayer('https://maps{s}.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.{format}', {
-                maxZoom: 19, attribution: 'Datenquelle: <a href="www.basemap.at">basemap.at</a>', 
-                subdomains: ["", "1", "2", "3", "4"], format: 'jpeg',
-                bounds: [[46.35877, 8.782379], [49.037872, 17.189532]] });
-
-		var map = L.map('map', {
-			center: [%.2f, %.2f],
-			zoom: 6,
-			layers: [normal,%s]
-		});
-
-		var baseLayers = {
-			"OpenstreetMap": normal,
-			"ZAMG hosted OSM": zamg,
-			"Mapquest/ZAMG": mq_zamg,
-			"ESRI": ESRI,
-            "Basemap.at": BMAT,
-            "Basemap Photo": BasemapAT_orthofoto
-		};
-
-		var overlays = {
-			%s
-		};
-
-		L.control.layers(baseLayers, overlays).addTo(map);
-        L.Control.measureControl().addTo(map);
-        var logospace= new L.Control();
-        logospace.onAdd = function(map) {
-            this._div = L.DomUtil.create('div', 'logospace');
-            this.update();
-            return this._div;
-        };
-        logospace.update = function () {
-            this._div.innerHTML = '<img src="/images/zamg_logo_vert.png" alt="ZAMG Logo">';
-            this._div.innerHTML = '<img src="%s" alt="%s">';
-        };
-        logospace.addTo(map);
-        var txtspace= new L.Control( {position: 'bottomleft'} );
-        txtspace.onAdd = function(map) {
-            this._div = L.DomUtil.create('div', 'txtspace');
-            this.update();
-            return this._div;
-        };
-        txtspace.update = function () {
-            this._div.innerHTML = 'Last Update: <b>%s</b>';
-        };
-        txtspace.addTo(map);
-	</script>
-</body>
-</html>
-"""
-
 import getopt
 
 # Import Antelope modules
@@ -184,9 +78,14 @@ def main():
     logo_alt = pf["logo_alt"]
     leaflet_css = pf["leaflet_css"]
     leaflet_js = pf["leaflet_js"]
+    leaflet_draw_css = pf["leaflet_draw_css"]
+    leaflet_draw_js = pf["leaflet_draw_js"]
+    leaflet_measurecontrol_css = pf["leaflet_measurecontrol_css"]
+    leaflet_measurecontrol_js = pf["leaflet_measurecontrol_js"]
     dontshow = pf["dontshow"]
     title = pf["title"]
     gis_layers = pf["layers"]
+    html_template = pf["html_template"]
 
     db = ds.dbopen(dbname, "r")
     dbsite = db.lookup(table="site")
@@ -226,7 +125,11 @@ def main():
         layer_index += 1
         for dbs.record in range(dbs.record_count):
             [ondate, lat, lon, elev, sta] = dbs.getv(
-                "ondate", "lat", "lon", "elev", "sta",
+                "ondate",
+                "lat",
+                "lon",
+                "elev",
+                "sta",
             )
             try:
                 [staname] = dbs.getv("staname")
@@ -247,25 +150,30 @@ def main():
                 marker_template % (lat, lon, icon_name, sta, marker_html, this_layer)
             )
 
-    my_html = html_template % (
-        title,
-        leaflet_css,
-        leaflet_js,
-        "".join(icons),
-        "".join(layers),
-        "".join(markers),
-        center_lon, center_lat,
-        ",".join(layer_names),
-        ",".join(layer_descriptions),
-        logo_url,
-        logo_alt,
-        creation_time,
+    my_html = html_template.format(
+        title=title,
+        leaflet_css=leaflet_css,
+        leaflet_js=leaflet_js,
+        leaflet_draw_css=leaflet_draw_css,
+        leaflet_draw_js=leaflet_draw_js,
+        leaflet_measurecontrol_css=leaflet_measurecontrol_css,
+        leaflet_measurecontrol_js=leaflet_measurecontrol_js,
+        icons="".join(icons),
+        layers="".join(layers),
+        layer_names=",".join(layer_names),
+        layer_descriptions=",".join(layer_descriptions),
+        markers="".join(markers),
+        center_lat=center_lat,
+        center_lon=center_lon,
+        logo_url=logo_url,
+        logo_alt=logo_alt,
+        creation_time=creation_time,
     )
-    outstr = "".join(my_html)
     with open(htmlfilename, "w", encoding="utf8") as myfile:
-        myfile.write(outstr)
+        myfile.write(my_html)
 
     return 0
+
 
 if __name__ == "__main__":
     status = main()

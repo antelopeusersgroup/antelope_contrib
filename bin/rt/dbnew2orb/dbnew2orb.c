@@ -327,7 +327,7 @@ main(int argc, char **argv)
 					continue;
 				}
 			}
-            if (verbose) elog_notify(0,"will check table %s\n",tablename);
+            if (verbose > 1) elog_notify(0,"will check table %s\n",tablename);
             pushtbl(tablenames,tablename);
         }
     }

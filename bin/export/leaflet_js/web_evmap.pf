@@ -1,24 +1,5 @@
-filebase    stations    # output filename
-title Antelope Demo Station Map     # title
-
-dontshow    X[123456]TA|BSTA|CUVW|CXYZ|CO[ABCD]   # ignore sites matching this expression
-layers &Tbl{
-    &Arr{
-        stations B0.*
-        icon     http://geoweb.zamg.ac.at/my_icons/tri_26_pink.png
-        description Some array in the desert
-    }
-    &Arr{
-        stations PFO
-        icon     http://geoweb.zamg.ac.at/my_icons/tri_26_pink.png
-        description Pinion Flat
-    }
-    &Arr{
-        stations # catch all stations left here
-        icon     https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png
-        description ANZA stations
-    }
-}
+filebase    events                  # output filename
+title Antelope Demo Event Map     # title
 
 logo_url           https://geoweb.zamg.ac.at/images/zamg_logo_vert.png
 logo_alt           ZAMG Logo
@@ -28,6 +9,12 @@ leaflet_draw_js    https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/lea
 leaflet_draw_css   https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css
 leaflet_measurecontrol_js    https://makinacorpus.github.io/Leaflet.MeasureControl/leaflet.measurecontrol.js
 leaflet_measurecontrol_css   https://makinacorpus.github.io/Leaflet.MeasureControl/leaflet.measurecontrol.css
+
+prefor_icon        https://geoweb.zamg.ac.at/my_icons/star_red.png
+origin_icon        https://geoweb.zamg.ac.at/my_icons/star_blue.png
+defining_icon      https://geoweb.zamg.ac.at/my_icons/tri_26_magenta.png
+nondefining_icon   https://geoweb.zamg.ac.at/my_icons/tri_26_navy.png
+unassoc_icon       https://geoweb.zamg.ac.at/my_icons/tri_26_grey.png
 
 
 #  Note: we don't need to escape percent signs, but

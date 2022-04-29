@@ -3,11 +3,11 @@
 usgs2db, emsc2db \- utilities to retrieve earthquake feeds in GeoJSON format from \fIUSGS\fP or \fIEMSC\fP.
 .SH SYNOPSIS
 .nf
-\fBusgs2db\fP [-v] [-a \fIauthor\fP]
+\fBusgs2db\fP [-v] [-h] [-a \fIauthor\fP]
       [-k \fIkeydbname\fP] [-u \fIfeed-url\fP] \fIdbname\fP
 .fi
 .nf
-\fBemsc2db\fP [-v] [-a \fIauthor\fP]
+\fBemsc2db\fP [-v] [-h] [-a \fIauthor\fP]
       [-k \fIkeydbname\fP] [-u \fIfeed-url\fP] \fIdbname\fP
 .fi
 .SH DESCRIPTION
@@ -31,6 +31,8 @@ the default url in this case is
 \fBhttp://www.seismicportal.eu/fdsnws/event/1/query?limit=10&format=json\fP.
 .IP "-a author"
 Author name for event, origin and netmag table. Defaults to NEIC or EMSC
+.IP "-h"
+Show help.
 .IP database
 The name of the output database. This argument is required.
 .SH EXAMPLE
