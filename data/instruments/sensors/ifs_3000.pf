@@ -12,7 +12,7 @@ band		l	# broadband
 sensor_type_code	D
 
 gtype		sensor
-sensitivity	0.1725  	# (17.25 mv / Pa)
+sensitivity	0.01725  	# (17.25 mv / Pa)
 iunits		Pa
 ounits		V  
 
