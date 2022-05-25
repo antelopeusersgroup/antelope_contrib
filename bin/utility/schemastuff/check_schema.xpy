@@ -13,12 +13,14 @@ def read_attributes(fp):
     attributes = {}
     relations = {}
     schemata = {}
+    error_seen = False
 
     with open(fp) as f:
         try:
             lines = f.readlines()
         except Exception as __:
-            elog.notify("encoding problem in file %s" % fp.decode())
+            elog.notify("file %s: encoding problem. File is not purely UTF-8" % fp.decode())
+            error_seen = True
 
     with open(fp, encoding="utf8", errors="ignore") as f:
         lines = f.readlines()
@@ -136,18 +138,20 @@ def read_attributes(fp):
                 attribute = False
                 relation = False
                 schema = False
-    return attributes, relations, schemata
+    return error_found, attributes, relations, schemata
 
 
 def check_schema_files(schemaname):
-    elog.notify("check schema files for schema  %s" % schemaname)
+    error_found = False
+    elog.notify("check schema files for schema %s" % schemaname)
     fp = os.path.join(os.environ["ANTELOPE"] + "/data/schemas/" + schemaname)
     fp2 = os.path.join(os.environ["ANTELOPE"] + "/contrib/data/schemas/" + schemaname)
     attributes = {}
     relations = {}
     # print(os.path.join(directory, filename))
     if os.path.exists(fp) and os.path.exists(fp2):
-        elog.notify("strange, schema found both on %s and %s" % (fp, fp2))
+        elog.notify("strange, schema found both in %s and %s" % (fp, fp2))
+        error_found = True
     if os.path.exists(fp):
         base_attributes, base_relations, base_schema = read_attributes(fp)
         for attribute in base_attributes:
@@ -177,12 +181,14 @@ def check_schema_files(schemaname):
             base_relations.update(rel)
             if schema != {}:
                 elog.notify("file %s: second schema defined" % (filepath, schema))
+                error_found = True
             n_relations = len(rel.keys())
             if n_relations > 1:
                 elog.notify(
                     "strange, found more than one relation (%d) in file %s"
                     % (n_relations, filepath)
                 )
+                error_found = True
             for attribute in att:
                 my_att = att[attribute]
                 check_file_attribute(my_att, filepath)
@@ -213,12 +219,14 @@ def check_schema_files(schemaname):
             relations[filename] = rel
             if schema != {}:
                 elog.notify("file %s: second schema defined" % (filepath, schema))
+                error_found = True
             n_relations = len(rel.keys())
             if n_relations > 1:
                 elog.notify(
                     "strange, found more than one relation (%d) in file %s"
                     % (n_relations, filepath)
                 )
+                error_found = True
             for attribute in att:
                 my_att = att[attribute]
                 check_file_attribute(my_att, filepath)
@@ -231,7 +239,7 @@ def check_schema_files(schemaname):
                 check_file_relation(
                     my_rel, att, filepath, base_attributes, other_attributes
                 )
-
+    return error_found
 
 def check_file_relation(rel, att, filename, base_attributes, other_attributes):
     name = ""
@@ -241,7 +249,7 @@ def check_file_relation(rel, att, filename, base_attributes, other_attributes):
         elog.complain("file %s: nameless relation %s" % (filename, rel.keys()))
         return
     if not "fields" in rel:
-        elog.complain("file %s: no fields in relation %s" % (filename, rel))
+        elog.complain("file %s: no fields in relation %s" % (filename, name))
         return
     for field in rel["fields"]:
         defined_here = False
@@ -256,18 +264,18 @@ def check_file_relation(rel, att, filename, base_attributes, other_attributes):
         if not (defined_here or defined_there):
             if not defined_in_extensions:
                 breakpoint()
-                elog.complain("file %s: attribute %s undefined" % (filename, field))
+                elog.complain("file %s: attribute '%s' undefined" % (filename, field))
             else:
                 dfile = ""
                 if "file" in other_attributes[field]:
                     dfile = other_attributes[field]["file"].decode()
                 else:
                     elog.complain(
-                        "file %s: HELP! Unable to find filename for attribute %s"
+                        "file %s: HELP! Unable to find filename for attribute '%s'"
                         % (filename, field)
                     )
                 elog.complain(
-                    "file %s: attribute %s defined in another extension (%s)"
+                    "file %s: attribute '%s' defined in another extension (%s)"
                     % (filename, field, dfile)
                 )
 
@@ -279,13 +287,13 @@ def check_file_attribute(att, filename):
     if "attribute" in att:
         name = att["attribute"]
     else:
-        elog.complaint("nameless attribute %s" % att.keys())
+        elog.complaint("nameless attribute '%s'" % att.keys())
         return
     if "len" in att:
         length = att["len"]
     else:
         elog.complain(
-            "%s: no lenght defined for attribute %s, giving up format check for this attribute"
+            "%s: no lenght defined for attribute '%s', giving up format check for this attribute"
             % (filename, name)
         )
         return
@@ -293,7 +301,7 @@ def check_file_attribute(att, filename):
         atype = att["type"]
     else:
         elog.complain(
-            "file %s: no type defined for attribute %s, giving up format check for this attribute"
+            "file %s: no type defined for attribute '%s', giving up format check for this attribute"
             % (filename, name)
         )
         return
@@ -303,7 +311,7 @@ def check_file_attribute(att, filename):
         formatstr = att["format"]
         if len(formatstr) < 2:
             elog.complain(
-                "file %s: format specification too short %s for attribute %s"
+                "file %s: format specification '%s' too short for attribute '%s'"
                 % (filename, formatstr, name)
             )
         if atype != "dbptr":
@@ -314,56 +322,56 @@ def check_file_attribute(att, filename):
                 ftype = l_ftype[-1]
                 if len(l_ftype) == 2 and l_ftype[0] != "l":
                     elog.complain(
-                        "file %s: suspicious length specification %s in format for attribute %s"
+                        "file %s: suspicious length specification '%s' in format for attribute '%s'"
                         % (filename, formatstr, name)
                     )
                 len_from_format = abs(int(float(fmt_nr)))
                 if len_from_format != length:
                     elog.complain(
-                        "file %s: length mismatch %d != %s for attribute %s"
+                        "file %s: length mismatch %d != '%s' for attribute '%s'"
                         % (filename, length, formatstr, name)
                     )
             else:
                 elog.complain(
-                    "file %s: suspicious format %s for attribute %s"
+                    "file %s: suspicious format '%s' for attribute '%s'"
                     % (filename, formatstr, name)
                 )
 
         if not formatstr.startswith("%"):
             elog.complain(
-                "file %s: format %s for attribute %s should start with '%%'"
+                "file %s: format %s for attribute '%s' should start with '%%'"
                 % (filename, formatstr, name)
             )
         if atype == "int" and ftype != "d":
             elog.complain(
-                "file %s: format type mismatch for attribute %s (%s != %s)"
+                "file %s: format type mismatch for attribute '%s' ('%s' != %s)"
                 % (filename, name, formatstr, atype)
             )
         if atype == "real" and ftype not in "efg":
             elog.complain(
-                "file %s: format type mismatch for attribute %s (%s != %s)"
+                "file %s: format type mismatch for attribute '%s' ('%s' != %s)"
                 % (filename, name, formatstr, atype)
             )
         if atype == "string" and ftype != "s":
             elog.complain(
-                "file %s: format type mismatch for attribute %s (%s != %s)"
+                "file %s: format type mismatch for attribute '%s' ('%s' != %s)"
                 % (filename, name, formatstr, atype)
             )
         if atype == "time" and ftype != "f":
             elog.complain(
-                "file %s: format type mismatch for attribute %s (%s != %s)"
+                "file %s: format type mismatch for attribute '%s' ('%s' != %s)"
                 % (filename, name, formatstr, atype)
             )
     else:
         elog.notify(
-            "file %s: no format specification for attribute %s" % (filename, name)
+            "file %s: no format specification for attribute '%s'" % (filename, name)
         )
     if "null" in att:
         fnull = att["null"]
         if atype == "real":
             if not "." in fnull:
                 elog.notify(
-                    "file %s: NULL specification for attribute %s should be a float instead of '%s'"
+                    "file %s: NULL specification for attribute '%s' should be a float instead of '%s'"
                     % (filename, name, fnull)
                 )
 
@@ -371,7 +379,7 @@ def check_file_attribute(att, filename):
         frange = att["range"]
         if name not in frange:
             elog.complain(
-                "file %s: meaningless RANGE check for attribute %s. Attribute not mentioned in definition of RANGE '%s'"
+                "file %s: meaningless RANGE check for attribute '%s'. Attribute not mentioned in definition of RANGE '%s'"
                 % (filename, name, frange)
             )
 
@@ -385,11 +393,11 @@ def check_keys(tablename, fields, keys, ktype):
                 for sub_key in key.split("::"):
                     if sub_key not in fields:
                         elog.notify(
-                            "%s key %s (%s) not found in table %s"
+                            "%s key '%s' (%s) not found in table %s"
                             % (ktype, sub_key, key, tablename)
                         )
             elif key not in fields:
-                elog.notify("%s key %s not found in table %s" % (ktype, key, tablename))
+                elog.notify("%s key '%s' not found in table %s" % (ktype, key, tablename))
 
 
 def check_table_keys(table):
@@ -440,16 +448,16 @@ def check_attribute(db, field):
         try:
             fformat = dbq.query(ds.dbFIELD_FORMAT)
         except Exception as __:
-            elog.notify("attribute %s: no FORMAT" % field)
+            elog.notify("attribute '%s': no FORMAT" % field)
         funits = dbq.query(ds.dbFIELD_UNITS)
         ftype = dbq.query(ds.dbFIELD_TYPE)
         # fnull = dbq.query(sd.dbNULL)
         try:
             [fnull] = dbq.getv(field)
         except Exception as __:
-            elog.notify("attribute %s: no NULL" % field)
+            elog.notify("attribute '%s': no NULL" % field)
         if fnull == "":
-            elog.complain("attribute %s empty NULL value" % field)
+            elog.complain("attribute '%s' empty NULL value" % field)
     if fformat and fformat != "" and ftype and ftype != "":
         pass
     if fnull and fnull != "" and fformat and fformat != "":
@@ -458,12 +466,12 @@ def check_attribute(db, field):
                 testval = fformat % fnull
             except Exception as __:
                 elog.complain(
-                    "attribute %s: problem with format :%s: or null :%s: "
+                    "attribute '%s': problem with format '%s' or null '%s'"
                     % (field, fformat, fnull)
                 )
             str_null = str(fnull)
             if testval.strip() != str_null.strip():
-                elog.complain("attribute %s: null: %s != %s" % (field, fnull, testval))
+                elog.complain("attribute '%s': null: '%s' != %s" % (field, fnull, testval))
 
 
 import getopt
