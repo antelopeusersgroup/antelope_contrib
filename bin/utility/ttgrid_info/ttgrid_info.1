@@ -1,0 +1,38 @@
+.TH TTGRID_INFO 1 
+.SH NAME
+ttgrid_info \- textual info for ttgrid traveltime files
+.SH SYNOPSIS
+.nf
+ttgrid_info [-v] [-g] [-N] gridfile [gridname]
+.fi
+
+.SH DESCRIPTION
+The utility ttgrid_show has disappeared. This helper is a poor man's replacement.
+.SH OPTIONS
+.IP "-v" 
+verbose flag
+.IP "-g"
+Show gridpoints. Default is to show stations only.
+.IP "-N" 
+Don't show stations. Default is to show stations.
+.IP "gridfile"
+Name of file with ttgrid traveltime file. This argument is required.
+.IP "gridname"
+Name of grid. If this is not specified, the names of all grids in the \fIgridfile\fP specified before are listed.
+
+.SH EXAMPLE
+.nf
+ttgrid_info myworldgrid tele_uni
+.fi
+
+.SH "BUGS AND CAVEATS"
+None.
+.SH "SEE ALSO"
+.nf
+ttgrid(1), displayttgrid(1) 
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2020
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
