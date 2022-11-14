@@ -1,0 +1,42 @@
+.TH SORT_PF 1
+.SH NAME
+sort_pf \- sort stations in parameter file for \fBorbrtd\fP or \fBorbmonrtd_dep\fP
+.SH SYNOPSIS
+.nf
+\fBsort_pf\fP [-s \fIexpr\fP] [-r] \fIparameterfile\fP \fIdbmaster\fP
+.fi
+
+.SH DESCRIPTION
+This little helper sorts stations in the parameterfiles for orbrtd or obmonrtd_dep. The sort can be any database expression, it defaults to alphabetical sorting by station name.
+.SH OPTIONS
+.IP "-s expr"
+Datascope expression for sorting. Default is to use \fIsta\fP, i.e. alphabetical sort. Use \fIlat\fP or \fIlon\fP for geographical sorting.
+.IP "-r"
+Reverse the sorting order
+.IP "parameterfile"
+Antelope parameterfile for orbrtd or orbmonrtd.
+.IP "dbmaster"
+Antelope database. Only the site table is needed to lookup station coordinates.
+.SH EXAMPLE
+Sort stations from west to east.
+.in 2c
+.ft CW
+.nf
+.ne 2
+sort_pf -s lon orbrtd mydb > sorted.pf
+
+.fi
+.ft R
+.in
+
+.SH "BUGS AND CAVEATS"
+The output contains only the sorted part of the input parameter file. It is up to the user to construct a valid parameter file.
+.SH "SEE ALSO"
+.nf
+antelope(1), rtexec(1), orbrtd(1), orbmortd_dep(1)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2022
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
