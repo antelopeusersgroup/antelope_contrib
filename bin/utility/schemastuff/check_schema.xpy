@@ -22,7 +22,7 @@ problem_seen = False
 
 
 def log_info(infostring):
-    global pedanti
+    global pedantic
     if pedantic:
         print(infostring)
 
