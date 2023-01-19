@@ -17,12 +17,16 @@ import warnings
 import antelope.datascope as ds
 import antelope.stock as stock
 import antelope.elog as elog
+import antelope.orb as orb
+import antelope.Pkt as Pkt
 
+sys.path.append(os.environ["ANTELOPE"] + "/contrib/data/python")
 import zamg.utilities as zu
 
 
 def usage(progname):
-    print(progname, "[-v] [-h] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
+    #print(progname, "[-v] [-h] [-B] [-P prefix] [-O|-o orb] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
+    print(progname, "[-v] [-h] [-B] [-P prefix] [-o orb] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
 
 
 def main():
@@ -30,12 +34,12 @@ def main():
     elog.init(progname)
     if progname == "usgs2db":
         BASE_URL = (
-            "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_hour.geojson"
+            "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson"
         )
         auth = "USGS"
         help_text = """USGS provides at most 1 month of data on the following URL:
 http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson.
-The default is to retrieve events from the last hour with a mgnitude of 2.5 or higher"""
+The default is to retrieve all events from the last hour, regardless of mgnitude"""
     else:
         BASE_URL = (
             "http://www.seismicportal.eu/fdsnws/event/1/query?limit=10&format=json"
@@ -43,7 +47,7 @@ The default is to retrieve events from the last hour with a mgnitude of 2.5 or h
         auth = "EMSC"
         help_text = """EMSC provides at most 1000 events at once on the following URL:
 http://www.seismicportal.eu/fdsnws/event/1/query?limit=1000&format=json.
-The default default is to retrieve only the most recent 10 events"""
+The default here is to retrieve only the most recent 10 events"""
 
     verbose = False
     debug = False
@@ -53,8 +57,12 @@ The default default is to retrieve only the most recent 10 events"""
     keydbname = "keydb"
     keyschema = "idmatch1.0"
     proxy_url = ""
+    mag_also_to_mb = False
+    orbname = ""
+    pkttype = "db" # or pf for /pf/orb2dbt - format
+    prefix = ""
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:hk:p:u:vd", "")
+        opts, args = getopt.getopt(sys.argv[1:], "a:Bhk:o:p:P:u:vd", "")
     except getopt.GetoptError:
         elog.die("illegal option")
         usage(progname)
@@ -72,6 +80,16 @@ The default default is to retrieve only the most recent 10 events"""
             BASE_URL = a
         elif o == "-k":
             keydbname = a
+        elif o == "-B":
+            mag_also_to_mb = True
+        elif o == "-o":
+            orbname = a
+            pkttype = "db"
+        elif o == "-O":
+            orbname = a
+            pkttype = "pf"
+        elif o == "-P":
+            prefix = a
         elif o == "-p":
             proxy_url = a
         elif o == "-h":
@@ -166,6 +184,10 @@ The default default is to retrieve only the most recent 10 events"""
     i = len(data)
     if debug:
         elog.debug("retrieved %d events" % i)
+
+    if orbname != "":
+        myorb = orb.orbopen(orbname, permissions="w&")
+
     for index in range(i):
         fdata = data[index]
         unid = fdata["id"]
@@ -243,6 +265,9 @@ The default default is to retrieve only the most recent 10 events"""
             mb = mag
         elif lmt == "ms":
             ms = mag
+        # save mag to origin.mb to fot the sake of alarming using orb_quake_alarm 
+        if mag_also_to_mb:
+            mb = mag
 
         gr = stock.grnumber(lat, lon)
         sr = stock.srnumber(lat, lon)
@@ -315,6 +340,14 @@ The default default is to retrieve only the most recent 10 events"""
                     )
 
             if not problem:
+                pkt = Pkt.Packet()
+                dborigin.record = orecno
+                pkt.srcname = Pkt.SrcName(srcname_string="%s/db/origin" % prefix)
+                pkt.db = (dborigin.database, dborigin.table, dborigin.field, dborigin.record)
+                pkttype, packet, srcname, pkttime = pkt.stuff()
+                myorb.put(srcname, pkttime, packet)
+
+
                 try:
                     erecno = dbevent.addv(
                         ("evid", evid),
