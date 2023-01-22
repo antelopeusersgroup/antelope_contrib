@@ -1,3 +1,7 @@
+2023.022: 1.7
+	- Improve deliniation of diagnostic versus error messages
+	- Update libmseed to 2.19.8
+
 2020.134: 1.6
 	- Incorporate changes from Doug Neuhauser, including these features:
 	  # Add -F option to control flushing of data based on channel rate

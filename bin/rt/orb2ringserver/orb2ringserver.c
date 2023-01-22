@@ -21,7 +21,7 @@
 #include "orb.h"
 
 #define PACKAGE "orb2ringserver"
-#define VERSION "1.6"
+#define VERSION "1.7"
 
 static int verbose   = 0;
 static char *match   = 0; /* ORB streams to match */
@@ -945,10 +945,10 @@ parameter_proc (int argcount, char **argvec)
   elog_init (argcount, argvec);
 
   /* Initialize the logging for the dl_log family */
-  dl_loginit (verbose - 1, &elog_printlog, NULL, &elog_printerr, NULL);
+  dl_loginit (verbose - 1, &elog_printlog, " ", &elog_printerr, "!");
 
   /* Initialize the logging for the ms_log family */
-  ms_loginit (&elog_printlog, NULL, &elog_printerr, NULL);
+  ms_loginit (&elog_printlog, " ", &elog_printerr, "!");
 
   /* Make sure a source ORB server was specified */
   if (!orbaddr)
@@ -1022,20 +1022,29 @@ getoptval (int argcount, char **argvec, int argopt)
 
 /***************************************************************************
  * elog_printlog():
- * A hook to re-direct sl_log() (libslink) log messages to elog_notify.
+ * A hook to re-direct dl_log() (libdali) and ms_log() (libmseed)
+ * log messages to elog_notify.
  ***************************************************************************/
 static void
 elog_printlog (char *msg)
 {
-  elog_notify (0, "%s", msg);
+  if (msg)
+    elog_notify (0, "%s", msg+1);
 }
 
 /***************************************************************************
  * elog_printerr():
- * A hook to re-direct sl_log() (libslink) error messages to elog_complain.
+ * A hook to re-direct dl_log() (libdali) and ms_log() (libmseed)
+ * log messages to elog_complain.
  ***************************************************************************/
 static void
 elog_printerr (char *msg)
 {
-  elog_complain (0, "%s", msg);
+  if (msg)
+    {
+      if (msg[0] == '!')
+        elog_complain (0, "%s", msg+1);
+      else
+        elog_notify(0, "%s", msg+1);
+    }
 }
