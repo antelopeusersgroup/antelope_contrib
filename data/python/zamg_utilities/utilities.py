@@ -239,6 +239,26 @@ def get_remark(db):
     return remark
 
 
+def mark_remark(db):
+    if db.table < 0 or db.record < 0:
+        elog.complain("cannot clear remark from unspecified record")
+    try:
+        db_r = db.lookup(table="remark")
+    except Exception as __:
+        elog.notify("cannot lookup remark table")
+    try:
+        [commid] = db.getv("commid")
+    except Exception as __:
+        elog.notify("cannot retrieve commid")
+    if commid >= 0:
+        db_r = db_r.sort(["commid", "lineno"])
+        matcher = db.matches(db_r, kpattern="commid", tpattern="commid")
+        records = matcher()
+        if len(records) > 0:
+            for db_r.record in records:
+                db_r.mark()
+
+
 def rfc33392epoch(timestring):
     """convert internet timestamp in RFC3339 format. Returns normal antelope epoch time"""
     time_date = timestring.split("T")
