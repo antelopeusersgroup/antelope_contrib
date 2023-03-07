@@ -20,14 +20,14 @@ check_schema reads in schema definitions as all other antelope databaase process
     defined different in different files.
 .fi
 The program runs in two stages, first by reading in files one after each other and then by checking the resulting schema as presented by the antelope database engine itself. The first step is necessary to detect contradicting definitions and to indicate in which actual file the problems occur.
-The second step is necessary to detect remaining problems as seen by the database engine.
+The second step is necessary to verify if the database engine sees problems with the schema and to detect remaining problems. 
 .SH OPTIONS
 .IP "-a" 
 report all problems or inconsistencies, even only cosmetic ones.
 .IP "-f"
 File checks only.
 .IP "-s"
-Schemak checks only.
+Schema checks only.
 .IP "schema"
 Name of database schema. This argument is required
 
