@@ -15,12 +15,12 @@ usgs2db, emsc2db \- utilities to retrieve earthquake feeds in GeoJSON format fro
 The programs keeps track of event ids in a separate table and updates the output database if new information is available.
 .br
 .SH OPTIONS
-.IP \-v
+.IP "-v"
 verbose flag
 .IP "-k keydbname"
 name of database to keep track of event ids. Since USGS/EMSC IDs are a mixture of strings and integers, a separate table is needed.
 The database must be in schema \fBidmatch1.0\fP or higher. The database is created upon startup if not originally existing. The database name defaults to keydb.
-.IP \-u
+.IP "-u"
 URL of the data source. A list of all available feeds can be found on a website of the \fIUSGS\fP
 \fBhttp://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php\fP
 If not specified, this defaults to 
@@ -30,7 +30,11 @@ For \fIEMSC\fP, the program retrieves data from the FDSN webservice described on
 the default url in this case is
 \fBhttp://www.seismicportal.eu/fdsnws/event/1/query?limit=10&format=json\fP.
 .IP "-a author"
-Author name for event, origin and netmag table. Defaults to NEIC or EMSC.
+Author name for event, origin and netmag table. Defaults to USGS or EMSC.
+.IP "-A"
+When writing event information to an orb as parameter-file packets (\fBO\fP), the parameter \fIarchive_if_not_associated\fP 
+influences how these packets are handled. The default to set this parameter to \fIyes\fP. This option 
+disables this default to make sure events are only associated to events already existing in the database.
 .IP "-h"
 Show help.
 .IP "-k"
@@ -68,4 +72,4 @@ The error handling is simple. I implemented my personal understanding of the dat
 The feeds are subject to the feed life cycle policy as explained on the website of the usgs. See there for more information if a feed stops working.
 This module uses the python modules requests with all its bugs and limitations. And of course I added many more problems...
 .SH AUTHOR
-Nikolaus Horn (nikolaus.horn@zamg.ac.at)
+Nikolaus Horn (nikolaus.horn@geosphere.at)

@@ -25,10 +25,10 @@ import zamg.utilities as zu
 
 
 def usage(progname):
-    # print(progname, "[-v] [-h] [-B] [-P prefix] [-O|-o orb] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
+    # print(progname, "[-v] [-h] [-AB] [-P prefix] [-O|-o orb] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
     print(
         progname,
-        "[-v] [-h] [-B] [-P prefix] [-o|-O orb] [-p proxy_url] [-a auth] [-k keydb] [-u url] [-s schema] dbname",
+        "[-v] [-h] [-AB] [-P prefix] [-o|-O orb] [-p proxy_url] [-a auth] [-k keydb] [-u url] [-s schema] dbname",
     )
 
 
@@ -51,6 +51,7 @@ The default here is to retrieve only the most recent 10 events"""
 
 verbose = False
 debug = False
+archive_all = True # for pfpackets, if True then the value for archive_if_not_associated in the packet is set to yes
 archive = 0
 opts = []
 args = []
@@ -63,7 +64,7 @@ orbpkttype = "db"  # or pf for /pf/orb2dbt - format
 prefix = ""
 dbschema = "css3.0"
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "a:Bshk:o:O:p:P:u:vd", "")
+    opts, args = getopt.getopt(sys.argv[1:], "a:ABshk:o:O:p:P:u:vd", "")
 except getopt.GetoptError:
     elog.die("illegal option")
     usage(progname)
@@ -77,6 +78,8 @@ for o, a in opts:
         debug = True
     elif o == "-a":
         auth = a
+    elif o == "-A":
+        archive_all = False
     elif o == "-u":
         BASE_URL = a
     elif o == "-k":
@@ -391,8 +394,15 @@ for index in range(i):
                     dborigin.field,
                     dborigin.record,
                 )
-                pkttype, packet, srcname, pkttime = pkt.stuff()
-                myorb.put(srcname, pkttime, packet)
+                try:
+                    pkttype, packet, srcname, pkttime = pkt.stuff()
+                except Exception:
+                    elog.complain("orbstuff error (origin) on %s\n" % unid)
+                else:
+                    try:
+                        myorb.put(srcname, pkttime, packet)
+                    except Exception:
+                        elog.complain("orbput error (origin) on %s\n" % unid)
 
                 pkt = Pkt.Packet()
                 pkt.srcname = Pkt.SrcName(srcname_string="%s/db/event" % prefix)
@@ -402,8 +412,15 @@ for index in range(i):
                     dbevent.field,
                     dbevent.record,
                 )
-                pkttype, packet, srcname, pkttime = pkt.stuff()
-                myorb.put(srcname, pkttime, packet)
+                try:
+                    pkttype, packet, srcname, pkttime = pkt.stuff()
+                except Exception:
+                    elog.complain("orbstuff error (event) on %s\n" % unid)
+                else:
+                    try:
+                        myorb.put(srcname, pkttime, packet)
+                    except Exception:
+                        elog.complain("orbput error (event) on %s\n" % unid)
 
                 pkt = Pkt.Packet()
                 pkt.srcname = Pkt.SrcName(srcname_string="%s/db/netmag" % prefix)
@@ -413,8 +430,15 @@ for index in range(i):
                     dbnetmag.field,
                     dbnetmag.record,
                 )
-                pkttype, packet, srcname, pkttime = pkt.stuff()
-                myorb.put(srcname, pkttime, packet)
+                try:
+                    pkttype, packet, srcname, pkttime = pkt.stuff()
+                except Exception:
+                    elog.complain("orbstuff error (netmag) on %s\n" % unid)
+                else:
+                    try:
+                        myorb.put(srcname, pkttime, packet)
+                    except Exception:
+                        elog.complain("orbput error (netmag) on %s\n" % unid)
             try:
                 idmatch.addv(
                     ("fkey", unid),
@@ -422,7 +446,7 @@ for index in range(i):
                     ("keyvalue", evid),
                     ("ftime", updated),
                 )
-            except Exception as __:
+            except Exception:
                 if verbose:
                     problem = True
                     elog.notify(
@@ -543,7 +567,10 @@ for index in range(i):
             dbnetmag.putv(("magid", 3))
         pfstring = []
         pfstring.append("schema css3.0\n")
-        pfstring.append("archive_if_not_associated yes\n")
+        if archive_all:
+            pfstring.append("archive_if_not_associated yes\n")
+        else:
+            pfstring.append("archive_if_not_associated no\n")
         pfstring.append("event &Literal{\n")
         pfstring.append(dbevent.get())
         pfstring.append("}\n")
@@ -551,14 +578,11 @@ for index in range(i):
         pfstring.append(dborigin.get())
         pfstring.append("}\n")
         pfstring.append("magnitude_update yes\n")
-        pfstring.append("magnitude_update yes\n")
         pfstring.append("netmag &Literal{\n")
         pfstring.append(dbnetmag.get())
         pfstring.append("}\n")
 
         pfstring = "".join(pfstring)
-        if debug:
-            elog.notify("output pfpkt for %s" % unid)
         pfout = stock.ParameterFile(type=stock.PFARR, auto_convert=False)
         try:
             pfout.pfcompile(pfstring)
@@ -570,7 +594,18 @@ for index in range(i):
             pkt.time = stock.now()
             pkt.srcname = Pkt.SrcName(srcname_string="%s/pf/orb2dbt" % prefix)
             pkt.pf = pfout
-            pkttype, packet, srcname, pkttime = pkt.stuff()
-            myorb.put(srcname, pkttime, packet)
+            try:
+                pkttype, packet, srcname, pkttime = pkt.stuff()
+            except Exception:
+                elog.complain("stuff Pkt error on %s\n" % unid)
+            else:
+                try:
+                    myorb.put(srcname, pkttime, packet)
+                except Exception:
+                    elog.complain("orbput error on %s\n" % unid)
+                else:
+                    if debug:
+                        elog.notify("output pfpkt for %s" % unid)
+
 
 sys.exit(0)
