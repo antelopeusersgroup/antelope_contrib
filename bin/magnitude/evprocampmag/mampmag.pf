@@ -1,0 +1,270 @@
+#    This is the orbevproc parameter file
+
+max_events_to_thread    8   # maximum number of events to process concurrently
+
+#    This is the list of processing modules to be run
+
+event_processes &Tbl{
+    #perl_file    perl_class        parameters
+    Magnitude.pm
+#    Mlrichter.pm    Mlrichter       mlrichter_params
+#    Mbusneic.pm     Mbusneic        mbusneic_params
+#    Msusneic.pm     Msusneic        msusneic_params
+#    MwpA.pm         MwpA            mwpa_params
+    Mampmag.pm      Mampmag         mlampmag_params
+    Mnoop.pm        Mampmag         mbampmag_params
+    Mnoop.pm        Mampmag         msampmag_params
+}
+
+#    These are parameter templates for each of the processing modules
+
+mlampmag_params &Arr{
+    filter    BW 1.0 5 10.0 5
+    time0     S    # center of measuring time window
+                   # P - pphasetime (see man pphasetime)
+                   # S - sphasetime
+                   # R - rayleigh wave - here we use deg2km(delta) / v_r
+    time_window_factor    1.0     # time window in relation to S-time -P-time 
+    minimum_time_window 10.0      #time_window in seconds, in case P and S are really close
+    min_delta    0
+    max_delta    5.5
+
+    c0     -0.304           
+    c1        1.66        
+    channels &Tbl{
+#      snet  sta      chan       snr   twin     c2    c3   c4    c5
+#      expr  expr     expr       thr   noise
+       OE     ABNA    HH[NE]     2.0  60.0      0.0   1.0  1.0  -0.7
+       OE     .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+       SI     .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+#       CZ      .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+#       GR      .*      BH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+    }
+    reject &Tbl{
+#    snet_expr sta_expr
+    TA        ADK
+    OE        ARSA|VIE|UNNA|GFSA|GNLA|GAKA|GPRA|SINA
+    }
+    
+    v_r    4.0  # velocity for surface waves used to determine surface wave arrival time
+                # only used when computing Ms, i.e. when time0 is set to R
+
+    update_time                 10.0
+    maximum_wait_time          300.0
+    maximum_bad_fraction         0.2
+    auth_accept        .*
+    output_magtype              ml
+    mean_magnitude              no 
+    use_p2p_amplitude           yes
+    output_auth                am
+    output_stamag               yes
+    output_wfmeas               yes
+}
+mbampmag_params &Arr{
+    filter    BW 0.6 3 3.0 3
+    time0     P    # center of measuring time window
+                   # P - pphasetime (see man pphasetime)
+                   # S - sphasetime
+                   # R - rayleigh wave - here we use deg2km(delta) / v_r
+    minimum_time_window   1.0 #time_window in seconds, in case P and S are really close
+    time_window_factor    0.5     # time window in relation to S-time -P-time 
+    min_delta    0
+    max_delta    180
+
+    c0       -0.104           
+    c1        1.66        
+    channels &Tbl{
+#      snet  sta      chan       snr   twin     c2    c3   c4    c5
+#      expr  expr     expr       thr   noise
+       XX     .*      HH[NE].*   2.0  60.0      0.0   1.0  1.0   0.0 -65000 65000
+    OE    .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+    SI      .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+#       CZ      .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+#       GR      .*      BH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+    }
+    reject &Tbl{
+#    snet_expr sta_expr
+    TA        ADK
+    OE        ARSA|VIE|UNNA|GFSA|GNLA|GAKA|GPRA
+    }
+    
+    v_r    4.0  # velocity for surface waves used to determine surface wave arrival time
+                # only used when computing Ms, i.e. when time0 is set to R
+
+    update_time                 10.0
+    maximum_wait_time          300.0
+    maximum_bad_fraction         0.2
+    auth_accept        .*
+    output_magtype              mb
+    mean_magnitude              no 
+    use_p2p_amplitude           yes
+    output_auth                am
+    output_stamag               yes
+    output_wfmeas               yes
+}
+msampmag_params &Arr{
+    filter    BW 0.01 5 0 0
+    time0     R    # center of measuring time window
+                   # P - pphasetime (see man pphasetime)
+                   # S - sphasetime
+                   # R - rayleigh wave - here we use deg2km(delta) / v_r
+    time_window_factor    1.5     # time window in relation to S-time -P-time 
+    minimum_time_window  10.0     # time_window in seconds, in case P and S are really close
+    min_delta    5.5
+    max_delta    180
+
+    c0        0.52           
+    c1        1.66        
+    channels &Tbl{
+#      snet  sta      chan       snr   twin     c2    c3      c4    c5
+#      expr  expr     expr       thr   noise
+       XX     .*      HH[NE].*   2.0  60.0     -1.0   0.0097  9.0   0.0 -65000 65000
+       OE      .*      HH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0        
+       SI      .*      HH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0        
+#       CZ      .*      HH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0        
+#       GR      .*      BH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0        
+    }
+    reject &Tbl{
+#    snet_expr sta_expr
+    TA        ADK
+    OE        ARSA|VIE|UNNA|GFSA|GNLA|GAKA|GPRA
+    }
+    
+    v_r    4.0  # velocity for surface waves used to determine surface wave arrival time
+                # only used when computing Ms, i.e. when time0 is set to R
+
+    update_time                 10.0
+    maximum_wait_time          300.0
+    maximum_bad_fraction         0.2
+    auth_accept                  .*
+    output_magtype              ms
+    mean_magnitude              no 
+    use_p2p_amplitude           yes
+    output_auth                am
+    output_stamag               yes
+    output_wfmeas               yes
+}
+
+
+
+
+mlrichter_params &Arr{
+    channels &Tbl{
+#    snet_expr chan_expr           noise_twin signal_twin   snr_thresh
+#            sta_expr          filter         noise_toffset signal_toffset
+         .* .._ARSA  HH[12NE]  auto     tproc 10.0 f2.0     10.0 3.0
+         .* .._DAVA  HH[12NE]  auto     tproc 10.0 f2.0     10.0 3.0
+         .* .._TRO   BH[12NE]  auto     tproc 10.0 f2.0     10.0 3.0
+         .* .._PFO   BH[12NE]  auto     tproc 10.0 f2.0     10.0 3.0
+         .* .._TIN   BH[12NE]  auto     tproc 10.0 f2.0     10.0 3.0
+         .* .._BZN   BH[12NE]  auto     tproc 10.0 f2.0     10.0 3.0
+         .* .._KNW   BH[12NE]  auto     tproc 10.0 f2.0     10.0 3.0
+    }
+    reject &Tbl{
+#    snet_expr sta_expr
+    TA        ADK
+    }
+    update_time        10.0
+    maximum_wait_time    300.0
+    maximum_bad_fraction    0.2
+    auth_accept        .*
+    output_magtype        LM
+    output_auth        evproc
+    output_stamag        yes
+    output_wfmeas        yes
+    station_number_minimum    2
+}
+
+mbusneic_params &Arr{
+    channels &Tbl{
+#    snet_expr chan_expr               noise_twin signal_twin  snr_thresh
+#            sta_expr    filter                  noise_toffset signal_toffset 
+    .* .*     HHZ|HHZ_00  auto               30.0 10.0  70.0    10.0 3.0
+    .* .*     BHZ|BHZ_00  auto               30.0 10.0  70.0    10.0 3.0
+
+    }
+    update_time        10.0
+    maximum_wait_time    300.0
+    maximum_bad_fraction    0.2
+    auth_accept        .*
+    output_magtype        BM 
+    output_auth        dbevproc
+    output_stamag        yes
+    output_wfmeas        yes
+}
+msusneic_params &Arr{
+        channels &Tbl{
+#       snet_expr chan_expr                 noise_twin mingvel  snr_thresh
+#          sta_expr      filter                    noise_toffset maxgvel
+        .* .*     BHZ|BHZ_00  auto               600.0  10.0  2.5    4.5 10.0
+        }
+        reject &Tbl{
+#       snet_expr sta_expr
+        IM        .*
+        }
+        minimum_period          15.0
+        maximum_period          25.0
+        maximum_depth           100.0
+        maximum_distance        90.0
+        update_time             600.0
+        maximum_wait_time       300.0
+        maximum_bad_fraction    0.2
+        auth_accept             .*
+        output_magtype          SM
+        output_auth             orbevproc
+        output_stamag           yes
+        output_wfmeas           yes
+        station_number_minimum  5
+        uncertainty_maximum     1.0
+}
+mwpa_params &Arr{
+        channels &Tbl{
+#       snet_expr chan_expr                 filter_tpad signal_twin  snr_thresh
+#          sta_expr      filter                  tpivot_toffset sarrival_toffset
+        .* .*     BHZ|BHZ_00  none              30.0 5.0  500.0    0.0 3.0
+        }
+        reject &Tbl{
+#       snet_expr sta_expr
+        IM        .*
+        }
+        update_time             10.0
+        maximum_wait_time       300.0
+        auth_accept             .*
+        output_magtype          mwp
+        output_auth             orbevproc
+        output_stamag           yes
+        output_wfmeas           yes
+        station_number_minimum  5
+        uncertainty_maximum     0.8
+        min_duration            5.0
+        snr_max_off_duration    10.0
+}
+
+
+#    parameters for "smart"association
+
+assoc_method        tttaup    # method for computing predicted travel times
+assoc_model         iasp91    # velocity model for computing predicted travel times
+assoc_phases        basic     # phase list for computing predicted travel times (see tt(3))
+assoc_P_thresh      10.0      # P-residual threshold for associations
+assoc_S_thresh      20.0      # S-residual threshold for associations
+assoc_ignoreiphase  no        # should the arrival row iphase value be ignored?
+assoc_firstphase    yes       # should only the earliest predicted phase be used?
+
+assoc_screen_new    time
+assoc_screen_old    (time-3600.0)::(time+3600.0)
+                              # these are screening database expressions that should
+                              #   match the existing (old) origins with the new origin for
+                              #   association processing
+assoc_expression    $nass>=$nars-2
+                # this is a database expression that should evaluate
+                #   to true whenever an association is valid
+
+author_priority &Arr{    # prefor priority as a function of assoc author
+}
+
+
+pf_revision_time 1401891290
+
+
+
