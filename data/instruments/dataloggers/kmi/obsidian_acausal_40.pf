@@ -2,25 +2,27 @@ category	Kinemetrics
 configuration	Obsidian Non-Causal Filter 40Vpp Input
 
 originator	Mathias Franke
-last_modified	August 23, 2018
+last_modified	April 07, 2023
 
 description	KMI Obsidian Acausal w 40Vpp Input
 dfile obsidian_ac_40pp
 info &Literal{
 This are the decimation FIR filters with a final non-causal brickwall filter.
 This is the configuration for an Obsidian recorder set to 40Vpp input.
-The information was derived from Kinemetrics Application Note 39F
+The information was derived from Kinemetrics Application Note 39F.
+State-Of-Health channels are included.
 }
 
 
-streams		5000sps 2000sps 1000sps 500sps 250sps 200sps 100sps 50sps 20sps 10sps 1sps
+streams		2000sps 1000sps 500sps 250sps 200sps 100sps 50sps 20sps 10sps 1sps
+##streams		5000sps 2000sps 1000sps 500sps 250sps 200sps 100sps 50sps 20sps 10sps 1sps
 
 # definitions of streams
-5000sps   5000 a/d coefA3_60 coefB2_60
+##5000sps   5000 a/d coefA3_60 coefB2_60
 2000sps	  2000 a/d coefA5_50_s5c coefB3_80
 1000sps	  1000 a/d coefA5_50_s5c coefA3_50 coefB2_80_140
 500sps	  500 a/d coefA5_50_s5c coefA3_50 coefA2_20 coefB2_80
-250sps    250 a/d coefA5_50_s5c coefA3_50 coefA2_20 coefA2_20 coefB2_80
+250sps	  250 a/d coefA5_50_s5c coefA3_50 coefA2_20 coefA2_20 coefB2_80
 200sps	  200 a/d coefA5_50_s5c coefA3_50 coefA5_50 coefB2_80
 100sps	  100 a/d coefA5_50_s5c coefA3_50 coefA2_20 coefA5_50 coefB2_80
 50sps	  50 a/d coefA5_50_s5c coefA3_50 coefA4_50 coefA5_50 coefB2_80
@@ -105,3 +107,98 @@ response	&datafile(responses/coefB2-60)
 samplerate	5000
 }
 
+soh		LCE LCQ LEC LEP LKI CPU
+
+LCE	&Arr{
+stages		phase
+iunits		s
+ounits		counts
+samprate	1
+rsptype		T
+}
+
+LCQ	&Arr{
+stages		clk_qual
+iunits		percent
+ounits		counts
+samprate	1
+rsptype 	p
+}
+
+LEC	&Arr{
+stages		mamp
+iunits		A
+ounits		counts
+samprate	1
+rsptype		i
+}
+
+LEP	&Arr{
+stages		mvolt
+iunits		V
+ounits		counts
+samprate	1
+rsptype		v
+}
+
+LKI	&Arr{
+stages		temp
+iunits		Celsius
+ounits		counts
+samprate	1
+rsptype		t
+}
+
+CPU	&Arr{
+stages		load
+iunits		counts
+ounits		counts
+samprate	1
+rsptype		c
+}
+
+phase &Arr{
+gtype		clock phase
+gnom		1000000
+iunits		s
+ounits		counts
+sn		datalogger
+}
+
+clk_qual &Arr{
+gtype		clock quality
+iunits		percent
+ounits		counts
+sn		datalogger
+}
+
+mamp &Arr{
+gtype		current meter
+gnom		1000
+iunits		A
+ounits		counts
+sn		datalogger
+}
+
+mvolt &Arr{
+gtype		volt meter
+gnom		1000
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+temp &Arr{
+gtype		thermometer
+gnom		10
+iunits		Celsius
+ounits		counts
+sn		datalogger
+}
+
+load &Arr{
+gtype		cpu load
+iunits		counts
+ounits		counts
+sn		datalogger
+}
