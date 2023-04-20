@@ -2,7 +2,7 @@ DATADIR=responses
 DATA= \
 	chaparral_25  \
     hyperion \
-    ifs_3000 \
+    ifs3000 \
 	mb2000_fil \
 	mb2000_raw \
 	ncpa  \

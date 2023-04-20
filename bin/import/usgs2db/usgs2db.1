@@ -15,24 +15,35 @@ usgs2db, emsc2db \- utilities to retrieve earthquake feeds in GeoJSON format fro
 The programs keeps track of event ids in a separate table and updates the output database if new information is available.
 .br
 .SH OPTIONS
-.IP \-v
+.IP "-v"
 verbose flag
 .IP "-k keydbname"
 name of database to keep track of event ids. Since USGS/EMSC IDs are a mixture of strings and integers, a separate table is needed.
 The database must be in schema \fBidmatch1.0\fP or higher. The database is created upon startup if not originally existing. The database name defaults to keydb.
-.IP \-u
+.IP "-u"
 URL of the data source. A list of all available feeds can be found on a website of the \fIUSGS\fP
 \fBhttp://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php\fP
 If not specified, this defaults to 
-\fBhttp://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_hour.geojson\fP.
+\fBhttp://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson\fP.
 For \fIEMSC\fP, the program retrieves data from the FDSN webservice described on 
 \fBhttp://www.seismicportal.eu/fdsn-wsevent.html\fP
 the default url in this case is
 \fBhttp://www.seismicportal.eu/fdsnws/event/1/query?limit=10&format=json\fP.
 .IP "-a author"
-Author name for event, origin and netmag table. Defaults to NEIC or EMSC
+Author name for event, origin and netmag table. Defaults to USGS or EMSC.
+.IP "-A"
+When writing event information to an orb as parameter-file packets (\fBO\fP), the parameter \fIarchive_if_not_associated\fP 
+influences how these packets are handled. The default to set this parameter to \fIyes\fP. This option 
+disables this default to make sure events are only associated to events already existing in the database.
 .IP "-h"
 Show help.
+.IP "-k"
+Databaset to map ids eventuelly containing characters to numerical values only.
+.IP "-B"
+For alerting using \fIorb_quake_alarm\fP, only magnitudes from the origin-table can me used. This option writes all magnitudes, regerdless of the real magnitude type, also to the body-wave magnitude mb.
+Note that thi \fIextra\fP magnitude is written to the origin table alone, a related netmag entry is missing and that there is no magid for this \fIfake\fP body-wave magnitude.
+.IP "-o|O"
+Output orb. This option also selects the output format. For database packets, use \fBo\fP. For parameter-file packets, as e.g. written by USGS2orb, use uppercase \fBO\fP.
 .IP database
 The name of the output database. This argument is required.
 .SH EXAMPLE
@@ -44,11 +55,11 @@ To update event information every 10 minutes, add the following to your rtexec.p
 .nf
 # update database USGS every 10 minutes, all events above magnitude 2.5
 USGS   UTC   0,10,20,30,40,50   *  *  *  *  usgs2db -k db/usgs_ids db/usgs 
-
+EMSC2DB UTC 5,15,35,35,45,55    *  *  *  *  emsc2db -k db/emsc_ids db/emsc
 .fi
 .SH ENVIRONMENT
 The program uses the Python module \fIrequests\fP to retrieve data from a webpage.
-This module supports proxy configuration based on the standard environment variables \fIhttp_proxy\fP, \fIhttps_proxy\fP. 
+This module supports proxy configuration based on the standard environment variables \fIhttp_proxy\fP and \fIhttps_proxy\fP. 
 If you need more control over proxy settings, feel free to contact the author, Nikolaus.Horn@zamg.ac.at.
 .SH "SEE ALSO"
 .nf
@@ -59,6 +70,6 @@ https://docs.python-requests.org/en/master, USGS2orb(1), antelope_python(3y)
 .SH "BUGS AND CAVEATS"
 The error handling is simple. I implemented my personal understanding of the data offered. There might be wiser ways to use the save the information in a database.
 The feeds are subject to the feed life cycle policy as explained on the website of the usgs. See there for more information if a feed stops working.
-This module uses the python modules requests with all their bugs and limitations. And of course I added many more problems...
+This module uses the python modules requests with all its bugs and limitations. And of course I added many more problems...
 .SH AUTHOR
-Nikolaus Horn (nikolaus.horn@zamg.ac.at)
+Nikolaus Horn (nikolaus.horn@geosphere.at)

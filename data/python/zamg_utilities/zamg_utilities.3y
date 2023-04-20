@@ -1,6 +1,6 @@
 .TH PYTHON_PJ 3Y
 .SH NAME
-init_statefile, update_statefile, rfc33392epoch, epoch2rfc3339, string_charsplit, utf8len, string_maxbytes, set_remark, add_remark, get_remark, create_dbdesc, spherical_distance \- little helpers
+init_statefile, update_statefile, rfc33392epoch, epoch2rfc3339, string_charsplit, utf8len, string_maxbytes, set_remark, add_remark, get_remark, mark_remar, create_dbdesc, spherical_distance, haversine_distance \- little helpers
 .SH SYNOPSIS
 .nf
 sys.path.append(os.environ['ANTELOPE'] + "/contrib/data/python")
@@ -26,27 +26,30 @@ Useful for wring unicode data to records of fixed length like e.g in the remark 
 .SS bytelen = utf8len(string)
 length of encoded string in bytes
 .SS substr = string_maxbytes(input, bytelen)
-return at most \fBbytelen\fP bytes of encoded string. 
+return at most \fBbytelen\fP bytes of encoded string.
 Useful for avoiding half-written bytes
 .SS commid = set_remark(dbt, remark)
-Set or update remark for specified table and record. Really useful :-) !     
+Set or update remark for specified table and record. Really useful :-) !
 .SS commid = add_remark(dbt, remark)
 Add remark to specified table and record. This function splits the remark using
 \fBstring_charsplit\fP to avoid broken chars. Sets (overwrites) commid in the specified record.
 Previous remarks are left in the remark table but no longer associated to the specified record.
 .SS remark = get_remark(dbt)
-retrieve remark for specified record.
-.SS db = create_dbdesc(path, schema, table)
-create database descriptor with specified schema and return specified table
-Useful for non-default schemata
+Retrieve remark for specified table and record in one line.
+.SS mark_remark(dbt)
+Mark (clear) remark for specified table and record. This function uses \fIdbmark\fP to mark specified remarks.
+One should remove nullified records later by calling \fIdbcrunch(1)\fP.
+.SS db = create_dbdesc(path, schema, table=NULL)
+Return database and table, if specified. If necessary, create database descriptor with specified schema.
+Mainly useful for non-default schemata.
 .SS dist = spherical_distance(lat1,lon1, lat2, lon2, degrees=True)
-return great-arc distance between 2 points. Input is in degrees.    
+return great-arc distance between 2 points. Input is in degrees, output is selectable.
 .SS dist = haversine_distance(lat1,lon1, lat2, lon2, degrees=True)
-return great-arc distance between 2 points, computed using the haversine formula. Input is in degrees.    
+return great-arc distance between 2 points, computed using the haversine formula. Input is in degrees, output unit can be selected.
 .SS lastid, lasttime = init_statefile(statefilename)
-read from existing statefile or prepare to use one. Returns id and time
+read from existing statefile or prepare to use one. Returns id and time.
 .SS update_statefile(statefilename, id, time)
-update statefile with id and time
+update statefile with id and time.
 .SH "SEE ALSO"
 .nf
 antelope_python(3y), epoch(3)

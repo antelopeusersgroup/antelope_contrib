@@ -23,7 +23,7 @@ import zamg.utilities as zu
 
 
 def usage(progname):
-    print(progname, "[-vn] [-F] [-p pf] [-S statefile] db [dbout]")
+    print(progname, "[-n] [-F] [-S statefile] db [dbout]")
 
 
 def max_gap2(c_az):
@@ -84,7 +84,7 @@ def main():
     verbose = False
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "F:vnp:S:", "")
+        opts, args = getopt.getopt(sys.argv[1:], "vhF:S:", "")
     except getopt.GetoptError:
         usage(progname)
         elog.die("Illegal option")
@@ -96,8 +96,6 @@ def main():
         elif o == "-h":
             usage(progname)
             sys.exit(0)
-        elif o == "-p":
-            pfname = a
         elif o == "-S":
             statefile = a
         elif o == "-F":
@@ -141,7 +139,7 @@ def main():
         pattern2=["sta", "ondate::offdate"],
     )
 
-    dbj = dbj.subset("time >_2017-10-01_")
+    #dbj = dbj.subset("time >_2017-10-01_")
 
     if statefile != "":
         last_orid, last_time = zu.init_statefile(statefile)
@@ -232,7 +230,8 @@ def main():
         azgap = max_gap(azimuths)
         if n_times > 0:
             tres_rms = math.sqrt(sqrsum / n_times)
-            if nsta250 >= 10 and azgap < 110.0 and azgap2 < 160.0 and nsta30 > 0:
+            #Bondár, Myers et. al. (2004)
+            if nsta250 >= 10 and nsta30 > 0 and azgap < 110.0 and azgap2 < 160.0:
                 gt = 5
             if dtype == "g":
                 if n_times > 3:
