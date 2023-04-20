@@ -37,11 +37,10 @@ Previous remarks are left in the remark table but no longer associated to the sp
 .SS remark = get_remark(dbt)
 Retrieve remark for specified table and record in one line.
 .SS mark_remark(dbt)
-Mark (clear) remark for specified table and record. This function used \fIdbmark\fP to mark specified remarks.
+Mark (clear) remark for specified table and record. This function uses \fIdbmark\fP to mark specified remarks.
 One should remove nullified records later by calling \fIdbcrunch(1)\fP.
-retrieve remark for specified record.
-.SS db = create_dbdesc(path, schema, table)
-create database descriptor with specified schema and return specified table.
+.SS db = create_dbdesc(path, schema, table=NULL)
+Return database and table, if specified. If necessary, create database descriptor with specified schema.
 Mainly useful for non-default schemata.
 .SS dist = spherical_distance(lat1,lon1, lat2, lon2, degrees=True)
 return great-arc distance between 2 points. Input is in degrees, output is selectable.
