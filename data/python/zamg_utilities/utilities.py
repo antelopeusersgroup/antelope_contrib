@@ -91,7 +91,7 @@ def string_maxbytes(my_string, bytelen):
     return my_string[: chars - 1]
 
 
-def create_dbdesc(dbpath, dbschema, tablename):
+def create_dbdesc(dbpath, dbschema, tablename=None):
     """create database descriptor. Returns database pointer to a table"""
     kdb = ds.dbopen(dbpath, "r+")
     descname = kdb.query("dbDATABASE_FILENAME")
@@ -108,14 +108,17 @@ def create_dbdesc(dbpath, dbschema, tablename):
         ds.dbcreate(dbpath, dbschema)
 
         kdb = ds.dbopen(dbpath, "r+")
-    try:
-        idmatch = kdb.lookup(table=tablename)
-    except Exception as __:
-        elog.complain(
-            "table %s does not exist in schema for database %s" % (tablename, dbpath)
-        )
-        return None
-    return idmatch
+    if tablename != None:
+        try:
+            idmatch = kdb.lookup(table=tablename)
+        except Exception as __:
+            elog.complain(
+                "table %s does not exist in schema for database %s" % (tablename, dbpath)
+            )
+            return None
+        return idmatch
+    else:
+        return kdb
 
 
 def add_remark(db, remark):
@@ -238,6 +241,24 @@ def get_remark(db):
         remark = "".join(remarks)
     return remark
 
+def mark_remark(db):
+    if db.table < 0 or db.record < 0:
+        elog.complain("cannot clear remark from unspecified record")
+    try:
+        db_r = db.lookup(table="remark")
+    except Exception as __:
+        elog.notify("cannot lookup remark table")
+    try:
+        [commid] = db.getv("commid")
+    except Exception as __:
+        elog.notify("cannot retrieve commid")
+    if commid >= 0:
+        db_r = db_r.sort(["commid", "lineno"])
+        matcher = db.matches(db_r, kpattern="commid", tpattern="commid")
+        records = matcher()
+        if len(records) > 0:
+            for db_r.record in records:
+                db_r.mark()
 
 def rfc33392epoch(timestring):
     """convert internet timestamp in RFC3339 format. Returns normal antelope epoch time"""

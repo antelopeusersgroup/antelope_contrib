@@ -1,0 +1,235 @@
+.SH NAME
+Mampmag \- magnitude from velocity amplitudes, as per NMSOP,  computational class for evproc generalized event processing
+.SH SYNOPSIS
+.nf
+use Mampmag ;
+
+($obj,$hashref) = new($class,"db" => $dbref,
+		"dbm" => $dbmref[,$name1,$val1[,...]]) ;
+
+display($obj[,@keys]) ;
+
+put($obj,$name1,$val1[,...]) ;
+
+@vals = get($obj,@keys) ;
+
+$hashref = getwftimes($obj) ;
+
+$hashref = process_channel($obj,$trref,$flush) ;
+
+$hashref = process_station($obj,$sta,$flush) ;
+
+$hashref = process_network($obj,$flush) ;
+
+.fi
+.SH DESCRIPTION
+This provides a perl computational class for computing
+magnitudes from velocity amplitudes, for use in \fBorbevproc(1)\fP
+and \fBdbevproc(1)\fP generalized event processing programs. The methodology
+comes from the United States National Earthquake Information Center
+through a document at ftp://hazards.cr.usgs.gov/MagnitudeWG/summary_of_WG_recommendations.pdf
+and a set of distance and depth correction factors.
+The correction tables came from a web site at
+http://jclahr.com/science/software/magnitude/mb/index.html operated by John Lahr, USGS, retired.
+If there is a more up to date and authoritative source for this we would be happy to
+update the \fBMbusneic\fP perl computational module.
+.LP
+\fBnew\fP is the constructor method and does the basic setup of the internal
+perl structures for magnitude processing. The \fBMbusneic::new\fP method
+is completely inherited unmodified from the \fBMagnitude::new\fP method (see \fBMagnitude(3p)\fP).
+.LP
+\fBdisplay\fP, \fBput\fP and \fBget\fP are also inherited unmodified
+from the \fBMagnitude\fP super class.
+.LP
+\fBgetwftimes\fP is called by \fBorb/dbevproc\fP immediately after an object
+is created and this method must setup the waveform processing for the particular event.
+Setting up the waveform processing consists of 1) parsing the
+input parameters from those passed in by \fBorb/dbevproc\fP from the \fBorbevproc.pf\fP
+and \fBdbevproc.pf\fP parameter files when the processing object was created, using \fBevproc::setup_processes\fP
+(see \fBevproc(3p)\fP),
+2) skipping \fIorigin\fPs with the wrong \fIauthor\fP codes,
+3) going through the \fIassoc\fP table
+to find the stations that are associated with the event and their corresponding distances
+to the event, 4) computing noise and signal time windows based upon predicted P arrival
+times and user input parameters and 4) creating and filling in
+a perl hash with all of the results. The disposition and output perl hash are returned
+to \fBorb/dbevproc\fP using the \fBevproc::makereturn\fP function.
+.LP
+\fBMbusneic::process_channel\fP first calls \fBMagnitude::process_channel\fP to get
+the waveform statistics. The internally cached statistic values are then used as input for computing
+the particular station-channel body wave magnitude which is also cached for subsequent processing.
+.LP
+\fBMbusneic::process_station\fP is completely inherited unmodified from \fBMagnitude::process_station\fP.
+.LP
+\fBMbusneic::process_network\fP first calls \fBMagnitude::process_network\fP to compute
+and output the network magnitude and magnitude processing results. It then deposits the
+body wave magnitude into its appropriate field in the output \fIorigin\fP table row.
+.SH "PARAMETER FILE"
+The parameter file object used by the \fBMbusneic\fP class must be specified in the original \fBorbevproc.pf\fP
+or \fBdbeveproc.pf\fP parameter files as associative arrays that are indexed through the entries in
+the \fIevent_processes\fP table (see \fBorbevproc(1)\fP). An example parameter file associative array
+for \fBMbusneic\fP follows.
+.in 2c
+.ft CW
+.nf
+
+.ne 23
+
+#    This is a parameter template for Ml computation using the ampmag module
+
+mlampmag_params &Arr{
+     channels &Tbl{
+#    snet_expr chan_expr        noise_twin signal_twin  snr_thresh         clip_upper
+#       sta_expr       filter        noise_toffset signal_toffset clip_lower
+     .* .*     SHZ     auto     30.0 10.0  20.0    10.0 3.0       -65000.0 +65000.0
+     .* .*     BHZ_00  auto     30.0 10.0  20.0    10.0 3.0
+     }
+     reject &Tbl{
+#    snet_expr sta_expr
+     IU        RAR
+     }
+     update_time           10.0
+     maximum_wait_time     300.0
+     maximum_bad_fraction  0.2
+     auth_accept           oa_.|oa_. dbg
+     station_number_minimum 5
+     station_percentage_minimum 90.0
+     uncertainty_maximum   0.5
+     output_magtype        mb
+     output_auth           orbevproc
+     output_stamag         yes
+}
+
+.fi
+.ft P
+.in
+.LP
+The recipe of stations and channels to be used to compute magnitude are given
+in the \fIchannels\fP table. Each entry in the table must consist of at least 9 white space separated
+fields:
+.RS 0.5i
+.IP \fIsnet_expr\fP
+This is a regular expression that is matched against the station SEED net code, as obtained
+from the temporaray database \fIsnetsta\fP table. If it matches, then the corresponding station is used.
+This provides a convenient way to sift out stations for processing by network.
+.IP \fIsta_expr\fP
+This is a regular expression that is matched against the CSS station code, as obtained
+from the temporaray database \fIassoc\fP table. If it matches, then the station is used.
+.IP \fIchan_expr\fP
+This is a regular expression that is matched against the CSS channel codes for a particular station, as obtained
+from the metadatabase \fIsitechan\fP table. All channels that match are used in the magnitude computation.
+Traditionally, for body wave magnitude, only the vertical channel should be used and, if more
+than one channel matches for a particular station, the one that produces the
+highest magnitude is used as the station magnitude.
+.IP \fIfilter\fP
+This should be either \fB"auto"\fP, or \fB"autosp"\fP, or a legitimate filter string
+as defined by the various dynamic filter libraries that are in use (see \fBwffil(3)\fP).
+Because filter strings can have embedded white spaces and the parsing done by \fBevproc::setup_processes\fP
+is primitive, normally embedded white spaces in the filter string should be replaced with the \fB_\fP
+(underscore) character which are replaced with white spaces again automatically before being used.
+The \fB"auto"\fP key word means that the filter should be determined automatically based upon the
+\fIsegtype\fP field in the metadatabase \fIcalibration\fP table and assuming the sensor is broadband.
+Note that the input measurement used in this computational module should be in micrometers/sec of ground velocity.
+The autofilter for a broadband velocity sensor would be \fB"BW 0.5 5 5.0 5;G 0.001"\fP (A
+Butterworth bandpass from 0.5 to 5.0 hz followed by a gain
+of 0.001 to produce ground velocity in micrometers/sec).
+The \fB"autosp"\fP key word means the same as the \fB"auto"\fP key word except that it is
+assumed the sensor is a short period narrowband sensor. In this case only integrations
+are performed, once again according to the metadatabase \fIcalibration.segtype\fP value, and
+a gain is applied to convert to micrometer/second of ground velocity.
+Note that the filter must produce equivalent micrometer/second of ground velocity as output,
+so it is the duty of the user to see that this happens if not using the auto key words. The \fIcalib\fP
+value is always used from the \fItrace\fP table input to \fBMbusneic::process_channel\fP as a means
+to convert the counts to physical ground units before applying the filter.
+.IP \fInoise_twin\fP
+This should be either \fB"tproc"\fP, or a noise time window value in seconds for computing the filtered
+noise value. A noise value is computed from the filtered trace data as 1.414 times the standard deviation
+within the noise time window. The noise time window is \fInoise_twin\fP seconds long or equal to the signal
+processing time winodw if the \fB"tproc"\fP key word is used.
+.IP \fInoise_toffset\fP
+This is the number of seconds before the predicted first P arrival that will anchor the end of the
+noise time window.
+.IP \fIsignal_twin\fP
+This is the time duration in seconds for searching for the body wave magnitude signal.
+.IP \fIsignal_toffset\fP
+This is the number of seconds before the predicted first P arrival that will anchor the beginning of the
+signal search time window.
+.IP \fIsnr_thresh\fP
+This is a signal to noise ratio minimum threshold for excluding magnitude values for signals that are close
+to the noise level. If the filtered maximum body wave signal value divided by the noise value is less than
+this threshold, then the magnitude value for this channel is not used.
+.IP \fIclip_lower\fP
+This is a lower clip limit in raw counts. If any data points in the signal or noise windows range below
+this value, then the data is clipped and the station will not be used for computing magnitude.
+If no clip checking is required, then this value, along with \fIclip_upper\fP, can be omitted.
+.IP \fIclip_upper\fP
+This is a upper clip limit in raw counts. If any data points in the signal or noise windows range above
+this value, then the data is clipped and the station will not be used for computing magnitude.
+If no clip checking is required, then this value, along with \fIclip_lower\fP, can be omitted.
+.RE
+.LP
+When determining which channels to process, each line in the \fIchannels\fP table is compared against
+the SEED net code and the CSS sta and chan codes. The first line that matches defines the parameters
+for that channel. Stations that match in the \fIchannels\fP table can be rejected if they match against
+any of the lines in the \fIreject\fP table. The other parameters are as follows:
+.IP \fIupdate_time\fP
+This is a time duration in seconds (\fB0.0\fP to disable) that is passed back to \fBorbevproc\fP to
+instruct it to call \fBMbusneic::process_channel\fP every \fIupdate_time\fP seconds even if the
+particular channel is not filled.
+.IP \fImaximum_wait_time\fP
+This is a time duration in seconds (\fB0.0\fP to disable) that is passed back to \fBorbevproc\fP to
+instruct it to wait no longer than \fImaximum_wait_time\fP seconds after the end of the signal time window before
+closing out the event processing by setting the \fI$flush\fP argument in \fBprocess_channel\fP, \fBprocess_station\fP
+and \fBprocess_network\fP. Any \fBMbusneic\fP objects will stop processing, produce partial results if
+possible and expect to be destroyed by \fBorbevproc\fP.
+.IP \fImaximum_bad_fraction\fP
+This is a fractional value of tolerable missing, or bad, data sample values that will allow the production of
+results even when there are missing sample values and \fBorb/dbevproc\fP is telling the processing methods to
+flush their results. The \fBMbusneic\fP processing opjects will attempt to compute magnitude values as
+long as the missing sample values in the signal search windows are less than this fraction.
+.IP \fIauth_accept\fP
+this is a regular expression that is matched against the input \fIorigin.author\fP fields to
+determine which events to process.
+.IP \fIstation_number_minimum\fP
+This is the minimum number of stations with magnitude values that pass the other screening tests (distance, SNR)
+that will constitute a valid network magnitude. If this parameter is not specified or if it is set
+to \fB0\fP, then any number of stations greater than \fB0\fP will result in a valid network magnitude.
+.IP \fIstation_percentage_minimum\fP
+This is the similar to \fIstation_number_minimum\fP except it is expressed as a percentage of all associated stations
+used to compute magnitude.
+If this parameter is not specified or if it is set
+to \fB0\fP, then any percentage of stations greater than \fB0\fP will result in a valid network magnitude.
+.IP \fIuncertainty_maximum\fP
+This is the maximum allowed magnitude uncertainty across all stations used to compute a network magnitude.
+If the magnitude uncertainty is greater than this value, then no network magnitude will be output.
+If this parameter is not specified,
+then any uncertainty will result in a valid network magnitude.
+.IP \fIoutput_magtype\fP
+This is a string that specifies the body wave magnitude type that will be put in the output \fInetmag.magtype\fP
+and \fIstamag.magtype\fP fields. For body wave magnitude this is normally \fB"mb"\fP.
+.IP \fIoutput_author\fP
+This is a string that specifies the author that will be put in the output \fInetmag.auth\fP
+and \fIstamag.auth\fP fields. The existing \fIorigin.auth\fP field is appended with a white
+space and the value of \fIoutput_magtype\fP. Also the network magnitude result is put
+into the \fIorigin.mb\fP field.
+.IP \fIoutput_stamag\fP
+If this is set to \fB"yes"\fP, then output \fIstamag\fP entries are made for each of the
+stations that contributed to the network magnitude.
+.SH LIBRARY
+use lib $ENV{ANTELOPE}/data/evproc ;
+.SH "SEE ALSO"
+.nf
+orbevproc(1), evproc(3p), Magnitude(3p)
+.fi
+.SH "BUGS AND CAVEATS"
+We encourage the users to inspect all of the source code, written as perl modules,
+that is used to compute the magnitudes using \fBorbevproc(1)\fP and \fBdbevproc(1)\fP.
+These can be found in $ANTELOPE/data/evproc. All of the details of how the magnitudes are
+computed can be seen in the perl module source code files. If you want to change anything,
+please feel free to do so. However, please do not change any of these modules directly as they
+are supplied in the distribution. Instead, copy the modules, give them new names and
+change your own copies as you wish.
+.SH AUTHOR
+Danny Harvey
+.br
+Boulder Real Time Technologies, Inc.
