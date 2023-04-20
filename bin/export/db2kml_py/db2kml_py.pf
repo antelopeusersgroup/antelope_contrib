@@ -1,141 +1,475 @@
-config &Arr{
-    expr &Tbl{
-    #time >= 704371900
-    #    lat >= 10 && lat <= 40 && lon >= -90 && lon <= -50
-    }
-    sort_fields &Tbl{
-        time
-    }
-    create_kmz      True
-    network_link &Arr{
-    }
-    subset    stations # Can be events, stations, or empty string ('') for both
-}
+# default db2kml.pf 
+
+# special functions for later use in pf:
+antelope &env(ANTELOPE)
+
+# convenient shorthand for use in station and origin styles
+imagedir        &{antelope}/contrib/data/icons  # location for some default icons
+local_imagedir  &{antelope}/contrib/data/icons  # modify this to point to your own saved icon/image directory
+
 
 headers &Arr{
-    name Central and Eastern United States Network (CEUSN)
+    name Change Name Here or script will die!!
     description &Literal{
-        <p>As the USArray Transportable Array entered the central and eastern United States, several Federal agencies (National Science Foundation, United States Geological Survey, United States Nuclear Regulatory Commission, and Department of Energy) recognized the unique opportunity to retain seismometers in this region beyond the original timeline of the deployed TA footprint.
+        Your network described here 
         <br/>
-        Created:   <br/>
-        Website:   http://ceusn.ucsd.edu<br/>
+        Website:   http://somewhere.edu <br/>
         Author:    db2kml_py<br/>
-        Copyright: </p>
+        Contact:   
     }
 
-    #set_look_at  True
-    set_look_at
-
-    look_at &Arr{
-        # Some default view when initially loaded
-        latitude 38.5
-        longitude -87.0
-        range 100000 # height above sea level
+    network_link &Arr{
+        ignore yes	# yes/no.  no = include the network link, yes = do not include a network link
+        link     somelinkhere
+        name     A placeholder for now   
+        expires  86400		# refresh daily, every 86400
     }
-    legend_url http://ceusn.ucsd.edu/images/CEUSN-logo.jpg
 
-    #generate_legend  True
-    generate_legend 1
+    camera &Arr{
+       # A default view when initially loaded, defaults are southern California
+       # may be different than the focal point chosen by look_at for stations and/or origins
+       latitude  31.9
+       longitude -116.6
+       altitude  280000         # height above sea level, in meters (unlike range in lookat)
+       tilt      30
+
+    }
+
 }
 
-stations &Arr{
-    expr &Tbl{
-        sta =~ /.*/ && snet =~ /.*/
+config &Arr{
+    stations &Arr{
+        use_deployment	 no  	# use deployment table for active check, default is to use site table
+        display_inactive no 
+        indicate_when    yes	# include a "when" based on ondate/offdate so slider bar/animation can be used
+        suppress_label   no 	# don't include station name text on map
+        precision 	 4	# how many decimal places to display for station coordiantes 
+                                # i.e. precision 2 will produce XX.XX and XXX.XX	
+                                # i.e. precision 4 will produce XX.XXXX and XXX.XXXX as available
+                               
+        subsets &Tbl{
+            #sta =~ /.*/ && snet =~ /.*/
+            sta =~ /.*/ && snet != 'CI'
+        }
+        sort_fields &Tbl{
+            snet
+            sta 
+        }
     }
-    fields &Tbl{
-        snet
-        sta
-        lon
-        lat
-        elev
-        staname
-        ondate
-        offdate
+
+
+    origins &Arr{
+
+        indicate_when   no	# include a "when" based on ondate/offdate so slider bar/animation can be used
+
+        prefor_only	yes	# only plot prefor origins, no = all origins will be plotted
+
+        subsets &Tbl{
+            #distance(lat,lon,33.3,-116.5) <= 5.0
+            time>='1/01/2023'
+            #magnitude>='1.5'
+        }
+        sort_fields &Tbl{
+            time
+        }
     }
-    visibility   1
-    display_inactive 0
 }
+
+overlays &Arr{
+    logo  &Arr{
+
+        plotthis yes
+
+        imgsrc &{imagedir}/google_map_anza_icon.png
+        name   Anza logo
+        rotation  0	# value in degrees counterclockwise 0 = north, 90 = rotate left, -90 = rotate right 
+
+        overlayXY &Arr{     
+           # what point on your image is mapped to a screen coordinate 
+           #  (i.e. where you place the thumbtack in a piece of paper to be stuck to the bulletin board
+           #      - not where you stick it on the board)
+           # 
+           # See https://developers.google.com/kml/documentation/kmlreference#screenoverlay
+           # (x,y) = (0,0) would be lower left
+           x   0		# coordinate origin is lower left corner
+           y   0 		# coordinate origin is lower left corner, 
+           xunits   fraction	# fraction(x,y 0.0->1.0), pixels(number)
+           yunits   fraction	# fraction(x,y 0.0->1.0), pixels(number)
+        }
+        screenXY &Arr{     
+           # where your image is mapped to 
+           #  (i.e. where your paper with the thumbtack in it is stuck on the bulletin board)  
+           # 
+           # See https://developers.google.com/kml/documentation/kmlreference#screenoverlay
+           # (x,y) = (0,0) would be lower left
+           x   0.5		# coordinate origin is lower left corner
+           y   0.90		# coordinate origin is lower left corner 
+           xunits   fraction    # fraction(x,y 0.0->1.0), pixels(number)
+           yunits   fraction	# fraction(x,y 0.0->1.0), pixels(number)
+        }
+
+        size &Arr{
+           x   0 		# -1 = native, 0 = maintain aspect ratio, n set value of dimension
+           y   0 		# -1 = native, 0 = maintain aspect ratio, n set value of dimension
+           # to force image to recise to 100px by 500px, x = 100, y = 500, xunits,yunits = pixels
+           xunits   pixels  	# fraction, pixels 
+           yunits   pixels  	# fraction, pixels
+
+        }
+
+    }
+
+    fancylogo  &Arr{
+
+        plotthis yes
+
+        imgsrc &{local_imagedir}/ANZA-logo-small.png 
+        name   Fancy Anza logo
+        rotation  0	# value in degrees counterclockwise 0 = north, 90 = rotate left, -90 = rotate right 
+
+        overlayXY &Arr{     
+           # what point on your image is mapped to a screen coordinate 
+           #  (i.e. where you place the thumbtack in a piece of paper to be stuck to the bulletin board
+           #      - not where you stick it on the board)
+           # 
+           # See https://developers.google.com/kml/documentation/kmlreference#screenoverlay
+           # (x,y) = (0,0) would be lower left
+           x   0		# coordinate origin is lower left corner
+           y   0 		# coordinate origin is lower left corner, 
+           xunits   fraction	# fraction, pixels
+           yunits   fraction	# fraction, pixels
+        }
+        screenXY &Arr{     
+           # where your image is mapped to 
+           #  (i.e. where your paper with the thumbtack in it is stuck on the bulletin board)  
+           # 
+           # See https://developers.google.com/kml/documentation/kmlreference#screenoverlay
+           # (x,y) = (0,0) would be lower left
+           x   15		# coordinate origin is lower left corner
+           y   15		# coordinate origin is lower left corner,
+           xunits   pixels  	# fraction(x,y 0.0->1.0), pixels(number)
+           yunits   pixels  	# fraction(x,y 0.0->1.0), pixels(number)
+        }
+
+        size &Arr{
+           x   0		# -1 = native, 0 = maintain aspect ratio, n set value of dimension
+           y   0 		# -1 = native, 0 = maintain aspect ratio, n set value of dimension
+           # to force image to recise to 100px by 500px, x = 100, y = 500, xunits,yunits = pixels
+           xunits   pixels    # fraction, pixels 
+           yunits   pixels    # fraction, pixels
+
+        }
+
+    }
+
+}
+
 
 styles &Arr{
-    #imagepath  http://maps.google.com/mapfiles/kml/paddle/
-    #imagepath  http://eqinfo.ucsd.edu/images/spevents/google_map_icons_evstars/
-    imagepath http://maps.google.com/mapfiles/kml/paddle/
 
-    styleinfo &Arr{
-         mag_0 &Arr{
-             id orangeStarZero
-             scale 0.2
-             href GMapOrangeStar.gif
-         }
-         mag_1 &Arr{
-             id orangeStarOne
-             scale 0.4
-             href GMapOrangeStar.gif
-         }
-         mag_2 &Arr{
-             id orangeStarTwo
-             scale 0.7
-             href GMapOrangeStar.gif
-         }
-         mag_3 &Arr{
-             id redStarThree
-             scale 1.1
-             href GMapRedStar.gif
-         }
-         mag_4 &Arr{
-             id redStarFour
-             scale 1.6
-             href GMapRedStar.gif
-         }
-         mag_5 &Arr{
-             id redStarFive
-             scale 2.2
-             href GMapRedStar.gif
-         }
-         mag_6 &Arr{
-             id redStarSix
-             scale 2.9
-             href GMapRedStar.gif
-         }
-         mag_7 &Arr{
-             id redStarSeven
-             scale 3.7
-             href GMapRedStar.gif
-         }
-         mag_8 &Arr{
-             id redStarEight
-             scale 4.6
-             href GMapRedStar.gif
-         }
-         mag_9 &Arr{
-             id redStarNine
-             scale 5.6
-             href GMapRedStar.gif
-         }
+    stations &Arr{
+
+        look_at &Arr{
+            # Some default view when initially loaded, defaults are southern California
+            latitude 33.3
+            longitude -116.5 
+            range 280000 # height above sea level
+        }
+ 
+        by_network &Arr{
+            # stations will be grouped by snet.  Define your Arrays by snet (i.e. AZ, PY, XX, MA, etc.)
+            # do not completely remove the "others" defined array. Changing scale or imagesrc is ok
+            AZ &Arr{
+                scale 0.6 
+                #imagesrc  &{imagedir}/red_triangle.png 
+                # api generated image instead of saved image
+                imagesrc  http://anf.ucsd.edu/api/anza/mapimg/?transparency=1%26shape=triangle%26fillcolor=purple%26outline=yes26shadow=yes		
+            }
+            PY &Arr{
+                scale 0.6 
+                imagesrc &{imagedir}/yel_triangle.png
+            }
+            YN &Arr{
+                scale 0.6 
+                imagesrc &{imagedir}/red_triangle.png
+            }
+            others &Arr{		# DO NOT rename this "others" network, changing scaling, imagepath or href is ok
+                scale 0.6 
+                imagesrc &{imagedir}/wht_triangle.png
+            }
+        } 
     }
-    stylestation &Arr{
-        N4 &Arr{
-            id N4
-            scale 1.0
-            href grn-circle-lv.png
+
+    origins &Arr{
+
+        look_at &Arr{
+            # Some default view when initially loaded
+            latitude 33.3
+            longitude -116.5 
+            range 280000 # height above sea level
         }
-        TA &Arr{
-            id TA
-            scale 1.0
-            href red-circle-lv.png
+
+        # please change this to your own api.  Access to the UCSD api may go away at any time
+        api_url 	http://anf.ucsd.edu/api/anza/mapimg/ 	# this gives a green (aaeeaa) triangle with a border (eww, but basic)
+
+        api_params &Arr{	 # parameters in each named array are specific to the api in use
+
+           default &Arr{
+              # below are the params you can add to the api url to modify the symbol produced
+              bgcolor       transparent		# change to a color if you want icon to appear as square with filled in color
+              fillcolor     red   		# colorname:  for HSV colors, you can precede color code with "%23", i.e. %2340FFFF will be a light blue)
+              linecolor     black		# change to fillcolor if you want no outline for your symbol
+              size          24			# the default size is 24, use of magscale will alter this
+              transparency  0.75
+              shadow        true		# true/false
+              shape         circle		#  valid shapes for UCSD api: circle, square, square-round, ellipse, diamond, 
+                                       		#  star, triangle, equitrianagle, parallelogram, trapezoid
+           }
+
+           dynamic_depth &Arr{
+              # this is a special array that looks at the mappings of color to depth that are defined in depthcolor
+              bgcolor       transparent		# change to a color if you want icon to appear as square with filled in color
+              fillcolor     depthcolor 		# colorname:  for HSV colors, precede color code with "%23", i.e. %2340FFFF will be a light blue)
+              linecolor     depthcolor 		# change to fillcolor if you want no outline for your symbol
+              size          24			# the default size is 24, use of magscale will alter this 
+              transparency  0.75
+              shadow        true		# true/false
+              shape         circle  		#  valid shapes for UCSD api: circle, square, square-round, ellipse, diamond, 
+                                        	#  star, triangle, equitrianagle, parallelogram, trapezoid
+           }
+
+           purple_star &Arr{
+              # below are the params you can add to the api line to modify the symbol produced
+              bgcolor       transparent		# change to a color if you want icon to appear as square with filled in color
+              fillcolor     purple		# colorname:  for HSV colors, you can precede color code with "%23", i.e. %2340FFFF will be a light blue)
+              linecolor     black		# change to fillcolor if you want no outline for your symbol
+              size          24			# the default size is 24, use of magscale will alter this
+              transparency  0.75
+              shadow        true		# true/false
+              shape         star  		#  valid shapes for UCSD api: circle, square, square-round, ellipse, diamond, 
+                                       		#  star, triangle, equitrianagle, parallelogram, trapezoid
+           }
+
+           red_square &Arr{
+              # below are the params you can add to the api line to modify the symbol produced
+              bgcolor       transparent		# change to a color if you want icon to appear as square with filled in color
+              fillcolor     red   		# colorname:  for HSV colors, you can precede color code with "%23", i.e. %2340FFFF will be a light blue)
+              linecolor     black		# change to fillcolor if you want no outline for your symbol
+              size          24			# the default size is 24, use of magscale will alter this
+              transparency  0.75
+              shadow        true		# true/false
+              shape         square 		#  valid shapes for UCSD api: circle, square, square-round, ellipse, diamond, 
+                                       		#  star, triangle, equitrianagle, parallelogram, trapezoid
+           }
+
+           orange_circle &Arr{
+              # below are the params you can add to the api line to modify the symbol produced
+              bgcolor       transparent		# change to a color if you want icon to appear as square with filled in color
+              fillcolor     orange   		# colorname:  for HSV colors, you can precede color code with "%23", i.e. %2340FFFF will be a light blue)
+              linecolor     black		# change to fillcolor if you want no outline for your symbol
+              size          24			# the default size is 24, use of magscale will alter this
+              transparency  0.75
+              shadow        true		# true/false
+              shape         circle		#  valid shapes for UCSD api: circle, square, square-round, ellipse, diamond, 
+                                       		#  star, triangle, equitrianagle, parallelogram, trapezoid
+           }
+        } 
+
+	depthcolor &Arr{     # dynamic depth colorization requires api, mag sizing does not
+            # depth   fillcolor
+	    -5       3F3F3F  # grey, very negative depth
+             0       BFFFFF
+             6       00DFFF 
+            10       000080  # greyblue
+            20       03ff03 
+            30       FFE800  # yellow-organge
+            40       FE9400 
+            60       FF0000  # red
+           100       FF00B2  
+           200       FF00F7  # fuchia 	
+           300       B000B3
+           400       8E00FE  # purple
+           600       4C0066  # dk. purple 
+           800       000000  # black
         }
-        US &Arr{
-            id US
-            scale 1.0
-            href blu-circle-lv.png
+        
+
+   	magscale &Arr{       # magnitude scaling can be applied to either api generated or static image 
+            # magnitude  scale_factor
+           -2   0.4	# this will also be used for events with no calculated magnitude
+            0 	0.6
+            1 	0.8
+            2 	1.0
+            3 	1.7
+            4 	2.2
+            5 	3.0
+            6 	3.6
+            7 	4.4
+            8 	5.5
+            9 	6.0 
+           10 	6.2 
         }
-        others &Arr{
-            id others
-            scale 1.0
-            href wht-circle-lv.png
-        }
-    }
+
+        placemarks &Arr{ 
+
+           default  &Arr{
+              imgsrc &{imagedir}/vsm_red_circle.png
+              scale 0.7
+           }
+
+           depth &Arr{
+
+              # if depthcolor is used in the api_params (i.e. in dynamic_depth), but the listed depths 
+              # do not have corresponding value defined in depthcolor,  then: 
+              # a best guess to the next closest color-depth mapping will be chosen.  
+
+              api_ms_dd  &Tbl{	 # case1a - api image, mag scaling, dynamic depth colorization 
+                 #
+   	         # depth  scalefactor    imgsrc  				 api_params(optional) 
+                 #        #1 or magsacle #file or url for api			 # blank or api_params reference
+   	          -5      magscale       &{api_url}   dynamic_depth
+                   0      magscale       &{api_url}   dynamic_depth
+	           6      magscale       &{api_url}   dynamic_depth
+   	           10     magscale       &{api_url}   dynamic_depth
+	           20     magscale       &{api_url}   dynamic_depth
+	           30     magscale       &{api_url}   dynamic_depth
+	           40     magscale       &{api_url}   dynamic_depth
+	           60     magscale       &{api_url}   dynamic_depth
+	           100    magscale       &{api_url}   dynamic_depth
+	           200    magscale       &{api_url}   dynamic_depth
+	           300    magscale       &{api_url}   dynamic_depth
+	           400    magscale       &{api_url}   dynamic_depth
+	           600    magscale       &{api_url}   dynamic_depth
+	           800    magscale       &{api_url}   dynamic_depth
+              }
+
+              api_no_ms  &Tbl{	 # case1b - api image, no mag scaling, dynamic depth colorization 
+                 #
+   	         # depth  scalefactor    imgsrc  				 api_params(optional) 
+                 #        #1 or magsacle #file or url for api			 # blank or api_params reference
+   	          -5      0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+                   0      0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           6      0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+   	           10     0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           20     0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           30     0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           40     0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           60     0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           100    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           200    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           300    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           400    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           600    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           800    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+              }
+
+              static_ms  &Tbl{ 	# case2a - static file (no depth colorization) +  mag scaling 
+                 #
+	         # depth  scalefactor    imgsrc  				 api_params(optional) 
+                 #        #1 or magscale #file or url for api			 # blank or api_params reference
+	          -5      magscale       &{imagedir}/red_star_nooutline.png
+	          -4      magscale       &{imagedir}/red_star_nooutline.png 
+                   0      magscale       &{imagedir}/red_star_nooutline.png 
+	           6      magscale       &{imagedir}/red_star_nooutline.png 
+	           10     magscale       &{imagedir}/red_star_nooutline.png 
+	           20     magscale       &{imagedir}/orange_star_nooutline.png
+	           30     magscale       &{imagedir}/orange_star_nooutline.png 
+	           40     magscale       &{imagedir}/orange_star_nooutline.png 
+	           60     magscale       &{imagedir}/orange_star_nooutline.png 
+	           100    magscale       &{imagedir}/orange_star_nooutline.png 
+	           200    magscale       &{imagedir}/orange_star_nooutline.png 
+	           300    magscale       &{imagedir}/orange_star_nooutline.png 
+	           400    magscale       &{imagedir}/purple_star_nooutline.png 
+	           600    magscale       &{imagedir}/purple_star_nooutline.png 
+	           800    magscale       &{imagedir}/purple_star_nooutline.png 
+              }
+ 
+              static_nos  &Tbl{	 # case2b - use canned/static images which vary in color (or not) for a given depth, no scaling
+
+	         # depth  scalefactor imgsrc   					api_params(optional)
+	          -5      1           &{imagedir}/red_star_nooutline.png
+	          -4      1           &{imagedir}/red_star_nooutline.png
+                   0      1           &{imagedir}/red_star_nooutline.png
+	           6      1           &{imagedir}/orange_star_nooutline.png
+	           10     1           &{imagedir}/yellow_star_nooutline.png
+	           20     1           &{imagedir}/yellow_star_nooutline.png
+	           30     1           &{imagedir}/green_star_nooutline.png
+	           40     1           &{imagedir}/green_star_nooutline.png
+	           60     1           &{imagedir}/green_star_nooutline.png
+	           100    1           &{imagedir}/purple_star_nooutline.png
+	           200    1           &{imagedir}/purple_star_nooutline.png
+	           300    1           &{imagedir}/purple_star_nooutline.png
+	           400    1           &{imagedir}/purple_star_nooutline.png
+	           600    1           &{imagedir}/purple_star_nooutline.png
+	           800    1           &{imagedir}/purple_star_nooutline.png
+              }
+
+           }
+
+           magnitude &Arr{
+
+              api_ms  &Tbl{	 # case3 - api dynamic scaling based on default magscale, no depth colorization, symbol shape/color differentiated via api call 
+	         # mag  scalefactor         imgsrc   					api_params(optional)
+ 	         -3	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		orange_circle
+ 	          0 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		orange_circle
+ 	          1 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		orange_circle
+ 	          2 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		orange_circle
+ 	          3 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		red_square
+ 	          4 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		red_square
+ 	          5 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+ 	          6 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+ 	          7 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+ 	          8 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+ 	          9 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+ 	         10 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+              }
+ 
+              static_ms  &Tbl{	 # case4a - static file with dynamic scaling based on default magscale, no depth colorization
+	         # mag  scalefactor         imgsrc   					api_params(optional)
+ 	         -3	    magscale            &{imagedir}/orange_star_nooutline.png 
+ 	          0 	    magscale            &{imagedir}/orange_star_nooutline.png 
+ 	          1 	    magscale            &{imagedir}/orange_star_nooutline.png 
+ 	          2 	    magscale            &{imagedir}/orange_star_nooutline.png 
+ 	          3 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          4 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          5 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          6 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          7 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          8 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          9 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	         10 	    magscale            &{imagedir}/red_star_nooutline.png 
+              }
+
+              static_nos  &Tbl{	 # case4b - static files (based on color or magnitude?), no magnitude scaling
+	         # mag  scalefactor         imgsrc   					api_params(optional)
+ 	         -3	    1                   &{imagedir}/orange_star_nooutline.png 
+ 	          0 	    1                   &{imagedir}/orange_star_nooutline.png 
+ 	          1 	    1                   &{imagedir}/orange_star_nooutline.png 
+ 	          2 	    1                   &{imagedir}/orange_star_nooutline.png 
+ 	          3 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          4 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          5 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          6 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          7 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          8 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          9 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	         10 	    1                   &{imagedir}/red_star_nooutline.png 
+              }
+
+           }
+
+
+           auth &Arr{     # not programmed yet, placeholder
+              static_auth_ms  &Arr{	 
+                 #
+   	         # auth   scalefactor    imgsrc  				 
+                 #        #1 or magsacle #file or url for api			
+	          UCSD    magscale       &{imagedir}/orange_star_nooutline.png   
+	          USGS    magscale       &{imagedir}/red_star_nooutline.png
+              }
+           }
+       }
+   }
 }
 
-
-pf_revision_time 1387575390
+pf_revision_time 1681501519
