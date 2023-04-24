@@ -2,13 +2,14 @@ category	Kinemetrics
 configuration	Etna-2 Acausal Filter 5Vpp Input
 
 originator	Mathias Franke
-last_modified	December 16, 2016
+last_modified	April 07, 2023
 
 description	KMI Etna-2 Acausal
 dfile etna2_ac
 info &Literal{
 These are the decimation FIR filters with a final acausal brickwall filter.
-The information was derived from Kinemetrics Document 300905 Revision X5
+The information was derived from Kinemetrics Document 300905 Revision X5.
+State-Of-Health channels are included.
 }
 
 
@@ -65,3 +66,98 @@ decifac	2
 response	&datafile(responses/coefB2-80)
 }
 
+soh		LCE LCQ LEC LEP LKI CPU
+
+LCE	&Arr{
+stages		phase
+iunits		s
+ounits		counts
+samprate	1
+rsptype		T
+}
+
+LCQ	&Arr{
+stages		clk_qual
+iunits		percent
+ounits		counts
+samprate	1
+rsptype 	p
+}
+
+LEC	&Arr{
+stages		mamp
+iunits		A
+ounits		counts
+samprate	1
+rsptype		i
+}
+
+LEP	&Arr{
+stages		mvolt
+iunits		V
+ounits		counts
+samprate	1
+rsptype		v
+}
+
+LKI	&Arr{
+stages		temp
+iunits		Celsius
+ounits		counts
+samprate	1
+rsptype		t
+}
+
+CPU	&Arr{
+stages		load
+iunits		counts
+ounits		counts
+samprate	1
+rsptype		c
+}
+
+phase &Arr{
+gtype		clock phase
+gnom		1000000
+iunits		s
+ounits		counts
+sn		datalogger
+}
+
+clk_qual &Arr{
+gtype		clock quality
+iunits		percent
+ounits		counts
+sn		datalogger
+}
+
+mamp &Arr{
+gtype		current meter
+gnom		1000
+iunits		A
+ounits		counts
+sn		datalogger
+}
+
+mvolt &Arr{
+gtype		volt meter
+gnom		1000
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+temp &Arr{
+gtype		thermometer
+gnom		10
+iunits		Celsius
+ounits		counts
+sn		datalogger
+}
+
+load &Arr{
+gtype		cpu load
+iunits		counts
+ounits		counts
+sn		datalogger
+}
