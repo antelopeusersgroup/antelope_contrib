@@ -1,0 +1,22 @@
+# Hyperion IS 3000  
+#
+# 3                   num of zeroes
+# 3                   num of poles
+# 1                   normalization factor
+# 1.0                 gain
+# # From the Manual:
+# the frequencies of the poles for the transfer function of the sensors are:
+#f1 = 1.483 mHz
+#f2 = 3.387 mHz
+#f3 = 29.49 mHz.
+theoretical   1 anti-alias	  paz    Hyperion  
+1
+3	Poles
+-9.317963E-03 0.000000E+00  0.000000E+00  0.000000E+00
+-2.128114E-02 0.000000E+00  0.000000E+00  0.000000E+00
+-1.852911E-01 0.000000E+00  0.000000E+00  0.000000E+00
+
+3	Zeros
+0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00
+0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00
+0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00

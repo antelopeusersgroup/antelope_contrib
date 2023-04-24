@@ -1,0 +1,32 @@
+# https://www.mertl-research.at/en/projects/macro_seismic_network/
+originator    	Nikolaus Horn, ZAMG 
+last_modified  	2022-04-05
+
+category	SARA
+configuration	Sara SL06 for Infrasound
+
+description	 
+dfile 		sl06	# no response, a mystery
+
+streams		20sps
+
+# definitions of streams
+20sps	20 a/d lp_8.8hz
+
+# gain = counts/V
+gains   838860.8  # 20 V peak-to-peak, that results in a factor of 838860.8 Count/V, or 0.000001192093 V/Count.
+
+
+# Stages
+a/d	&Arr{
+	gtype		digitizer
+	samprate	20
+	iunits		V
+	ounits		counts
+	sn		datalogger
+}
+lp_8.8hz &Arr{
+	gtype   analog_lp
+	gain    1
+	response        &datafile(responses/lp8_8hz)
+}

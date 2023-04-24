@@ -5,6 +5,7 @@ net_sim \- estimate network magnitude threshold
 .nf
 \fBnet_sim \fP[-v] [-n \fInsta\fP] [-p \fIpf\fP] [-i \fIsta\fP[,\fIsta2\fP]]
 				[-s \fIsnr\fP] [-r \fIrmsdb\fP | -R \fIrms\fP] [-t \fItime\fP]
+				[-c] [-b] [-m] [d]
 			   	[-S \fIsta/lat/lon/rms\fP] [-f \fIgridfilename\fP] \fIdbname\fP [\fIplotfile\fP]
 .fi
 
@@ -35,6 +36,16 @@ Add a virtual station. Multiple stations can be specified by repeating the argum
 specify \fIsnr\fP. This overrides the value from the paramter file.
 .IP "-t time"
 Time for \fIrms\fP values when a database is used to lookup the \fIrms\fP values. If not specified, the program looks for recent values. How recent exactly is infuenced by the \fIsnr_latency\fP from the parameter file.
+.IP "-c
+Plotting cities (from a table \fBplaces\fI) is enabled by configuring the optional parameters \fIcities_dbname\fP and \fIcities_subset\fP in the parameterfile.
+The commandline paramter c disables plotting of cities. 
+.IP "-b
+Plotting borders (from a database with polygons) is enabled by configuring the optional parameters \fIplaces_dbname\fP and \fIplaces_subset\fP in the parameterfile.
+The commandline paramter b disables plotting of borders. 
+.IP "-m"
+Don't plot magnitude thresholds.
+.IP "-d"
+Don't plot distances.
 .IP "dbname"
 Name of database with station coordinates in a site table. This argument is required.
 .IP plotfilename

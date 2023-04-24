@@ -8,45 +8,81 @@ web_stamap [-v] [-p pffile] dbname
 
 .SH DESCRIPTION
 This utility produces a webpage for an interactive display of stations in a database. The stations can be grouped using search expressions in the paramter file.
-The display relys on the \fIleaflet\fP javascript library written by Vladimir Agafonkin.
+The display relies on the \fIleaflet\fP javascript library written by Vladimir Agafonkin.
 
 .SH OPTIONS
 .IP "-v" 
 verbose flag
 .IP "-p pffile" 
 parameter file
+.IP "-f file" 
+Output filename. This overrides the filebase from the parameter file.
 .IP "dbname"
 Name of database. Only the site table is needed here.
 
 .SH PARAMETER FILE
 
-The following is a sample parameter file. Some of the parameters
+The following is a sample parameter file. Most of the parameters
 should be fairly self-explanatory.
 
+.in 2c
+.ft CW
 .nf
-filebase        stations
-title O&Ouml;W Station Map
+filebase    stations    # output filename
+title Antelope Demo Station Map     # title
 
-logo_url https://geoweb.zamg.ac.at/images/zamg_logo_vert.png
-logo_alt ZAMG Logo 
-web_css https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css 
-web_js https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js 
-dontshow        S[123456]TA|BSTA|CUVW|CXYZ|CO[ABCD]|VB[1-3]|AAA[0-9].*
+dontshow    X[123456]TA|BSTA|CUVW|CXYZ|CO[ABCD]   # ignore sites matching this expression
 layers &Tbl{
- &Arr{
-   stations BZN|CRY|FRD|HSSP|SETM|SND|TONN|TRAN|WMC|B081|B082|B082A|B084|B086|B086A|B087|B088|B088A|B093|B946|ALCY|GVAR1|SJR|PSPR|TFRD
-   icon    https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png
-   description Anza Stations
- }
- &Arr{
-   stations 
-   icon    https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png
-   description Other Stations
- }
+    &Arr{
+        stations B0.*
+        icon     http://geoweb.zamg.ac.at/my_icons/tri_26_pink.png
+        description Some array in the desert
+    }
+    &Arr{
+        stations PFO
+        icon     http://geoweb.zamg.ac.at/my_icons/tri_26_pink.png
+        description Pinion Flat
+    }
+    &Arr{
+        stations # catch all stations left here
+        icon     https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png
+        description ANZA stations
+    }
 }
+
+logo_url           https://geoweb.zamg.ac.at/images/zamg_logo_vert.png
+logo_alt           ZAMG Logo
+
+leaflet_js         https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js
+leaflet_css        https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css
+leaflet_draw_js    https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js
+leaflet_draw_css   https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css
+leaflet_measurecontrol_js    https://makinacorpus.github.io/Leaflet.MeasureControl/leaflet.measurecontrol.js
+leaflet_measurecontrol_css   https://makinacorpus.github.io/Leaflet.MeasureControl/leaflet.measurecontrol.css
+
+
+html_template  ...
 .fi
-
-
+.ft R
+.in
+.IP filebase
+Output filename without extension (".html"). This can be overriden on the commandline
+.IP dontshow
+Filter out stations
+.IP layers
+Different groups of stations selecte by the parameter \fIstations\fP. 
+Each group should be given a different icon. You may use the icons specified here, 
+but it would be kind to provide locally hosted copies.
+The last groups with an empty parameter \fIstations\fP contains all stations left after excluding stations
+either selected by the paramter \fIdontshow\fP or in one of the previous groups.
+.IP "logo_url, logo_alt"
+Replace with your own logo
+.IP "leaflet_..."
+Javascript libraries used here. You may want to provide locally hosted versions of these libraries
+to increase stability and reliability. The plugins \fBdraw\fP and \fBmeasurecontrol\fP are needed for the interactive ruler taht can be activated by clicking on the icon below the zoom control ("+/-") on the left side of the webpage. See https://github.com/makinacorpus/Leaflet.MeasureControl for more information.
+.IP html_template
+Template for the new webpage. See https://leaflet-extras.github.io/leaflet-providers/preview/ for a list of alternative map layers.
+All curly brackets must be doubled because of the antelope parameter file quoting conventions. See \fIpf(5)\fP for an explanation.
 .SH EXAMPLE
 .nf
 % web_stamap /opt/antelope/data/db/demo/demo
@@ -54,11 +90,14 @@ layers &Tbl{
 .fi
 
 .SH "BUGS AND CAVEATS"
-The default parameter files is using icons and java-script libraries provided by the cloudflare CDN. For productive usage, I would recommend to provide locally hosted copies.
+The default parameter file is using icons and java-script libraries and stylesheets provided by the cloudflare CDN, github and ZAMG. For productive usage, I would recommend to provide locally hosted copies.
 
 .SH "SEE ALSO"
 .nf
-antelope(1), rtexec(1), \fBhttps://leafletjs.com/\fP
+\fBhttps://leafletjs.com/\fP, 
+\fBhttps://leaflet-extras.github.io/leaflet-providers/preview/\fP, 
+\fBhttps://github.com/makinacorpus/Leaflet.MeasureControl\fP and 
+pf(5)
 .fi
 .SH AUTHOR
 .nf

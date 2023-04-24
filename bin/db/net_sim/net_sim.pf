@@ -24,16 +24,37 @@ magtype Ml
 # c0 0.52
 # c1 1.66
 
+# Valid font sizes are xx-small, x-small, small, medium, large, x-large, xx-large, smaller, larger
+# or numerical font size in points
+title_fontsize medium
+label_fontsize x-small
 
 #if these are not specified, the program uses the bounding box of the network
 xmin 
 xmax
 ymin
 ymax
+
+# colorbar boundaries and contours
+number_contours
+mindist
+maxdist
+minmag
+maxmag
+
 #use all stations by default
 stations_used &Tbl{
 }
 stations_ignored &Tbl{
 }
 station_rms &Arr{
+#	GILA 20
+#	SQMD 3	
 }
+
+
+# additional labels and lines - mainly for orientation
+cities_dbname #/opt/antelope/local/data/database/ortsliste_kurz_utf8_aec_bin
+cities_subset #place=~/Wien
+borders_dbname #/opt/antelope/local/data/database/BekannteGrenzen
+borders_subset #ptype=~/pb/ || pname=~/Austria/

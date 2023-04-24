@@ -1,35 +1,22 @@
 """
-recent webforms
-
-Create HTML for seismic event
+Create HTML for seismic event(s)
 
 @author      Nikolaus Horn <nikolaus.horn@zamg.ac.at
 @created     2015-01-08
-@version     1.0
+@modified    2022-04-10
+@version     1.1
 @license     MIT-style license
 
 """
-
-prefor_icon = "/my_icons/star_red.png"
-origin_icon = "/my_icons/star_blue.png"
-defining_icon = "/my_icons/tri_26_magenta.png"
-nondefining_icon = "/my_icons/tri_26_navy.png"
-unassoc_icon = "/my_icons/tri_26_grey.png"
-
-hist_icon = "/my_icons/r_red.png"
 
 layer_template = "var %s = new L.LayerGroup();"
 marker_template = (
     """L.marker([%f,%f],{icon:%s,title:'%s'}).bindPopup('%s').addTo(%s);"""
 )
 prefor_marker_template = """L.marker([%f,%f],{icon:%s,title:'%s',zIndexOffset:1000}).bindPopup('%s').addTo(%s);"""
-mapmarker_template = """L.mapMarker(new L.LatLng(%f,%f),{radius:%s,title:'%s'}).bindPopup('%s').addTo(%s);"""
-rpmarker_template = """L.mapMarker(new L.LatLng(%f,%f),{radius:%s,title:'%s'}).bindPopup('%s').addTo(%s);"""
-starmarker_template = """new L.StarMarker(new L.LatLng(%f,%f),{radius:%s,title:'%s'}).bindPopup('%s').addTo(%s);"""
 icon_template = """var %s = new LeafIcon({iconUrl: '%s'});"""
 marker_html_template = "%s - %s<p>%.2f %.2f %.0fm<p>%s"
 origin_marker_html_template = "%s %s %s<p>%.2f %.2f %.0fkm<p>%d %d<p>%s"
-zip_marker_html_template = "%s - %s<p>%.2f %.2f<p>%s"
 
 origin_tr_template = "<tr><td>%s</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td><td>%.1fkm</td><td>%s</td><td>%d</td><td>%d</td><td>%s</td></tr>"
 origin_th_template = "<tr><td>evid</td><td>orid</td><td>time</td><td>mag</td><td>etype</td><td>review</td><td>lat</td><td>lon</td><td>depth</td><td>auth</td><td>nass</td><td>ndef</td><td>lddate</td></tr>"
@@ -41,135 +28,6 @@ mag_th_template = (
 mag_tr_template = (
     "<tr><td>%s</td><td>%s</td><td>%.1f</td><td>%.2f</td><td>%.0f</td><td>%s</td></tr>"
 )
-
-html_template = """
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="format-detection" content="telephone=no">
-<style>
-    body { padding:0; margin:0; }
-    html, body, #map { height:100%%; }
-    .logospace{position:relative;right:0px;top:-5px;}
-    .txtspace{position:relative;right:0px;top:-5px; background:white;}
-    @media all and (max-device-width:480px){.logospace{display:none;}}
-</style>
-<title>%s</title>
-<link rel="stylesheet" href="/leaflet/leaflet.css" />
-<link rel="stylesheet" href="/leaflet/leaflet.draw.css" />
-<link rel="stylesheet" href="/leaflet/leaflet.measurecontrol.css" />
-<script src="/leaflet/leaflet.js"></script>
-<script src="/leaflet/leaflet.draw.js"></script>
-<script src="/leaflet/leaflet.measurecontrol.min.js"></script>
-<script src="/jqplot/jquery.min.js"></script>
-</head>
-<body>
-<div id="map"></div>
-<script defer="defer" type="text/javascript">
-function addDataToMap(varname, data, mymap) {
-    var varname = L.geoJson(data, {
-        onEachFeature: function(feature, layer) {
-        var popupText = "Magnitude: " + feature.properties.mag + " " + feature.properties.magtype
-            + "<br>Zeit: " + feature.properties.time
-            + "<br>Tiefe: " + feature.properties.depth + " km"
-            + "<br>"+ feature.properties.auth + " " + feature.properties.evtype
-            + "<br> evid "+ feature.id + " orid " + feature.properties.source_id
-            + "<br><a href='http://geoweb.zamg.ac.at/monitor/evmap_evid_00" + feature.id + ".html'>More info</a>";
-            layer.bindPopup(popupText); },
-        pointToLayer: function (feature, latlng) {
-            if (feature.properties.mag > 1.0) {
-                return new L.CircleMarker(latlng, {radius: Math.round(feature.properties.mag), fillOpacity: 0.35});
-            } else {
-                return new L.CircleMarker(latlng, {radius: 1, fillOpacity: 0.55});
-            }
-        }
-    });
-    varname.addTo(mymap);
-}
-
-   var LeafIcon = L.Icon.extend({
-       options: {
-       iconSize:     [26, 26],
-       iconAnchor:   [12, 25],
-       popupAnchor:  [0, -25]
-       }
-    });
-
-    %s
-    %s
-    %s
-
-    var zamg_1month = new L.LayerGroup(); var zamg_1week = new L.LayerGroup();
-
-    var osm_Attr='&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> Contributors',
-        esri_Attr='&copy; <a href="http://www.esri.com/">Esri</a> i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
-        BMAT_Attr='Datenquelle: <a href="http://www.basemat.at/">basemap.at</a>';
-    var normal = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                {maxZoom: 18,   attribution: osm_Attr});    
-    var gray   = L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
-                {maxZoom: 18,   attribution: osm_Attr});    
-    var ESRI = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                {maxZoom: 18,   attribution: esri_Attr});  
-    var BMAT = L.tileLayer('https://maps{s}.wien.gv.at/basemap/geolandbasemap/normal/google3857/{z}/{y}/{x}.{format}',
-                {maxZoom: 19,   format:'png', attribution: BMAT_Attr,
-                subdomains: ["", "1", "2", "3", "4"], format: 'png',
-                bounds: [[46.35877, 8.782379], [49.037872, 17.189532]]
-                });  
-    var BasemapAT_orthofoto = L.tileLayer('https://maps{s}.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.{format}', {
-                maxZoom: 19, attribution: 'Datenquelle: <a href="www.basemap.at">basemap.at</a>', 
-                subdomains: ["", "1", "2", "3", "4"], format: 'jpeg',
-                bounds: [[46.35877, 8.782379], [49.037872, 17.189532]]                
-                });
-    
-    var map = L.map('map', {
-			center: [ %.1f, %.1f ],
-			zoom: 8,
-			layers: [normal,%s,zamg_1month]
-		});
-
-    var baseLayers = {
-			"OpenstreetMap": normal,
-			"Graustufen": gray,
-			"ESRI": ESRI,
-            "Basemap.at": BMAT,
-            "Basemap Photo": BasemapAT_orthofoto
-		};
-
-    var overlays = {
-			%s, "ZAMG 1 Woche": zamg_1week,"ZAMG 1 Monat": zamg_1month
-		};
-
-    L.control.layers(baseLayers, overlays).addTo(map);
-    L.Control.measureControl().addTo(map);
-    $.getJSON("http://geoweb.zamg.ac.at/static/event/lastweek.json", function(data) { addDataToMap('ZAMGwoche', data, zamg_1week); });
-    $.getJSON("http://geoweb.zamg.ac.at/static/event/lastmonth.json", function(data) { addDataToMap('ZAMGmonat', data, zamg_1month); });
-
-    var logospace= new L.Control();
-    logospace.onAdd = function(map) {
-        this._div = L.DomUtil.create('div', 'logospace');
-        this.update();
-        return this._div;
-    };
-    logospace.update = function () {
-        this._div.innerHTML = '<img src="/images/zamg_logo_vert.png" alt="ZMG Logo">';
-    };
-    logospace.addTo(map);
-    var txtspace= new L.Control( {position: 'bottomleft'} );
-    txtspace.onAdd = function(map) {
-        this._div = L.DomUtil.create('div', 'txtspace');
-        this.update();
-        return this._div;
-    };
-    txtspace.update = function () {
-        this._div.innerHTML = 'Letztes Update: <b>%s</b>';
-    };
-    txtspace.addTo(map);
-
-</script>
-</body>
-</html>
-"""
 
 info_template = """
 <html>
@@ -199,20 +57,7 @@ import codecs
 
 
 def usage(progname):
-    print(progname, "[-v] [-d dirout] [-s sitedb] [-h histdb] [-p pfname] [-o] dbname evid")
-
-
-def feltsize(number):
-    # print "this is feltsize"
-    size = 12
-    if number < 3:
-        size = 12
-    else:
-        size = 12 + (number - 3) * (number - 3)
-    if size > 30:
-        size = 30
-    # print "fs %d %d" % (number,size)
-    return size
+    print(progname, "[-v] [-d dirout] [-s sitedb] [-p pfname] [-o] dbname evid")
 
 
 def magsize(number):
@@ -275,8 +120,6 @@ def main():
             pf = a
         elif o == "-d":
             dirout = a
-        elif o == "-h":
-            histdbname = a
         elif o == "-s":
             sitedbname = a
 
@@ -288,6 +131,23 @@ def main():
 
     timenow = stock.now()
     creation_time = stock.epoch2str(timenow, "%d. %m. %Y %H:%M")
+    pf = stock.pfread(pfname)
+
+    logo_url = pf["logo_url"]
+    logo_alt = pf["logo_alt"]
+    leaflet_css = pf["leaflet_css"]
+    leaflet_js = pf["leaflet_js"]
+    leaflet_draw_css = pf["leaflet_draw_css"]
+    leaflet_draw_js = pf["leaflet_draw_js"]
+    leaflet_measurecontrol_css = pf["leaflet_measurecontrol_css"]
+    leaflet_measurecontrol_js = pf["leaflet_measurecontrol_js"]
+    title = pf["title"]
+    html_template = pf["html_template"]
+    prefor_icon = pf["prefor_icon"]
+    origin_icon = pf["origin_icon"]
+    defining_icon = pf["defining_icon"]
+    nondefining_icon = pf["nondefining_icon"]
+    unassoc_icon = pf["unassoc_icon"]
 
     if id_is_orid:
         orid = int(args[1])
@@ -300,9 +160,6 @@ def main():
         filebase = os.path.join(dirout, filebase)
     db = ds.dbopen(dbname, "r")
     my_tables = db.query(ds.dbSCHEMA_TABLES)
-    has_macro_tables = False
-    if "idp" in my_tables and "massoc" in my_tables and "meval" in my_tables:
-        has_macro_tables = True
     dborigin = db.lookup(table="origin")
     dbevent = db.lookup(table="event")
     dbassoc = db.lookup(table="assoc")
@@ -348,10 +205,6 @@ def main():
     dbstamagmatch = db.lookup(table="assoc", record="dbSCRATCH")
     stamagmatcher = dbstamagmatch.matches(dbstamag, ["sta", "orid"])
     # print "we have %d origins"  % nevents
-
-    if has_macro_tables:
-        dbp = dbp.join("massoc", outer=True)
-        dbp = dbp.join("meval", outer=True)
 
     layers = []
     layer_names = []
@@ -427,7 +280,7 @@ def main():
                             ms = mag
                         elif magt == "ml":
                             ml = mag
-                        elif magt == "mw":
+                        elif magt == "mw" or magt == "mww":
                             mw = mag
 
                     if mw > -99.0:
@@ -565,7 +418,7 @@ def main():
                 ms = mag
             elif magt == "ml":
                 ml = mag
-            elif magt == "mw":
+            elif magt == "mw" or magt == "mww":
                 mw = mag
 
         if mw > -99.0:
@@ -588,7 +441,7 @@ def main():
     ss = "%d,%d" % (mysize, mysize)
     htmlfilename = "%s_evinfo.html" % filebase
     marker_html = (
-        '<b>%s</b><br /><b>%s</b> %.2f %.2f %.0fkm<br />%s<br />orid: %d evid: %d<br />Auth: %s<br /><a href="%s">Mehr Info</a>'
+        '<b>%s</b><br /><b>%s</b> %.2f %.2f %.0fkm<br />%s<br />orid: %d evid: %d<br />Auth: %s<br /><a href="%s">more information</a>'
         % (
             tooltipstr,
             etype,
@@ -668,7 +521,9 @@ def main():
                         magdiff = ml - stamag
                     if stamagtype.lower() == "ms" and ms > -90.0:
                         magdiff = ms - stamag
-                    if stamagtype.lower() == "mw" and mw > -90.0:
+                    if (
+                        stamagtype.lower() == "mw" or stamagtype.lower() == "mww"
+                    ) and mw > -90.0:
                         magdiff = mw - stamag
                     if first_stamag:
                         mag_str.append(
@@ -687,7 +542,6 @@ def main():
             if len(siterecords) > 0:
                 dbsite.record = siterecords[0]
                 [stalat, stalon, staname] = dbsite.getv("lat", "lon", "staname")
-                #staname = staname.decode(db_encoding)
                 staname = staname.replace("'", "\\'")
                 stastr = []
                 stastr.append("%s - %s" % (sta, staname))
@@ -821,12 +675,10 @@ def main():
         icon_name = "xI"
         icons.append(icon_template % (icon_name, unassoc_icon))
         this_layer = "xxx"
-        # layer_names.append( this_layer )
         layers.append(layer_template % this_layer)
         layer_descriptions.append('"unused Stations": %s' % this_layer)
         for dbsite.record in range(n_sites_left):
             [sta, stalat, stalon, staname] = dbsite.getv("sta", "lat", "lon", "staname")
-            #staname = staname.decode(db_encoding)
             staname = staname.replace("'", "\\'")
             marker_html = "%s - %s<br />%.2f %.2f" % (sta, staname, stalat, stalon)
             markers.append(
@@ -834,32 +686,41 @@ def main():
                 % (stalat, stalon, "xI", "%s - %s" % (sta, staname), marker_html, "xxx")
             )
 
-    htmlfilename = "%s.html" % filebase
-    file = codecs.open(htmlfilename, "w", "UTF-8")
     if id_is_orid:
         titlestring = "Origin %d" % orid
     else:
         titlestring = "Event %d - prefor %d" % (orid, preforid)
 
-    my_html = html_template % (
-        titlestring,
-        "".join(icons),
-        "".join(layers),
-        "".join(markers),
-        plat,
-        plon,
-        ",".join(layer_names),
-        ",".join(layer_descriptions),
-        creation_time,
+    my_html = html_template.format(
+        title=title,
+        leaflet_css=leaflet_css,
+        leaflet_js=leaflet_js,
+        leaflet_draw_css=leaflet_draw_css,
+        leaflet_draw_js=leaflet_draw_js,
+        leaflet_measurecontrol_css=leaflet_measurecontrol_css,
+        leaflet_measurecontrol_js=leaflet_measurecontrol_js,
+        icons="".join(icons),
+        layers="".join(layers),
+        markers="".join(markers),
+        layer_names=",".join(layer_names),
+        layer_descriptions=",".join(layer_descriptions),
+        center_lat=plat,
+        center_lon=plon,
+        logo_url=logo_url,
+        logo_alt=logo_alt,
+        creation_time=creation_time,
     )
-    file.write("".join(my_html))
+    htmlfilename = "%s.html" % filebase
+    with open(htmlfilename, "w", encoding="utf8") as myfile:
+        myfile.write(my_html)
+
     if verbose:
         elog.log("file done %s" % htmlfilename)
 
-    htmlfilename = "%s_evinfo.html" % filebase
-    file = codecs.open(htmlfilename, "w", "UTF-8")
     my_html = info_template % (titlestring, "".join(outstr), "".join(mag_str))
-    file.write("".join(my_html))
+    htmlfilename = "%s_evinfo.html" % filebase
+    with open(htmlfilename, "w", encoding="utf8") as myfile:
+        myfile.write(my_html)
     if verbose:
         elog.log("file done %s" % htmlfilename)
     return 0

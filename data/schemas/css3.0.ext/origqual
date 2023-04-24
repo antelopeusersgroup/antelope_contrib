@@ -136,6 +136,6 @@ Relation origqual
 	Foreign ( commid ) 
 	Description ( "origin quality idicators" )
 	Detail {
-		blabla parameters to assess origin quality
+		Parameters to assess origin quality
 	}
 	;

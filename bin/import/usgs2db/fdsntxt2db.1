@@ -1,0 +1,68 @@
+.TH FDSNTXT2DB 1 
+.SH NAME
+fdsntxt2db \- utility to retrieve earthquake information in text format from \fBFDSN\fP services.
+.SH SYNOPSIS
+.nf
+\fBfdsntxt2db\fP [-v] [-h] [-a \fIauthor\fP]
+      [-k \fIkeydbname\fP] [-u \fIservice-url\fP] \fIdbname\fP
+.fi
+.SH DESCRIPTION
+\fBfdsntxt2db\fP  queries fdsn services for event information in text format
+and stores the event information in a database.
+The programs keeps track of event ids in a separate table and updates 
+the output database if new information is available.
+.br
+.SH OPTIONS
+.IP \-v
+verbose flag
+.IP -h
+Show help.
+.IP "-k keydbname"
+name of database to keep track of event ids. Since USGS/EMSC IDs 
+are a mixture of strings and integers, a separate table is needed.
+The database must be in schema \fBidmatch1.0\fP or higher. The database 
+is created upon startup if not originally existing. 
+The database name defaults to keydb.
+.IP \-u
+URL of the data source. A list of all available feeds can be found on a 
+website of the \fBFDSN\fP: \fBhttps://www.fdsn.org/datacenters/\fP. 
+Please be aware that not all datacenters provide event information. And 
+not all datacenters providing event information also support the text format.
+The URL defaults to \fBhttp://webservices.ingv.it/fdsnws/event/1/query?format=text\fI, 
+the service run by INGV for Italy.
+.IP "-a author"
+Author name for event, origin and netmag table. If this is not specified, the author information returned by the service is used. There is no default.
+.IP database
+The name of the output database. This argument is required.
+.SH EXAMPLE
+To retrieve recent event data from INGV into a database named \fBingv\fP:
+.nf
+fdsntxt2db -k db/fdsn_ids -v ingv
+.fi
+To update event information every 10 minutes, add the following to your rtexec.pf
+.nf
+# update database USGS every 10 minutes, all events above magnitude 2.5
+INGV   UTC   0,10,20,30,40,50   *  *  *  *  fdsntxt2db -k db/fdsn_ids db/ingv 
+.fi
+.SH ENVIRONMENT
+The program uses the Python module \fIrequests\fP to retrieve data from a 
+webservice. This module supports proxy configuration based on the standard 
+environment variables \fIhttp_proxy\fP, \fIhttps_proxy\fP. 
+If you need more control over proxy settings, feel free to 
+contact the author, Nikolaus.Horn@zamg.ac.at.
+.SH "SEE ALSO"
+.nf
+
+https://docs.python-requests.org/en/master, USGS2orb(1), antelope_python(3y)
+
+.fi
+.SH "BUGS AND CAVEATS"
+Since the text format for event information does not provide information on 
+when the data has been updated, information on existing events is always 
+overwritten. This is inefficient but unavoidable. The error handling is simple.
+I implemented my personal understanding of the data offered. There might 
+be wiser ways to use the save the information in a database. 
+This module uses the python modules requests with all their bugs and 
+limitations. And of course I added many more problems...
+.SH AUTHOR
+Nikolaus Horn (nikolaus.horn@zamg.ac.at)

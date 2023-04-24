@@ -1,0 +1,52 @@
+.TH split_pf 1
+.SH NAME
+split_pf \- split datalogger entries in parameter files for a few data acquisistion programs 
+.SH SYNOPSIS
+.nf
+\fBsplit_pf\fP [-f nr] [-s expr] [-b pf] \fIparameterfile\fP \fIdbmaster\fP
+.fi
+
+.SH DESCRIPTION
+This little helper splits datalogger entries in the parameterfiles for \fIorb2orb\fP, \fIq3302orb\fP, \fIslink2orb\fP and \fIrtexec\fP.
+This helps to split data acquisition across different computers to increase redundancy and stability.
+Optionally, a second parameterfile can be produced for sites that can be reached via an alternative ip-address.
+.SH OPTIONS
+.IP "-f nr"
+Split the datalogger entries into chuncks of length \fBnr\fP. the defaults to split into two pieces.
+.IP "-s expr"
+Datascope expression to sort the datalogger entries. The sorting follows the order of entries in the site table. The default ist is to sort by name, but geographical might also be interesting.
+.IP "-b pf"
+Try to find an alternate ip-address for each connection to a datalogger and, if found, list the connection then in a second parameter file.
+The paramterfile must contain a list of sites, for each of these sites at least a primary connection and optionally a backup connection.
+The program \fBhosts2pf\fP can be used to construct such a file from a hosts table.
+.in 2c
+.ft CW
+.nf
+Here the entry for a typical station:
+stations	&Arr{
+    ADSA	&Arr{
+        backup	138.22.223.71
+        primary	138.22.223.15
+    }
+    ...
+}
+.fi
+.ft R
+.in
+.IP "parameterfile"
+Antelope parameterfile for q3302orb, orb2orb, slink2orb or rtexec. This script identifies the program by values in the parameter file required by the respective program.
+.IP "dbmaster"
+Database with at least a site-table. This is needed to sort the stations by geographical location.
+
+.SH "BUGS AND CAVEATS"
+The output parameter files are silently overwritten. 
+.SH "SEE ALSO"
+.nf
+antelope(1), rtexec(1), q3302orb(1), orb2orb(1), slink2orb(1), hosts2pf(1) and sort_pf(1).
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2022
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+
