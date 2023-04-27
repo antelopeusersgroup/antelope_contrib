@@ -1,6 +1,7 @@
 LIB=libperf.a
 INCLUDE=perf.h f2c.h
 
+cflags= -std=c89
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
