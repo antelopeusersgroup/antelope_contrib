@@ -316,8 +316,8 @@ def compare_attribute(first, second):
     """
     error_seen = False
     name = first["attribute"]
-    f_file = first["file"].decode()
-    s_file = second["file"].decode()
+    f_file = first["file"]
+    s_file = second["file"]
     f_type = first["type"]
     s_type = second["type"]
     f_len = first["len"]
@@ -695,11 +695,11 @@ def check_attribute(db, field):
                     % (field, fformat, fnull)
                 )
             str_null = str(fnull).strip()
-            testval = testval.strip()
+            #testval = testval.strip()
             if len(str_null) > len(testval):
                 error_seen = True
                 log_complaint(
-                    "attribute '%s': NULL value '%s' does not fit into field when unsing format specification '%s'"
+                    "attribute '%s': NULL value '%s' does not fit into field when using format specification '%s'"
                     % (field, fnull, fformat)
                 )
             if testval != str_null:
