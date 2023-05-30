@@ -31,6 +31,7 @@ DATA= \
     cmg6t.pf \
     dpg2_water.pf \
     dpg_obsip.pf \
+    emibf4.pf \
     episensor_0_625vpg.pf \
     episensor_10vpg.pf \
     episensor_1_25vpg.pf \
