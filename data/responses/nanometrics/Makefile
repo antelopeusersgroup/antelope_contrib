@@ -35,6 +35,7 @@ DATA= taurus_inf_aa \
       trident_50sps_fir2    \
       trident_50sps_fir3    \
       trillium_120          \
+      trillium_360          \
       trillium_120PH          \
       trillium_20PH          \
       trillium_240_1          \

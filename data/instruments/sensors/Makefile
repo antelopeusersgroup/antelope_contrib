@@ -141,6 +141,7 @@ DATA= \
     trillium_240_1.pf \
     trillium_240_2.pf \
     trillium_240_ss_obsip_sio.pf \
+    trillium_360.pf \
     trillium_40_ss_obsip_sio.pf \
     trillium_compact_sio.pf \
     trillium_compact_20.pf \
