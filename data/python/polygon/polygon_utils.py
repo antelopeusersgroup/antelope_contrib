@@ -1,8 +1,8 @@
-
-""" the following is from Omar Estrella
+""" the following code for polygon simplification is from Omar Estrella
         https://github.com/omarestrella/simplify.py
         adapted for the data structures used here
 """
+
 def _getSquareDistance(p1, p2):
     """
     Square distance between two points
@@ -119,4 +119,74 @@ def simplify(points, tolerance=0.1, highestQuality=True):
     points = _simplifyDouglasPeucker(points, sqtolerance)
 
     return points
-    
+
+
+"""
+the following code for shapefile buffeing is from martino ferrari
+        https://forum.step.esa.int/t/define-a-buffer-around-shapefile/20966
+
+"""
+def compute_angular_offset(ipoints, offset):
+    """
+    Simple script to create an offset polygon around any shapefile.
+    More information:
+        https://forum.step.esa.int/t/define-a-buffer-around-shapefile/20966
+
+    author: martino.ferrari@c-s.fr
+    license: GPLv3
+    """
+
+    try:
+        import numpy as np
+    except Exception as __:
+        print("problem importing the numpy package")
+        return
+    """
+    Computes the offset from a list of points using polar coordinate.
+
+    Parameters:
+    -----------
+     - points: numpy.ndarray containing euclidean coordinates of the geomtry to offset
+     - offset: angular offset
+
+    Returns:
+    --------
+    numpy.ndarray containing the offseted geomtery
+    """
+    # compute center as mean point of all points
+    points=np.array(ipoints)
+    center = np.mean(points, 1)
+
+    # translate coordinate system to the center
+    points_orig = points.T - center
+    # convert cartesian coordinate in polar coordinate
+    rho = np.sqrt(np.sum(points_orig**2, 1))
+    theta = np.arctan2(points_orig.T[1], points_orig.T[0])
+
+    # setup variable for angular iteration
+    N_STEPS = 100
+    ANGULAR_RESOLUTION = 2 * np.pi / N_STEPS
+
+    offseted = [[], []]
+
+    # explore polar space
+    for alpha in np.linspace(-np.pi, np.pi, N_STEPS):
+        # find index of all points around the current angle alpha
+        filtered = np.abs(theta - alpha) < ANGULAR_RESOLUTION
+        # get filtered distances
+        filt_rho = rho[filtered]
+        # check if at least one point is in the current angluar step
+        if len(filt_rho) > 0:
+            filt_theta = theta[filtered]
+            # find farther point on the list
+            index = np.argmax(filt_rho)
+            # compute offseted point
+            xoff = (filt_rho[index] + offset) * np.cos(filt_theta[index])
+            yoff = (filt_rho[index] + offset) * np.sin(filt_theta[index])
+            # added to the offseted point with correct reference system
+            offseted[0].append(xoff + center[0])
+            offseted[1].append(yoff + center[1])
+    # close the polygon
+    offseted[0].append(offseted[0][0])
+    offseted[1].append(offseted[1][0])
+    return offseted
