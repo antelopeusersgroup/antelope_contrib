@@ -596,12 +596,12 @@ def check_keys(tablename, fields, keys, ktype):
                     if sub_key not in fields:
                         eror_seen = True
                         log_info(
-                            "%s key '%s' (%s) not found in table %s"
-                            % (ktype, sub_key, key, tablename)
+                            "relation %s: %s key '%s' (%s) not found in table %s"
+                            % (tablename, ktype, sub_key, key, tablename)
                         )
             elif key not in fields:
                 error_seen = True
-                log_error("%s key '%s' not found in table %s" % (ktype, key, tablename))
+                log_error("relation %s: %s key '%s' not found in table %s" % (tablename, ktype, key, tablename))
         return error_seen
     else:
         return True  # I think it is an error if a table has no keys

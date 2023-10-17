@@ -34,14 +34,14 @@ Author name for event, origin and netmag table. Defaults to USGS or EMSC.
 .IP "-A"
 When writing event information to an orb as parameter-file packets (\fBO\fP), the parameter \fIarchive_if_not_associated\fP 
 influences how these packets are handled. The default to set this parameter to \fIyes\fP. This option 
-disables this default to make sure events are only associated to events already existing in the database.
+disables the default to make sure that only events associating to events already existing in the database will be archived.
 .IP "-h"
 Show help.
 .IP "-k"
 Databaset to map ids eventuelly containing characters to numerical values only.
 .IP "-B"
-For alerting using \fIorb_quake_alarm\fP, only magnitudes from the origin-table can me used. This option writes all magnitudes, regerdless of the real magnitude type, also to the body-wave magnitude mb.
-Note that thi \fIextra\fP magnitude is written to the origin table alone, a related netmag entry is missing and that there is no magid for this \fIfake\fP body-wave magnitude.
+For alerting using \fIorb_quake_alarm\fP, only magnitudes from the origin-table can me used. This option writes all magnitudes, regardless of the real magnitude type, also to the body-wave magnitude mb.
+Note that this \fIextra\fP magnitude is written to the origin table alone, a related netmag entry is missing and that there is no magid for this \fIfake\fP body-wave magnitude.
 .IP "-o|O"
 Output orb. This option also selects the output format. For database packets, use \fBo\fP. For parameter-file packets, as e.g. written by USGS2orb, use uppercase \fBO\fP.
 .IP database
@@ -59,8 +59,8 @@ EMSC2DB UTC 5,15,35,35,45,55    *  *  *  *  emsc2db -k db/emsc_ids db/emsc
 .fi
 .SH ENVIRONMENT
 The program uses the Python module \fIrequests\fP to retrieve data from a webpage.
-This module supports proxy configuration based on the standard environment variables \fIhttp_proxy\fP and \fIhttps_proxy\fP. 
-If you need more control over proxy settings, feel free to contact the author, Nikolaus.Horn@zamg.ac.at.
+That module supports proxy configuration based on the standard environment variables \fIhttp_proxy\fP and \fIhttps_proxy\fP. 
+If you need more control over proxy settings, feel free to contact the author, Nikolaus.Horn@geosphere.at.
 .SH "SEE ALSO"
 .nf
 
