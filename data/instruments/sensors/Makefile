@@ -146,6 +146,7 @@ DATA= \
     trillium_40_ss_obsip_sio.pf \
     trillium_compact_sio.pf \
     trillium_compact_20.pf  \
+    trillium_compact_120.pf  \
     unknown-acceleration.pf \
     unknown-displacement.pf \
     unknown-velocity-1d.pf  \

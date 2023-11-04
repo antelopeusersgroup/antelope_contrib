@@ -1,0 +1,33 @@
+originator     Nikolaus Horn, GeoSphere Austria
+last_modified  2023-11-04
+
+info    &Literal{
+
+Normalization, poles and zeros from Nanometrics-provided calibration sheets.
+See also: http://www.nanometrics.ca/products/trillium-compact
+
+}
+category    Nanometrics
+configuration   trillium_compact_120
+
+description trillium_compact_120
+dfile   tc120    #  if sensitivity varies from sensor to ...
+                 #  sensor put sensor-specific sensitivities in this directory
+
+rsptype         V   # velocity instrument
+band            b   # broadband
+short_period_sensor no  # Sets first character of SEED channel code
+sensor_type_code    H   # 2nd character in SEED channel code
+
+gtype       sensor
+sensitivity 754.30e-9      # nominal
+iunits      nm/s
+ounits      V
+
+orientations    &Tbl{
+Z   0    0
+N   0   90
+E  90   90
+}
+
+response    &datafile(responses/trillium_compact_120)
