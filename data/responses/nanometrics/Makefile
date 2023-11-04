@@ -87,7 +87,8 @@ DATA= taurus_inf_aa   \
       centaur_200sps_s2 \
       centaur_200sps_s3 \
 	  trilliumcompact_userguide.pdf \
-      trillium_compact_20
+      trillium_compact_20 \
+      trillium_compact_120
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
