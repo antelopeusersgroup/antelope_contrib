@@ -14,8 +14,8 @@ State-Of-Health channels are included.
 }
 
 
-streams		5000sps 2000sps 1000sps 500sps 250sps 200sps 100sps 50sps 20sps 10sps 1sps
-##streams		5000sps 2000sps 1000sps 500sps 250sps 200sps 100sps 50sps 20sps 10sps 1sps
+streams		2000sps 1000sps 500sps 250sps 200sps 100sps 50sps 20sps 10sps 1sps
+##streams	5000sps 2000sps 1000sps 500sps 250sps 200sps 100sps 50sps 20sps 10sps 1sps
 
 # definitions of streams
 ##5000sps   5000 a/d coefA3_60 coefB2C_60
