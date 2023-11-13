@@ -51,8 +51,8 @@ The default here is to retrieve only the most recent 10 events"""
 
 verbose = False
 debug = False
-archive_all = True # for pfpackets, if True then the value for archive_if_not_associated in the packet is set to yes
-archive = 0
+problem = False
+archive_all = True  # for pfpackets, if True then the value for archive_if_not_associated in the packet is set to yes
 opts = []
 args = []
 keydbname = "keydb"
@@ -121,6 +121,8 @@ dbq = db.lookup(table="event", field="evname", record="dbNULL")
 evname_width = dbq.query("dbFIELD_SIZE")
 dbq = db.lookup(table="origin", field="auth", record="dbNULL")
 auth_width = dbq.query("dbFIELD_SIZE")
+dbq = db.lookup(table="netmag", field="magtype", record="dbNULL")
+magtype_width = dbq.query("dbFIELD_SIZE")
 
 kdb = ds.dbopen(keydbname, "r+")
 descname = kdb.query("dbDATABASE_FILENAME")
@@ -352,8 +354,8 @@ for index in range(i):
                     ("auth", auth),
                 )
             except Exception as __:
+                problem = True
                 if verbose:
-                    problem = True
                     elog.notify(
                         "problem adding event for events at %s" % stock.strtime(etime)
                     )
@@ -367,12 +369,12 @@ for index in range(i):
                     ("orid", orid),
                     ("magid", magid),
                     ("magnitude", mag),
-                    ("magtype", magtype),
+                    ("magtype", zu.string_maxbytes(magtype, magtype_width)),
                     ("auth", auth),
                 )
             except Exception as __:
+                problem = True
                 if verbose:
-                    problem = True
                     elog.notify(
                         "problem adding netmap for event at %s" % stock.strtime(etime)
                     )
@@ -403,6 +405,9 @@ for index in range(i):
                         myorb.put(srcname, pkttime, packet)
                     except Exception:
                         elog.complain("orbput error (origin) on %s\n" % unid)
+                    else:
+                        if debug:
+                            elog.notify("output db/origin pkt for %s" % unid)
 
                 pkt = Pkt.Packet()
                 pkt.srcname = Pkt.SrcName(srcname_string="%s/db/event" % prefix)
@@ -421,6 +426,9 @@ for index in range(i):
                         myorb.put(srcname, pkttime, packet)
                     except Exception:
                         elog.complain("orbput error (event) on %s\n" % unid)
+                    else:
+                        if debug:
+                            elog.notify("output db/event pkt for %s" % unid)
 
                 pkt = Pkt.Packet()
                 pkt.srcname = Pkt.SrcName(srcname_string="%s/db/netmag" % prefix)
@@ -439,6 +447,9 @@ for index in range(i):
                         myorb.put(srcname, pkttime, packet)
                     except Exception:
                         elog.complain("orbput error (netmag) on %s\n" % unid)
+                    else:
+                        if debug:
+                            elog.notify("output db/netmag pkt for %s" % unid)
             try:
                 idmatch.addv(
                     ("fkey", unid),
@@ -447,8 +458,8 @@ for index in range(i):
                     ("ftime", updated),
                 )
             except Exception:
+                problem = True
                 if verbose:
-                    problem = True
                     elog.notify(
                         "problem adding id for event at %s" % stock.strtime(etime)
                     )
@@ -463,7 +474,6 @@ for index in range(i):
         if len(evlist) > 1:
             elog.notify("strange, found a few matching events for evid %d " % evid)
         if len(evlist) > 0:
-
             dbevent.record = evlist[0]
             [prefor] = dbevent.getv("prefor")
             kmatch = db.lookup(table="origin", record="dbSCRATCH")
@@ -471,7 +481,7 @@ for index in range(i):
             ormatcher = kmatch.matches(dborigin, "orid")
             orlist = ormatcher()
             if len(orlist) > 1:
-                elog.notify("strange, found a few origind for orid %d" % prefor)
+                elog.notify("strange, found a few origins for orid %d" % prefor)
             if len(orlist) > 0:
                 dborigin.record = orlist[0]
                 dborigin.putv(
@@ -510,7 +520,6 @@ for index in range(i):
                 if len(maglist) > 1:
                     elog.notify("strange, found a few netmags for origin %d" % prefor)
                 if len(maglist) > 0:
-
                     dbnetmag.record = maglist[0]
                     dbnetmag.putv(
                         ("magnitude", mag), ("magtype", magtype), ("auth", auth)
@@ -531,7 +540,12 @@ for index in range(i):
                             pkttype, packet, srcname, pkttime = pkt.stuff()
                             myorb.put(srcname, pkttime, packet)
 
-    if not problem and (new_event or updated_event) and orbname != "" and orbpkttype != "db":
+    if (
+        not problem
+        and (new_event or updated_event)
+        and orbname != ""
+        and orbpkttype != "db"
+    ):
         dbevent.get(scratch=True)  # read data into scratch record
         # because it's safe to manipulate the scratch record later
         dbevent.record = ds.dbSCRATCH

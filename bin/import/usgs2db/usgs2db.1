@@ -3,11 +3,13 @@
 usgs2db, emsc2db \- utilities to retrieve earthquake feeds in GeoJSON format from \fIUSGS\fP or \fIEMSC\fP.
 .SH SYNOPSIS
 .nf
-\fBusgs2db\fP [-v] [-h] [-a \fIauthor\fP]
+\fBusgs2db\fP [-v] [-h] [-A] [-B] [-a \fIauthor\fP] [-p \fIproxy_url\fP]
+      [-o|-O \fIorb\fP] [-s \fIschema\fP]
       [-k \fIkeydbname\fP] [-u \fIfeed-url\fP] \fIdbname\fP
 .fi
 .nf
-\fBemsc2db\fP [-v] [-h] [-a \fIauthor\fP]
+\fBemsc2db\fP [-v] [-h] [-A] [-B] [-a \fIauthor\fP] [-p \fIproxy_url\fP]
+      [-o|-O \fIorb\fP] [-s \fIschema\fP]
       [-k \fIkeydbname\fP] [-u \fIfeed-url\fP] \fIdbname\fP
 .fi
 .SH DESCRIPTION
@@ -33,16 +35,20 @@ the default url in this case is
 Author name for event, origin and netmag table. Defaults to USGS or EMSC.
 .IP "-A"
 When writing event information to an orb as parameter-file packets (\fBO\fP), the parameter \fIarchive_if_not_associated\fP 
-influences how these packets are handled. The default to set this parameter to \fIyes\fP. This option 
-disables the default to make sure that only events associating to events already existing in the database will be archived.
+influences how these packets are handled. The default is to archive all events by setting the parameter \fIarchive_if_not_associuated\fI in the packets to \fByes\fP.
+With this option you can specify that only events associating to events already existing in the database will be archived.
 .IP "-h"
 Show help.
 .IP "-k"
-Databaset to map ids eventuelly containing characters to numerical values only.
+Databaset to map ids eventually containing characters to numerical values only.
 .IP "-B"
-For alerting using \fIorb_quake_alarm\fP, only magnitudes from the origin-table can me used. This option writes all magnitudes, regardless of the real magnitude type, also to the body-wave magnitude mb.
+For alerting using \fIorb_quake_alarm\fP, only magnitudes from the origin-table can be used. This option writes all magnitudes, regardless of the real magnitude type, also to the body-wave magnitude mb.
 Note that this \fIextra\fP magnitude is written to the origin table alone, a related netmag entry is missing and that there is no magid for this \fIfake\fP body-wave magnitude.
-.IP "-o|O"
+.IP "-o|O orb"
+Output orb. This obtion also selects the packettype: lowercase -o selects database packets while -O selects parameter-file packets as written by USGS2orb.
+.IP "-P prefix"
+Prefix to the packet name(s). Parameter file packets will be named <prefix>/pf/orb2dbt while database packets will be named <prefix>/db/origin and so on.
+.IP "-p proxy_url"
 Output orb. This option also selects the output format. For database packets, use \fBo\fP. For parameter-file packets, as e.g. written by USGS2orb, use uppercase \fBO\fP.
 .IP database
 The name of the output database. This argument is required.
@@ -59,17 +65,17 @@ EMSC2DB UTC 5,15,35,35,45,55    *  *  *  *  emsc2db -k db/emsc_ids db/emsc
 .fi
 .SH ENVIRONMENT
 The program uses the Python module \fIrequests\fP to retrieve data from a webpage.
-That module supports proxy configuration based on the standard environment variables \fIhttp_proxy\fP and \fIhttps_proxy\fP. 
+Since this module supports proxy configuration based on the standard environment variables \fIhttp_proxy\fP and \fIhttps_proxy\fP, these variables can also be used for proxy configuration.
 If you need more control over proxy settings, feel free to contact the author, Nikolaus.Horn@geosphere.at.
 .SH "SEE ALSO"
 .nf
 
-https://docs.python-requests.org/en/master, USGS2orb(1), antelope_python(3y)
+https://docs.python-requests.org/en/master, USGS2orb(1), antelope_python(3y), orb2dbt(1).
 
 .fi
 .SH "BUGS AND CAVEATS"
 The error handling is simple. I implemented my personal understanding of the data offered. There might be wiser ways to use the save the information in a database.
-The feeds are subject to the feed life cycle policy as explained on the website of the usgs. See there for more information if a feed stops working.
+The feeds provided by USGS are subject to the feed life cycle policy as explained on the website of the USGS. See there for more information if a feed stops working.
 This module uses the python modules requests with all its bugs and limitations. And of course I added many more problems...
 .SH AUTHOR
 Nikolaus Horn (nikolaus.horn@geosphere.at)
