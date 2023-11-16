@@ -479,7 +479,6 @@ def main():
             for i in range(n_off):
                 plt.text(off_lons[i], off_lats[i], off_stanames[i])
 
-        print(plot_stas)
         if plot_stas:
             plt.plot(stalon, stalat, station_symbol)
         if plot_stanames:
