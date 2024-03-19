@@ -31,7 +31,7 @@ import zamg.utilities as zu
 def usage(progname):
     print(
         progname,
-        "[-v] [-t time] [-n nsta] [-i sta[,sta2]] [-s snr] [-r rmsdb | -R rms] [-S sta/lat/lon/rms] [-f gridfilename] dbname [outfile]",
+        "[-v] [-t time] [-n nsta] [-i sta[,sta2]] [-s snr] [-r rmsdb | -R rms] [-S sta/lat/lon/rms] [-Y] [-L] [-f gridfilename] dbname [outfile]",
     )
 
 
@@ -66,9 +66,11 @@ def main():
     plot_mags = True
     plot_borders = False
     plot_cities = False
+    plot_stanames = True
+    plot_stas = True
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "vf:i:n:p:r:R:s:S:t:dmcb", "")
+        opts, args = getopt.getopt(sys.argv[1:], "LYvf:i:n:p:r:R:s:S:t:dmcb", "")
     except getopt.GetoptError:
         usage(progname)
         elog.die("Illegal option")
@@ -91,6 +93,11 @@ def main():
     stations_used = pf["stations_used"]
     stations_ignored = pf["stations_ignored"]
     station_rms = pf["station_rms"]
+    if pf.has_key("station_symbol"):
+        station_symbol = pf["station_symbol"]
+    else:
+        station_symbol = "r+"
+
     if "cities_dbname" in list(pf.keys()) and pf["cities_dbname"] != "":
         plot_cities = True
         dbn = pf["cities_dbname"]
@@ -176,6 +183,10 @@ def main():
             rmstime = a
         elif o == "-f":
             gridfilename = a
+        elif o == "-Y":
+            plot_stas = False
+        elif o == "-L":
+            plot_stanames = False
 
     if len(args) > 2 or len(args) < 1:
         usage(progname)
@@ -187,8 +198,12 @@ def main():
         matplotlib.use("Agg")
         plotfilename = args[1]
 
-    db = ds.dbopen(dbname, "r")
-    dbsite = db.lookup(table="site")
+    db = ds.dbopen_database(dbname, "r")
+    if db.table < 0:
+        dbsite = db.lookup(table="site")
+    else:
+        dbsite = db
+
     # the problem with "offdate==NULL" is that some stations, especially for projects with fixed lifetime,
     #   have an offdate in the future
     # dbsite=dbsite.subset("offdate == NULL")
@@ -416,15 +431,17 @@ def main():
             plt.plot(off_lons, off_lats, "y.")
             for i in range(n_off):
                 plt.text(off_lons[i], off_lats[i], off_stanames[i])
-        plt.plot(stalon, stalat, "r+")
-        for i in range(number_sites):
-            if (
-                stalon[i] > lonmin
-                and stalon[i] < lonmax
-                and stalat[i] > latmin
-                and stalat[i] < latmax
-            ):
-                plt.text(stalon[i], stalat[i], stanames[i])
+        if plot_stas:
+            plt.plot(stalon, stalat, station_symbol)
+        if plot_stanames:
+            for i in range(number_sites):
+                if (
+                    stalon[i] > lonmin
+                    and stalon[i] < lonmax
+                    and stalat[i] > latmin
+                    and stalat[i] < latmax
+                ):
+                    plt.text(stalon[i], stalat[i], stanames[i])
         plt.xlim(lonmin, lonmax)
         plt.ylim(latmin, latmax)
         plt.colorbar(contour)
@@ -462,15 +479,17 @@ def main():
             for i in range(n_off):
                 plt.text(off_lons[i], off_lats[i], off_stanames[i])
 
-        plt.plot(stalon, stalat, "r+")
-        for i in range(number_sites):
-            if (
-                stalon[i] > lonmin
-                and stalon[i] < lonmax
-                and stalat[i] > latmin
-                and stalat[i] < latmax
-            ):
-                plt.text(stalon[i], stalat[i], stanames[i])
+        if plot_stas:
+            plt.plot(stalon, stalat, station_symbol)
+        if plot_stanames:
+            for i in range(number_sites):
+                if (
+                    stalon[i] > lonmin
+                    and stalon[i] < lonmax
+                    and stalat[i] > latmin
+                    and stalat[i] < latmax
+                ):
+                    plt.text(stalon[i], stalat[i], stanames[i])
         if plot_borders:
             for i in range(len(pdata)):
                 ndata = np.array(pdata[i])
@@ -497,7 +516,6 @@ def main():
         plt.show()
 
     if gridfilename != "":
-
         np.savetxt(
             gridfilename,
             np.transpose(

@@ -8,85 +8,86 @@ DATA= \
     cmg1t_100sec.pf \
     cmg1t_120sec.pf \
     cmg1t_360sec.pf \
-    cmg3esp.pf \
+    cmg3esp.pf  \
    	cmg3espc.pf \
     cmg3esp_100sec.pf \
     cmg3esp_120sec.pf \
-    cmg3esp_30sec.pf \
-    cmg3esp_60sec.pf \
-    cmg3esp_nsn.pf \
+    cmg3esp_30sec.pf  \
+    cmg3esp_60sec.pf  \
+    cmg3esp_nsn.pf    \
     cmg3t.pf \
     cmg3tb.pf \
     cmg3t_nsn.pf \
     cmg3t_100sec.pf \
     cmg3t_120sec.pf \
-    cmg3t_30sec.pf \
+    cmg3t_30sec.pf  \
     cmg3t_360sec.pf \
-    cmg3t_60sec.pf \
+    cmg3t_60sec.pf  \
     cmg40t.pf \
     cmg40t_1.pf \
-    cmg40t_1sec.pf \
+    cmg40t_1sec.pf  \
     cmg40t_30sec.pf \
     cmg40t_60sec.pf \
     cmg6t.pf \
     dpg2_water.pf \
     dpg_obsip.pf \
+    emibf4.pf \
     episensor_0_625vpg.pf \
-    episensor_10vpg.pf \
-    episensor_1_25vpg.pf \
-    episensor_20vpg.pf \
+    episensor_10vpg.pf    \
+    episensor_1_25vpg.pf  \
+    episensor_20vpg.pf  \
     episensor_2_5vpg.pf \
-    episensor_40vpg.pf \
-    episensor_5vpg.pf \
-    episensor_80vpg.pf \
+    episensor_40vpg.pf  \
+    episensor_5vpg.pf   \
+    episensor_80vpg.pf  \
     episensor2_10vpg.pf \
     episensor2_20vpg.pf \
     episensor2_40vpg.pf \
-    episensor2_5vpg.pf \
+    episensor2_5vpg.pf  \
     episensor2_80vpg.pf \
     fba23_0_25g.pf \
-    fba23_0_5g.pf \
+    fba23_0_5g.pf  \
     fba23_100hz_1g.pf \
     fba23_1g.pf \
-    fba23_2g.pf\
+    fba23_2g.pf \
     fba23_2g_100hz.pf \
     fba23_4g.pf \
    	gs11-3d.pf \
-    gs13.pf \
-    gs13e.pf \
-    gs13n.pf \
-    gs13z.pf \
-    gs30ct.pf \
-    gs32ct.pf \
+    gs13.pf    \
+    gs13e.pf   \
+    gs13n.pf   \
+    gs13z.pf   \
+    gs30ct.pf  \
+    gs32ct.pf  \
     gsv-111.pf \
     hs10_horz.pf \
     hs10_e.pf \
     hs10_n.pf \
     hs10_vert.pf \
-    hti90u_obsip_sio.pf \
+    hti90u_obsip_sio.pf  \
     hti90u_obsip_whoi.pf \
     hyperion.pf \
     ia_500ug.pf \
-    ia_50ug.pf \
+    ia_50ug.pf  \
    	ifs_3000.pf \
-    ks54000.pf \
+    ks54000.pf  \
     l22.pf \
     l28.pf \
     l28lb_obsip_sio.pf \
-    l22d_obsip_sio.pf \
+    l22d_obsip_sio.pf  \
     l4c.pf \
     l4a.pf \
-    l4c_horz.pf \
-    l4c_vert.pf \
-    le-3d20s.pf \
-    le-3d5s.pf \
-    le-3dlite.pf \
+    l4c_horz.pf   \
+    l4c_vert.pf   \
+    le-3d20s.pf   \
+    le-3d5s.pf    \
+    le-3dlite.pf  \
     le3d_20sec.pf \
     mbb2.pf \
     mb2000_fil.pf \
     mb2000_raw.pf \
-    mb3a.pf \
-    ncpa.pf \
+    mb3a.pf  \
+    ncpa.pf  \
     paroP.pf \
     paroT.pf \
     qep_dummy.pf \
@@ -94,8 +95,8 @@ DATA= \
     ranger_horz.pf \
     ranger_vert.pf \
     reftek_400hz_3-5g_2-4vg.pf \
-    rt151_30.pf \
-    rt151_60.pf \
+    rt151_30.pf  \
+    rt151_60.pf  \
     rt151_120.pf \
     rt151A_60.pf \
     rt151B_60.pf \
@@ -110,8 +111,8 @@ DATA= \
     setra278.pf \
     setra278HA.pf \
     setra278offset.pf \
-    sh1.pf \
-    sm6-b.pf \
+    sh1.pf    \
+    sm6-b.pf  \
     sts1_e.pf \
     sts1_n.pf \
     sts1_z.pf \
@@ -123,30 +124,33 @@ DATA= \
     sts2_g2.pf \
     sts2_g3.pf \
     sts2_5.pf \
-   	sts3.pf \
+   	sts3.pf   \
     sts4_b.pf \
-    sts5a.pf \
-    sv1.pf \
-    terratech.pf \
+    sts5a.pf  \
+    sv1.pf    \
+    terratech.pf    \
     titan_0_25_g.pf \
-    titan_0_5_g.pf \
+    titan_0_5_g.pf  \
     titan_1g.pf \
     titan_2g.pf \
     titan_4g.pf \
-    trillium_20PH.pf \
-    trillium_40.pf \
-    trillium_120.pf \
+    trillium_20PH.pf  \
+    trillium_40.pf    \
+    trillium_120.pf   \
     trillium_120PH.pf \
     trillium_240_1.pf \
     trillium_240_2.pf \
     trillium_240_ss_obsip_sio.pf \
+    trillium_360.pf   \
+    trillium_360BH.pf \
     trillium_40_ss_obsip_sio.pf \
     trillium_compact_sio.pf \
-    trillium_compact_20.pf \
+    trillium_compact_20.pf  \
+    trillium_compact_120.pf  \
     unknown-acceleration.pf \
     unknown-displacement.pf \
-    unknown-velocity-1d.pf \
-    unknown-velocity.pf \
+    unknown-velocity-1d.pf  \
+    unknown-velocity.pf     \
     validyne.pf \
 
 SUBDIR=/contrib

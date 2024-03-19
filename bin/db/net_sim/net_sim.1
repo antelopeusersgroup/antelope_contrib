@@ -5,7 +5,7 @@ net_sim \- estimate network magnitude threshold
 .nf
 \fBnet_sim \fP[-v] [-n \fInsta\fP] [-p \fIpf\fP] [-i \fIsta\fP[,\fIsta2\fP]]
 				[-s \fIsnr\fP] [-r \fIrmsdb\fP | -R \fIrms\fP] [-t \fItime\fP]
-				[-c] [-b] [-m] [d]
+				[-c] [-b] [-m] [-d] [-L] [-Y]
 			   	[-S \fIsta/lat/lon/rms\fP] [-f \fIgridfilename\fP] \fIdbname\fP [\fIplotfile\fP]
 .fi
 
@@ -46,14 +46,18 @@ The commandline paramter b disables plotting of borders.
 Don't plot magnitude thresholds.
 .IP "-d"
 Don't plot distances.
+.IP "-Y"
+Don't plot station symbols. The actual symbol can be specified in the parameter file in the syntax used by matplotlib. The default "r+" is a red star.
+.IP "-L"
+Don't plot station labels.
 .IP "dbname"
-Name of database with station coordinates in a site table. This argument is required.
+Name of database with station coordinates in a site table. This argument is required. Input may be specified as database, database.table, or as '-', indicating the table should be read from stdin. If only a database is specified, the site table is used.
 .IP plotfilename
 If a name is specified, the resulting plot is saved to a file. The default is to show the plot.
 
 .SH PARAMETER FILE
 
-The following is a sample parameter file.
+The following is a sample parameter file, assuming five stations with a rms of at least 4 are required for event location.
 .in 2c
 .ft CW
 .nf
@@ -110,6 +114,8 @@ List of individual rms values. This can be useful for simulations. If a value is
 .nf
 
 net_sim $ANTELOPE/demo/socalif/dbmaster/scdemo
+or for a current version:
+dbsubset $DEMODB.site "offdate == NULL|| offdate > now()"| net_sim
 
 .fi
 .ft R

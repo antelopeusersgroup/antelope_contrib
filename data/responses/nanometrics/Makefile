@@ -1,18 +1,18 @@
 DATADIR=responses
-DATA= taurus_inf_aa \
-      taurus_std_aa \
+DATA= taurus_inf_aa   \
+      taurus_std_aa   \
       taurus_iir0_001 \
       titan \
-      trident_1000sps_fir1    \
-      trident_1000sps_fir2    \
-      trident_1000sps_fir3    \
+      trident_1000sps_fir1   \
+      trident_1000sps_fir2   \
+      trident_1000sps_fir3   \
       trident_100sps_fir1    \
       trident_100sps_fir2    \
       trident_100sps_fir3    \
-      trident_10sps_fir1    \
-      trident_10sps_fir2    \
-      trident_10sps_fir3    \
-      trident_10sps_fir4    \
+      trident_10sps_fir1     \
+      trident_10sps_fir2     \
+      trident_10sps_fir3     \
+      trident_10sps_fir4     \
       trident_120sps_fir1    \
       trident_120sps_fir2    \
       trident_120sps_fir3    \
@@ -20,37 +20,39 @@ DATA= taurus_inf_aa \
       trident_200sps_fir1    \
       trident_200sps_fir2    \
       trident_200sps_fir3    \
-      trident_20sps_fir1    \
-      trident_20sps_fir2    \
-      trident_20sps_fir3    \
-      trident_20sps_fir4    \
-      trident_40sps_fir1    \
-      trident_40sps_fir2    \
-      trident_40sps_fir3    \
-      trident_40sps_fir4    \
+      trident_20sps_fir1     \
+      trident_20sps_fir2     \
+      trident_20sps_fir3     \
+      trident_20sps_fir4     \
+      trident_40sps_fir1     \
+      trident_40sps_fir2     \
+      trident_40sps_fir3     \
+      trident_40sps_fir4     \
       trident_500sps_fir1    \
       trident_500sps_fir2    \
       trident_500sps_fir3    \
-      trident_50sps_fir1    \
-      trident_50sps_fir2    \
-      trident_50sps_fir3    \
-      trillium_120          \
-      trillium_120PH          \
+      trident_50sps_fir1     \
+      trident_50sps_fir2     \
+      trident_50sps_fir3     \
+      trillium_120           \
+      trillium_120PH         \
       trillium_20PH          \
-      trillium_240_1          \
-      trillium_240_2          \
+      trillium_240_1         \
+      trillium_240_2         \
       trillium_240_obsip_sio \
-      trillium_40           \
-      trillium_compact_sio \
-      Taurus_UserGuide_15148R7.pdf \
+      trillium_360           \
+      trillium_360BH         \
+      trillium_40            \
+      trillium_compact_sio   \
+      Taurus_UserGuide_15148R7.pdf          \
       Trillium120P-PA_UserGuide_15149R6.pdf \
-      Trillium240_UserGuide_15672R6.pdf   \
-      Trillium40_UserGuide_13912R11.pdf \
+      Trillium240_UserGuide_15672R6.pdf     \
+      Trillium40_UserGuide_13912R11.pdf     \
       hrd24_100sps_s4 \
       hrd24_100sps_s5 \
-      hrd24_10sps_s3 \
-      hrd24_10sps_s4 \
-      hrd24_10sps_s5 \
+      hrd24_10sps_s3  \
+      hrd24_10sps_s4  \
+      hrd24_10sps_s5  \
       hrd24_120sps_s2 \
       hrd24_120sps_s3 \
       hrd24_120sps_s4 \
@@ -59,25 +61,25 @@ DATA= taurus_inf_aa \
       hrd24_125sps_s4 \
       hrd24_125sps_s5 \
       hrd24_200sps_s4 \
-      hrd24_20sps_s3 \
-      hrd24_20sps_s4 \
-      hrd24_20sps_s5 \
+      hrd24_20sps_s3  \
+      hrd24_20sps_s4  \
+      hrd24_20sps_s5  \
       hrd24_250sps_s4 \
-      hrd24_40sps_s1 \
-      hrd24_40sps_s2 \
-      hrd24_40sps_s3 \
-      hrd24_40sps_s4 \
-      hrd24_40sps_s5 \
+      hrd24_40sps_s1  \
+      hrd24_40sps_s2  \
+      hrd24_40sps_s3  \
+      hrd24_40sps_s4  \
+      hrd24_40sps_s5  \
       hrd24_500sps_s4 \
-      hrd24_50sps_s4 \
-      hrd24_50sps_s5 \
-      hrd24_80sps_s3 \
-      hrd24_80sps_s4 \
-      hrd24_s1 \
-      hrd24_s2 \
-      hrd24_s3 \
+      hrd24_50sps_s4  \
+      hrd24_50sps_s5  \
+      hrd24_80sps_s3  \
+      hrd24_80sps_s4  \
+      hrd24_s1  \
+      hrd24_s2  \
+      hrd24_s3  \
       hrd24_iir \
-      hrd24aaf \
+      hrd24aaf  \
       centaur_100sps_s1 \
       centaur_100sps_s2 \
       centaur_100sps_s3 \
@@ -85,7 +87,8 @@ DATA= taurus_inf_aa \
       centaur_200sps_s2 \
       centaur_200sps_s3 \
 	  trilliumcompact_userguide.pdf \
-      trillium_compact_20
+      trillium_compact_20 \
+      trillium_compact_120
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)

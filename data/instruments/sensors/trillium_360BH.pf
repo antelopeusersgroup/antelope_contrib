@@ -1,0 +1,29 @@
+# $Response file for Trillium 360 modified 2023-10-17 $
+
+originator     Nikolaus Horn, nikolaus.horn@geosphere.at
+last_modified  2023-10-17
+
+category	Nanometrics
+configuration	Trillium 360 BH Sec Response
+
+description	Nanometrics Trillium 360 BH Sec Response
+dfile	trillium_360BH
+
+rsptype                 V       # velocity instrument
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	19.984e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/trillium_360BH) 
+

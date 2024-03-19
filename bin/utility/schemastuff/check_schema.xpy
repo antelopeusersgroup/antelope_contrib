@@ -316,8 +316,8 @@ def compare_attribute(first, second):
     """
     error_seen = False
     name = first["attribute"]
-    f_file = first["file"].decode()
-    s_file = second["file"].decode()
+    f_file = first["file"]
+    s_file = second["file"]
     f_type = first["type"]
     s_type = second["type"]
     f_len = first["len"]
@@ -596,12 +596,12 @@ def check_keys(tablename, fields, keys, ktype):
                     if sub_key not in fields:
                         eror_seen = True
                         log_info(
-                            "%s key '%s' (%s) not found in table %s"
-                            % (ktype, sub_key, key, tablename)
+                            "relation %s: %s key '%s' (%s) not found in table %s"
+                            % (tablename, ktype, sub_key, key, tablename)
                         )
             elif key not in fields:
                 error_seen = True
-                log_error("%s key '%s' not found in table %s" % (ktype, key, tablename))
+                log_error("relation %s: %s key '%s' not found in table %s" % (tablename, ktype, key, tablename))
         return error_seen
     else:
         return True  # I think it is an error if a table has no keys
@@ -695,11 +695,11 @@ def check_attribute(db, field):
                     % (field, fformat, fnull)
                 )
             str_null = str(fnull).strip()
-            testval = testval.strip()
+            #testval = testval.strip()
             if len(str_null) > len(testval):
                 error_seen = True
                 log_complaint(
-                    "attribute '%s': NULL value '%s' does not fit into field when unsing format specification '%s'"
+                    "attribute '%s': NULL value '%s' does not fit into field when using format specification '%s'"
                     % (field, fnull, fformat)
                 )
             if testval != str_null:

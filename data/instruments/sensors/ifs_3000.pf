@@ -20,5 +20,5 @@ orientations	&Tbl{
 D	0	0
 }
 
-response	&datafile(responses/ifs_3000) 
+response	&datafile(responses/ifs3000) 
 

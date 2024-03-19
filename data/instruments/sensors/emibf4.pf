@@ -1,0 +1,25 @@
+originator         Frank Vernon, UCSD
+last_modified      2023-05-30
+
+category           magnetometer
+configuration      EMI BF4 magnetometer
+
+description        EMI BF4 magnetometer
+dfile              emibf4
+
+rsptype            M           # infrasound instrument
+band               b           # broadband
+sensor_type_code   F
+
+gtype              sensor
+sensitivity        0.30000     #  sensitivity in V/nT
+iunits             nT
+ounits             V
+
+orientations    &Tbl{
+N	0	90
+E	90	90
+}
+
+response           &datafile(responses/emibf4)
+

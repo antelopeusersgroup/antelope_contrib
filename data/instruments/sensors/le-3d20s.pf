@@ -20,7 +20,7 @@ short_period_sensor     yes      # Sets first character of SEED channel code
 sensor_type_code        H       # 2nd character in SEED channel code
 
 gtype		sensor
-sensitivity	10-7 # 1000 V/m/s
+sensitivity	10e-7 # 1000 V/m/s
 iunits		nm/s
 ounits		V
 
