@@ -3,7 +3,7 @@
 install_obspy \- install the ObsPy package 
 .SH SYNOPSIS
 .nf
-\fBinstall_obspy\fP
+\fBinstall_obspy [-v]\fP
 .fi
 .SH DESCRIPTION
 
@@ -13,6 +13,8 @@ The \fBinstall_obspy\fP program installs the ObsPy Python Framework for Seismolo
 .SH METHODS
 .SH "OBJECT CONFIGURATION PARAMETERS"
 .SH OPTIONS
+.IP -v
+verbose. This may be specified up to three times for increasing verbosity. 
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
@@ -64,6 +66,9 @@ http://www.obspy.org
 The pip install of obspy requires compiler access on the machine in question, as well as proper system administration of all the components 
 on which compilation processes depend -- furthermore in the forms expected by the downloaded obspy package. If installation fails, first 
 recourse should be to local system administrators and to a review of obspy build requirements.
+
+The options on the \fBinstall_obspy\fP command-line are passed directly to the \fBpip3\fP executable internally. Thus more are available to use
+per the \fBpip3\fP documentation, however only the \fI-v\fP verbose option is listed here.
 .SH AUTHOR
 .nf
 Kent Lindquist

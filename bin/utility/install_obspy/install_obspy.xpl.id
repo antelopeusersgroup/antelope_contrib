@@ -1,2 +1,11 @@
 
-system( "/opt/antelope/$python/bin/pip3 install obspy" );
+$args = join(" ", @ARGV );
+
+$cmd = "/opt/antelope/$python/bin/pip3 $args install obspy";
+
+if( $args =~ /-v/ ) {
+	
+	print( "Executing: $cmd\n" );
+}
+
+system( $cmd );
