@@ -1,25 +1,31 @@
 .\" $Name$ $Date$
 .TH REB2DB 1 "$Date$"
 .SH NAME
-reb2db \- reformat Reviewed Event Bulletins to CSS3.0 database format
+reb2db \- reformat Reviewed Event Bulletins to CSS3.1 or optionally CSS3.0 database format
 .SH SYNOPSIS
 .nf
-reb2db [-d] filename [filename ...] dbname
+reb2db [-dv] [-0] filename [filename ...] dbname
 .fi
 .SH DESCRIPTION
 reb2db converts Reviewed Event Bulletin files from the International
 Data Centre of the Center for Monitoring Research (www.cdidc.org)
 into css database format. Acceptable input formats include GSE2.0, 
-IMS1.0, and IMS1.0:SHORT. Raw mail files with REB information may be
-fed to reb2db.
+IMS1.0, IMS1.0:SHORT, IMS2.0, and IMS2.0:SHORT. 
+Raw mail files with REB information may be fed to reb2db.
+Note that for recent data from CTBT, the  \fIcss3.1\fP schema is required since the ids 
+became too large for the original \fIcss3.0\fP schema.
 
 The algorithm field of the origin table abbreviates the analysis 
 type ("auto"=automatic, "man"=manual, "guess") and the location 
 method ("inversion", "patnrec"=pattern recognition, "grndtruth"=ground truth,
 "other").
 .SH OPTIONS
+.IP -v
+verbose flag
 .IP -d
 Write detections when the input is arrivals
+.IP -0
+create new database using css3.0 schema. Default is to use css3.1 since CTBT uses longer ids now.
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
@@ -28,7 +34,7 @@ Write detections when the input is arrivals
 .SH LIBRARY
 .SH DIAGNOSTICS
 .nf
-Not in IMS1.0, IMS1.0:SHORT, or GSE2.0 format
+Not in IMS1.0, IMS1.0:SHORT, IMS2.0, IMS2.0:SHORT or GSE2.0 format
 
 No DATA_TYPE line--assume IMS1.0 format
 (reb2db expects to find either 
@@ -50,8 +56,8 @@ If no DATA_TYPE line is found, reb2db assumes IMS1.0 format at the
 first instance that it hits an EVENT line. reb2db is a state-machine
 that reads input lines successively from all supplied input files. If a 
 file after the first file does not have an explicitly specified DATA_TYPE, 
-the format (IMS1.0, IMS1.0:SHORT, or GSE2.0) will carry over from the
-previous file. 
+the format (IMS1.0, IMS1.0:SHORT, IMS2.0, IMS2.0:SHORT or GSE2.0) will 
+carry over from the previous file. 
 
 The seaz field of the assoc table is not filled in since it does not appear
 in the IMS1.0 format and since there is no guarantee of the presence 
@@ -75,6 +81,8 @@ in reb2db is to issue a warning upon the repeated occurrence of a phase
 arrival, then force its addition to the database. Thus the database produced 
 by reb2db is an accurate reflection of what is in the REB input file, including 
 the mistakes. 
+Since the arrival ids used within the CTBT IDC, using the css3.1 format is mandatory 
+to convert the data while keeping the ids. 
 .SH AUTHOR
 .nf
 Kent Lindquist
@@ -82,4 +90,3 @@ Kent Lindquist
 .fi
 Nikolaus Horn added modifications to handle updated formats with data from 
 both the CTBTO and ISC.
-

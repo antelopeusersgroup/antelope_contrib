@@ -2,3 +2,7 @@ usgs2db
 emsc2db
 pdetxt2db
 keydb
+fdsntxt2db
+keydb.idmatch
+gfzrss2db
+orig_*

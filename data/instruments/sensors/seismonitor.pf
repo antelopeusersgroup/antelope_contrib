@@ -1,0 +1,32 @@
+originator     Nikolaus Horn, ZAMG
+last_modified  2018-02-13
+
+info    &Literal{
+
+Geospace - Seismonitor. Poles and Zeroes as per Technical University Vienna
+
+}
+category    Geospace
+configuration   SeisMonitor
+
+description seismonitor
+dfile   smon     #  if sensitivity varies from sensor to ...
+                 #  sensor put sensor-specific sensitivities in this directory
+
+rsptype         V   # velocity instrument
+band            s   # short-period, not-broadband
+short_period_sensor yes  # Sets first character of SEED channel code
+sensor_type_code    L   # 2nd character in SEED channel code
+
+gtype       sensor
+sensitivity 353.346457e-9      # nominal
+iunits      nm/s
+ounits      V
+
+orientations    &Tbl{
+Z   0    0
+N   0   90
+E  90   90
+}
+
+response    &datafile(responses/seismonitor)

@@ -1,0 +1,18 @@
+# a rough description of the anti aliasing filter in the SMACH SM-2 system 
+# the manuals says: 50hz lp for 256sps
+# the coefficients here designed with Matlab: 
+# [z,p,k]=butter(5,50*pi*2,'s')
+# 0                   num of zeroes
+# 5                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 1.0                 gain
+theoretical   2 anti-alias   paz    niko-matlab
+   3.0602e+12 0
+       5
+-0.9708e2 +2.9878e2
+-0.9708e2 -2.9878e2
+-2.5416e2 +1.8466e2
+-2.5416e2 -1.8466e2
+-3.1416e2	0
+       0

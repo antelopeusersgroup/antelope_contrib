@@ -1,0 +1,141 @@
+Attribute mindist
+    Real (8)
+    Format ( "%8.2f" )
+    Null ( "-1.00" )
+    Range ( "mindist >= 0.0 && mindist <= 42000.0" )
+    Units ( "Kilometers" )
+    Description ( "minimal event-station distance" )
+    Detail {
+            This attribute gives distance to the closest 
+            station used for event localization (defining) in kilometers
+    }
+    ;
+Attribute maxdist
+    Real (8)
+    Format ( "%8.2f" )
+    Null ( "-1.00" )
+    Range ( "maxdist >= 0.0 && maxdist <= 42000.0" )
+    Units ( "Kilometers" )
+    Description ( "maximal event-station distance" )
+    Detail {
+            This attribute gives distance to the furthest 
+            station used for event localization (defining) in kilometers
+    }
+    ;
+Attribute azgap
+	Real (7)
+	Format ( "%7.2f" )
+	Null ( "-1.00" )
+    Range("azgap >= 0.0 && azgap < 360.0")
+	Units ( "Degrees" )
+	Description ( "Azimuth Gap" )
+	Detail {
+		This is the azimuth gap, the largest azimuth between 2 stations
+	}
+	;
+Attribute azgap2
+	Real (7)
+	Format ( "%7.2f" )
+	Null ( "-1.00" )
+    Range("azgap2 >= 0.0 && azgap2 < 360.0" )
+	Units ( "Degrees" )
+	Description ( "secondary Azimuth Gap" )
+	Detail {
+		This is the secondary azimuth gap, the largest azimuth gap if one station is left out
+	}
+	;
+
+Attribute gt
+    Integer (5)
+    Format ( "%5d" )
+    Null ( "-1" )
+    Range ( "gt > 0" )
+    Description ( "GT5 is good, GT25 not so..." )
+    Detail {
+        An estimate of the location accuracy (in kilometers)?
+        The definition of GT5 follows Bondár et. al. (2004) Epicenter 
+        accuracy based on seismic network criteria. Geophys. J. Int., 156, 483–496; 
+    }
+    ;
+
+Attribute nsta_def
+    Integer (8)
+    Format ( "%8ld" )
+    Null ( "-1" )
+    Range ( "nsta > 0" )
+    Description ( "number of stations used" )
+    Detail {
+        This quantity is the number of stations used to compute
+        the location of the event.
+    }
+    ;
+
+Attribute nsta30
+    Integer (8)
+    Format ( "%8ld" )
+    Null ( "-1" )
+    Range ( "nsta30 > 0" )
+    Description ( "number of stations within 30km from the event" )
+    Detail {
+        This quantity is the number of stations within 30 km from the epicentre
+        used to compute the location of the event.
+    }
+    ;
+    
+Attribute nsta125
+    Integer (8)
+    Format ( "%8ld" )
+    Null ( "-1" )
+    Range ( "nsta125 > 0" )
+    Description ( "number of stations within 125km from the event" )
+    Detail {
+        This quantity is the number of stations within 125 km from the epicentre
+        used to compute the location of the event.
+    }
+    ;
+
+Attribute nsta250
+    Integer (8)
+    Format ( "%8ld" )
+    Null ( "-1" )
+    Range ( "nsta250 > 0" )
+    Description ( "number of stations within 250km from the event" )
+    Detail {
+        This quantity is the number of stations within 250 km from the epicentre
+        used to compute the location of the event.
+    }
+    ;
+    
+Attribute nsta400
+    Integer (8)
+    Format ( "%8ld" )
+    Null ( "-1" )
+    Range ( "nsta400 > 0" )
+    Description ( "number of stations within 400km from the event" )
+    Detail {
+        This quantity is the number of stations within 400 km from the epicentre
+        used to compute the location of the event.
+    }
+    ;
+    
+Attribute tres_rms
+	Real (7)
+	Format ( "%7.2f" )
+	Null ( "-1.00" )
+	Units ( "seconds" )
+	Description ( "rms value" )
+	Detail {
+		This is the sum of the squared time-residuals, divided by the number of observations.
+        Note that sdobs, the standanrd error of observations is depending on the number of degrees of freedom.
+	}
+	;
+    
+Relation origqual
+	Fields ( orid mindist maxdist azgap azgap2 gt nsta_def nsta30 nsta125 nsta250 nsta400 tres_rms sdobs commid lddate )
+	Primary ( orid )
+	Foreign ( commid ) 
+	Description ( "origin quality idicators" )
+	Detail {
+		Parameters to assess origin quality
+	}
+	;

@@ -3,6 +3,7 @@ MAN1 = polygon2xy.1 xy2polygon.1
 
 ldlibs = $(DBLIBS)-lpolygon
 
+cflags = -g
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 

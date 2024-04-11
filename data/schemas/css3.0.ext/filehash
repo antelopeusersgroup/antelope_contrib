@@ -1,0 +1,51 @@
+Attribute hash
+	String (128)
+	Format ( "%-128s" )
+	Null ( "-" )
+	Description ( "cryptographic hashsum" )
+	Detail {
+		This string should describe the archive for material used to evaluate a certain event
+	}
+	;
+Attribute hashmethod
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "name of hashing method used" )
+	Detail {
+		Algorithm used to derive the hashsum in the field hash
+	}
+	;
+Attribute hashlength
+	Integer (3)
+	Format ( "%-3d" )
+	Null ( "-1" )
+	Description ( "stringlenght of hash digest" )
+	Detail {
+		String length of hash digest. Typically the length of the hexdigest of the hash.
+		This is usually double the size of the hash in bytes.
+	}
+	;
+Attribute type
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "type of attribute" )
+	Detail {
+		This should clearly and uniquely specify the referenced attribute
+		The type is part of the key to this table.
+		Good examples would be:
+		moho depth
+		azimuth gap
+		capital
+	}
+	;
+Relation filehash
+	Fields ( hash dir dfile type hashmethod hashlength auth lddate )
+	Primary ( dir dfile type hashmethod )
+	Description ( "This relation holds hashes of files to provide file integrity" )
+	Detail {
+		Database entries like macroseismic felt reports can have duplicates for technical reasons.
+		Computing checksums can help to protect the integrity of the database.
+	}
+	;

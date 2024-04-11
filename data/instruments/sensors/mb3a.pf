@@ -1,0 +1,24 @@
+originator     Frank Vernon, UCSD
+last_modified  2020-04-25
+
+category	infrasound
+configuration	Seismowave MB3A 
+
+description	Seismowave MB3A microphone  
+dfile		mb3a	
+
+rsptype		I	# infrasound instrument
+band		l	# 
+sensor_type_code	D
+
+gtype		sensor
+sensitivity	0.02
+ounits		V 	
+iunits		Pa    
+
+orientations	&Tbl{
+D       0       0 
+}
+
+response	&datafile(responses/mb3a) 
+

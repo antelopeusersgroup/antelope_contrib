@@ -1,0 +1,42 @@
+originator     Nikolaus Horn, ZAMG Vienna
+last_modified  2015-10-20
+
+#
+# data taken from  rt151A documentation, (97431-00-UG, Rev D, 1/26/2015)
+#
+
+category	Reftek
+configuration	RT151B-60
+
+info 	&Literal{
+	Reftek 151B broadband seismometer 
+	60 Seconds - 50Hz
+}
+
+description	Reftek 151B - 60 sec.
+dfile	rt151B_60
+
+rsptype                 V       # velocity instrument
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	20e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/rt151B_60) 
+
+caldrive        c
+active          yes
+calgen          1
+cal2rsp         1
+calper          1
+

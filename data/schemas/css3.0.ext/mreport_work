@@ -1,0 +1,60 @@
+Attribute mrid
+    Integer (8)
+    Format ( "%8d" )
+    Null ( "-1" )
+    Range ( "mrid > 0" )
+    Description ( "id of macroseismic report" )
+    Detail {
+        unique key to the relation mreport
+    }
+    ;
+Attribute fake
+	String (1)
+	Format ( "%-1s" )
+	Null ( "-" )
+	Description ( "is this a fake event" )
+	Detail {
+		fake:
+		y - yes 
+		n - no
+	}
+	;
+Attribute intclass
+    Real (4)
+    Format ( "%4.1f" )
+    Null ( "-9.9" )
+    Range ( "intclass > 0.0" )
+    Description ( "Intensity classification" )
+    Detail {
+        Intensity classification.  
+	    This is the pseudo intensity selected by choosing a picture.
+    }
+    ;
+Attribute modified
+    String (4)
+    Format ( "%-4s" )
+    Null ( "-" )
+    Description ( "modification flag" )
+    Detail {
+        Has the assignemt of coordinates of pseudo intensity been modified.
+	    If so, the flag can indicate the type of change(s).
+		y - yes
+		c - coordinates
+		i - intensity
+    }
+    ;
+Attribute place
+    String (70)
+    Format ( "%-70s" )
+    Null ( "-" )
+    Description ( "full name of a place " )
+    ;
+Relation mreport_work
+	Fields ( mrid time lat lon place intclass fake modified auth commid lddate )
+	Primary ( mrid )
+	Foreign ( mrid commid )	
+	Description ( "time and coordinates of a macroseismic report" )
+	Detail {
+		This relation holds time and coordinates for macroseismic reports.
+	}
+	;

@@ -1,0 +1,2 @@
+
+system( "/opt/antelope/$python/bin/pip3 install obspy" );

@@ -54,6 +54,14 @@ max_tdelta      -1.0  # ignore all phases with a residual larger than this value
 suspicious_phase_codes  X,P,S  # List of phases to change
                                # P should be on this list,
                                # otherwise all P's will be left unchanged...
+dont_change_to &Tbl{
+        PbPb
+		...
+}
+simplify &Arr{
+        P'P'ab          P'P'
+		...
+}	
 .fi
 .ft R
 .in
@@ -68,7 +76,11 @@ Specifies which phases are considered. See tt(3).
 .IP "max_tdelta"
 Leave phase unchanged if residual would exceed this limit. A value of -1 accepts everything.
 .IP "suspicious_phase_codes"
-List of phases that will be changed by the Program. Typically a location program sets assoc.phase to some reasonable phasecode or simply P or S. In the latter case, this program can polish up your bulletins.
+List of phases that will be changed by the program. Typically a location program sets assoc.phase to some reasonable phasecode or simply P or S. In the latter case, this program can polish up your bulletins.
+.IP "dont_change_to"
+List of weak phases which are hardly visible. Use this to ignore exotic phases you don't pick on a regular basis.
+.IP "simplify"
+
 .SH EXAMPLE
 .in 2c
 .ft CW
@@ -98,11 +110,9 @@ Your input database is incomplete. Consider specifying a more complete database 
 Something really went wrong. I believe this should not happen unless one experiments with -use_assoc_vmodel.
 .SH "SEE ALSO"
 tt(3), tttaup(3), rtbulletin(1), dbloc2(1)
-.SH "BUGS AND CAVEATS"
-
 .SH AUTHOR
 .nf
-Nikolaus Horn, 2005
+Nikolaus Horn, 2005,2017
 
 ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
 .\" $Id$

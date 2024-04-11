@@ -24,6 +24,7 @@ DATA= hrd24.pf \
     taurus20_lo_40V_swg1_iiroff.pf \
     taurus_inf.pf \
     taurus_std.pf \
+    centaur.pf \
     trident.pf 
 
 SUBDIR=/contrib

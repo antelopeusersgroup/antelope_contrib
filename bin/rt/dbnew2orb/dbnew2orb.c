@@ -327,7 +327,7 @@ main(int argc, char **argv)
 					continue;
 				}
 			}
-            if (verbose) elog_notify(0,"will check table %s\n",tablename);
+            if (verbose > 1) elog_notify(0,"will check table %s\n",tablename);
             pushtbl(tablenames,tablename);
         }
     }
@@ -357,7 +357,7 @@ main(int argc, char **argv)
 		for (i = 0; i < ntables; i++) {
             /* ignore nameless table... */
 			tablename = gettbl(tablenames, i);
-			printf("tavblename: %s\n",tablename);
+			//printf("tablename: %s\n",tablename);
 			if (!tablename) {
 				continue;
 			}

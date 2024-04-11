@@ -1,0 +1,66 @@
+.TH NETMAG_FROM_ORIGIN 1
+
+.SH NAME
+netmag_from_origin \- generate netmag rows given input origin table with mb, ms, ml fields
+
+.SH SYNOPSIS
+.nf
+\fBnetmag_from_origin \fP[-v] [-V] [-s \fIsubset\fP] \fIdb\fP
+.fi
+.SH DESCRIPTION
+\fBnetmag_from_origin\fP was designed to generate netmag tables for old bulletins
+that perhaps only collected magnitude information into the mb, ms, and ml
+fields of the origin table.  As bulletin collection developed, these magnitude
+fields in the origin table were no longer used and separate netmag rows were
+always generated.  This script helps bring some of the older bulletins into a
+more modern era by generating netmag rows.  Note that initial assumptions that
+went into populating those magnitudes in the origin table (i.e. perhaps mapping
+md magnitudes into the ml field) cannot be undone, so information may be lost in
+this further translation.
+
+.SH OPTIONS
+.IP -v
+Verbose output.
+.IP -V
+Very verbose output.
+.IP "-s subset"
+Subset to be applied to the origin table to limit the processing to be done.  This
+could be an \fIauth\fP or \fIorid\fP \fIsubset\fP for instance. Use double quotes around
+the expression.
+
+.SH FILES
+Requires origin table and writable netmag output table.
+.SH ENVIRONMENT
+Need to have sourced $ANTELOPE/setup.csh
+.SH EXAMPLE
+.LP
+Generate netmag records for all origins with authors matching UNR_NBE in
+the unr_2008 bulletin.
+.in 2c
+.ft CW
+.nf
+
+%\fB netmag_from_origin\fP -s "auth=~/UNR_NBE/" unr_2008
+
+.fi
+.ft R
+.in
+.LP
+Generate netmag records for all origins in the unr_2008 bulletin.
+.in 2c
+.ft CW
+.nf
+
+%\fB netmag_from_origin\fP unr_2008
+
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+recover_netmag(1)
+.fi
+.SH AUTHOR
+Jennifer Eakins
+.br
+Univ. of California, San Diego

@@ -1,3 +1,25 @@
+2023.022: 1.7
+	- Improve deliniation of diagnostic versus error messages
+	- Update libmseed to 2.19.8
+
+2020.134: 1.6
+	- Incorporate changes from Doug Neuhauser, including these features:
+	  # Add -F option to control flushing of data based on channel rate
+	    and duration.
+	  # Add -l option to specify miniSEED record length to create.
+	  # Avoid holding time-torn data in internal buffers, and instead
+	    flush the previous data when a time tear is detected.
+	- New default 32-bit miniSEED encoding is dyanmic: first try Steim-2,
+	then Steim-1, and finally use uncompressed integers.
+	- Add -I option to strictly specify encoding of 32-bit integers.
+	- Fix flushing based on latency to proper channels only.
+	- Update libdali to 1.8, with support for IPv6, etc.
+	- Update libmseed to 2.19.6.
+
+2016.295: 1.5
+	- Update libmseed to 2.18.
+	- Update libdali to 1.7.
+
 2015.042: 1.4
 	- Adjust log level on multiple messages to avoid *complain* Antelope
 	logging for diagnostic messages.

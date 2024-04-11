@@ -4,7 +4,7 @@ orb2rrdc \- populate a round-robin database from an orbserver
 .SH SYNOPSIS
 .nf
 orb2rrdc [-vV] [-d cachedaemon] [-s statefile] [-p pffile] [-m match] 
-        [-f from] orb dbcache
+        [-r reject] [-f from] orb dbcache
 .fi
 .SH DESCRIPTION
 orb2rrdc enters state-of-health information from an Antelope orbserver 
@@ -41,6 +41,10 @@ option is also given (i.e. if a statefile is used).
 .IP "-m match"
 Specify a regular-expression subset of orb source-names to monitor. 
 The default is .*/pf/st.
+
+.IP "-r reject"
+Specify a regular-expression subset of orb source-names to reject.
+The default is NULL.
 
 .IP "-p pffile"
 Specify a parameter file other than the default orb2rrdc.pf

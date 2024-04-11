@@ -17,6 +17,10 @@ MAN3= \
 #	 polygon.so.3 \
 
 ldlibs=	$(DBLIBS)
+cflags = -g
+#-dynamiclib
+#ldflags = -target x86_64-apple-macos12.0 -dynamiclib
+
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)

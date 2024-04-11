@@ -347,7 +347,7 @@ main (int argc, char **argv)
 	if ( ! is_present ( Gap_database ) ) { 
 	    char *schema_name ;
 	    dbquery(dbwanted, dbSCHEMA_NAME, &schema_name) ; 
-	    if ( dbcreate(Gap_database, schema_name, 0, 0, 0)) { 
+	    if ( dbcreate(Gap_database, schema_name, 0, 0, 0, 0, 0)) { 
 		elog_die ( 0, "Can't create new database %s with schema %s", 
 			Gap_database, schema_name ) ; 
 	    }

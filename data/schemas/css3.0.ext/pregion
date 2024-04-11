@@ -1,0 +1,82 @@
+
+Attribute kint
+	Integer (12)
+	Format ( "%12d" )
+	Null ( "-1" )
+	Description ( "integer key value" )
+	Detail {
+		kval is the actual id in a foreign table. A row in the extension table is uniquely defined by kname and kvalue together with the attribute type, type.
+	}
+	;
+
+Attribute kname           
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "kname - name of referenced field" )
+	Detail {
+		This attribute contains the actual name of a key in a foreign table.
+		keyname is not used here to avoid conflicts with possible 
+        black magic in antelope
+	}
+	;  
+
+Attribute kstring           
+	String (35)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "kname - name of referenced field" )
+	Detail {
+		This attribute contains the actual name of a key in a foreign table.
+		keyname is not used here to avoid conflicts with possible 
+        black magic in antelope
+	}
+	;  
+
+Attribute pname
+    String (80)
+    Format ( "%-80s" )
+    Null ( "-" )
+    Description ( "name of a polygon" )
+;
+
+Attribute type
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "type of attribute" )
+	Detail {
+		This should clearly and uniquely specify the referenced attribute
+        The type is part of the key to this table.
+        Good examples would be:
+        moho depth
+        azimuth gap
+        capital
+	}
+	;
+
+Attribute val
+	Real (20)
+	Format ( "%20.7f" )
+	Description ( "value of a measurement or attribute" )
+	Null ("-")
+	Detail {
+		This is a measured value on a waveform. The interpretation
+		and units depend on the type.
+	}
+	;
+
+Relation pregion
+	Fields ( pname kint kstring kname type auth commid lddate )
+	Primary ( kint kstring kname type )
+	Foreign ( commid ) 
+	Description ( "geographic region based on polygon search" )
+	Detail {
+        geopgraphic region based on polygon search
+        to extend the usage of this table byond origins
+        to all tables where lat and lon are present, the primary key 
+        here is built from the key in the foreign table     
+	}
+	;
+
+

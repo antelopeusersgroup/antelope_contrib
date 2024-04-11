@@ -1,16 +1,16 @@
 #    This is the orbevproc parameter file
 
-max_events_to_thread    5    # maximum number of events to process concurrently
+max_events_to_thread    8   # maximum number of events to process concurrently
 
 #    This is the list of processing modules to be run
 
 event_processes &Tbl{
     #perl_file    perl_class        parameters
     Magnitude.pm
-    Mlrichter.pm    Mlrichter       mlrichter_params
-    Mbusneic.pm     Mbusneic        mbusneic_params
-    Msusneic.pm     Msusneic        msusneic_params
-    MwpA.pm         MwpA            mwpa_params
+#    Mlrichter.pm    Mlrichter       mlrichter_params
+#    Mbusneic.pm     Mbusneic        mbusneic_params
+#    Msusneic.pm     Msusneic        msusneic_params
+#    MwpA.pm         MwpA            mwpa_params
     Mampmag.pm      Mampmag         mlampmag_params
     Mnoop.pm        Mampmag         mbampmag_params
     Mnoop.pm        Mampmag         msampmag_params
@@ -34,15 +34,16 @@ mlampmag_params &Arr{
     channels &Tbl{
 #      snet  sta      chan       snr   twin     c2    c3   c4    c5
 #      expr  expr     expr       thr   noise
-       XX     .*      HH[NE].*   2.0  60.0      0.0   1.0  1.0   0.0 -65000 65000
-	   OE	  .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0		
-	   SI	  .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0		
-#	   CZ	  .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0		
-#	   GR	  .*      BH[NE]     2.0  60.0      0.0   1.0  1.0   0.0		
+       OE     ABNA    HH[NE]     2.0  60.0      0.0   1.0  1.0  -0.7
+       OE     .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+       SI     .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+#       CZ      .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+#       GR      .*      BH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
     }
     reject &Tbl{
 #    snet_expr sta_expr
     TA        ADK
+    OE        ARSA|VIE|UNNA|GFSA|GNLA|GAKA|GPRA|SINA
     }
     
     v_r    4.0  # velocity for surface waves used to determine surface wave arrival time
@@ -53,7 +54,9 @@ mlampmag_params &Arr{
     maximum_bad_fraction         0.2
     auth_accept        .*
     output_magtype              ml
-    output_auth            		ampmag
+    mean_magnitude              no 
+    use_p2p_amplitude           yes
+    output_auth                am
     output_stamag               yes
     output_wfmeas               yes
 }
@@ -74,14 +77,15 @@ mbampmag_params &Arr{
 #      snet  sta      chan       snr   twin     c2    c3   c4    c5
 #      expr  expr     expr       thr   noise
        XX     .*      HH[NE].*   2.0  60.0      0.0   1.0  1.0   0.0 -65000 65000
-	   OE	  .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0		
-	   SI	  .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0		
-#	   CZ	  .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0		
-#	   GR	  .*      BH[NE]     2.0  60.0      0.0   1.0  1.0   0.0		
+    OE    .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+    SI      .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+#       CZ      .*      HH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
+#       GR      .*      BH[NE]     2.0  60.0      0.0   1.0  1.0   0.0        
     }
     reject &Tbl{
 #    snet_expr sta_expr
     TA        ADK
+    OE        ARSA|VIE|UNNA|GFSA|GNLA|GAKA|GPRA
     }
     
     v_r    4.0  # velocity for surface waves used to determine surface wave arrival time
@@ -92,7 +96,9 @@ mbampmag_params &Arr{
     maximum_bad_fraction         0.2
     auth_accept        .*
     output_magtype              mb
-    output_auth            		ampmag
+    mean_magnitude              no 
+    use_p2p_amplitude           yes
+    output_auth                am
     output_stamag               yes
     output_wfmeas               yes
 }
@@ -104,8 +110,8 @@ msampmag_params &Arr{
                    # R - rayleigh wave - here we use deg2km(delta) / v_r
     time_window_factor    1.5     # time window in relation to S-time -P-time 
     minimum_time_window  10.0     # time_window in seconds, in case P and S are really close
-    min_delta    0
-    max_delta    5.5
+    min_delta    5.5
+    max_delta    180
 
     c0        0.52           
     c1        1.66        
@@ -113,14 +119,15 @@ msampmag_params &Arr{
 #      snet  sta      chan       snr   twin     c2    c3      c4    c5
 #      expr  expr     expr       thr   noise
        XX     .*      HH[NE].*   2.0  60.0     -1.0   0.0097  9.0   0.0 -65000 65000
-	   OE	  .*      HH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0		
-	   SI	  .*      HH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0		
-#	   CZ	  .*      HH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0		
-#	   GR	  .*      BH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0		
+       OE      .*      HH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0        
+       SI      .*      HH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0        
+#       CZ      .*      HH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0        
+#       GR      .*      BH[NE]     2.0  60.0     -1.0   0.0097  9.0   0.0        
     }
     reject &Tbl{
 #    snet_expr sta_expr
     TA        ADK
+    OE        ARSA|VIE|UNNA|GFSA|GNLA|GAKA|GPRA
     }
     
     v_r    4.0  # velocity for surface waves used to determine surface wave arrival time
@@ -131,7 +138,9 @@ msampmag_params &Arr{
     maximum_bad_fraction         0.2
     auth_accept                  .*
     output_magtype              ms
-    output_auth            		ampmag
+    mean_magnitude              no 
+    use_p2p_amplitude           yes
+    output_auth                am
     output_stamag               yes
     output_wfmeas               yes
 }
@@ -254,4 +263,8 @@ assoc_expression    $nass>=$nars-2
 author_priority &Arr{    # prefor priority as a function of assoc author
 }
 
-pf_revision_time 1273162054
+
+pf_revision_time 1401891290
+
+
+

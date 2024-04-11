@@ -9,10 +9,10 @@ framework commonly used to managed other processes in an Antelope
 real-time system.
 
 1. Build latest ringserver program, source code available here:
-https://seiscode.iris.washington.edu/projects/ringserver
+https://github.com/iris-edu/ringserver
 
 2. Build latest orb2ringserver program, source code available here:
-https://seiscode.iris.washington.edu/projects/orb2ringserver
+https://github.com/iris-edu/orb2ringserver
 
 3. Create a directory for the ringserver to store it's buffers:
 

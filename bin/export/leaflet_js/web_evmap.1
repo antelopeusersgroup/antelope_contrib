@@ -1,0 +1,89 @@
+.TH WEB_EVMAP 1 
+.SH NAME
+web_evmap \- interactive event map based on the leaflet library
+.SH SYNOPSIS
+.nf
+web_evmap [-v] [-s sitedb] [-p pffile] [-o] dbname evid|orid 
+.fi
+
+.SH DESCRIPTION
+This utility produces a webpage for interactive display of event information and stations in a database.
+The display relies on the \fIleaflet\fP javascript library written by Vladimir Agafonkin.
+
+.SH OPTIONS
+.IP "-v" 
+verbose flag
+.IP "-p pffile" 
+parameter file
+.IP "-s sitedb" 
+Database with station metadata. 
+.IP "-o"
+The id is an origin id. Default would be to assume the event id is given.
+.IP "dbname"
+Name of database with event information. Site information can optionally be provided in a separatae database. This is a required parameter.
+.IP "evid (or orid)"
+Event or origin id.
+.SH PARAMETER FILE
+
+The following is a sample parameter file. Most of the parameters
+should be fairly self-explanatory.
+
+.in 2c
+.ft CW
+.nf
+title Antelope Demo Event Map     # title
+
+logo_url           https://geoweb.zamg.ac.at/images/zamg_logo_vert.png
+logo_alt           ZAMG Logo
+
+leaflet_js         https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js
+leaflet_css        https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css
+leaflet_draw_js    https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js
+leaflet_draw_css   https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css
+leaflet_measurecontrol_js    https://makinacorpus.github.io/Leaflet.MeasureControl/leaflet.measurecontrol.js
+leaflet_measurecontrol_css   https://makinacorpus.github.io/Leaflet.MeasureControl/leaflet.measurecontrol.css
+
+prefor_icon        https://geoweb.zamg.ac.at/my_icons/star_red.png
+origin_icon        https://geoweb.zamg.ac.at/my_icons/star_blue.png
+defining_icon      https://geoweb.zamg.ac.at/my_icons/tri_26_magenta.png
+nondefining_icon   https://geoweb.zamg.ac.at/my_icons/tri_26_navy.png
+unassoc_icon       https://geoweb.zamg.ac.at/my_icons/tri_26_grey.png
+
+
+html_template  ...
+.fi
+.ft R
+.in
+.IP "logo_url, logo_alt"
+Replace with your own logo.
+.IP "prefor_icon, etc"
+The default parameter file uses icons hosted by ZAMG in Vienna. You may use these icons, but it would be kind
+to use locally hosted versions of these icons.
+.IP "leaflet_..."
+Javascript libraries used here. You may want to provide locally hosted versions of these libraries
+to increase stability and reliability. The plugins \fBdraw\fP and \fBmeasurecontrol\fP are needed for the interactive ruler taht can be activated by clicking on the icon below the zoom control ("+/-") on the left side of the webpage. See https://github.com/makinacorpus/Leaflet.MeasureControl for more information.
+.IP html_template
+Template for the new webpage. See https://leaflet-extras.github.io/leaflet-providers/preview/ for a list of alternative map layers.
+All curly brackets must be doubled because of the antelope parameter file quoting conventions. See \fIpf(5)\fP for an explanation.
+.SH EXAMPLE
+.nf
+% web_evmap /opt/antelope/data/db/demo/demo 4
+% open evmap_evid_0000000004.html
+.fi
+
+.SH "BUGS AND CAVEATS"
+The default parameter file is using icons and java-script libraries and stylesheets provided by the cloudflare CDN, github and ZAMG. For productive usage, I would recommend to provide locally hosted copies.
+
+.SH "SEE ALSO"
+.nf
+web_stamap(1),
+\fBhttps://leafletjs.com/\fP, 
+\fBhttps://leaflet-extras.github.io/leaflet-providers/preview/\fP, 
+\fBhttps://github.com/makinacorpus/Leaflet.MeasureControl\fP and 
+pf(5)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2022
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at

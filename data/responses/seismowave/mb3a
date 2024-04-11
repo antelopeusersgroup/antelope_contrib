@@ -1,0 +1,23 @@
+# infrasound   pressure sensor 
+# Model        MB3a
+# SeismoWave 19 Jan 2018
+#
+# Normalized  response relative to pressure 
+# All poles and zeroes in radians/sec
+# 1                   type
+# 2                   num of zeroes
+# 4                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 80500               normalization factor
+# 1.0                 gain
+theoretical   1 instrument   paz    seismowave
+ 80500
+4             Poles
+-8.571E+01    6.2662E+02    0.0000E+00    0.0000E+00
+-8.571E+01   -6.2662E+02    0.0000E+00    0.0000E+00
+-1.7857E+02   0.0000E+00    0.0000E+00    0.0000E+00
+-6.2834E-02   0.0000E+00    0.0000E+00    0.0000E+00
+2             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+-8.877E+02    0.0000E+00    0.0000E+00    0.0000E+00

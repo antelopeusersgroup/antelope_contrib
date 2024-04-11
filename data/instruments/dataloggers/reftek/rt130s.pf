@@ -1,0 +1,133 @@
+originator     Frank Vernon, UCSD, modified for 130S by Nikolaus Horn, ZAMG
+last_modified  2015-06-18
+
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.reftek.com
+
+}
+
+category	Reftek
+configuration	130S
+
+description	Reftek 130S Datalogger 
+dfile rt130s
+
+streams		1000sps 500sps 250sps 200sps 125sps 100sps 50sps 40sps 25sps 20sps 10sps 5sps 1sps
+
+# definitions of streams
+1000sps	 1000  a/d1 cf1 cf2 cf2 cf2 cf2 cf3
+500sps	 500   a/d1 cf1 cf2 cf2 cf2 cf2 cf2 cf3
+250sps	 250   a/d1 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+125sps	 125   a/d1 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+200sps	 200   a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf3
+100sps	 100   a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf3 
+50sps	  50   a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+40sps	  40   a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf3 RT72A_5_f
+25sps	  25   a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+20sps	  20   a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf3 RT72A_5_f RT72A_2_f
+10sps	  10   a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf3 RT72A_5_f RT72A_2_f RT72A_2_f
+5sps	   5   a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf3 RT72A_5_f RT72A_2_f RT72A_2_f RT72A_2_f
+1sps	   1   a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf3 RT72A_5_f RT72A_2_f RT72A_2_f RT72A_2_f RT72A_5_f
+
+possible_streams &Literal{
+    my @chosen = @_ ; 
+    my @ok = () ; 
+    my %chosen ;
+    foreach (@chosen) {
+	$chosen{$_} = 1 ; 
+    }
+    if ( defined $chosen{"1000sps"} ) { 
+	@ok = qw(1000sps) ; 
+    } elsif ( defined $chosen{"500sps"} ) { 
+	@ok = qw(500sps) ; 
+    } elsif ( defined $chosen{"250sps"} ) { 
+	@ok = qw(250sps) ; 
+    } elsif ( defined $chosen{"125sps"} ) { 
+	@ok = qw(125sps) ; 
+    } elsif ( defined $chosen{"50sps"} ) { 
+	@ok = qw(50sps) ; 
+    } elsif ( defined $chosen{"25sps"} ) { 
+	@ok = qw(25sps) ; 
+    } elsif ( defined $chosen{"200sps"} 
+	|| defined $chosen{"100sps"} 
+	|| defined $chosen{"40sps"} 
+	|| defined $chosen{"20sps"}
+	|| defined $chosen{"10sps"} 
+	|| defined $chosen{"5sps"} 
+	|| defined $chosen{"1sps"} ) { 
+	@ok = qw(200sps 100sps 40sps 20sps 10sps 5sps 1sps) ; 
+    } else { 
+	@ok = qw(1000sps 500sps 250sps 200sps 125sps 100sps 50sps 40sps 25sps 20sps 10sps 5sps 1sps) ; 
+    }
+    return (@ok) ; 
+}
+
+gains  439753.74
+
+
+# Stages
+
+a/d1	&Arr{
+samprate	256000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d2	&Arr{
+samprate	102400
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+cf1	&Arr{
+gtype	FIR_decimator
+decifac	8
+response	&datafile(responses/cf1)
+}
+
+cf2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf2)
+}
+
+cf3	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf3)
+}
+
+RT72A_5_f	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/RT72A_5_f)
+}
+
+RT72A_2_f	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/RT72A_2_f)
+}
+
+soh		LOG
+
+LOG	&Arr{
+stages		log
+iunits  	
+ounits		
+samprate 	-1
+ctype		o
+}
+
+log &Arr{
+gtype		REF TEK LOG 
+iunits		
+ounits		
+sn		datalogger
+}

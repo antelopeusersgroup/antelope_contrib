@@ -1,25 +1,25 @@
-
 /***************************************************************************
  * libmseed.h:
- * 
+ *
  * Interface declarations for the Mini-SEED library (libmseed).
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
- * as published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 3 of the
+ * License, or (at your option) any later version.
  *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License (GNU-LGPL) for more details.  The
- * GNU-LGPL and further information can be found here:
- * http://www.gnu.org/
+ * Lesser General Public License (GNU-LGPL) for more details.
  *
- * Written by Chad Trabant
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software.
+ * If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Copyright (C) 2022 Chad Trabant
  * IRIS Data Management Center
  ***************************************************************************/
-
 
 #ifndef LIBMSEED_H
 #define LIBMSEED_H 1
@@ -28,10 +28,95 @@
 extern "C" {
 #endif
 
-#include "lmplatform.h"
+#define LIBMSEED_VERSION "2.19.8"
+#define LIBMSEED_RELEASE "2022.087"
 
-#define LIBMSEED_VERSION "2.13"
-#define LIBMSEED_RELEASE "2014.234"
+/* C99 standard headers */
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <time.h>
+#include <string.h>
+#include <ctype.h>
+
+/* This library uses structs that map to SEED header/blockette
+   structures that are required to have a layout exactly as specified,
+   i.e. no padding.
+
+   If "ATTRIBUTE_PACKED" is defined at compile time (e.g. -DATTRIBUTE_PACKED)
+   the preprocessor will use the define below to add the "packed" attribute
+   to effected structs.  This attribute is supported by GCC and increasingly
+   more compilers.
+  */
+#if defined(ATTRIBUTE_PACKED)
+  #define LMP_PACKED __attribute__((packed))
+#else
+  #define LMP_PACKED
+#endif
+
+/* Set platform specific defines */
+#if defined(__linux__) || defined(__linux) || defined(__CYGWIN__)
+  #define LMP_LINUX 1
+  #define LMP_GLIBC2 1 /* Deprecated */
+#elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+  #define LMP_BSD 1
+#elif defined(__sun__) || defined(__sun)
+  #define LMP_SOLARIS 1
+#elif defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+  #define LMP_WIN 1
+  #define LMP_WIN32 1 /* Deprecated */
+#endif
+
+/* Set platform specific features */
+#if defined(LMP_WIN)
+  #include <windows.h>
+  #include <sys/types.h>
+
+  /* For MSVC 2012 and earlier define standard int types, otherwise use inttypes.h */
+  #if defined(_MSC_VER) && _MSC_VER <= 1700
+    typedef signed char int8_t;
+    typedef unsigned char uint8_t;
+    typedef signed short int int16_t;
+    typedef unsigned short int uint16_t;
+    typedef signed int int32_t;
+    typedef unsigned int uint32_t;
+    typedef signed __int64 int64_t;
+    typedef unsigned __int64 uint64_t;
+  #else
+    #include <inttypes.h>
+  #endif
+
+  /* For MSVC define PRId64 and SCNd64 if needed */
+  #if defined(_MSC_VER)
+    #if !defined(PRId64)
+      #define PRId64 "I64d"
+    #endif
+    #if !defined(SCNd64)
+      #define SCNd64 "I64d"
+    #endif
+
+    #define snprintf _snprintf
+    #define vsnprintf _vsnprintf
+    #define strcasecmp _stricmp
+    #define strncasecmp _strnicmp
+    #define strtoull _strtoui64
+    #define strdup _strdup
+    #define fileno _fileno
+  #endif
+
+  /* Extras needed for MinGW */
+  #if defined(__MINGW32__) || defined(__MINGW64__)
+    #include <fcntl.h>
+
+    #define fstat _fstat
+    #define stat _stat
+  #endif
+#else
+  #include <unistd.h>
+  #include <inttypes.h>
+#endif
+
+extern int LM_SIZEOF_OFF_T;  /* Size of off_t data type determined at build time */
 
 #define MINRECLEN   128      /* Minimum Mini-SEED record length, 2^7 bytes */
                              /* Note: the SEED specification minimum is 256 */
@@ -72,8 +157,8 @@ extern "C" {
 #define HPTERROR -2145916800000000LL
 
 /* Macros to scale between Unix/POSIX epoch time & high precision time */
-#define MS_EPOCH2HPTIME(X) X * (hptime_t) HPTMODULUS
-#define MS_HPTIME2EPOCH(X) X / HPTMODULUS
+#define MS_EPOCH2HPTIME(X) (X) * (hptime_t) HPTMODULUS
+#define MS_HPTIME2EPOCH(X) (X) / HPTMODULUS
 
 /* Macro to test a character for data record indicators */
 #define MS_ISDATAINDICATOR(X) (X=='D' || X=='R' || X=='Q' || X=='M')
@@ -83,7 +168,7 @@ extern "C" {
 
 /* Macro to test for sane year and day values, used primarily to
  * determine if byte order swapping is needed.
- * 
+ *
  * Year : between 1900 and 2100
  * Day  : between 1 and 366
  *
@@ -95,7 +180,7 @@ extern "C" {
 /* Macro to test memory for a SEED data record signature by checking
  * SEED data record header values at known byte offsets to determine
  * if the memory contains a valid record.
- * 
+ *
  * Offset = Value
  * [0-5]  = Digits, spaces or NULL, SEED sequence number
  *     6  = Data record quality indicator
@@ -107,23 +192,23 @@ extern "C" {
  * Usage:
  *   MS_ISVALIDHEADER ((char *)X)  X buffer must contain at least 27 bytes
  */
-#define MS_ISVALIDHEADER(X) (                                           \
-  (isdigit ((unsigned char) *(X)) || *(X) == ' ' || !*(X) ) &&		\
-  (isdigit ((unsigned char) *(X+1)) || *(X+1) == ' ' || !*(X+1) ) &&	\
-  (isdigit ((unsigned char) *(X+2)) || *(X+2) == ' ' || !*(X+2) ) &&	\
-  (isdigit ((unsigned char) *(X+3)) || *(X+3) == ' ' || !*(X+3) ) &&	\
-  (isdigit ((unsigned char) *(X+4)) || *(X+4) == ' ' || !*(X+4) ) &&	\
-  (isdigit ((unsigned char) *(X+5)) || *(X+5) == ' ' || !*(X+5) ) &&	\
-  MS_ISDATAINDICATOR(*(X+6)) &&						\
-  (*(X+7) == ' ' || *(X+7) == '\0') &&					\
-  (int)(*(X+24)) >= 0 && (int)(*(X+24)) <= 23 &&			\
-  (int)(*(X+25)) >= 0 && (int)(*(X+25)) <= 59 &&			\
-  (int)(*(X+26)) >= 0 && (int)(*(X+26)) <= 60)
+#define MS_ISVALIDHEADER(X) (                               \
+  (isdigit ((int) *(X))   || *(X)   == ' ' || !*(X) )   &&  \
+  (isdigit ((int) *(X+1)) || *(X+1) == ' ' || !*(X+1) ) &&  \
+  (isdigit ((int) *(X+2)) || *(X+2) == ' ' || !*(X+2) ) &&  \
+  (isdigit ((int) *(X+3)) || *(X+3) == ' ' || !*(X+3) ) &&  \
+  (isdigit ((int) *(X+4)) || *(X+4) == ' ' || !*(X+4) ) &&  \
+  (isdigit ((int) *(X+5)) || *(X+5) == ' ' || !*(X+5) ) &&  \
+  MS_ISDATAINDICATOR(*(X+6)) &&                             \
+  (*(X+7) == ' ' || *(X+7) == '\0') &&                      \
+  (int)(*(X+24)) >= 0 && (int)(*(X+24)) <= 23 &&            \
+  (int)(*(X+25)) >= 0 && (int)(*(X+25)) <= 59 &&            \
+  (int)(*(X+26)) >= 0 && (int)(*(X+26)) <= 60 )
 
 /* Macro to test memory for a blank/noise SEED data record signature
  * by checking for a valid SEED sequence number and padding characters
  * to determine if the memory contains a valid blank/noise record.
- * 
+ *
  * Offset = Value
  * [0-5]  = Digits or NULL, SEED sequence number
  * [6-47] = Space character (ASCII 32), remainder of fixed header
@@ -131,26 +216,27 @@ extern "C" {
  * Usage:
  *   MS_ISVALIDBLANK ((char *)X)  X buffer must contain at least 27 bytes
  */
-#define MS_ISVALIDBLANK(X) ((isdigit ((unsigned char) *(X)) || !*(X) ) &&     \
-			    (isdigit ((unsigned char) *(X+1)) || !*(X+1) ) && \
-			    (isdigit ((unsigned char) *(X+2)) || !*(X+2) ) && \
-			    (isdigit ((unsigned char) *(X+3)) || !*(X+3) ) && \
-			    (isdigit ((unsigned char) *(X+4)) || !*(X+4) ) && \
-			    (isdigit ((unsigned char) *(X+5)) || !*(X+5) ) && \
-			    (*(X+6)==' ')&&(*(X+7)==' ')&&(*(X+8)==' ') &&    \
-			    (*(X+9)==' ')&&(*(X+10)==' ')&&(*(X+11)==' ') &&  \
-			    (*(X+12)==' ')&&(*(X+13)==' ')&&(*(X+14)==' ') && \
-			    (*(X+15)==' ')&&(*(X+16)==' ')&&(*(X+17)==' ') && \
-			    (*(X+18)==' ')&&(*(X+19)==' ')&&(*(X+20)==' ') && \
-			    (*(X+21)==' ')&&(*(X+22)==' ')&&(*(X+23)==' ') && \
-			    (*(X+24)==' ')&&(*(X+25)==' ')&&(*(X+26)==' ') && \
-			    (*(X+27)==' ')&&(*(X+28)==' ')&&(*(X+29)==' ') && \
-			    (*(X+30)==' ')&&(*(X+31)==' ')&&(*(X+32)==' ') && \
-			    (*(X+33)==' ')&&(*(X+34)==' ')&&(*(X+35)==' ') && \
-			    (*(X+36)==' ')&&(*(X+37)==' ')&&(*(X+38)==' ') && \
-			    (*(X+39)==' ')&&(*(X+40)==' ')&&(*(X+41)==' ') && \
-			    (*(X+42)==' ')&&(*(X+43)==' ')&&(*(X+44)==' ') && \
-			    (*(X+45)==' ')&&(*(X+46)==' ')&&(*(X+47)==' ') )
+#define MS_ISVALIDBLANK(X) (                             \
+  (isdigit ((int) *(X))   || !*(X) ) &&                  \
+  (isdigit ((int) *(X+1)) || !*(X+1) ) &&                \
+  (isdigit ((int) *(X+2)) || !*(X+2) ) &&                \
+  (isdigit ((int) *(X+3)) || !*(X+3) ) &&                \
+  (isdigit ((int) *(X+4)) || !*(X+4) ) &&                \
+  (isdigit ((int) *(X+5)) || !*(X+5) ) &&                \
+  (*(X+6) ==' ') && (*(X+7) ==' ') && (*(X+8) ==' ') &&  \
+  (*(X+9) ==' ') && (*(X+10)==' ') && (*(X+11)==' ') &&  \
+  (*(X+12)==' ') && (*(X+13)==' ') && (*(X+14)==' ') &&  \
+  (*(X+15)==' ') && (*(X+16)==' ') && (*(X+17)==' ') &&  \
+  (*(X+18)==' ') && (*(X+19)==' ') && (*(X+20)==' ') &&  \
+  (*(X+21)==' ') && (*(X+22)==' ') && (*(X+23)==' ') &&  \
+  (*(X+24)==' ') && (*(X+25)==' ') && (*(X+26)==' ') &&  \
+  (*(X+27)==' ') && (*(X+28)==' ') && (*(X+29)==' ') &&  \
+  (*(X+30)==' ') && (*(X+31)==' ') && (*(X+32)==' ') &&  \
+  (*(X+33)==' ') && (*(X+34)==' ') && (*(X+35)==' ') &&  \
+  (*(X+36)==' ') && (*(X+37)==' ') && (*(X+38)==' ') &&  \
+  (*(X+39)==' ') && (*(X+40)==' ') && (*(X+41)==' ') &&  \
+  (*(X+42)==' ') && (*(X+43)==' ') && (*(X+44)==' ') &&  \
+  (*(X+45)==' ') && (*(X+46)==' ') && (*(X+47)==' ') )
 
 /* A simple bitwise AND test to return 0 or 1 */
 #define bit(x,y) (x&y)?1:0
@@ -279,7 +365,7 @@ struct blkt_320_s
   char      rolloff[12];
   char      noise_type[8];
 } LMP_PACKED;
-  
+
 /* Blockette 390, Generic Calibration (without header) */
 struct blkt_390_s
 {
@@ -381,14 +467,14 @@ StreamState;
 typedef struct MSRecord_s {
   char           *record;            /* Mini-SEED record */
   int32_t         reclen;            /* Length of Mini-SEED record in bytes */
-  
+
   /* Pointers to SEED data record structures */
   struct fsdh_s      *fsdh;          /* Fixed Section of Data Header */
   BlktLink           *blkts;         /* Root of blockette chain */
   struct blkt_100_s  *Blkt100;       /* Blockette 100, if present */
   struct blkt_1000_s *Blkt1000;      /* Blockette 1000, if present */
   struct blkt_1001_s *Blkt1001;      /* Blockette 1001, if present */
-  
+
   /* Common header fields in accessible form */
   int32_t         sequence_number;   /* SEED record sequence number */
   char            network[11];       /* Network designation, NULL terminated */
@@ -401,12 +487,12 @@ typedef struct MSRecord_s {
   int64_t         samplecnt;         /* Number of samples in record */
   int8_t          encoding;          /* Data encoding format */
   int8_t          byteorder;         /* Original/Final byte order of record */
-  
+
   /* Data sample fields */
   void           *datasamples;       /* Data samples, 'numsamples' of type 'sampletype'*/
   int64_t         numsamples;        /* Number of data samples in datasamples */
   char            sampletype;        /* Sample type code: a, i, f, d */
-  
+
   /* Stream oriented state information */
   StreamState    *ststate;           /* Stream processing state information */
 }
@@ -418,7 +504,7 @@ typedef struct MSTrace_s {
   char            station[11];       /* Station designation, NULL terminated */
   char            location[11];      /* Location designation, NULL terminated */
   char            channel[11];       /* Channel designation, NULL terminated */
-  char            dataquality;       /* Data quality indicator */ 
+  char            dataquality;       /* Data quality indicator */
   char            type;              /* MSTrace type code */
   hptime_t        starttime;         /* Time of first sample */
   hptime_t        endtime;           /* Time of last sample */
@@ -501,22 +587,22 @@ typedef struct Selections_s {
  * pack byte orders */
 extern flag packheaderbyteorder;
 extern flag packdatabyteorder;
-#define MS_PACKHEADERBYTEORDER(X) (packheaderbyteorder = X);
-#define MS_PACKDATABYTEORDER(X) (packdatabyteorder = X);
+#define MS_PACKHEADERBYTEORDER(X) do { packheaderbyteorder = (X); } while(0)
+#define MS_PACKDATABYTEORDER(X) do { packdatabyteorder = (X); } while(0)
 
 /* Global variables (defined in unpack.c) and macros to set/force
  * unpack byte orders */
 extern flag unpackheaderbyteorder;
 extern flag unpackdatabyteorder;
-#define MS_UNPACKHEADERBYTEORDER(X) (unpackheaderbyteorder = X);
-#define MS_UNPACKDATABYTEORDER(X) (unpackdatabyteorder = X);
+#define MS_UNPACKHEADERBYTEORDER(X) do { unpackheaderbyteorder = (X); } while(0)
+#define MS_UNPACKDATABYTEORDER(X) do { unpackdatabyteorder = (X); } while(0)
 
 /* Global variables (defined in unpack.c) and macros to set/force
  * encoding and fallback encoding */
 extern int unpackencodingformat;
 extern int unpackencodingfallback;
-#define MS_UNPACKENCODINGFORMAT(X) (unpackencodingformat = X);
-#define MS_UNPACKENCODINGFALLBACK(X) (unpackencodingfallback = X);
+#define MS_UNPACKENCODINGFORMAT(X) do { unpackencodingformat = (X); } while(0)
+#define MS_UNPACKENCODINGFALLBACK(X) do { unpackencodingfallback = (X); } while(0)
 
 /* Mini-SEED record related functions */
 extern int           msr_parse (char *record, int recbuflen, MSRecord **ppmsr, int reclen,
@@ -657,6 +743,7 @@ extern hptime_t ms_btime2hptime (BTime *btime);
 extern char*    ms_btime2isotimestr (BTime *btime, char *isotimestr);
 extern char*    ms_btime2mdtimestr (BTime *btime, char *mdtimestr);
 extern char*    ms_btime2seedtimestr (BTime *btime, char *seedtimestr);
+extern int      ms_hptime2tomsusecoffset (hptime_t hptime, hptime_t *toms, int8_t *usecoffset);
 extern int      ms_hptime2btime (hptime_t hptime, BTime *btime);
 extern char*    ms_hptime2isotimestr (hptime_t hptime, char *isotimestr, flag subsecond);
 extern char*    ms_hptime2mdtimestr (hptime_t hptime, char *mdtimestr, flag subsecond);
@@ -669,6 +756,7 @@ extern int      ms_genfactmult (double samprate, int16_t *factor, int16_t *multi
 extern int      ms_ratapprox (double real, int *num, int *den, int maxval, double precision);
 extern int      ms_bigendianhost (void);
 extern double   ms_dabs (double val);
+extern double   ms_rsqrt64 (double val);
 
 
 /* Lookup functions */
@@ -710,23 +798,57 @@ extern int      ms_readselectionsfile (Selections **ppselections, char *filename
 extern void     ms_freeselections (Selections *selections);
 extern void     ms_printselections (Selections *selections);
 
+/* Leap second declarations, implementation in gentutils.c */
+typedef struct LeapSecond_s
+{
+  hptime_t leapsecond;
+  int32_t  TAIdelta;
+  struct LeapSecond_s *next;
+} LeapSecond;
+
+extern LeapSecond *leapsecondlist;
+extern int ms_readleapseconds (char *envvarname);
+extern int ms_readleapsecondfile (char *filename);
+
 /* Generic byte swapping routines */
 extern void     ms_gswap2 ( void *data2 );
 extern void     ms_gswap3 ( void *data3 );
 extern void     ms_gswap4 ( void *data4 );
 extern void     ms_gswap8 ( void *data8 );
 
-/* Generic byte swapping routines for memory aligned quantities */
+/* Generic byte swapping routines for memory aligned quantities; names exist
+ * for backwards compatibility, but are the same as the generic routines. */
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5) || defined (__clang__)
+__attribute__ ((deprecated("Use ms_gswap2 instead.")))
+extern void     ms_gswap2a ( void *data2 );
+__attribute__ ((deprecated("Use ms_gswap4 instead.")))
+extern void     ms_gswap4a ( void *data4 );
+__attribute__ ((deprecated("Use ms_gswap8 instead.")))
+extern void     ms_gswap8a ( void *data8 );
+#elif defined(_MSC_FULL_VER) && (_MSC_FULL_VER > 140050320)
+__declspec(deprecated("Use ms_gswap2 instead."))
+extern void     ms_gswap2a ( void *data2 );
+__declspec(deprecated("Use ms_gswap4 instead."))
+extern void     ms_gswap4a ( void *data4 );
+__declspec(deprecated("Use ms_gswap8 instead."))
+extern void     ms_gswap8a ( void *data8 );
+#else
 extern void     ms_gswap2a ( void *data2 );
 extern void     ms_gswap4a ( void *data4 );
 extern void     ms_gswap8a ( void *data8 );
+#endif
 
 /* Byte swap macro for the BTime struct */
-#define MS_SWAPBTIME(x) \
-  ms_gswap2 (x.year);   \
-  ms_gswap2 (x.day);    \
-  ms_gswap2 (x.fract);
+#define MS_SWAPBTIME(x)  \
+  do {                   \
+    ms_gswap2 (x.year);  \
+    ms_gswap2 (x.day);   \
+    ms_gswap2 (x.fract); \
+  } while (0)
 
+/* Platform portable functions */
+extern off_t lmp_ftello (FILE *stream);
+extern int lmp_fseeko (FILE *stream, off_t offset, int whence);
 
 #ifdef __cplusplus
 }

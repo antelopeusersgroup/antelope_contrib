@@ -1,0 +1,21 @@
+# Niko Horn, 2017
+# a rough description of the anti aliasing filter in the SMACH SM-2 system 
+# from SMACH
+# the manuals says: 30hz lp for 128sps
+# the coefficients here sesigned with matlab: 
+# [z,p,k]=butter(5,30*pi*2,'s')
+# 5                   num of zeroes
+# 5                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 0.7008E+12          normalization factor
+# 1.0                 gain
+theoretical   2 anti-alias   paz    niko-matlab
+2.3796e+11	0
+5
+  -0.5825e2 +1.7927e2
+  -0.5825e2 -1.7927e2
+  -1.5250e2 +1.1079e2
+  -1.5250e2 -1.1079e2
+  -1.8850e2	0
+0

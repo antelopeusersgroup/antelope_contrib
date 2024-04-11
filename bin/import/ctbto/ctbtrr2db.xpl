@@ -28,18 +28,21 @@ sub init_globals {
 sub stateswitch {
 	( $line ) = @_;
 
-	if( $line =~ /^\s*DATA_TYPE\s+(\S+)\s+(\S+)/i ) {
-		$type = uc( $1 );
-		if( $type ne "ARR" &&
-		    $type ne "RRR" ) {
-			die( "File $ARGV Not in ARR, " .
-			     "or RRR format\n" ); 
-		}
+	if( $line =~ /^\s*BEGIN\s+(\S+)\s+/i ) {
 		$format = uc( $2 );
 		if( $format ne "IMS1.0" &&
 		    $format ne "IMS2.0" ) {
 			die( "File $ARGV Not in IMS1.0, " .
 			     "or IMS2.0 format\n" ); 
+		 }
+		 return 1;
+	}
+	if( $line =~ /^\s*DATA_TYPE\s+(\S+)\s+/i ) {
+		$type = uc( $1 );
+		if( $type ne "ARR" &&
+		    $type ne "RRR" ) {
+			die( "File $ARGV Not in ARR, " .
+			     "or RRR format\n" ); 
 		}
 		if ($type eq "ARR") {
 			@n_table=@db_ARR_nuclide;
@@ -241,7 +244,7 @@ if( $#ARGV < 1 ) {
 	$dbfilename=dbquery(@Db,"dbDATABASE_FILENAME");
 	if (! -f $dbfilename) {
 		dbclose(@Db);
-		dbcreate($dbname,"ctbto1.1");
+		dbcreate($dbname,"ctbto1.2");
 		@Db = dbopen( $dbname, "r+" );
 	}
 	@db_ARR=dblookup(@Db,"","arr","","");

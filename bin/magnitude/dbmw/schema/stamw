@@ -1,4 +1,8 @@
-#  moment magnitudo extension (DST 2006)
+#  moment magnitudo extension (stamw)
+#
+#  Giovanni Costa 2014                        
+# 
+#
 
 Attribute mw
         Real (7)
@@ -63,16 +67,6 @@ Attribute rotaz
                 }
                 ;
 
-Attribute quality
-        Real (7)
-        Format ( "%7.2f" )
-        Null ( "-999.00" )
-        Description ( "quality of determination" )
-        Detail {
-                This is the quality of the Mw determination.
-                }
-                ;
-
 Attribute chamw
 	String (8)
 	Format ( "%-8s" )
@@ -134,6 +128,16 @@ Attribute timeSmw
                 define the S window in the moment magnitude computation.
         }
         ;
+
+Attribute quality
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "quality of determination" )
+        Detail {
+                This is the quality of the Mw determination.
+                }
+                ;
 
 Relation stamw
         Fields ( sta chamw orid evid mw m0 f0 eqR distmw rotaz quality timePmw Pmw timeSmw Smw segtype auth commid lddate )

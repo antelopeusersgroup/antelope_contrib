@@ -1,91 +1,1186 @@
 .TH DB2KML_PY 1 "$Date$"
 .SH NAME
-db2kml_py \- pretty-print station and/or origin data as KML or KMZ
+db2kml_py \-  plot station and/or origin data as KML or KMZ
 .SH SYNOPSIS
 .nf
-\fBdb2kml_py \fP[-vxt] [-p pf_file] dbname file.kml
+\fBdb2kml_py \fP[-dvqt] [-c {stations,origins,all}] [-p pf_file] [-opm field:model] [-z [-k] ] dbname kmlfile 
 .fi
 .SH SUPPORT
 Contributed: NO BRTT support -- please contact author.
 
 .SH DESCRIPTION
 
-This text is grabbed pretty much verbatim from the db2kml manpage
-with a few changes when needed.
+\fBdb2kml_py\fP generates a KML (Keyhole Markup Language) file 
+or zipped archive containing a KML file and associated image files.
+The output is suitable for Google Earth and other programs. 
+Currently the placemarks are derived from origin or site
+information extracted from \fIdbname\fP, the specified database.
 
-\fBdb2kml_py\fP prints a file of placemarks in kml
-(Keyhole Markup Language) suitable for Google Earth and a growing
-number of other programs. The placemarks can be for origin or site
-information extracted from the specified database.
+The icons used for the placemarks for the stations and 
+origins must either a) reside in a web accessible location: 
+either on a locally run webserver or api, or served by some 
+other web accessible location or b) be accessible images located
+on your file system.  If the kml is to be used outside of your
+file system, for off-line users, or if it relies heavily on 
+api generated placemarks, it is strongly recommended that the 
+output you produce is a kmz file, which will include a bundle 
+of all of the images.  A provisional example api access point 
+is included in the parameter file, however users are strongly 
+encouraged to point at a more robust api for any heavy use.  
+Some sample icons referred to in the parameter file are 
+available under $ANTELOPE/contrib/data/icons/.  
 
-In GE, each event will display its magnitude and date when moused
-over. Selecting the event will bring up a menu with more detailed
-information. Each point is also tagged with a kml <TimeStamp> tag.
-In recent versions of Google Earth (> v4.0) it is possible to "play"
-the events in time using the time slider bar. The time slider bar
-can also be used to adjust the start and end dates of the events
-being displayed. There is no limit on the number of sites or events
-that can be processed, however at present GE bogs down on more than
-a few thousand aplacemarks.
+The origin placemarks can be colored by depth and sized 
+by magnitude if using an applicable api interface.  Static images 
+can be scaled by magnitude of the origin (if netmag.magnitude 
+exists). 
 
-The icons for the placemarks and the depth-magnitude scale must
-reside in a web accessible location. A provisional location is
-included in the parameter file though users are encouraged to modify
-this for any heavy use.  Please read the note about servers below.
+When origin plotting has been chosen, each event displays 
+its time, location, depth, magnitude and author when 
+selected on the map as displayed in Google Earth. 
+
+For station plotting, the snet_sta, staname, latitude, longitude, 
+elevation, ondate, and offdate are shown when selected on the map.
+The option to show/hide station name labels is configurable in the 
+\fIpf_file\fP.
+
+Each plotted event or site can be optionally tagged with a kml 
+<TimeStamp> tag.  This makes it possible to "play" a time history 
+of sites and origins using the time slider bar, or allows adjustment
+of the display to only show stations and events active during a 
+chosen time window.  Responsiveness may suffer if too many placemarks 
+exist in your KML file.
+
+The parameter file is not backwards compatible with previous versions
+of \fIdb2kml_py\fP that ran using Python2.  Many features of the output
+kml file are adjustable by modifying the parameter file.  See the 
+PARAMETER FILE section below for details.
+
 
 .SH OPTIONS
 
-.IP -v
-verbose output
+.IP "-c stations|origins|all"
+Choose what to plot.  If not specified, the default is to plot both 
+stations and origins.
 
-.IP -x
-debug aka very verbose output
+.IP -d
+Debug, aka very verbose output.  You really do not want to see 
+all of this unless you are debugging the code.
 
-.IP -t
-file type to output - not currently implemented
+.IP -k
+Keep temporary directory of image files generated for kmz (useful only for
+debugging).  Only valid if \fI-z\fP option is used.  
+
+.IP "-opm field:model"
+Use a user configured set of parameters as defined in 
+the {styles}{origins}{placemarks} section of the PARAMETER FILE.  If not
+specified, the default settings are used (red cicrles).
+Currently the only options for field are \fIdepth\fP or \fImagnitude\fP.
+The model refers to the {styles}{origins}{placemarks}{field}{model} in 
+the PARAMETER FILE (i.e. api_ms_dd).  See EXAMPLES.
 
 .IP "-p pf_file"
-use pf_file instead of the default pf file.
+Use \fIpf_file\fP instead of the default pf file.  Note that whatever
+pf file you use, at the very least you must have edited the \fIheaders\fP
+section.
+
+.IP "-t"
+Interrupt creation of \fIkmlfile\fP to create output kmz called 
+\fIlogotest.kmz\fP.  Useful in combination with \fI-v\fP to debug 
+logo/overlay placements as well as initial camera/zoom. The output 
+file \fIlogotest.kmz\fP should be reviewed with Google Earth to 
+verify that logos are placed as expected within map view.  Cleanup 
+is left to the user.  NOTE:  This is a debugging tool and the full 
+KML/KMZ file, \fIkmlfile\fP will NOT be created!!!
+
+.IP -q
+Quiet all output from the script
+
+.IP -v
+Verbose output
+
+.IP -z
+Generate kmz archive format file, \fIkmlfile\fP.kmz.  Images used for kmz 
+file generation will be written to a temporary directory like 
+/tmp/kmzimgs1a2b3c4 and removed after normal program exit, unless the 
+\fI-k\fP option is used.  
+
+.IP dbname
+Database descriptor file which should point to both station 
+and event information.  For station plotting, the script can take an 
+optional \fIdeployment\fP table, but normally requires a site table.  
+For event plotting, \fIorigin\fP, \fIevent\fP, and \fInetmag\fP tables are 
+required.
+
+.IP kmlfile 
+Name of output file to create.  If no trailing .kml/.kmz is 
+given, it will be added when file is written.  When the
+\fI-z\fP option is programmed, it will take this output
+file name and generate \fIkmfile.kmz\fP, a KMZ archive.
 
 .SH PARAMETER FILE
-The parameter file contains many more variables than currently 
-available in db2kml. These various parameters allow the user 
-to customize the metadata and output for their institution. 
-The user can also define complex Datascope expressions for 
-getting just the view they want. You can also choose to output 
-a kmz file (compressed kml) rather than kml if desired, and define 
-a network link if the kml source will update automatically and 
-you want users of your file to have their content auto-update over 
-the network.
+The parameter file contains many options that allow the user 
+to customize the output kml.  You must modify the default 
+parameter file for your institution!  In particular, the 
+script will exit if you have not modified the \fIheaders\fP 
+section.
+
+A default parameter file is included below, followed by a
+section-by-section more detailed explanation of the parameters.
+
+.LP
+The parameter file has three special functions and four main 
+sections: \fIheaders\fP, \fIconfig\fP, \fIoverlays\fP, 
+and \fIstyles\fP.  Each section has components that may 
+require customization.
+
+.LP
+The \fIheaders\fP section is unique to each
+individual data center.  This is where the \fIname\fP and 
+\fIdescription\fP of the information you are 
+plotting is held.  It also allows for configuration of a 
+link for the user to auto-refresh their kml file if you 
+regenerate the kml file regularly.  If you have not modified 
+the name and description fields, the script will exit with a 
+fatal error.
+
+.LP
+There are two sections in the \fIconfig\fP portion of the 
+parameter file: \fIstations\fP and \fIorigins\fP. 
+In general, the \fIconfig\fP section puts limitations on what 
+stations or origins will be plotted, whether or not to include 
+time history availability (i.e. adds a time slider when viewing
+on Google Earth), label/text visibility of station name 
+on the map view and precision of station coordinates. Styling 
+for these placemarks/map points is controlled in the \fIstyles\fP section.
+
+.LP
+The \fIoverlays\fP section may look intimidating, but is a 
+highly customizable method for displaying logos or images on the
+kml file you produce.
+
+.LP
+The \fIstyles\fP section contains configurable information for
+both the \fIorigins\fP and \fIstations\fP placemarks that 
+are included in the kml file.  The \fIstyles\fP section is 
+where you could configure the color and shape of the icons 
+used in the map view. 
+
+.in 2c
+.ft CW
+.nf
+.ps 8
+
+# default db2kml.pf 
+
+# special functions for later use in pf:
+antelope &env(ANTELOPE)
+
+# convenient shorthand for use in station and origin styles
+imagedir        &{antelope}/contrib/data/icons  # location for some default icons
+local_imagedir  &{antelope}/contrib/data/icons  # modify this to point to your own saved icon/image directory
+
+
+headers &Arr{
+    name Change Name Here or script will die!!
+    description &Literal{
+        Your network described here 
+        <br/>
+        Website:   http://somewhere.edu <br/>
+        Author:    db2kml_py<br/>
+        Contact:   
+    }
+
+    network_link &Arr{
+        ignore yes	# yes/no.  no = include the network link, yes = do not include a network link
+        link     somelinkhere
+        name     A placeholder for now   
+        expires  86400		# refresh daily, every 86400
+    }
+
+    camera &Arr{
+       # A default view when initially loaded, defaults are southern California
+       # may be different than the focal point chosen by look_at for stations and/or origins
+       latitude  31.9
+       longitude -116.6
+       altitude  280000         # height above sea level, in meters (unlike range in lookat)
+       tilt      30
+
+    }
+
+}
+
+config &Arr{
+    stations &Arr{
+        use_deployment	 no  	# use deployment table for active check, default is to use site table
+        display_inactive no 
+        indicate_when    yes	# include a "when" based on ondate/offdate so slider bar/animation can be used
+        suppress_label   no 	# don't include station name text on map
+        precision 	 4	# how many decimal places to display for station coordiantes 
+                                # i.e. precision 2 will produce XX.XX and XXX.XX	
+                                # i.e. precision 4 will produce XX.XXXX and XXX.XXXX as available
+                               
+        subsets &Tbl{
+            #sta =~ /.*/ && snet =~ /.*/
+            sta =~ /.*/ && snet != 'CI'
+        }
+        sort_fields &Tbl{
+            snet
+            sta 
+        }
+    }
+
+
+    origins &Arr{
+
+        indicate_when   no	# include a "when" based on ondate/offdate so slider bar/animation can be used
+
+        prefor_only	yes	# only plot prefor origins, no = all origins will be plotted
+
+        subsets &Tbl{
+            #distance(lat,lon,33.3,-116.5) <= 5.0
+            time>='1/01/2023'
+            #magnitude>='1.5'
+        }
+        sort_fields &Tbl{
+            time
+        }
+    }
+}
+
+overlays &Arr{
+    logo  &Arr{
+
+        plotthis yes
+
+        imgsrc &{imagedir}/google_map_anza_icon.png
+        name   Anza logo
+        rotation  0	# value in degrees counterclockwise 0 = north, 90 = rotate left, -90 = rotate right 
+
+        overlayXY &Arr{     
+           # what point on your image is mapped to a screen coordinate 
+           #  (i.e. where you place the thumbtack in a piece of paper to be stuck to the bulletin board
+           #      - not where you stick it on the board)
+           # 
+           # See https://developers.google.com/kml/documentation/kmlreference#screenoverlay
+           # (x,y) = (0,0) would be lower left
+           x   0		# coordinate origin is lower left corner
+           y   0 		# coordinate origin is lower left corner, 
+           xunits   fraction	# fraction(x,y 0.0->1.0), pixels(number)
+           yunits   fraction	# fraction(x,y 0.0->1.0), pixels(number)
+        }
+        screenXY &Arr{     
+           # where your image is mapped to 
+           #  (i.e. where your paper with the thumbtack in it is stuck on the bulletin board)  
+           # 
+           # See https://developers.google.com/kml/documentation/kmlreference#screenoverlay
+           # (x,y) = (0,0) would be lower left
+           x   0.5		# coordinate origin is lower left corner
+           y   0.90		# coordinate origin is lower left corner 
+           xunits   fraction    # fraction(x,y 0.0->1.0), pixels(number)
+           yunits   fraction	# fraction(x,y 0.0->1.0), pixels(number)
+        }
+
+        size &Arr{
+           x   0 		# -1 = native, 0 = maintain aspect ratio, n set value of dimension
+           y   0 		# -1 = native, 0 = maintain aspect ratio, n set value of dimension
+           # to force image to recise to 100px by 500px, x = 100, y = 500, xunits,yunits = pixels
+           xunits   pixels  	# fraction, pixels 
+           yunits   pixels  	# fraction, pixels
+
+        }
+
+    }
+
+    fancylogo  &Arr{
+
+        plotthis yes
+
+        imgsrc &{imagedir}/ANZA-logo-small.png 
+        name   Fancy Anza logo
+        rotation  0	# value in degrees counterclockwise 0 = north, 90 = rotate left, -90 = rotate right 
+
+        overlayXY &Arr{     
+           # what point on your image is mapped to a screen coordinate 
+           #  (i.e. where you place the thumbtack in a piece of paper to be stuck to the bulletin board
+           #      - not where you stick it on the board)
+           # 
+           # See https://developers.google.com/kml/documentation/kmlreference#screenoverlay
+           # (x,y) = (0,0) would be lower left
+           x   0		# coordinate origin is lower left corner
+           y   0 		# coordinate origin is lower left corner, 
+           xunits   fraction	# fraction, pixels
+           yunits   fraction	# fraction, pixels
+        }
+        screenXY &Arr{     
+           # where your image is mapped to 
+           #  (i.e. where your paper with the thumbtack in it is stuck on the bulletin board)  
+           # 
+           # See https://developers.google.com/kml/documentation/kmlreference#screenoverlay
+           # (x,y) = (0,0) would be lower left
+           x   15		# coordinate origin is lower left corner
+           y   15		# coordinate origin is lower left corner,
+           xunits   pixels  	# fraction(x,y 0.0->1.0), pixels(number)
+           yunits   pixels  	# fraction(x,y 0.0->1.0), pixels(number)
+        }
+
+        size &Arr{
+           x   0		# -1 = native, 0 = maintain aspect ratio, n set value of dimension
+           y   0 		# -1 = native, 0 = maintain aspect ratio, n set value of dimension
+           # to force image to recise to 100px by 500px, x = 100, y = 500, xunits,yunits = pixels
+           xunits   pixels    # fraction, pixels 
+           yunits   pixels    # fraction, pixels
+
+        }
+
+    }
+
+}
+
+
+styles &Arr{
+
+    stations &Arr{
+
+        look_at &Arr{
+            # Some default view when initially loaded, defaults are southern California
+            latitude 33.3
+            longitude -116.5 
+            range 280000 # height above sea level
+        }
+ 
+        by_network &Arr{
+            # stations will be grouped by snet.  Define your Arrays by snet (i.e. AZ, PY, XX, MA, etc.)
+            # do not completely remove the "others" defined array. Changing scale or imagesrc is ok
+            AZ &Arr{
+                scale 0.6 
+                #imagesrc  &{imagedir}/red_triangle.png 
+                # api generated image instead of saved image
+                imagesrc  http://anf.ucsd.edu/api/anza/mapimg/?transparency=1%26shape=triangle%26fillcolor=purple%26outline=yes26shadow=yes		
+            }
+            PY &Arr{
+                scale 0.6 
+                imagesrc &{imagedir}/yel_triangle.png
+            }
+            YN &Arr{
+                scale 0.6 
+                imagesrc &{imagedir}/red_triangle.png
+            }
+            others &Arr{		# DO NOT rename this "others" network, changing scaling, imagepath or href is ok
+                scale 0.6 
+                imagesrc &{imagedir}/wht_triangle.png
+            }
+        } 
+    }
+
+    origins &Arr{
+
+        look_at &Arr{
+            # Some default view when initially loaded
+            latitude 33.3
+            longitude -116.5 
+            range 280000 # height above sea level
+        }
+
+
+        # please change this to your own api.  Access to the UCSD api may go away at any time
+        api_url 	http://anf.ucsd.edu/api/anza/mapimg/ 	# this gives a green (aaeeaa) triangle with a border (eww, but basic)
+
+        api_params &Arr{	 # parameters in each named array are specific to the api in use
+
+           default &Arr{
+              # below are the params you can add to the api url to modify the symbol produced
+              bgcolor       transparent		# change to a color if you want icon to appear as square with filled in color
+              fillcolor     red   		# colorname:  for HSV colors, you can precede color code with "%23", i.e. %2340FFFF will be a light blue)
+              linecolor     black		# change to fillcolor if you want no outline for your symbol
+              size          24			# the default size is 24, use of magscale will alter this
+              transparency  0.75
+              shadow        true		# true/false
+              shape         circle		#  valid shapes for UCSD api: circle, square, square-round, ellipse, diamond, 
+                                       		#  star, triangle, equitrianagle, parallelogram, trapezoid
+           }
+
+           dynamic_depth &Arr{
+              # this is a special array that looks at the mappings of color to depth that are defined in depthcolor
+              bgcolor       transparent		# change to a color if you want icon to appear as square with filled in color
+              fillcolor     depthcolor 		# colorname:  for HSV colors, precede color code with "%23", i.e. %2340FFFF will be a light blue)
+              linecolor     depthcolor 		# change to fillcolor if you want no outline for your symbol
+              size          24			# the default size is 24, use of magscale will alter this 
+              transparency  0.75
+              shadow        true		# true/false
+              shape         circle  		#  valid shapes for UCSD api: circle, square, square-round, ellipse, diamond, 
+                                        	#  star, triangle, equitrianagle, parallelogram, trapezoid
+           }
+
+           purple_star &Arr{
+              # below are the params you can add to the api line to modify the symbol produced
+              bgcolor       transparent		# change to a color if you want icon to appear as square with filled in color
+              fillcolor     purple		# colorname:  for HSV colors, you can precede color code with "%23", i.e. %2340FFFF will be a light blue)
+              linecolor     black		# change to fillcolor if you want no outline for your symbol
+              size          24			# the default size is 24, use of magscale will alter this
+              transparency  0.75
+              shadow        true		# true/false
+              shape         star  		#  valid shapes for UCSD api: circle, square, square-round, ellipse, diamond, 
+                                       		#  star, triangle, equitrianagle, parallelogram, trapezoid
+           }
+
+           red_square &Arr{
+              # below are the params you can add to the api line to modify the symbol produced
+              bgcolor       transparent		# change to a color if you want icon to appear as square with filled in color
+              fillcolor     red   		# colorname:  for HSV colors, you can precede color code with "%23", i.e. %2340FFFF will be a light blue)
+              linecolor     black		# change to fillcolor if you want no outline for your symbol
+              size          24			# the default size is 24, use of magscale will alter this
+              transparency  0.75
+              shadow        true		# true/false
+              shape         square 		#  valid shapes for UCSD api: circle, square, square-round, ellipse, diamond, 
+                                       		#  star, triangle, equitrianagle, parallelogram, trapezoid
+           }
+
+           orange_circle &Arr{
+              # below are the params you can add to the api line to modify the symbol produced
+              bgcolor       transparent		# change to a color if you want icon to appear as square with filled in color
+              fillcolor     orange   		# colorname:  for HSV colors, you can precede color code with "%23", i.e. %2340FFFF will be a light blue)
+              linecolor     black		# change to fillcolor if you want no outline for your symbol
+              size          24			# the default size is 24, use of magscale will alter this
+              transparency  0.75
+              shadow        true		# true/false
+              shape         circle		#  valid shapes for UCSD api: circle, square, square-round, ellipse, diamond, 
+                                       		#  star, triangle, equitrianagle, parallelogram, trapezoid
+           }
+        } 
+
+	depthcolor &Arr{   # dynamic depth colorization requires api, mag sizing does not
+            # depth   fillcolor
+	    -5       3F3F3F  # grey, very negative depth
+             0       BFFFFF
+             6       00DFFF 
+            10       000080  # greyblue
+            20       03ff03 
+            30       FFE800  # yellow-organge
+            40       FE9400 
+            60       FF0000  # red
+           100       FF00B2  
+           200       FF00F7  # fuchia 	
+           300       B000B3
+           400       8E00FE  # purple
+           600       4C0066  # dk. purple 
+           800       000000  # black
+        }
+        
+
+   	magscale &Arr{      # magnitude scaling can be applied to either api generated or static image 
+            # magnitude  scale_factor
+           -2   0.4	# this will also be used for events with no calculated magnitude
+            0 	0.6
+            1 	0.8
+            2 	1.0
+            3 	1.7
+            4 	2.2
+            5 	3.0
+            6 	3.6
+            7 	4.4
+            8 	5.5
+            9 	6.0 
+           10 	6.2 
+        }
+
+        placemarks &Arr{ 
+
+           default  &Arr{
+              imgsrc &{imagedir}/vsm_red_circle.png
+              scale 0.7
+           }
+
+           depth &Arr{
+
+              # if depthcolor is used in the api_params (i.e. in dynamic_depth), but the listed depths 
+              # do not have corresponding value defined in depthcolor,  then: 
+              # a best guess to the next closest color-depth mapping will be chosen.  
+
+              api_ms_dd  &Tbl{	 # case1a - api image, mag scaling, dynamic depth colorization 
+                 #
+                 # depth  scalefactor    imgsrc  				 api_params(optional) 
+                 #        #1 or magsacle #file or url for api			 # blank or api_params reference
+                 -5      magscale       &{api_url}   dynamic_depth
+                  0      magscale       &{api_url}   dynamic_depth
+                  6      magscale       &{api_url}   dynamic_depth
+                  10     magscale       &{api_url}   dynamic_depth
+	          20     magscale       &{api_url}   dynamic_depth
+	          30     magscale       &{api_url}   dynamic_depth
+	          40     magscale       &{api_url}   dynamic_depth
+	          60     magscale       &{api_url}   dynamic_depth
+	          100    magscale       &{api_url}   dynamic_depth
+	          200    magscale       &{api_url}   dynamic_depth
+	          300    magscale       &{api_url}   dynamic_depth
+	          400    magscale       &{api_url}   dynamic_depth
+	          600    magscale       &{api_url}   dynamic_depth
+	          800    magscale       &{api_url}   dynamic_depth
+              }
+
+              api_no_ms  &Tbl{	 # case1b - api image, no mag scaling, dynamic depth colorization 
+                 #
+   	         # depth  scalefactor    imgsrc  				 api_params(optional) 
+                 #        #1 or magsacle #file or url for api			 # blank or api_params reference
+   	          -5      0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+                   0      0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           6      0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+   	           10     0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           20     0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           30     0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           40     0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           60     0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           100    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           200    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           300    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           400    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           600    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+	           800    0.5            http://anf.ucsd.edu/api/anza/mapimg/   dynamic_depth
+              }
+
+              static_ms  &Tbl{ 	# case2a - static file (no depth colorization) +  mag scaling 
+                 #
+	         # depth  scalefactor    imgsrc  				 api_params(optional) 
+                 #        #1 or magscale #file or url for api			 # blank or api_params reference
+	          -5      magscale       &{imagedir}/red_star_nooutline.png
+	          -4      magscale       &{imagedir}/red_star_nooutline.png 
+                   0      magscale       &{imagedir}/red_star_nooutline.png 
+	           6      magscale       &{imagedir}/red_star_nooutline.png 
+	           10     magscale       &{imagedir}/red_star_nooutline.png 
+	           20     magscale       &{imagedir}/orange_star_nooutline.png
+	           30     magscale       &{imagedir}/orange_star_nooutline.png 
+	           40     magscale       &{imagedir}/orange_star_nooutline.png 
+	           60     magscale       &{imagedir}/orange_star_nooutline.png 
+	           100    magscale       &{imagedir}/orange_star_nooutline.png 
+	           200    magscale       &{imagedir}/orange_star_nooutline.png 
+	           300    magscale       &{imagedir}/orange_star_nooutline.png 
+	           400    magscale       &{imagedir}/purple_star_nooutline.png 
+	           600    magscale       &{imagedir}/purple_star_nooutline.png 
+	           800    magscale       &{imagedir}/purple_star_nooutline.png 
+              }
+ 
+              static_nos  &Tbl{	 # case2b - use canned/static images which vary in color (or not) for a given depth, no scaling
+
+	         # depth  scalefactor imgsrc                                    api_params(optional)
+	          -5      1           &{imagedir}/red_star_nooutline.png
+	          -4      1           &{imagedir}/red_star_nooutline.png
+                   0      1           &{imagedir}/red_star_nooutline.png
+	           6      1           &{imagedir}/orange_star_nooutline.png
+	           10     1           &{imagedir}/yellow_star_nooutline.png
+	           20     1           &{imagedir}/yellow_star_nooutline.png
+	           30     1           &{imagedir}/green_star_nooutline.png
+	           40     1           &{imagedir}/green_star_nooutline.png
+	           60     1           &{imagedir}/green_star_nooutline.png
+	           100    1           &{imagedir}/purple_star_nooutline.png
+	           200    1           &{imagedir}/purple_star_nooutline.png
+	           300    1           &{imagedir}/purple_star_nooutline.png
+	           400    1           &{imagedir}/purple_star_nooutline.png
+	           600    1           &{imagedir}/purple_star_nooutline.png
+	           800    1           &{imagedir}/purple_star_nooutline.png
+              }
+
+           }
+
+           magnitude &Arr{
+
+              api_ms  &Tbl{	 # case3 - api dynamic scaling based on default magscale, no depth colorization, symbol shape/color differentiated via api call 
+	         # mag  scalefactor         imgsrc                                    api_params(optional)
+ 	         -3	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		orange_circle
+ 	          0 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		orange_circle
+ 	          1 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		orange_circle
+ 	          2 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		orange_circle
+ 	          3 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		red_square
+ 	          4 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		red_square
+ 	          5 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+ 	          6 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+ 	          7 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+ 	          8 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+ 	          9 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+ 	         10 	    magscale            http://anf.ucsd.edu/api/anza/mapimg/		purple_star
+              }
+ 
+              static_ms  &Tbl{	 # case4a - static file with dynamic scaling based on default magscale, no depth colorization
+	         # mag  scalefactor         imgsrc                                    api_params(optional)
+ 	         -3	    magscale            &{imagedir}/orange_star_nooutline.png 
+ 	          0 	    magscale            &{imagedir}/orange_star_nooutline.png 
+ 	          1 	    magscale            &{imagedir}/orange_star_nooutline.png 
+ 	          2 	    magscale            &{imagedir}/orange_star_nooutline.png 
+ 	          3 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          4 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          5 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          6 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          7 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          8 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	          9 	    magscale            &{imagedir}/red_star_nooutline.png 
+ 	         10 	    magscale            &{imagedir}/red_star_nooutline.png 
+              }
+
+              static_nos  &Tbl{	 # case4b - static files (based on color or magnitude?), no magnitude scaling
+	         # mag  scalefactor         imgsrc                                    api_params(optional)
+ 	         -3	    1                   &{imagedir}/orange_star_nooutline.png 
+ 	          0 	    1                   &{imagedir}/orange_star_nooutline.png 
+ 	          1 	    1                   &{imagedir}/orange_star_nooutline.png 
+ 	          2 	    1                   &{imagedir}/orange_star_nooutline.png 
+ 	          3 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          4 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          5 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          6 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          7 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          8 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	          9 	    1                   &{imagedir}/red_star_nooutline.png 
+ 	         10 	    1                   &{imagedir}/red_star_nooutline.png 
+              }
+
+           }
+
+
+           auth &Arr{   # not programmed yet, placeholder
+              static_auth_ms  &Arr{	 
+                 #
+   	         # auth   scalefactor    imgsrc  				  
+                 #        #1 or magsacle #file or url for api			
+	          UCSD    magscale       &{imagedir}/orange_star_nooutline.png   
+	          USGS    magscale       &{imagedir}/red_star_nooutline.png
+              }
+           }
+       }
+   }
+}
+
+pf_revision_time 1681501519
+
+.ps
+.fi
+.ft R
+.in
+
+.LP 
+The three speical pf functions are: \fIantelope\fP, \fIimagedir\fP,
+and \fIlocal_imagedir\fP.  They use the rules described in pf(5) and
+are expanded when referenced later in the pf file.
+
+.IP \fIantelope\fP
+A way to pull in the current version of Antelope.
+
+.IP \fIimagedir\fP
+The default location for example icons available to \fBdb2kml_py\fR.
+This is normally $ANTELOPE/contrib/data/icons.  Modifications
+to this may cause default plotting symbols to go missing.  Instead, 
+change \fIlocal_imagedir\fP.
+
+.IP \fIlocal_imagedir\fP
+A institution-specific default location for icons 
+available to \fBdb2kml_py\fR.  The default is set to be the
+same as \fIimagedir\fP as a placeholder.  This can be 
+referenced later when constructing styles for \fIstations\fP
+or \fIorigins\fP.
+
+.LP 
+The \fIheaders\fP section must be customized for your data
+center to include a proper name and description.  You MUST modify
+the \fIname\fP and \fIdescription\fP for your data center. If the default
+values are found in the parameter file, the script will exit. 
+Use a \fInetwork_link\fP if you plan to make regular updates to 
+the kml/kmz file.  The \fInetwork_link\fP section  must show up 
+in the parameter file, but you can skip adding it to the kml file 
+if \fIignore\fP is set.  The \fIcamera\fP section forces the view
+to shift to a given coordinate upon opening the \fIkmlfile\fP in
+Google Earth. 
+
+.IP \fIname\fP
+Descriptive string that will be used as the title of your kml
+file via the listview in Google Earth.  No quotes needed.  Required.
+
+.IP \fIdescription\fP
+Text information that will appear in a pop-up window giving further
+details about the kml file.  Can be used to describe network, provide
+a url for further information, provide contact information, etc.  Supports
+html markup.  For example, to insert newlines at a particular place, include 
+a <br/> as needed.  Required.
+
+.IP \fInetwork_link\fP
+Details if an updated kml is maintained and you want users to 
+have content auto-updated.  Refresh mode is "on request".
+Minimum refresh request period is 300 seconds.  Can be excluded from the 
+headers section.
+
+.RS 0.5i
+.IP \fIignore\fP
+Skip adding any \fInetwork_link\fP to the ouput kml/kmz.  
+
+.IP \fIlink\fP
+Accessible URL where updated versions of your kml reside.  
+
+.IP \fIname\fP
+Descriptive name for the updating kml.  Not required, but best 
+practice would be to use something different than \fIname\fP in 
+\fIheaders\fP.
+
+.IP \fIexpires\fP
+Time in seconds after script is run after which the link should 
+be refreshed.  Should likely coordinate with update interval 
+for linked kml file.  Link will refresh when time of script 
+excecution + \fIexpires\fP is reached.
+
+.RE
+
+.IP \fIcamera\fP
+.RS 0.5i
+.IP \fIlatitude\fP|\fIlongitude\fP
+Coordinates in decimal degrees.  
+.IP \fIaltitude\fP
+View height above sea level, in meters.
+.RE
+
+.LP
+The \fIconfig\fP section customzies what points will be included 
+in the kml file for both \fIstations\fP and \fIorigins\fP.  All 
+of these parameters are required, but the \fIsubsets\fP section 
+can be left blank or with commented out lines.  Note that there 
+are different parameters required for either \fIstations\fP or \fIorigins\fP.
+
+.LP 
+Parameters from the \fIconfig:stations\fP section of the parameter file are:
+
+.IP \fIuse_deployment\fP
+Boolean yes/no to indicate if the deployment table should be used
+instead of the site table when determining active/inactive status.  
+The default is no.
+
+.IP \fIdisplay_inactive\fP
+Boolean yes/no to indicate if inactive stations should be included.
+
+.IP \fIindicate_when\fP
+Boolean yes/no to indicate if each station should include a timestamp that
+would allow for time slider bar usage when viewing in Google Earth.  Caveat:
+once generated, there seems to be no way to remove the display of the slider 
+bar when running Google Earth.
+
+.IP \fIsuppress_label\fP
+Boolean yes/no to indicate if text labels should be shown in the map view
+in Google Earth (value = no) or labels should not appear (value = yes).
+
+.IP \fIprecision\fP
+Numeric value indicating how many decimal places to display for station 
+coordinates (i.e. precision 2 will produce lat/lon like XX.XX/XXX.XX).  
+Perhaps useful if you want to obfuscate the exact location of your station.
+
+.IP \fIsubsets\fP
+Datascope expressions to be applied to the joined deployment or site and 
+snetsta tables.
+
+.IP \fIsort_fields\fP
+Ordered list to indicate sorting of merged tables.  Not well tested.
+
+.LP 
+Parameters from the \fIconfig:origins\fP section of the parameter file are:
+
+.IP \fIindicate_when\fP
+Boolean yes/no to indicate if each station should include a timestamp that
+would allow for time slider bar usage when viewing in Google Earth.  Caveat:
+once generated, there seems to be no way to remove the display of the slider
+bar when running Google Earth.
+ 
+.IP \fIsubsets\fP
+Datascope expressions to be applied to the joined origin and netmag tables.
+Caveat: currently, the code is hard-coded to only plot the prefor for every event.
+
+.IP \fIsort_fields\fP
+Ordered list to indicate sorting of merged tables.  Not well tested.
+
+.LP 
+The \fIoverlays\fP section of the parameter file is an array of user-named 
+arrays.  An overlay is an image that can be included in the kml file, such 
+as a logo or banner that will be displayed when the kml file is viewed in 
+Google Earth.  In order for ease of testing of logo placement in an output
+kml file, make use of the \fI-t\fP option that causes full production of a 
+kml/kmz file to halt, instead creating a smaller kmz file, default name of
+\fIlogotest.kmz\fP, with only header and overlay information included.
+Such testing is highly recommended during initial runs of \fIdb2kml_py\fP when debugging 
+placement of your logo.
+
+.LP
+Each label for the user-named array should be unique and every 
+named overlay array needs to have all of the following parameters:
+
+.IP \fIplot_this\fP
+Boolean yes/no to indicate if this overlay should be plotted. Normally always 
+set to yes, but there may be instances where you want to produce a kml file
+with no logos without destroying all of the configuration you have already 
+saved in your updated parameter file.
+.IP \fIimgsrc\fP
+A url or filename with path of the image to include.
+
+.IP \fIname\fP
+A text label that will show up in the list view.  Should be unique among
+each individual overlay.  Can contain spaces. 
+
+.IP \fIrotation\fP
+Value between +-180. Measured in degrees counterclockwise (KML construct). 
+So 0 = north/no rotation, 90 = rotate left, -90 = rotate right.
+
+.IP \fIoverlayXY\fP
+A construct for KML that indicates what point on your image is mapped to 
+a screen coordinate.  My visualization is that the overlay is like a piece 
+of paper to be attached to a bulletin board.  This parameter controls where 
+you place the thumbtack in the piece of paper to be stuck to the bulletin board 
+- not where you stick it on the board.  See:
+https://developers.google.com/kml/documentation/kmlreference#screenoverlay
+
+.RS 0.5i
+.IP \fIx\fP|\fIy\fP
+The x and y coordinates that indicate anchor point of your overlay.  
+The coordinate origin is in the lower left corner (x,y) = (0,0) 
+would be lower left.
+
+.IP \fIxunits\fP|\fIyunits\fP
+The units for \fIx\fP and \fIy\fP.  Must be either 'fraction' or 'pixels'. If 
+fraction is chosen, \fIx\fP and \fIy\fP must range from 0.0 to 1.0.  If unit
+is pixels, \fIx\fP and \fIy\fP must be a number.
+.RE
+
+.IP \fIscreenXY\fP
+A construct for KML that indicates where your image is mapped to. 
+Continuing with the piece of paper stuck to a bulletin board concept, this 
+is where you place the piece of paper with the thumbtack on your bulletin 
+board (the view window for the map).  Note that it is possible for your 
+overlay to extend over the edge of the visible bounding box.  Consider 
+using test mode \fI-t\fP to make sure you have your parameters set correctly.
+See https://developers.google.com/kml/documentation/kmlreference#screenoverlay
+
+
+.RS 0.5i
+.IP \fIx\fP|\fIy\fP
+The x and y coordinates that anchor placement of your overlay.  The coordinate 
+origin is in the lower left corner (x,y) = (0,0) would be lower left.
+
+.IP \fIxunits\fP|\fIyunits\fP
+The units for \fIx\fP and \fIy\fP.  Must be either 'fraction' or 'pixels'. If 
+fraction is chosen, \fIx\fP and \fIy\fP must range from 0.0 to 1.0.  If units
+are pixels, \fIx\fP and \fIy\fP are a number.
+.RE
+
+.IP \fIsize\fP
+A KML construct for scaling the overlay image. 
+
+.RS 0.5i
+.IP \fIx\fP|\fIy\fP
+A value of -1 indicates to use the native dimenion.  A value of 0 indicates to maintain 
+the aspect ration.  A value of n sets the value of the dimension. 
+
+.IP \fIxunits\fP|\fIyunits\fP
+The units for \fIx\fP and \fIy\fP.  Must be either 'fraction' or 'pixels'. For example,
+to force the image to resize to 200px by 500px: \fIx\fP = 200, \fIy\fP = 500, and 
+\fIxunits\fP and \fIyunits\fP = pixels.  Not well tested. 
+
+.RE
+
+.LP 
+The \fIstyles\fP section of the parameter file contains two arrays,
+\fIstations\fP and \fIorigins\fP.  They have been separated from 
+the \fIconfig\fP section as these are kml style specific parameters.  
+This is where you are going to specify the symbols used for your 
+site or origin placemarks displayed in the kml file.  Both the 
+\fIstations\fP and \fIorigins\fP arrays have the following parameters in common:
+
+.IP \fIlook_at\fP
+An array contining coordinates and height (\fIrange\fP) that controls where your
+camera view will zoom to when the kml is initially loaded.
+.RS 0.5i
+.IP \fIlatitude\fP|\fIlongitude\fP
+Coordinates in decimal degrees.
+.IP \fIrange\fP
+View height above sea level, in meters.
+.RE
+
+.LP
+For the \fIstations\fP styling, the only grouping that is currently supported is 
+\fIby_network\fP.  This is an array of user-named arrays that correspond to the
+\fIsnet\fP code for a given station in the \fIdatabase\fP. The user-named array
+name will appear in the sidebar/list view in Google Earth.  If there is no 
+styling array found for a station in your database, the \fIothers\fP styling will
+be used.  Do not remove the \fIothers\fP styling from this section of the parameter
+file!!  Do rename any other arrays that use network codes specific to your 
+operations.  
+
+Each user-named array must have the following parameters:
+
+.RS 0.5i
+.IP \fIscale\fP
+Scale the chosen image file for the placemark by this value. A value of 1 indicates 
+no change to the item scale.
+
+.IP \fIimagesrc\fP
+The path or url where the image for the placemark is found.  This can be either 
+a filename, a url, or a url with api paramters for dynamic icon generation.  You
+can take advantage of the \fIimagedir\fP or \fIlocal_imagedir\fP special functions
+to shorten possibly repeated paths for icons.
+
+.RE
+
+.LP
+For the \fIorigins\fP styling, all hope of compaitiblity with previous versions
+of \fIdb2kml_py\fP is completely gone.  There are multiple parameters/sections 
+that are maintained in the \fIorigins\fP styling section of the parameter file.
+
+The symbols used for plotting origins can either be:  
+1) generated dynamically from an API (example shown for the very 
+specific and undocumented API running at UCSD); 
+2) available locally on disk; or 
+3) in a web-accessible location. 
+
+Beyond the \fIlook_at\fP section (described above with the \fIstations\fP parameters, 
+there is a section called \fIapi_params\fP that 
+defines what terms are used to access/control the api output.  
+The default parameter file shows what is available from an api run at 
+UCSD (see the default value of \fIapi_url\fP).  Please modify \fIapi_url\fP 
+and the \fIapi_params\fP for use with your own api. 
+
+.IP \fIapi_url\FP
+A url for a functioning api.  The parameters defined in the \fIapi_params\fP 
+section are specific to the api chosen here.
+
+.LP
+The named arrays found in \fIapi_params\fP can be referenced in the later \fIplacemarks\fP 
+styling for the origins.  One caveat is that \fIdb2kml_py\fP does check 
+if there is a regex match for 'color' in any of these parameters and 
+performs a basic check to see if the value is a valid color (not well tested).
+
+.IP \fIdepthcolor\FP
+Integer-value pair corresponding to the limiting depth and color.  This is 
+only used for an api to map the origin placemark/icon color based on the 
+depth of the event.  Use integer depths followed by a hex color.  For example, 
+given the default parameter file setup, an event that is at at 2km depth 
+is beyond a depth of "0", but not beyond a depth of "6", so  a "0" value 
+is used for colorization: BFFFFF.
+
+.IP \fImagscale\fP
+Integer-value pair corresponding to the limiting magnitude and scale factor.  
+Used for both api and static origin icons.  This allows icons to be scaled
+based on the magnitude of the event. For example, given the default parameter 
+file setup, an event with magnitude 0.7 has not reached the threshold of "1", 
+so the icon used will be scaled with a value of 0.4. If no magnitude is found 
+for a given event it will use the first listed \fIscale_factor\fP.  Note 
+that some networks do record negative magnitudes, so the default parameter 
+file has a first value of "-2".
+
+.LP
+The \fIplacemarks\fP section is critical to defining how your origin
+icons will be shown on the map.  What configurtaion is chosen corresponds 
+to the \fI-opm field:model\fP used on the command line.  Currently only 
+\fIdepth\fP and \fImagnitude\fP are supported as field values.  
+Support for \fIauthor\fP is planned.
+
+Each named Tbl (the \fImodel\fP from the \fI-opm\fP command line option)
+in either the \fIdepth\fP or \fImagnitude\fP section,
+maps what icon will be used, whether or not there is a scale factor
+applied to the icon, the source location for the image, and optionally
+whether or not there are any parameters for api access.  
+
+
+.IP "\(bu depth|magnitude"
+.br
+
+Depth.  In km (use integers only).  Origin depth will be compared to this
+value and a particular icon is chosen if the origin depth is less than 
+or equal to the depth listed here.  
+
+Magnitude.  Origin magnitude (netmag.magnitude) will be compared to this
+value and a particular icon is chosen if the netmag magnitude is less than 
+or equal to the magnitude listed here.  
+
+.IP "\(bu scalefactor"
+.br
+
+Can be numeric or the text string: \fImagscale\fP.  This applies a scale factor to the 
+icon.  
+
+.IP "\(bu imgsrc"
+.br
+
+The image that is used for plotting an icon on the Google Earth map.  This can be a 
+url for an api call, a url for an accessible image, or a file name.  
+If you have defined \fIapi_url\fP , you can use a reference to that here. The \fIimagedir\fP
+and \fIlocal_imagedir\fP shortcuts can also be used here.
+
+.IP "\(bu api_params"
+.br
+
+This is optional and only used if your \fIimgsrc\fP is an api. This can
+either be a string that is passed to the api, or it can be a reference
+to a named set of api parameters from the \fIapi_params\fP section of the
+parameter file.  
+
+
 .LP
 
-.SH RETURN VALUES
-\fBdb2kml_py\fP exits with 0 upon success, nonzero upon error.
+.SH EXAMPLES     
+.SS "station plotting - static images"
+.IP \(bu
+Plot all stations (even those that are closed) using the icons 
+provided with this script. Save as a kmz file.
+
+This assumes you have modified the config:stations:display_inactive 
+parameter in \fImy_db2kml_py.pf\fP to "yes".
+.ft CW
+.in 2c
+.nf
+.ne 4
+
+%\fB db2kml_py -c stations -v -z -p my_db2kml_py.pf \\ 
+                        dbin kmlout 
+
+.fi
+.in
+.ft R
+
+.SS "origin plotting - static images"  
+.IP \(bu
+Plot origins as red, orange or purple stars (depth based), with magnitude scaling
+.ft CW
+.in 2c
+.nf
+.ne 4
+
+%\fB db2kml_py -c origins -v -z -p my_db2kml_py.pf \\ 
+                        -opm depth:static_ms dbin kmlout 
+
+.fi
+.in
+.ft R
+
+.IP \(bu
+Plot origins as orange or red stars (magnitude based), with magnitude scaling
+.ft CW
+.in 2c
+.nf
+.ne 4
+
+%\fB db2kml_py -c origins -v -z \\ 
+                        -opm magnitude:static_ms dbin kmlout 
+
+.fi
+.in
+.ft R
+
+.SS "origin and station plotting - api images"  
+.IP \(bu
+Plot origins with color based on depth, size based on magnitude. 
+
+This uses the \fIdynamic_depth\fP set of api parameters.
+.ft CW
+.in 2c
+.nf
+.ne 4
+
+%\fB db2kml_py -v -z -opm depth:api_ms_dd dbin kmlout 
+
+.fi
+.in
+.ft R
+
+.IP \(bu
+Plot origins as orange circles, red squares or purple stars (generated from api) 
+and size based on magnitude. 
+
+This uses the \fIorange_cirle\fP, \fIred_square\fP, and \fIpurple_star\fP
+defined set of api parameters found in \fIapi_params\fP.
+.ft CW
+.in 2c
+.nf
+.ne 4
+
+%\fB db2kml_py -v -z -opm magnitude:api_ms dbin kmlout 
+
+.fi
+.in
+.ft R
+
 
 .SH NOTES
-Code updated to include the snetsta table for stations. This will
-allow you to subset by network.
+Need to have installed the simplekml module.
 
-.SH NOTE ABOUT SERVERS
-The icons and the magnitude/depth legend must be sourced from a
-web-accessible location. Especially if your KML files are served
-to a wide audience, it is important to provide a robust archive for
-these images that you have control over. 
+The url to the api at UCSD is included as a courtesy.  Do not abuse access
+to it!  Access may be denied at some future date.
+
+If you have not modified the default parameter file headers section, the 
+program will warn you and exit.  Make a local copy of \fIdb2kml_py.pf\fP 
+and edit it with your specifics.
+
+The placemark icons must be sourced from a web-accessible location if you are
+not creating a kmz file.   If your KML files are served
+to a wide audience, it is important to provide a robust access point for
+these images.  It is recommended that you use a kmz file for external 
+audiences as the images are collected once upon running \fBdb2kml_py\fP
+rather than requested each time someone runs Google Earth with your kml file.
+
+The example api from UCSD, included as an example for placemark icon generation,
+ is not well documented.  Please use your own api.  
+
+If you wish to specify a specific directory where the temporary image
+files are stored during creation of \fIkmlfile\fP and your use of \fI-k\fP,
+change your TMPDIR environment variable.
+
 
 
 .SH "SEE ALSO"
 .nf
-db2kml(1), db2xml(1), dbexpressions(5)
+db2kml(1), db2xml(1), antelope_python(1)
 .fi
 
 .SH "BUGS AND CAVEATS"
 You must have the Antelope Interface to Python compiled
 against your installed version of Antelope and Python. See 
-pythondb for more information.
+antelope_python(1) for more information.  This is Python3 
+compatible.  Will not work with Python2.  Previous generations
+of this script used Python2 and stopped functioning around
+Antelope 5.8.
+
+If you are plotting events that span the globe, you may get an
+initial zoom window that is larger than expected/not focused on 
+your network stations.  To zoom to a preferred starting view area, 
+make sure you have adjusted the \fIcamera\fP parameters in the 
+\fIheaders\fP section of your pf file.  As an alternative, in 
+Google Earth, you can click on the \fIorigins\fP of \fIstations\fP 
+folder in Places in the list view and your map should zoom to a 
+desired focus area, assuming you have \fIlook_at\fP configured.
+
+Currently, there is no option to dynamically plot a "legend". 
+The only available hack I can suggest to make one, is to create an 
+image that contains all of your legend information, and then create 
+a "legend" item in the \fIoverlays\fP section.
+
+This has only been tested for small networks and small numbers of
+events.  It may not scale well.
+
+If your output kml file shows icons that are boxes with an "x", or
+the Google "yellow pushpin", you likely have had a problem 
+accsessing your requested image files.
+
+The output kmz file zipfile will contain duplicate files when a 
+listing of the zipfile is reviewed with a command like:
+.ft CW
+.in 2c
+.nf
+.ne 4
+
+%\fB python -m zipfile -l outputfile.kmz
+
+.fi
+.in
+.ft R
+
+This is due to how simplekml creates the zipfile. In an ideal world, 
+the savekmz funciton would recognize that the icons to be saved
+were the same, and only one one to the zip.  Instead, savekmz from simplekml adds 
+that additional/duplicate file to the kmz and then warns about it.  
+I have not found a way around this, which results in bloating the kmz file.  
+I simply suppress the warnings about the duplicate files going in to the 
+zip/kmz file.
+
 
 .SH AUTHOR
 .nf
-Rob Newman
+Jennifer Eakins <jeakins@ucsd.edu>
 
 - based on the original db2kml written by -
 
@@ -94,7 +1189,9 @@ Geophysical Institute
 Alaska Volcano Observatory
 University of Alaska Fairbanks
 
-- UPDATED BY -
-Juan Reyes <reyes@ucsd.edu>
+- and revised from the updated db2kml_py for python2 updates by -
+Juan Reyes 
+Rob Newman 
+
 .fi
 .\" $Id$

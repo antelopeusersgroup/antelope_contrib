@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    if (dbcreate(database,"css3.0",0,0,0) != 0)
+    if (dbcreate(database,"css3.0",0,0,0,0,0) != 0)
     {
       complain(0,"Could not create new database.\n");
       return 1;

@@ -1,0 +1,16 @@
+# $Id$
+#
+# dummy    NULL response file
+#
+# 0            type
+# 0            num of zeroes
+# 0            num of poles
+# 0            input sample interval
+# 0            decim factor
+# 0            normalization factor
+# 0            gain
+theoretical   1 anti-alias   paz    pz6seismo
+1.0
+0             Poles
+0             Zeros
+
