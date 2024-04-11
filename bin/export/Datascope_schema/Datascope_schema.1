@@ -1,0 +1,59 @@
+.TH DATASCOPE_SCHEMA 1
+.SH NAME
+Datascope_schema - creates pf file needed for MsPASS import/export
+.SH SYNOPSIS
+.nf
+Datascope_schema [-pf pffile] [-t t1 t2 ...]
+.fi
+.SH DESCRIPTION
+.LP
+This command line tool is used to distill the large content of the 
+css3.0 schema file to reduced content that is stored in a 
+parameter file that is the primary output.   
+The default file is called "Datascope_schema.pf" but that name 
+can be changed with the -pf argument.  That parameter file is 
+used by import/export functions in the new, open-source waveform 
+processing package called MsPASS 
+(Massively Parallel Analysis System for Seismology).   
+MsPASS is compatible with Antelope and can be downloaded as an 
+anaconda package, a docker container, or cloning the source 
+code from github.   Consult the documentation for MsPASS found 
+at http://www.mspass.org/ for functionality of the package and 
+more on installation options.  
+.LP
+This command tool is a complement to a python class in MsPASS 
+called "DatascopeDatabase".   The constructor for a
+DatascopeDatabase object requires a version of the output of this 
+program to build the data structures used to translate the flat file
+format of Datascope to and from a pandas DataFrame.   
+This program is in antelope contrib instead of MsPASS because it 
+depends completely on the python bindings in Antelope to the 
+datascope API.   
+.LP
+A KEY POINT is the few users will ever need to use this program. 
+It exists strictly to produce alternative pf files to use 
+with MsPASS.  The only reason that would be necessary is if 
+one needed a table not defined in the default MsPASS version of 
+the pf.   That file does not include all css3.0 tables so if you 
+need an obscure table converted you may need to use this program.
+.SH OPTIONS
+.IP -pf
+Write to alternative file "pffile" instead of default 
+DatascopeDatabase.pf.
+.IP -t
+Provide an alternative list of tables (t1 t2 ...) 
+to write in the output pf.  See the actual python code for this 
+tool for the (long) list of the default.  If a new table is 
+needed I would recommend just listing the needed table 
+in a run line and then merging the output with the master 
+pf file in the MsPASS distribution.
+.SH "BUGS AND CAVEATS"
+The current version only works with css3.0.  If you need to 
+run this with an alternative schema, be aware this is a pure 
+python script so it is relatively easy to simply edit the script 
+to define the schema the code should use. 
+.SH AUTHOR
+.nf
+Prof. Gary L. Pavlis
+Indiana University
+.fi
