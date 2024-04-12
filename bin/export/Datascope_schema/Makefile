@@ -5,4 +5,4 @@ SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 
 $(BIN): Datascope_schema.xpy
-  produce $@
+	produce $@
