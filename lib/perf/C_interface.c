@@ -1,7 +1,4 @@
 #include <signal.h>
-#ifdef __linux__
-#include <bits/siginfo.h>
-#endif
 #include "stock.h"
 #include "f2c.h"
 #include "perf.h"
