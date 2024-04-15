@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "stock.h"
 #include "f2c.h"
 #include "perf.h"
