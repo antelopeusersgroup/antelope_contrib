@@ -1,7 +1,7 @@
 BIN= install_obspy
 MAN1= install_obspy.1
 
-clean= $(MAN1) $(BIN).xpl
+CLEAN= $(MAN1) $(BIN).xpl
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
