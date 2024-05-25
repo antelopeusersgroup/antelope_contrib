@@ -66,7 +66,7 @@ decifac	2
 response	&datafile(responses/coefB2C-80)
 }
 
-soh		LCE LCQ LEC LEP LKI CPU
+soh		LCE LCQ VEC VEP LKI 
 
 LCE	&Arr{
 stages		phase
@@ -84,19 +84,19 @@ samprate	1
 rsptype 	p
 }
 
-LEC	&Arr{
+VEC	&Arr{
 stages		mamp
 iunits		A
 ounits		counts
-samprate	1
+samprate	0.1
 rsptype		i
 }
 
-LEP	&Arr{
+VEP	&Arr{
 stages		mvolt
 iunits		V
 ounits		counts
-samprate	1
+samprate	0.1
 rsptype		v
 }
 
@@ -106,14 +106,6 @@ iunits		Celsius
 ounits		counts
 samprate	1
 rsptype		t
-}
-
-CPU	&Arr{
-stages		load
-iunits		counts
-ounits		counts
-samprate	1
-rsptype		c
 }
 
 phase &Arr{
@@ -155,9 +147,3 @@ ounits		counts
 sn		datalogger
 }
 
-load &Arr{
-gtype		cpu load
-iunits		counts
-ounits		counts
-sn		datalogger
-}
