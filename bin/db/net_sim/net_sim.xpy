@@ -60,6 +60,7 @@ def main():
     snr = 4.0
     nx = ny = 100
     rms_latency = 120  # two minutes ago
+    my_title = None
     title_fontsize = "small"
     label_fontsize = "small"
     plot_dist = True
@@ -70,7 +71,7 @@ def main():
     plot_stas = True
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "LYvf:i:n:p:r:R:s:S:t:dmcb", "")
+        opts, args = getopt.getopt(sys.argv[1:], "LYvf:i:n:p:r:R:s:S:t:T:dmcb", "")
     except getopt.GetoptError:
         usage(progname)
         elog.die("Illegal option")
@@ -181,6 +182,8 @@ def main():
                 usage(progname)
         elif o == "-t":
             rmstime = a
+        elif o == "-T":
+            my_title = a
         elif o == "-f":
             gridfilename = a
         elif o == "-Y":
@@ -446,9 +449,12 @@ def main():
         plt.ylim(latmin, latmax)
         plt.colorbar(contour)
 
-        plt.title(
-            "minimum distance to %dth station (km)" % nsta_reqd, fontsize=title_fontsize
-        )
+        if my_title is not None:
+            plt.title(my_title)
+        else:    
+            plt.title(
+                "minimum distance to %dth station (km)" % nsta_reqd, fontsize=title_fontsize
+            )
         if plot_cities:
             plt.plot(clon, clat, "k8")
             for i in range(len(cstrings)):
@@ -502,10 +508,13 @@ def main():
         plt.xlim(lonmin, lonmax)
         plt.ylim(latmin, latmax)
         plt.colorbar(mag_contour)
-        plt.title(
-            "%s detection threshold using %d stations" % (magtype, nsta_reqd),
-            fontsize=title_fontsize,
-        )
+        if my_title is not None:
+            plt.title(my_title)
+        else:
+            plt.title(
+                "%s detection threshold using %d stations" % (magtype, nsta_reqd),
+                fontsize=title_fontsize,
+            )
     plt.tight_layout(pad=3.0)
 
     if plotfilename != "":
