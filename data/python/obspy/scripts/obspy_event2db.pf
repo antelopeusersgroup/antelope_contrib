@@ -1,0 +1,18 @@
+wf_template %Y/%j/{sta}.{chan}.%Y.%m.%d.%H.%M.%S
+datatype sd # sd or MS, see trdefaults.pf
+segtype V   # velocity from seismometers
+
+
+#fix station name
+sta_trans &Arr{
+}
+
+#fix channel name
+chan_trans &Arr{
+	EZ EHZ
+	EN EHN
+	EE EHE
+	SZ SHZ
+	SN SHN
+	SE SHE
+}
