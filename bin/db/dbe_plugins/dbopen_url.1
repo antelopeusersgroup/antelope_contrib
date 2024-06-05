@@ -1,0 +1,92 @@
+.TH DBOPEN_URL 1
+.SH NAME
+dbopen_url \-  open URL to display location of a database row
+.SH SYNOPSIS
+.nf
+\fBdbopen_url [-v] \fP[-p \fIpf\fP] [-t \fItag\fP]
+				\fIdb\fP[.\fItable\fP] [\fIrecord\fP]
+.fi
+.SH DESCRIPTION
+The script \fBdbopen_url\fP opens an URL based on coordinates found in a database row. The basic idea is to open google maps or similar webservices to display location of a certain database row
+.SH OPTIONS
+.IP "-p pf"
+Parameter file name.
+.IP "-t tag"
+This option allow to select an url template from the parameter file.
+If this is not specified, a default is used.
+.IP "-v"
+verbose flag.
+.IP "db"
+Database name. This is the only required argument. Additionally, a tablename can be specified, otherwise information from the \fItable\fP \fBsite\fP is displayed.
+Possible tables are (currently) those with fields lat and lon: site, origin, place, idp
+.IP "recno"
+\fIrecord\fP number. This allows to specify a single \fIrecord\fP from the basetable. This is mainly intended to support the execution from dbloc2. See the examples below.
+.SH "PARAMETER FILE"
+the \fIparameterfile\fP for \fBdbopen_url\fP contains the array \fBtemplates\fP for a few web map services.    
+.SH EXAMPLE
+This program can be run from the commandline and as a plugin to dbe or dbloc2.
+.IP \fBcommandline\fP
+.in 2c
+.ft CW
+.nf
+
+.ne 3
+Display location of Pinyon Flat Observatory
+dbsubset /opt/antelope/data/db/demo/demo.site "sta =~/PFO/"| dbopen_url -
+
+.ne 3
+Same, display only 14th record
+dbopen_url /opt/antelope/data/db/demo/demo.site 14
+
+.fi
+.ft R
+.in
+.IP \fBdbe\fP
+.in 2c
+.ft CW
+.nf
+
+.ne 13
+
+graphics &Arr{
+        origin &Tbl{
+                GMap dbopen_url - 
+                OpenStreetmap  dbopen_url -t osm6 -
+        }
+        site &Tbl{
+                GMap dbopen_url -
+                OpenStreetmap dbopen_url -t osm6 -
+        }
+}
+
+.fi
+.ft R
+.in
+.IP \fBdbloc2\fP
+.in 2c
+.ft CW
+.nf
+
+.ne 11
+
+origin_menu_items &Tbl{
+        GMap    dbopen_url
+        OpenStreetmap  dbopen_url -t osm6 
+}
+station_menu_items &Tbl{
+        GMap    dbopen_url
+        OpenStreetmap dbopen_url -t osm6
+}
+
+.fi
+.ft R
+.in
+.SH "BUGS AND CAVEATS"
+Circle overlays on Solaris may cause problems.
+.SH "SEE ALSO"
+dbe(1), dbloc2(1), 
+https://docs.python.org/3/library/webbrowser.html
+.SH AUTHOR
+Nikolaus Horn
+.br
+ZAMG / Vienna, nikolaus.horn@zamg.ac.at

@@ -1,0 +1,18 @@
+default	gmap2
+#Google Earth Web
+templates &Arr{
+    gew https://earth.google.com/web/search/{lat:\#.4f}%2C{lon:\#.4f}
+    gmap https://www.google.com/maps/search/?api=1&query={lat:\#.4f}%2C{lon:\#.4f}
+    gmap2 https://www.google.com/maps/place/{latlon}
+    #doku for google maps URLs: https://developers.google.com/maps/documentation/urls/get-started?hl=de#search-action
+    ##Open Streetmap, different zoom levels
+    #https://www.openstreetmap.org/?mlat=53.1691&mlon=8.6293&zoom=16#map=12/53.1691/8.6293
+    osm12 https://www.openstreetmap.org/?mlat={lat:\#.4f}&mlon={lon:\#.4f}&zoom=12#map=12/{lat:\#.4f}/{lon:\#.4f}
+    osm6 https://www.openstreetmap.org/?mlat={lat:\#.4f}&mlon={lon:\#.4f}&zoom=6#map=6/{lat:\#.4f}/{lon:\#.4f}
+}
+browser &Arr{
+#darwin      safari
+    darwin      firefox
+    linux       firefox
+}
+
