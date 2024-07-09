@@ -52,7 +52,7 @@ typedef struct subst
 }
 subst;
 
-main (int argc, char **argv)
+int main (int argc, char **argv)
 {
   long polltime = 50000;	/* loop usleep interval (us) */
   char *select = 0;		/* Selected packet */
@@ -362,7 +362,6 @@ main (int argc, char **argv)
 		  for (l = 0; subarr[l] != NULL; l++)
 		    {
 		      Dbptr tdb;
-		      Dbvalue schema;
 		      char tstr[MAXCMDSIZE];
 		      int nspc;
 
@@ -432,6 +431,7 @@ main (int argc, char **argv)
 			    {
 			      elog_complain (0, "dbput error for table '%s'",
 					     table);
+                  dbclose(tdb);
 			      continue;
 			    }
 
@@ -444,6 +444,7 @@ main (int argc, char **argv)
 					     "dbget(): field '%s' not found in '%s' packet",
 					     field, srcname);
 			      *subarr[l]->substitution = '\0';
+                  dbclose(tdb);
 			      continue;
 			    }
 			  else
@@ -452,6 +453,7 @@ main (int argc, char **argv)
 			      period = strspn (tstr, " ");
 			      local_strlcpy (subarr[l]->substitution,
 					     &tstr[period], MAXCMDSIZE);
+                  dbclose(tdb);
 			    }
 			}
 
