@@ -5,7 +5,7 @@ show a grid of minimum detectable magnitudes
 
 @author      Nikolaus Horn <nikolaus.horn@zamg.ac.at
 @created     Jan 2, 2017
-@modified    Sep 13, 2018
+@modified    Mar 26, 2024
 @version     1.3
 @license     MIT-style license
 
@@ -31,7 +31,7 @@ import zamg.utilities as zu
 def usage(progname):
     print(
         progname,
-        "[-v] [-t time] [-n nsta] [-i sta[,sta2]] [-s snr] [-r rmsdb | -R rms] [-S sta/lat/lon/rms] [-Y] [-L] [-f gridfilename] dbname [outfile]",
+        "[-v] [-p pf] [-t time] [-D dist_title] [-M mag_title] [-n nsta] [-i sta[,sta2]]\n\t[-s snr] [-r rmsdb | -R rms] [-S sta/lat/lon/rms] [-Y] [-L] [-f gridfilename] dbname [outfile]",
     )
 
 
@@ -62,6 +62,8 @@ def main():
     rms_latency = 120  # two minutes ago
     title_fontsize = "small"
     label_fontsize = "small"
+    dist_title_template = "minimum distance to {nsta}th station (km)"
+    mag_title_template = "{magtype} magnitude threshold using {nsta} stations"
     plot_dist = True
     plot_mags = True
     plot_borders = False
@@ -70,7 +72,7 @@ def main():
     plot_stas = True
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "LYvf:i:n:p:r:R:s:S:t:dmcb", "")
+        opts, args = getopt.getopt(sys.argv[1:], "D:M:LYvf:i:n:p:r:R:s:S:t:dmcb", "")
     except getopt.GetoptError:
         usage(progname)
         elog.die("Illegal option")
@@ -98,31 +100,32 @@ def main():
     else:
         station_symbol = "r+"
 
-    if "cities_dbname" in list(pf.keys()) and pf["cities_dbname"] != "":
+    if pf.has_key("cities_dbname") and pf["cities_dbname"] != "":
         plot_cities = True
         dbn = pf["cities_dbname"]
         cities = ds.dbopen(dbn, "r")
         cities = cities.lookup(table="places")
-        if "cities_subset" in list(pf.keys()) and pf["cities_subset"] != "":
+        if pf.has_key("cities_subset") and pf["cities_subset"] != "":
             expr = pf["cities_subset"]
             cities = cities.subset(expr)
-    if "borders_dbname" in list(pf.keys()) and pf["borders_dbname"] != "":
+    if pf.has_key("borders_dbname") and pf["borders_dbname"] != "":
         plot_borders = True
         dbn = pf["borders_dbname"]
         borders = ds.dbopen(dbn, "r")
         borders = borders.lookup(table="polygon")
-        if "borders_subset" in list(pf.keys()) and pf["borders_subset"] != "":
+        if pf.has_key("borders_subset") and pf["borders_subset"] != "":
             expr = pf["borders_subset"]
             borders = borders.subset(expr)
 
-    if "title_fontsize" in list(pf.keys()) and pf["title_fontsize"] != "":
+    # also good: if "title_fontsize" in list(pf.keys()) and pf["title_fontsize"] != "":
+    if pf.has_key("title_fontsize") and pf["title_fontsize"] != "":
         sz_str = pf["title_fontsize"]
         if sz_str.isnumeric():
             title_fontsize = int(sz_str)
         else:
             title_fontsize = sz_str
 
-    if "label_fontsize" in list(pf.keys()) and pf["label_fontsize"] != "":
+    if pf.has_key("label_fontsize") and pf["label_fontsize"] != "":
         sz_str = pf["label_fontsize"]
         if sz_str.isnumeric():
             label_fontsize = int(sz_str)
@@ -144,6 +147,10 @@ def main():
             verbose = True
         elif o == "-d":
             plot_dist = False
+        elif o == "-D":
+            dist_title_template = a
+        elif o == "-M":
+            mag_title_template = a
         elif o == "-m":
             plot_mags = False
         elif o == "-c":
@@ -263,6 +270,7 @@ def main():
     number_sites = 0
     for dbsite.record in range(nsites):
         [sta, slat, slon, selev] = dbsite.getv("sta", "lat", "lon", "elev")
+        print("sta: %s" % sta)
         if sta in stations_to_ignore:
             if verbose:
                 print("ignore station %s" % sta)
@@ -337,19 +345,23 @@ def main():
     stalon = np.asarray(slons)
     starms = np.asarray(rmss)
 
-    if "ymin" in list(pf.keys()) and pf["ymin"] != "":
+    if pf.has_key("ymin") and pf["ymin"] != "":
         latmin = float(pf["ymin"])
+        print("ymin")
     else:
         latmin = math.floor(min(stalat))
-    if "ymax" in list(pf.keys()) and pf["ymax"] != "":
+
+    if pf.has_key("ymax") and pf["ymax"] != "":
         latmax = float(pf["ymax"])
     else:
         latmax = math.ceil(max(stalat))
-    if "xmin" in list(pf.keys()) and pf["xmin"] != "":
+
+    if pf.has_key("xmin") and pf["xmin"] != "":
         lonmin = float(pf["xmin"])
     else:
         lonmin = math.floor(min(stalon))
-    if "xmax" in list(pf.keys()) and pf["xmax"] != "":
+
+    if pf.has_key("xmax") and pf["xmax"] != "":
         lonmax = float(pf["xmax"])
     else:
         lonmax = math.ceil(max(stalon))
@@ -359,15 +371,15 @@ def main():
     maxdist = None
     minmag = None
     maxmag = None
-    if "number_contours" in list(pf.keys()) and pf["number_contours"] != "":
+    if pf.has_key("number_contours") and pf["number_contours"] != "":
         number_contours = int(pf["number_contours"])
-    if "mindist" in list(pf.keys()) and pf["mindist"] != "":
+    if pf.has_key("mindist") and pf["mindist"] != "":
         mindist = float(pf["mindist"])
-    if "maxdist" in list(pf.keys()) and pf["maxdist"] != "":
+    if pf.has_key("maxdist") and pf["maxdist"] != "":
         maxdist = float(pf["maxdist"])
-    if "minmag" in list(pf.keys()) and pf["minmag"] != "":
+    if pf.has_key("minmag") and pf["minmag"] != "":
         minmag = float(pf["minmag"])
-    if "maxmag" in list(pf.keys()) and pf["maxmag"] != "":
+    if pf.has_key("maxmag") and pf["maxmag"] != "":
         maxmag = float(pf["maxmag"])
 
     lats = np.linspace(latmin, latmax, num=ny)
@@ -424,7 +436,9 @@ def main():
     if plot_dist:
         if number_contours and mindist and maxdist:
             levels = np.linspace(mindist, maxdist, number_contours)
-            contour = plt.contourf(LO, LA, dist[nsta_reqd - 1, :, :], levels=levels)
+            contour = plt.contourf(
+                LO, LA, dist[nsta_reqd - 1, :, :], levels=levels, extend="both"
+            )
         else:
             contour = plt.contourf(LO, LA, dist[nsta_reqd - 1, :, :])
         if n_off > 0:
@@ -446,9 +460,8 @@ def main():
         plt.ylim(latmin, latmax)
         plt.colorbar(contour)
 
-        plt.title(
-            "minimum distance to %dth station (km)" % nsta_reqd, fontsize=title_fontsize
-        )
+        title_string = dist_title_template.format(nsta=nsta_reqd)
+        plt.title(title_string, fontsize=title_fontsize)
         if plot_cities:
             plt.plot(clon, clat, "k8")
             for i in range(len(cstrings)):
@@ -471,7 +484,9 @@ def main():
     if plot_mags:
         if number_contours and minmag and maxmag:
             levels = np.linspace(minmag, maxmag, number_contours)
-            mag_contour = plt.contourf(LO, LA, mag[nsta_reqd - 1, :, :], levels=levels)
+            mag_contour = plt.contourf(
+                LO, LA, mag[nsta_reqd - 1, :, :], levels=levels, extend="both"
+            )
         else:
             mag_contour = plt.contourf(LO, LA, mag[nsta_reqd - 1, :, :])
         if n_off > 0:
@@ -502,8 +517,9 @@ def main():
         plt.xlim(lonmin, lonmax)
         plt.ylim(latmin, latmax)
         plt.colorbar(mag_contour)
+        title_string = mag_title_template.format(magtype=magtype, nsta=nsta_reqd)
         plt.title(
-            "%s detection threshold using %d stations" % (magtype, nsta_reqd),
+            title_string,
             fontsize=title_fontsize,
         )
     plt.tight_layout(pad=3.0)
