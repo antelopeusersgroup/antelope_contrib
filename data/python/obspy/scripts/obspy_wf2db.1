@@ -1,0 +1,48 @@
+.TH OBSPY_WF2DB 1
+.SH NAME
+obspy_wf2db \- save waveforms to antelope database using the obspy toolbox.
+.SH SYNOPSIS
+.nf
+obspy_wf2db [-v] [-d9 [-c calibdb] [-s 1|2] file [file2...] dbname
+.fi
+
+.SH DESCRIPTION
+Use ObsPy to read waveforms into an ObsPy stream. Then save all traces
+from the stream into miniseed files and index them in an antelope wfdisc table.
+This supports all waveform formats understood by the obspy function \fBread\fP.
+.SH OPTIONS
+.IP "-v" 
+verbose flag
+.IP "-d" 
+debug flag
+.IP "-c"
+Database with calibration information. If this is not specified,
+the program tries to lookup calibation information from the output database.
+.IP "-s"
+Steim level, one or two.
+.IP "file" 
+input file(s) with waveforms in one of the formats understood by the ObsPy toolbox.
+.IP "dbname"
+output database. This argument is required.
+.SH EXAMPLE
+.nf
+% wget -O events.xml "https://www.seismicportal.eu/fdsnws/event/1/query?limit=5"
+% obspy_events2db events.xml db
+.fi
+
+.SH "BUGS AND CAVEATS"
+First of all, you need to have ObsPy installed. There's a little
+helper: install_obspy. 
+
+This script relies on the ObsPy toolbox and adds a huge heap of misunderstandings and errors on top.
+Besides that, it's perfect ;-)
+.SH "SEE ALSO"
+.nf
+install_obspy(1), obspy2db(1), https://docs.obspy.org/packages/autogen/obspy.core.stream.read.html
+.fi
+
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2023
+GSAT / Vienna, Nikolaus.Horn@geosphere.at
+.fi

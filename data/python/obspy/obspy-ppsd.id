@@ -1,0 +1,211 @@
+#!/opt/antelope/$id/bin/python
+
+#!/usr/bin/env python
+# Copyright 2019 Tom Eulenfeld, MIT license
+
+import argparse
+from argparse import SUPPRESS
+from ast import literal_eval
+import inspect
+import os.path
+import re
+import sys
+
+import matplotlib
+from matplotlib.cm import get_cmap
+from obspy import read, read_inventory, UTCDateTime as UTC
+from obspy.imaging.cm import pqlx
+from obspy.signal.spectral_estimation import PPSD
+try:
+    from tqdm import tqdm
+except ImportError:
+    def tqdm(x): return x
+
+
+__version__ = '0.3'
+NPZFNAME = 'ppsd_data_{}.npz'
+PLOT1FNAME = 'ppsd_plot_{}.png'
+PLOT2FNAME = 'ppsd_timeplot_{}.png'
+PLOT3FNAME = 'ppsd_spectrogram_{}.png'
+
+
+class InventoryMissing(ValueError):
+    pass
+
+
+def add_data_files_to_pssd(data, inventory=None, format=None, output='',
+                           **kwargs):
+    try:
+        print('Add data')
+        ppsds = {}
+        for fname in tqdm(data):
+            stream = read(fname, format=format)
+            for tr in stream:
+                id_ = tr.id
+                if id_ not in ppsds:
+                    if inventory is None:
+                        raise InventoryMissing('Please provide inventory file')
+                    fname = output + NPZFNAME.format(id_)
+                    if os.path.exists(fname):
+                        ppsds[id_] = PPSD.load_npz(fname, inventory)
+                    else:
+                        ppsds[id_] = PPSD(tr.stats, inventory, **kwargs)
+                ppsds[id_].add(tr)
+    finally:
+        if len(ppsds) != 0:
+            print('Write npz files')
+            for id_, ppsd in ppsds.items():
+                fname_out = output + NPZFNAME.format(id_)
+                ppsd.save_npz(fname_out)
+
+
+def _calculate_histogram(ppsd, kwargs):
+    select_options = _get_options(PPSD.calculate_histogram)
+    kw1 = {k: v for k, v in kwargs.items() if k not in select_options}
+    kw2 = {k: v for k, v in kwargs.items() if k in select_options}
+    if len(kw2) > 0:
+        ppsd.calculate_histogram(**kw2)
+    return kw1
+
+
+def plot(ppsd,  output='', suffix='', **kwargs):
+    for fname_ppsd in ppsd:
+        ppsd = PPSD.load_npz(fname_ppsd)
+        fname = output + PLOT1FNAME.format(ppsd.id + suffix)
+        kw1 = _calculate_histogram(ppsd, kwargs)
+        ppsd.plot(fname, **kw1)
+
+
+def plot_temporal(ppsd,  output='', suffix='', **kwargs):
+    for fname_ppsd in ppsd:
+        ppsd = PPSD.load_npz(fname_ppsd)
+        fname = output + PLOT2FNAME.format(ppsd.id + suffix)
+        ppsd.plot_temporal(filename=fname, **kwargs)
+
+
+def plot_spectrogram(ppsd,  output='', suffix='', **kwargs):
+    for fname_ppsd in ppsd:
+        ppsd = PPSD.load_npz(fname_ppsd)
+        fname = output + PLOT3FNAME.format(ppsd.id + suffix)
+        kw1 = _calculate_histogram(ppsd, kwargs)
+        ppsd.plot_spectrogram(filename=fname, **kw1)
+
+
+def load(ppsd):
+    ppsd = PPSD.load_npz(ppsd)
+    from IPython import start_ipython
+    print('PPSD object loaded into ppsd variable.')
+    start_ipython(argv=[], user_ns={'ppsd': ppsd}, display_banner=False)
+    print('Good Bye')
+
+
+def run(command, pdb=False, **args):
+    if pdb:
+        import traceback
+        import pdb
+
+        def info(type, value, tb):
+            traceback.print_exception(type, value, tb)
+            print
+            # ...then start the debugger in post-mortem mode.
+            pdb.pm()
+
+        sys.excepthook = info
+    fmap = {'add': add_data_files_to_pssd,
+            'plot': plot,
+            'timeplot': plot_temporal,
+            'spectrogram': plot_spectrogram,
+            'load': load}
+    fmap[command](**args)
+
+
+#register_cmap(cmap=pqlx)
+matplotlib.colormaps.register(cmap=pqlx)
+_IGNORE = ('self', 'filename', 'stats', 'metadata', 'kwargs',
+           'special_handling', 'callback')
+_ARGCONVERTER = {'cmap': get_cmap, 'starttime': UTC, 'endtime': UTC}
+_MANDATORY = ('period',)
+
+
+def _get_options(func):
+    options = inspect.getfullargspec(func)[0]
+    kws = [kw for kw in options if kw not in _IGNORE]
+    return kws
+
+
+def _add_options(parser, func, func2=None):
+    """add options from func to command line parser"""
+    doc = inspect.getdoc(func)
+    options = inspect.getfullargspec(func)[0]
+    if func2:
+        doc = doc + '\n' + inspect.getdoc(func2)
+        options = options + inspect.getfullargspec(func2)[0]
+    for kw in options:
+        if kw not in _IGNORE:
+            pattern = r':param\s*%s:\s*(.*?)\s*(:param|:type|$)' % kw
+            match = re.search(pattern, doc, flags=re.DOTALL)
+            try:
+                msg = match.groups()[0].replace('%', '%%')
+            except Exception:
+                msg = None
+            t = _ARGCONVERTER.get(kw, literal_eval)
+            if kw in _MANDATORY:
+                parser.add_argument(kw.replace('_', '-'), type=t, help=msg)
+            else:
+                parser.add_argument('--' + kw.replace('_', '-'),
+                                    type=t, default=SUPPRESS, help=msg)
+
+
+def run_cmdline():
+    msg = ('Command line script to calculate and plot '
+           'probabilistic power spectral densities with ObsPy')
+    epilog = 'To get help on a subcommand run: obspy-ppsd command -h'
+    p = argparse.ArgumentParser(description=msg, epilog=epilog)
+    version = '%(prog)s ' + __version__
+    p.add_argument('--version', action='version', version=version)
+    msg = 'if an exception occurs start the debugger'
+    p.add_argument('--pdb', action='store_true', help=msg)
+
+    sub = p.add_subparsers(title='commands', dest='command')
+    sub.required = True
+    msg = ('Add files to PPSD objects. If a PPSD object was previously stored '
+           'it will be reused. The optional arguments correspond to the '
+           'options in PPSD.__init__() and will be used if a new PPSD object '
+           'is created.')
+    p_add = sub.add_parser('add', help='add files to PPSDs', description=msg)
+    p_plot1 = sub.add_parser('plot', help='plot PPSDs')
+    p_plot2 = sub.add_parser('timeplot', help='plot PPSDs versus time')
+    p_plot3 = sub.add_parser('spectrogram', help='plot PPSDs as spectrogram')
+    p_load = sub.add_parser('load',
+                            help='load single PPSD into IPython session')
+
+    for sp in (p_add, p_plot1, p_plot2, p_plot3):
+        sp.add_argument('-o', '--output', default=SUPPRESS,
+                        help='prefix for output files')
+    for sp in (p_plot1, p_plot2, p_plot3):
+        sp.add_argument('-s', '--suffix', default=SUPPRESS,
+                        help='suffix for output files')
+    p_add.add_argument('data', nargs='+', help='data files')
+    p_add.add_argument('-i', '--inventory', type=read_inventory,
+                       help='inventory file')
+    p_add.add_argument('-f', '--format', help='format of data files')
+    _add_options(p_plot2, PPSD.plot_temporal, PPSD.calculate_histogram)
+    p_plot1.add_argument('ppsd', nargs='+', help='PPSD files in npz format')
+    p_plot2.add_argument('ppsd', nargs='+', help='PPSD files in npz format')
+    p_plot3.add_argument('ppsd', nargs='+', help='PPSD files in npz format')
+    p_load.add_argument('ppsd', help='PPSD file in npz format')
+    _add_options(p_add, PPSD.__init__)
+    _add_options(p_plot1, PPSD.plot, PPSD.calculate_histogram)
+    _add_options(p_plot3, PPSD.plot_spectrogram, PPSD.calculate_histogram)
+    try:
+        args = vars(p.parse_args())
+    except SyntaxError:
+        p.error('Argument is not valid')
+    try:
+        run(**args)
+    except InventoryMissing as ex:
+        p_add.error(ex)
+
+
+if __name__ == '__main__':
+    run_cmdline()

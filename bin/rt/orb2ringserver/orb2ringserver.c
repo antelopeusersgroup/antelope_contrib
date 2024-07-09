@@ -33,7 +33,7 @@ static char *statefile            = 0;   /* A file to save the ORB packet id */
 static int stateinter             = 0;   /* Interval to bury the pktid (packets recv'd) */
 static int reconnectinterval      = 60;  /* Interval to wait between reconnection attempts */
 static int flushlatency           = 500; /* Flush data buffers if not updated for latency in seconds */
-static int flushfastrate          = 0;   /* Flush data buffers if sample rate >= this value, 0: disabled */
+static double flushfastrate       = 0;   /* Flush data buffers if sample rate >= this value, 0: disabled */
 static hptime_t flushfastduration = 0;   /* Desired miniSEED duration in HPTMODULUS, 0: disabled */
 
 #define DEFAULT_MSRECLEN 512 /* Default miniSEED recordlength */
@@ -462,7 +462,7 @@ handlestream (char *streamname, char *typename, PktChannel *pktchan,
     {
       if (verbose >= 2)
       {
-        ms_log (0, "%s(): streamname=%s mst->samprate=%.2lf GAP flushfast=%d@%" PRId64 " flushflag=%d\n",
+        ms_log (0, "%s(): streamname=%s mst->samprate=%.2lf GAP flushfast=%.2lf@%" PRId64 " flushflag=%d\n",
                 __func__, streamname, mst->samprate, flushfastrate,
                 MS_HPTIME2EPOCH (flushfastduration), 1);
       }
@@ -476,7 +476,7 @@ handlestream (char *streamname, char *typename, PktChannel *pktchan,
     /* Pack data for this SEED NSLC. */
     if (verbose >= 2)
     {
-      ms_log (0, "%s(): streamname=%s mst->samprate=%.2lf nsamples = %" PRId64 " flushfast=%d@%" PRId64 " flushflag=%d\n",
+      ms_log (0, "%s(): streamname=%s mst->samprate=%.2lf nsamples = %" PRId64 " flushfast=%.2lf@%" PRId64 " flushflag=%d\n",
               __func__, streamname, mst->samprate, mst->numsamples, flushfastrate,
               MS_HPTIME2EPOCH (flushfastduration), flushflag);
     }
@@ -873,7 +873,7 @@ parameter_proc (int argcount, char **argvec)
     }
     else if (strcmp (argvec[optind], "-F") == 0)
     {
-      flushfastrate = (int)strtol (getoptval (argcount, argvec, optind++), &tptr, 10);
+      flushfastrate = strtod (getoptval (argcount, argvec, optind++), &tptr);
 
       /* Parse optional minimum duration as <flushrate>@<minduration> */
       if (tptr && *tptr == '@')

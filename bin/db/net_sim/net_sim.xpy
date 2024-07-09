@@ -60,6 +60,7 @@ def main():
     snr = 4.0
     nx = ny = 100
     rms_latency = 120  # two minutes ago
+    my_title = None
     title_fontsize = "small"
     label_fontsize = "small"
     dist_title_template = "minimum distance to {nsta}th station (km)"
@@ -188,6 +189,8 @@ def main():
                 usage(progname)
         elif o == "-t":
             rmstime = a
+        elif o == "-T":
+            my_title = a
         elif o == "-f":
             gridfilename = a
         elif o == "-Y":
