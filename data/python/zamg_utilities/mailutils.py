@@ -8,41 +8,35 @@
 
 mail utility functions
 """
+
+from os.path import basename
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 from email.header import Header
+from email.message import EmailMessage
 import smtplib
 import re
+import html
 import antelope.stock as stock
 import antelope.elog as elog
 
 
-def multipartemail(sender, email, subject, html, text=None):
+def html_to_text(htmlcode):
+    text = html.unescape(htmlcode)
+    text = text.replace("<br>", "\n")
+    text = re.sub(
+        r"<a href=([^>]+)>(.*)</a>", r"\2:\1", text
+    )  # replace anchors with text and link
+    text = re.sub(r"<.*?>", "", text)  # very poor mans html2text
+    return text
+
+
+def multipartemail(sender, email, subject, htmlcode, text=None, attachment=None):
     """Email magic: use only standard libs coming with Antelope to produce multipart email"""
 
     if text is None:
-        text = html.replace("<br>", "\n")
-        text = re.sub(
-            r"<a href=([^>]+)>(.*)</a>", r"\2:\1", html
-        )  # replace anchors with text and link
-        result = ""
-        paren = 0
-        # very poor mans cleaner for html: remove everything within brackets
-        for char in text:
-            if char == "<":
-                paren += 1
-            elif char == ">":
-                paren -= 1
-            elif (
-                not paren
-            ):  # trick: every number but 0 is false, so "not 0" is always true
-                result += char
-        text = result
-        """
-        keep for the record: cleaner code than above, but needs another module and eventally also longer time
-        import re
-        text = re.sub("\<.*?\>","", html)# very poor mans html2text
-        """
+        text = html_to_text(htmlcode)
     message = MIMEMultipart()
     message["To"] = Header(
         email
@@ -56,17 +50,29 @@ def multipartemail(sender, email, subject, html, text=None):
 
     plaintext_part = MIMEText(text, "plain")
     msg_body.attach(plaintext_part)
-
-    html_part = MIMEText(html, "html")
-    msg_body.attach(html_part)
+    if htmlcode is not None:
+        html_part = MIMEText(htmlcode, "html")
+        msg_body.attach(html_part)
     message.attach(msg_body)
-
+    if attachment is not None:
+        bn = basename(attachment)
+        with open(attachment, "rb") as f:
+            mattachment = MIMEApplication(f.read(), Name=bn)
+            mattachment["Content-Disposition"] = 'attachment; filename="%s"' % bn
+            message.attach(mattachment)
     encoded_email = message.as_string()
     return encoded_email
 
 
 def send_multipartemail(
-    email, subject, html, text=None, myfrom=None, one_email=True, address_separator=","
+    email,
+    subject,
+    htmlcode,
+    text=None,
+    myfrom=None,
+    one_email=True,
+    address_separator=",",
+    attachment=None,
 ):
     """Send email as text and html"""
 
@@ -94,20 +100,15 @@ def send_multipartemail(
         mailhost = "localhost"
     receivers = email.split(
         ","
-    )  # list items are always separated by commas, regardless of what is used as address_separator later
+    )  # make sure list items are always separated by commas, regardless of what is used as address_separator later
     receivers = [x.strip() for x in receivers]  # trim whitespace
 
     retcode = True
-    if one_email:
+    if one_email:  # one email to many recipients
         destination = address_separator.join(receivers)
-
-        # fout=open("/tmp/mailscheiss.log","w+")
-        # fout.write("one_email: %s" % destination)
-        # fout.close()
-        # exit
-
-        # print("to: ", destination)
-        msgbody = multipartemail(sender, destination, subject, html, text)
+        msgbody = multipartemail(
+            sender, destination, subject, htmlcode, text, attachment=attachment
+        )
         try:
             smtp = smtplib.SMTP(mailhost)
             smtp.sendmail(sender, destination, msgbody)
@@ -117,14 +118,11 @@ def send_multipartemail(
             retcode = False
         else:
             smtp.close()
-    else:  # one email per receiver
+    else:  # one email per recipient
         for destination in receivers:
-            # fout=open("/tmp/mailscheiss.log","w+")
-            # fout.write("many emails: %s" % destination)
-            # fout.close()
-            # exit
-            # print("jeweils to: ", destination)
-            msgbody = multipartemail(sender, destination, subject, html, text)
+            msgbody = multipartemail(
+                sender, destination, subject, htmlcode, text, attachment=attachment
+            )
             try:
                 smtp = smtplib.SMTP(mailhost)
                 smtp.sendmail(sender, destination, msgbody)

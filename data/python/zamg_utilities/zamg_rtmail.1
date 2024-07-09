@@ -1,0 +1,21 @@
+.TH ZAMG_RTMAIL 1
+.SH NAME
+zamg_rtmail \- replacement for rtmail
+.SH SYNOPSIS
+.nf
+\fBzamg_rtmail [-h] [-s subject] [-a attachment] email\fP
+.fi
+.SH DESCRIPTION
+\fBzamg_rtmail\fP is a quick and dirty replacement for \fBrtmail\fP
+It sends email even if postfix is not configured on localhost
+.SH OPTIONS
+.SS "-h"
+Use this flag if the message body if properly formatted html markup.
+.SH "SEE ALSO"
+.nf
+zamg_mailutils(3y), rtmail(1)
+.fi
+.SH BUGS AND CAVEATS
+zamg_rtmail works for me, but it's not fully tested.
+.SH AUTHOR
+Nikolaus Horn, nikolaus.horn@geosphere.at
