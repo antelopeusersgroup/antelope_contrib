@@ -6,7 +6,7 @@
 # decimation factor 10
 #
 theoretical   1 FIR_filter   fir    seed
-2.0000000000e+03    10              93
+2000    10              93
      187
  8.4692319520e-10  0.0000000000e+00
  2.2742205242e-09  0.0000000000e+00
