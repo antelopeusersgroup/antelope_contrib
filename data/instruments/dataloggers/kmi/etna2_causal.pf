@@ -2,7 +2,7 @@ category	Kinemetrics
 configuration	Etna-2 Causal Filter 5Vpp Input
 
 originator	Mathias Franke
-last_modified	April 07, 2023
+last_modified   August 8, 2024 by Frank Vernon updating info
 
 description	KMI Etna-2 Causal
 dfile etna2_c
@@ -10,6 +10,11 @@ info &Literal{
 These are the decimation FIR filters with a final causal brickwall filter.
 The information was derived from Kinemetrics Document 300905 Revision X5.
 State-Of-Health channels are included.
+
+Etna-2 can have different full scale ranges.  The FS ranges and sensor pf files are:
+        1 g FS  episensor_2_5vpg.pf
+        2 g FS  episensor_1_25vpg.pf
+        4 g FS  episensor_0_625vpg.pf
 }
 
 
