@@ -2,18 +2,20 @@ use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 WriteMakefile(
-    'NAME'		=> 'polygon',
-    'FIRST_MAKEFILE' => 'perl_makefile',
-    'MAKEFILE' => 'perl_makefile',
-    'VERSION'	=> '0.02', # finds $VERSION
-    'PREREQ_PM'		=> {}, # e.g., Module::Name => 1.1
+    'NAME'              => 'polygon',
+    'VERSION_FROM'      => 'polygon.pm', # finds $VERSION
+    'FIRST_MAKEFILE'    => 'perl_makefile', # output Makefile 
+    'PREREQ_PM'         => {}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
-      (ABSTRACT => 'perl interfact to the polygon library', # retrieve abstract from module
+      (ABSTRACT_FROM => 'polygon.pm', # retrieve abstract from module
        AUTHOR     => 'AuthorField') : ()),
-    'LIBS'		=> ['LinkArguments'], # e.g., '-lm'
-    'DEFINE'		=> '', # e.g., '-DHAVE_SOMETHING'
-	# Insert -I. if you add *.h files later:
-    'INC'		=> 'CompileArguments', # e.g., '-I/usr/include/other'
-	# Un-comment this if you add C files to link with later:
-#'OBJECT'		=> '$(O_FILES)', # link all the C files too
+    'LIBS'              => ['LinkArguments'], # e.g., '-lm'
+    'DEFINE'            => '', # e.g., '-DHAVE_SOMETHING'
+        # Insert -I. if you add *.h files later:
+    'INC'               => 'CompileArguments', # e.g., '-I/usr/include/other'
+        'CC'            => 'Compiler',
+        'LD'            => 'Linker',
+        'INSTALL_BASE'  => 'InstallBase',
+        # Un-comment this if you add C files to link with later:
+    # 'OBJECT'          => '$(O_FILES)', # link all the C files too
 );
