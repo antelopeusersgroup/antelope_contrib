@@ -1,5 +1,5 @@
 originator     Frank Vernon, UCSD
-last_modified  2008-06-24
+last_modified  2024-08-08
 
 info    &Literal{
 These instrument parameter files and their responses derived from
@@ -7,6 +7,8 @@ These instrument parameter files and their responses derived from
     http://www.kmi.com
 
 and Document 301900 Rev C November 2002
+
+This sensor is the 1 g Full Scale for an etna2
 }
 
 category	Kinemetrics
