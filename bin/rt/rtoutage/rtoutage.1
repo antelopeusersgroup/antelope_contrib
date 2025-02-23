@@ -9,20 +9,23 @@ rtoutage \- show data gaps for a database over a time period
         [-P \fImaxpts\fP] 
         [-s \fIsubset\fP] 
         [-x \fIdeployment-subset\fP] 
-            \fIdb\fP \fIstart\fP \fIstop\fP
+            \fIdb\fP \fIstart\fP \fIend\fP
 .fi
 .SH DESCRIPTION
 \fBrtoutage\fP writes a summary of data gaps for a database \fIdb\fP by channel.
 The output contains a list of all gaps by station, channel, and
 time.
 .LP
-The input database may be a view containing the stations and channels of
-interest, or just a database.  In the latter case, the sensor table is
-opened and \fIsubset\fP to the time range from \fIstart\fP to \fIstop\fP
-to provide the list of available channels.
+The input database may be a view containing the stations and channels
+of interest, or just a database.  In the latter case, the sensor
+table is opened and \fIsubset\fP to the time range from \fIstart\fP
+to \fIend\fP to provide the list of available channels. The specified
+\fIend\fP may be either an explicit end time or an interval, giving
+the \fIend\fP as the number of seconds past the specified \fIstart\fP
+time.
 .LP
 Next, the wfdisc table is opened, and for each channel, the entire
-waveform available from \fIstart\fP to \fIstop\fP is loaded.  This
+waveform available from \fIstart\fP to \fIend\fP is loaded.  This
 waveform is inspected for marked gaps, and all the gaps are printed.
 .SH OPTIONS
 .IP -A
@@ -181,6 +184,9 @@ at a time, this could cause problems on a machine with limited memory.
 Using the gaps table if it were present could make this a lot faster.
 .LP
 The \fIgaps_database\fP specified for the \fI-d\fP option may not be the same as the input database. 
+.LP
+The \fIend\fP time is interpreted as an interval, i.e. actual endtime is \fIstart\fP+\fIend\fP, if 
+\fIend\fP represents an epoch time less than \fI1/1/1980\fP. 
 .SH AUTHOR
 Daniel Quinlan
 .\" $Id$
