@@ -1,6 +1,6 @@
 .TH ZAMG_MAILUTILS 3Y 2021/04/07 "BRTT Antelope 5.10" ""
 .SH NAME
-multipartemail, send_multipartemail \- little helpers
+multipartemail, send_multipartemail, html_to_text \- little helpers
 .SH SYNOPSIS
 .nf
 sys.path.append(os.environ['ANTELOPE'] + "/contrib/data/python")
@@ -20,6 +20,9 @@ send email as multipart, formatted both as text and html.
 If the sender is not specified, it is guessed from site.pf.
 If one_email is False, one email per recipient is sent.
 Some Exchange installations require destinations to be separated by semicolon instead of the comma specified in rfc5322
+.SS html_to_text(htmlcode)
+return text-version of markup code. The target of html-anchors is kept and preceeded by the display text, 
+entities are converted, any tags other than links are removed.
 .SS multipartemail(sender, email, subject, html, text=None):
 produce multipart email from text and html.
 If \fItext\fP is not specified, a textual version is produced by
@@ -27,6 +30,7 @@ If \fItext\fP is not specified, a textual version is produced by
 2) and removing all other tags 
 	
 This function is called from send_multipartemail and only here for debugging.
+
 .SH "SEE ALSO"
 .nf
 antelope_python(3y), zamg_utilities(3y), Python modules \fBsmtplib\fP and \fBemail\fP

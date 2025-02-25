@@ -1,7 +1,7 @@
-AUTHOR_FIELD=Nikolaus Horn <nikolaus.horn\@zamg.ac.at>
+AUTHOR_FIELD = Nikolaus Horn <nikolaus.horn\@zamg.ac.at>
 PERLMAKEFILE = perl_makefile
-MAN3P=perlpolygon.3p
-CLEAN=  Makefile.PL MYMETA.yml MYMETA.json runmake $(PERLMAKEFILE).old $(PERLMAKEFILE).PL $(PERLMAKEFILE) polygon.bs polygon.c pm_to_blib 
+MAN3P = perlpolygon.3p
+CLEAN =  Makefile.PL MYMETA.yml MYMETA.json runmake $(PERLMAKEFILE).old $(PERLMAKEFILE).PL $(PERLMAKEFILE) polygon.bs polygon.c pm_to_blib 
 
 PD=$(ANTELOPE)/contrib/data/perl
 PM=$(ANTELOPE)/contrib/man
@@ -29,8 +29,11 @@ $(PERLMAKEFILE) : Makefile.PL
 
 Makefile.PL : Makefile.PL.proto 
 	sed -e 's@LinkArguments@$(LDFLAGS) $(LDLIBS)@' \
-	    -e 's@AuthorField@$(AUTHOR_FIELD)@' \
-	    -e 's@CompileArguments@$(CFLAGS)@' < Makefile.PL.proto > $@
+		-e 's@AuthorField@$(AUTHOR_FIELD)@' \
+		-e 's@Compiler@$(CC)@' \
+		-e 's@Linker@$(CC)@' \
+		-e 's@InstallBase@$(INSTALL_BASE)@' \
+		-e 's@CompileArguments@$(CFLAGS)@' < Makefile.PL.proto > $@
 	
 #perlpolygon.3 : perlpolygon.pm
 #	pod2man --section 3p perlpolygon.pm $@

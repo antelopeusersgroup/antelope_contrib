@@ -175,6 +175,8 @@ show_gaps ( char *stachan, Dbptr tr,
 static void
 print_stachan_gap ( char *next_stachan, double gap_time, Flags flags ) 
 {
+    double perfval = -1;
+
     if ( ! flags.autodrm && gap_time > 0.0 ) { 
 	fprintf (stdout, "    %-15s  %s\n", next_stachan, 
 	    tdel(gap_time, flags)) ;
@@ -184,12 +186,15 @@ print_stachan_gap ( char *next_stachan, double gap_time, Flags flags )
 	strcpy(sta, next_stachan ) ; 
 	chan = strchr(sta, ':') ; 
 	*chan++ = 0 ;
+	if( Range != 0 ) {
+	    perfval = 100.0 - gap_time*100./Range;
+	}
 	if ( dbaddv(Gap_db, "chanperf", 
 	    "sta", sta,
 	    "chan", chan,
 	    "time", Start, 
 	    "endtime", Stop, 
-	    "perf", 100.0 - gap_time*100./Range, 
+	    "perf", perfval,
 	    NULL ) < 0 ) { 
 	    complain (0, "Couldn't add record to chanperf table\n") ;
 	}
@@ -223,6 +228,7 @@ main (int argc, char **argv)
     Arr		   *wanted, *wanted_sta, *reporting_stations, *reporting_channels, *down ;
     char	   *start_str, *stop_str ;
     double	    start, stop ; 
+    double 	    mintime;
     int		    errors = 0 ;
     Tbl		   *stachan_list, *sta_list, *reporting_list, *channels_list ;
     long	    i, result, nwanted, ngroup ;
@@ -364,6 +370,10 @@ main (int argc, char **argv)
     stop_str = argv[optind++] ; 
     start = str2epoch(start_str) ; 
     stop = str2epoch(stop_str) ; 
+    mintime = str2epoch("1/1/1980") ; 
+    if( stop >= mintime && stop <= start ) {
+    	die (0, "End time must be greater than start time (or alternatively an interval number of seconds past the start time)" );
+    }
     if ( stop < start ) { 
 	stop += start ; 
     }

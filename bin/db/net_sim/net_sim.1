@@ -5,6 +5,7 @@ net_sim \- estimate network magnitude threshold
 .nf
 \fBnet_sim \fP[-v] [-n \fInsta\fP] [-p \fIpf\fP] [-i \fIsta\fP[,\fIsta2\fP]]
 				[-s \fIsnr\fP] [-r \fIrmsdb\fP | -R \fIrms\fP] [-t \fItime\fP]
+				[-D dist_title] [-M mag_title]
 				[-c] [-b] [-m] [-d] [-L] [-Y]
 			   	[-S \fIsta/lat/lon/rms\fP] [-f \fIgridfilename\fP] \fIdbname\fP [\fIplotfile\fP]
 .fi
@@ -13,13 +14,13 @@ net_sim \- estimate network magnitude threshold
 net_sim estimates network magnitude threshold by calculation of magnitudes based on measures or assumed \fIrms\fP and a specified \fIsnr\fP.
 The number of stations required is selectable.
 Two plots describe the network capabilty. One shows the distance to the \fBn\fPth closest station or the maximum distance to \fBn\fP stations.
-The second plot shows for each gridpoint the lowest magnitude observed at \fBn\fP stations using either measured or theoretical signal. The actual input signal is the multiplication of \fIrms\fP and some suser selectable \fIsnr\fP - signal to noise ratio.
+The second plot shows for each gridpoint the lowest detectable magnitude when using \fBn\fP stations, using either measured or theoretical rms values. The actual input signal is the multiplication of \fIrms\fP and the user selectable \fIsnr\fP - the signal to noise ratio.
 
 .SH OPTIONS
 .IP "-v"
 verbose flag
 .IP "-f file"
-Filename for output gridfile. The file contains data in four columns: lon, lat, minimum magnitude and distance to nth closest stations in km.
+Filename for output gridfile. The file contains data in four columns: lon, lat, minimum magnitude and distance to nth closest stations in km. 
 .IP "-p pf"
 parameter file
 .IP "-i sta"
@@ -36,6 +37,10 @@ Add a virtual station. Multiple stations can be specified by repeating the argum
 specify \fIsnr\fP. This overrides the value from the paramter file.
 .IP "-t time"
 Time for \fIrms\fP values when a database is used to lookup the \fIrms\fP values. If not specified, the program looks for recent values. How recent exactly is infuenced by the \fIsnr_latency\fP from the parameter file.
+.IP "-D dist_title"
+Specify title for station-distance plot. Defaults to "minimum distance to {nsta}th station (km)". Note that {nsta} will be replaced by the actual number of stations used. This number can be specified by the option \fI-n\fP or in the parameterfile.
+.IP "-M mag_title"
+Specify title for magnitude threshold plot. Defaults to "{mag_type} magnitude threshold using {nsta} stations". Note that {nsta} and {mag_type} will be replaced by actual parameters used.
 .IP "-c
 Plotting cities (from a table \fBplaces\fI) is enabled by configuring the optional parameters \fIcities_dbname\fP and \fIcities_subset\fP in the parameterfile.
 The commandline paramter c disables plotting of cities. 

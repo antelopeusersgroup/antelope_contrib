@@ -1,0 +1,40 @@
+.TH OBSPY_EVENT2DB 1 
+.SH NAME
+obspy_event2db \- save event paramter to antelope database using the obspy toolbox and the very preliminary antelope interface to obspy, obspy2db.
+.SH SYNOPSIS
+.nf
+obspy_event2db [-v] [-d] file [file2...] dbname
+.fi
+
+.SH DESCRIPTION
+Use ObsPy to read event information ito a catalog object. Then save this catalog object into an antelope database using the sketch of an antelope interface to obspy, obspy2db. This supports all formats understood by the obspy funtion \fBread_events\fP.
+.SH OPTIONS
+.IP "-v" 
+verbose flag
+.IP "-d" 
+debug flag
+.IP "file" 
+input file(s) in one of the format understood by the ObsPy toolbox.
+.IP "dbname"
+output database. This argument is required.
+.SH EXAMPLE
+.nf
+% wget -O events.xml "https://www.seismicportal.eu/fdsnws/event/1/query?limit=5"
+% obspy_events2db events.xml db
+.fi
+
+.SH "BUGS AND CAVEATS"
+First of all, you need to have ObsPy installed. There's a little helper for the installation: install_obspy.
+
+This script relies on the ObsPy toolbox and adds a huge heap of misunderstandings and errors on top.
+Besides that, it's perfect ;-)
+.SH "SEE ALSO"
+.nf
+install_obspy(1), obspy2db(1), https://docs.obspy.org/packages/autogen/obspy.core.event.read_events.html
+.fi
+
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2023
+GSAT / Vienna, Nikolaus.Horn@geosphere.at
+.fi

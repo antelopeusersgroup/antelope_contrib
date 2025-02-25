@@ -1,0 +1,48 @@
+.TH NORDIC_STATION2DB 1 
+.SH NAME
+nordic_station2db \- save station coordinates in nordic (SEISAN) format
+.SH SYNOPSIS
+.nf
+nordic_station2db [-v] [-o ondate] dbname
+.fi
+
+.SH DESCRIPTION
+Save station coordinates in nordic (seisan) format to site table
+.SH OPTIONS
+.IP "-v" 
+verbose flag
+.IP "-o ondate" 
+Ondate in the site table. Defaults to first of January 2000.
+.IP "dbname"
+Name of database. This argument is required.
+The data will be saved into the site table.
+
+.SH EXAMPLE
+.nf
+% cat sta.hyp
+
+  KBA 4704.70N 1320.68E 1721
+  OSG 6029.80N  252.55E-110                            
+  KRUC4903.71N 1623.71E 341
+
+% nordic_station2db sta.hyp db
+% dbselect db.site sta lat lon
+KBA      47.0783   13.3447
+OSG      60.4967    2.8758
+KRUC     49.0618   16.3952
+.fi
+
+.SH "BUGS AND CAVEATS"
+Station parameter in nordic format consists only of
+name, coordinates and elevation. Ondate can be specified on 
+the commandline, but the remaining fields offdate, statype, refsta, 
+dnorth and deast are left empty.
+.SH "SEE ALSO"
+.nf
+antelope(1), dbadd(1) 
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2023
+GSAT / Vienna, Nikolaus.Horn@geosphere.at
+.fi
