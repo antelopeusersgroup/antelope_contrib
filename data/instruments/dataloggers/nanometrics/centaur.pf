@@ -1,5 +1,5 @@
-originator     Nikolaus Horn, ZAMG
-last_modified  2016-05-24
+originator     Nikolaus Horn, ZAMG, Frank Vernon BRTT
+last_modified  2024-07-24
 
 info    &Literal{
 These instrument parameter files and their responses derived from
@@ -16,11 +16,14 @@ description	Nanometric Centaur Datalogger
 dfile centaur
 
 #streams		5000sps 2000sps 1000sps 500sps 250sps 200sps 100sps 80sps 50sps 40sps 20sps 10sps 5sps 2sps 1sps 
-streams		200sps 100sps 
+streams		1000sps  500sps 200sps 100sps 
 
 # definitions of streams
 100sps	 	100	a/d cent_100sps_s1 cent_100sps_s2 cent_100sps_s3
 200sps	 	200	a/d cent_200sps_s1 cent_200sps_s2 cent_200sps_s3
+500sps	 	500	a/d cent_500sps_s1 cent_500sps_s2 cent_500sps_s3
+1000sps	 	1000	a/d cent_1000sps_s1 cent_1000sps_s2 cent_1000sps_s3
+
 
 possible_streams &Literal{
     my @chosen = @_ ; 
@@ -29,12 +32,16 @@ possible_streams &Literal{
     foreach (@chosen) {
 	$chosen{$_} = 1 ; 
     }
-    if ( defined $chosen{"200sps"} ) { 
+    if ( defined $chosen{"1000sps"} ) { 
+	@ok = qw(1000sps) ; 
+	} elsif ( defined $chosen{"500sps"} ) { 
+	@ok = qw(500sps) ; 
+	} elsif ( defined $chosen{"200sps"} ) { 
 	@ok = qw(200sps) ; 
 	} elsif ( defined $chosen{"100sps"} ) { 
 	@ok = qw(100sps) ; 
     } else { 
-	@ok = qw( 100sps 200sps ) ; 
+	@ok = qw( 1000sps 500sps 200sps 100sps ) ; 
     }
     return (@ok) ; 
 }
@@ -56,6 +63,42 @@ ounits		counts
 sn		datalogger
 }
 
+cent_1000sps_s1    &Arr{ 
+gtype           FIR_decimator 
+decifac         5 
+response        &datafile(responses/centaur_1000sps_s1) 
+} 
+
+cent_1000sps_s2    &Arr{ 
+gtype           FIR_decimator 
+decifac         3 
+response        &datafile(responses/centaur_1000sps_s2) 
+} 
+
+cent_1000sps_s3    &Arr{ 
+gtype           FIR_decimator 
+decifac         2 
+response        &datafile(responses/centaur_1000sps_s3) 
+} 
+
+cent_500sps_s1    &Arr{ 
+gtype           FIR_decimator 
+decifac         10 
+response        &datafile(responses/centaur_500sps_s1) 
+} 
+
+cent_500sps_s2    &Arr{ 
+gtype           FIR_decimator 
+decifac         3 
+response        &datafile(responses/centaur_500sps_s2) 
+} 
+
+cent_500sps_s3    &Arr{ 
+gtype           FIR_decimator 
+decifac         2 
+response        &datafile(responses/centaur_500sps_s3) 
+} 
+
 cent_200sps_s1    &Arr{ 
 gtype           FIR_decimator 
 decifac         15 
@@ -73,6 +116,7 @@ gtype           FIR_decimator
 decifac         2 
 response        &datafile(responses/centaur_200sps_s3) 
 } 
+
 cent_100sps_s1    &Arr{ 
 gtype           FIR_decimator 
 decifac         15 
