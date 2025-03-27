@@ -1,6 +1,8 @@
 INCLUDE=cmplx.h
 LIB=libahio.a libcmplx.a libts.a libfft.a
 
+cflags = -I/usr/include/tirpc 
+
 include $(ANTELOPEMAKE)
 
 libahio.a : ioroutin.o
