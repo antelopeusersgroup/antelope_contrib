@@ -3,7 +3,7 @@ MAN1 = db2sac.1
 LICENSES = license_db2sac.txt license_db2ah.txt
 
 cflags = -I/usr/include/tirpc
-ldlibs	= -lscv2 -ldbl2 $(TRLIBS)
+ldlibs	= -lscv2 -ldbl2 $(TRLIBS) -ltirpc
 
 CLEAN = $(LICENSES)
 
