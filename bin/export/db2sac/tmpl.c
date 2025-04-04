@@ -849,17 +849,17 @@ char           *directory;	       /* Name of the directory path */
 
 {
     /****  Don't add a slash if the directory is null  ****/
-    if (*directory == NULL)
+    if (*directory == '\0')
 	return;
 
     /****  Scan to the end of the directory name.  ****/
-    while (*directory != NULL)
+    while (*directory != '\0')
 	directory++;
 
     /****  Add a trailing slash if required.  ****/
     if (*(directory - 1) != '/') {
 	*directory = '/';
-	*(directory + 1) = NULL;
+	*(directory + 1) = '\0';
     }
 }
 
@@ -881,7 +881,7 @@ char           *directory;	       /* Name of the directory path */
 
     /****  Add a trailing slash if required.  ****/
     if (*(directory - 1) == '/') {
-	*(directory - 1) = NULL;
+	*(directory - 1) = '\0';
     }
 }
 
