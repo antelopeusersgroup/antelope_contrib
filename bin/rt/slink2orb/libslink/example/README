@@ -14,8 +14,7 @@ Solaris: to compile slclient.c the Makefile needs to be edited
 (comments are included in the Makefile).
 
 Windows: to compile slclient.c use the Nmake compatible Makefile.win
-(e.g. >nmake -f Makefile.win) or Watcom's Wmake with Makefile.wat
-(e.g. >wmake -f Makefile.wat). 
+(e.g. >nmake -f Makefile.win).
 
 
 -- streamlist.conf --

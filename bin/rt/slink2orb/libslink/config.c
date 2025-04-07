@@ -4,9 +4,22 @@
  * Routines to assist with the configuration of a SeedLink connection
  * description.
  *
- * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
+ * This file is part of the SeedLink Library.
  *
- * modified: 2013.305
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Copyright (C) 2024:
+ * @author Chad Trabant, EarthScope Data Services
  ***************************************************************************/
 
 #include <errno.h>
@@ -15,46 +28,49 @@
 
 #include "libslink.h"
 
-/***************************************************************************
- * sl_read_streamlist:
+/**********************************************************************/ /**
+ * @brief Add a list of streams and selectors from a file to the ::SLCD
  *
- * Read a list of streams and selectors from a file and add them to the
- * stream chain for configuring a multi-station connection.
+ * Streams and selectors are added to the stream list for the ::SLCD
+ * for configuring a multi-station connection.
  *
- * If 'defselect' is not NULL or 0 it will be used as the default selectors
+ * If \a defselect is not NULL it will be used as the default selectors
  * for entries will no specific selectors indicated.
  *
  * The file is expected to be repeating lines of the form:
- *   <NET> <STA> [selectors]
+ *   StationID [selectors]
+ *
  * For example:
  * --------
- * # Comment lines begin with a '#' or '*'
- * GE ISP  BH?.D
- * NL HGN
- * MN AQU  BH?  HH?
+ * # Comment lines begin with a '#'
+ * GE_ISP  BH?
+ * NL_HGN
+ * MN_AQU  BH? HH? LH?
  * --------
  *
- * Returns the number of streams configured or -1 on error.
+ * @param slconn The ::SLCD to which to add streams
+ * @param streamfile The file containing the stream list
+ * @param defselect Default selectors to use when not specified (optional)
+ *
+ * @returns the number of streams configured or -1 on error.
+ *
+ * @sa sl_add_streamlist(), sl_add_stream()
  ***************************************************************************/
 int
-sl_read_streamlist (SLCD *slconn, const char *streamfile,
-                    const char *defselect)
+sl_add_streamlist_file (SLCD *slconn, const char *streamfile,
+                        const char *defselect)
 {
-  char net[3];
-  char sta[6];
-  char selectors[100];
-  char line[100];
-  int streamfd;
-  int fields;
-  int count;
-  int stacount;
-
-  net[0]       = '\0';
-  sta[0]       = '\0';
-  selectors[0] = '\0';
+  FILE *fp;
+  char *cp;
+  char selectors[200] = {0};
+  char stationid[64] = {0};
+  char line[200];
+  int fields = 0;
+  int streamcount = 0;
+  int linecount = 0;
 
   /* Open the stream list file */
-  if ((streamfd = slp_openfile (streamfile, 'r')) < 0)
+  if ((fp = fopen (streamfile, "rb")) == NULL)
   {
     if (errno == ENOENT)
     {
@@ -70,183 +86,133 @@ sl_read_streamlist (SLCD *slconn, const char *streamfile,
 
   sl_log_r (slconn, 1, 1, "Reading stream list from %s\n", streamfile);
 
-  count    = 1;
-  stacount = 0;
-
-  while ((sl_readline (streamfd, line, sizeof (line))) >= 0)
+  while (fgets (line, sizeof (line), fp))
   {
-    fields = sscanf (line, "%2s %5s %99[a-zA-Z0-9!?. ]\n",
-                     net, sta, selectors);
+    linecount += 1;
+    memset (stationid, 0, sizeof(stationid));
+    memset (selectors, 0, sizeof(selectors));
 
-    /* Ignore blank or comment lines */
-    if (fields < 0 || net[0] == '#' || net[0] == '*')
+    /* Terminate string at first carriage return or newline */
+    if ((cp = strchr (line, '\r')) != NULL || (cp = strchr (line, '\n')) != NULL)
+      *cp = '\0';
+
+    fields = sscanf (line, "%63s %199c", stationid, selectors);
+
+    /* Skip blank or comment lines */
+    if (fields <= 0 || stationid[0] == '#')
       continue;
 
-    if (fields < 2)
+    if (fields < 1)
     {
-      sl_log_r (slconn, 2, 0, "cannot parse line %d of stream list\n", count);
+      sl_log_r (slconn, 2, 0, "cannot parse line %d of stream list: '%s'\n",
+                linecount, line);
+      continue;
     }
 
-    /* Add this stream to the stream chain */
-    if (fields == 3)
+    /* Add this stream to the stream list */
+    if (fields == 2)
     {
-      sl_addstream (slconn, net, sta, selectors, -1, NULL);
-      stacount++;
+      sl_add_stream (slconn, stationid, selectors, SL_UNSETSEQUENCE, NULL);
+      streamcount++;
     }
     else
     {
-      sl_addstream (slconn, net, sta, defselect, -1, NULL);
-      stacount++;
+      sl_add_stream (slconn, stationid, defselect, SL_UNSETSEQUENCE, NULL);
+      streamcount++;
     }
-
-    count++;
   }
 
-  if (stacount == 0)
+  if (ferror (fp))
+  {
+    sl_log_r (slconn, 2, 0, "file read error for %s\n", streamfile);
+  }
+
+  if (streamcount == 0)
   {
     sl_log_r (slconn, 2, 0, "no streams defined in %s\n", streamfile);
   }
-  else if (stacount > 0)
+  else if (streamcount > 0)
   {
-    sl_log_r (slconn, 1, 2, "Read %d streams from %s\n", stacount, streamfile);
+    sl_log_r (slconn, 1, 2, "Read %d streams from %s\n", streamcount, streamfile);
   }
 
-  if (close (streamfd))
+  if (fclose (fp))
   {
     sl_log_r (slconn, 2, 0, "closing stream list file, %s\n", strerror (errno));
     return -1;
   }
 
-  return count;
+  return streamcount;
 } /* End of sl_read_streamlist() */
 
-/***************************************************************************
- * sl_parse_streamlist:
+/**********************************************************************/ /**
+ * @brief Add a list of streams and selectors from a string to the ::SLCD
  *
- * Parse a string of streams and selectors and add them to the stream
- * chain for configuring a multi-station connection.
+ * Parsed streams and selectors are added to the stream list for configuring
+ * a multi-station connection.
  *
  * The string should be of the following form:
- * "stream1[:selectors1],stream2[:selectors2],..."
+ * \c "stream1[:selectors1],stream2[:selectors2],..."
  *
  * For example:
- * "IU_KONO:BHE BHN,GE_WLF,MN_AQU:HH?.D"
+ * "IU_COLA:*_B_H_? *_L_H_?"
+ * "IU_KONO:B_H_E B_H_N,GE_WLF,MN_AQU:H_H_?"
+ * "IU_KONO:B_H_?:3,GE_WLF:*:3"
  *
- * Returns the number of streams configured or -1 on error.
+ * @param slconn The ::SLCD to which to add streams
+ * @param streamlist A string bufffer containing the stream list
+ * @param defselect Default selectors to use when not specified (optional)
+ *
+ * @returns the number of streams configured or -1 on error.
+ *
+ * @sa sl_add_streamlist_file(), sl_add_stream()
  ***************************************************************************/
 int
-sl_parse_streamlist (SLCD *slconn, const char *streamlist,
-                     const char *defselect)
+sl_add_streamlist (SLCD *slconn, const char *streamlist,
+                   const char *defselect)
 {
-  int count = 0;
-  int fields;
+  char *parselist;
+  char *stream;
+  char *nextstream;
+  char *selectors;
+  int streamcount = 0;
 
-  const char *staselect;
-  char *net;
-  char *sta;
+  if (!slconn || !streamlist)
+    return -1;
 
-  SLstrlist *ringlist   = NULL; /* split streamlist on ',' */
-  SLstrlist *reqlist    = NULL; /* split ringlist on ':' */
-  SLstrlist *netstalist = NULL; /* split reqlist[0] on "_" */
+  /* Make a copy that can freely be modified */
+  parselist = strdup (streamlist);
 
-  SLstrlist *ringptr   = NULL;
-  SLstrlist *reqptr    = NULL;
-  SLstrlist *netstaptr = NULL;
-
-  /* Parse the streams and selectors */
-  sl_strparse (streamlist, ",", &ringlist);
-  ringptr = ringlist;
-
-  while (ringptr != 0)
+  stream = parselist;
+  while (stream)
   {
-    net       = NULL;
-    sta       = NULL;
-    staselect = NULL;
-
-    fields = sl_strparse (ringptr->element, ":", &reqlist);
-    reqptr = reqlist;
-
-    /* Fill in the NET and STA fields */
-    if (sl_strparse (reqptr->element, "_", &netstalist) != 2)
+    /* Determine start of next stream and terminate current stream */
+    if ((nextstream = strchr (stream, ',')) != NULL)
     {
-      sl_log_r (slconn, 2, 0, "not in NET_STA format: %s\n", reqptr->element);
-      count = -1;
+      *nextstream = '\0';
+      nextstream++;
     }
-    else
+
+    /* Check for first ':' denoting trailing selector(s) */
+    if ((selectors = strchr (stream, ':')) != NULL)
     {
-      /* Point to the first element, should be a network code */
-      netstaptr = netstalist;
-      if (strlen (netstaptr->element) == 0)
-      {
-        sl_log_r (slconn, 2, 0, "not in NET_STA format: %s\n",
-                  reqptr->element);
-        count = -1;
-      }
-      net = netstaptr->element;
-
-      /* Point to the second element, should be a station code */
-      netstaptr = netstaptr->next;
-      if (strlen (netstaptr->element) == 0)
-      {
-        sl_log_r (slconn, 2, 0, "not in NET_STA format: %s\n",
-                  reqptr->element);
-        count = -1;
-      }
-      sta = netstaptr->element;
+      *selectors = '\0';
+      selectors++;
     }
 
-    if (fields > 1)
-    { /* Selectors were included */
-      /* Point to the second element of reqptr, should be selectors */
-      reqptr = reqptr->next;
-      if (strlen (reqptr->element) == 0)
-      {
-        sl_log_r (slconn, 2, 0, "empty selector: %s\n", reqptr->element);
-        count = -1;
-      }
-      staselect = reqptr->element;
-    }
-    else /* If no specific selectors, use the default */
+    /* Add non-empty streams to list, using default selectors if none parsed */
+    if (strlen (stream) > 0)
     {
-      staselect = defselect;
+      sl_add_stream (slconn, stream,
+                     (selectors) ? selectors : defselect,
+                     SL_UNSETSEQUENCE, NULL);
     }
 
-    /* Add this to the stream chain */
-    if (count != -1)
-    {
-      sl_addstream (slconn, net, sta, staselect, -1, 0);
-      count++;
-    }
-
-    /* Free the netstalist (the 'NET_STA' part) */
-    sl_strparse (NULL, NULL, &netstalist);
-
-    /* Free the reqlist (the 'NET_STA:selector' part) */
-    sl_strparse (NULL, NULL, &reqlist);
-
-    ringptr = ringptr->next;
+    streamcount++;
+    stream = nextstream;
   }
 
-  if (netstalist != NULL)
-  {
-    sl_strparse (NULL, NULL, &netstalist);
-  }
-  if (reqlist != NULL)
-  {
-    sl_strparse (NULL, NULL, &reqlist);
-  }
+  free (parselist);
 
-  if (count == 0)
-  {
-    sl_log_r (slconn, 2, 0, "no streams defined in stream list\n");
-  }
-  else if (count > 0)
-  {
-    sl_log_r (slconn, 1, 2, "Parsed %d streams from stream list\n", count);
-  }
-
-  /* Free the ring list */
-  sl_strparse (NULL, NULL, &ringlist);
-
-  return count;
+  return streamcount;
 } /* End of sl_parse_streamlist() */
