@@ -1,4 +1,4 @@
-.TH SLINK2ORB 1 2018/08/07
+.TH SLINK2ORB 1 2025/04/07
 .SH NAME
 slink2orb \- SeedLink to Antelope ORB module
 .SH SYNOPSIS
@@ -38,7 +38,7 @@ server.  If no data are received in this time the connection is closed
 and re-established (after the reconnect delay has expired).  The default
 value is 600 seconds. A value of 0 disables the timeout.
 
-.IP "-k \fIinterval\fR (requires SeedLink >= 3)"
+.IP "-k \fIinterval\fR"
 Keepalive packet interval (in seconds) at which keepalive (heartbeat)
 packets are sent to the server.  Keepalive packets are only sent if
 nothing is received within the interval.  Default is a value of 0
@@ -56,10 +56,6 @@ On startup, slink2orb will attempt to read the specified \fIstatefile\fR
 and configure the SeedLink server to start with the next packet, if
 possible.  Intermediate state saves can be enabled and controlled
 with the \fIstateint\fR value in the parameter file (see below).
-
-.IP "-mbi"
-Match the byte order of integer-encoded data (16 and 32-bit) to the
-same order as the header, swapping the data payload if needed.
 
 .IP "-r"
 Use either the database specified with the -dm option or the local
@@ -163,7 +159,20 @@ then the selectors given with the 'selectors' parameter are used.  There
 is NO expansion/wildcard capability, all stations desired must be
 explicitly listed.
 
-.SH "NOTES"
+.SH CONVERSION OF MINISEED v3 to GENC
+
+The SeedLink v4 protocol can deliver data in either miniSEED version 2
+or the version 3.  Antelope systems support miniSEED version 2 natively and
+these records are forwarded directly to the ORB as "SEED" type packets.
+
+Because Antelope does not yet understand miniSEED version 3, the program
+will convert these records to GENC packet types.  As a consequence, only
+records containing time-series data are converted.  Records containing
+text data, or header-only records are dropped.  Furthermore, any details
+in the miniSEED header that are not supported by the GENC packet type are
+lost by the conversion.
+
+.SH NOTES
 Currently, SeedLink only serves 512-byte Mini-SEED records (with an 8 byte
 SeedLink header).  Received records are prepended with an Antelope packet
 type 'SEED' header and are sent to the ORB, optionally including calib,
@@ -178,16 +187,17 @@ negotiation.
 
 \fBAll/Uni-station Vs. Multi-station:\fP
 
-All/Uni-station mode is an old connection method used for getting all
-(or a single station depending on configuration of the server) data
-streams from a server.  Multi-station mode is the method used for
-requesting specific streams.  Most users do not need to know the
-difference between these modes with the one exception that some
-SeedLink servers implement uni-station mode as all-station mode, if no
-network and station selection is made during negotiation these servers
-will stream all the data to the client (equivalent to wildcarding all
-the data streams).
+Uni-station mode is an legacy connection method used for getting a single,
+implicit station configured by the server.  Multi-station mode is the method
+used for requesting specific streams.
 
+Most users do not need to know the difference between these modes with
+the one exception that some SeedLink servers, e.g. ringserver, implement
+uni-station mode as all-station mode; if no network and station selection
+is made during negotiation these servers will stream all the data to the
+client (equivalent to wild-carding all the data streams).
+
+.SH HISTORY
 The SeedLink protocol was originally developed as part of the SeisComP
 (Seismological Communication Processor) package.  For more information
 see, http://www.gfz-potsdam.de/geofon/
@@ -197,4 +207,5 @@ see, http://www.gfz-potsdam.de/geofon/
 Chad Trabant
 ORFEUS Data Center/EC-Project MEREDIAN
 IRIS Data Management Center
+EarthScope Data Services
 .fi

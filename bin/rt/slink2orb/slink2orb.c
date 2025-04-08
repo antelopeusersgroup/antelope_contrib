@@ -1,8 +1,12 @@
 /***************************************************************************
  * slink2orb.c
+ *
  * A SeedLink to Antelope ORB module
  *
- * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
+ * Written by Chad Trabant,
+ *       ORFEUS/EC-Project MEREDIAN
+ * then: IRIS Data Management Center
+ *  now: EarthScope Data Services
  ***************************************************************************/
 
 #include <signal.h>
@@ -19,7 +23,7 @@
 
 #include "mseed2orbpkt.h"
 
-static char *version = "5.0 (2025.097 DEV)";
+static char *version = "5.0 (2025.098 DEV)";
 static char *package = "slink2orb";
 static char verbose  = 0;
 static char remap    = 0; /* remap sta and chan from SEED tables */
@@ -146,17 +150,18 @@ main (int argc, char **argv)
 void
 packet_handler (const SLpacketinfo *packetinfo, const char *payload)
 {
-  static char *packet;
-  static int bufsize = 0;
-  int mseedret       = 0;
-  int nbytes         = 0;
-
-  double time;
+  static char *packet = NULL;
+  static int packetsz = 0;
   char srcname[ORBSRCNAME_SIZE];
+  double time;
+  int retval = 0;
+  int nbytes = 0;
 
   if (verbose >= 2)
-    sl_log (0, 2, "Received %u bytes of payload format %s, SeedLink sequence: %" PRIu64 "\n",
+    sl_log (0, 2, "Received %u bytes of payload for %.*s, format %s, SeedLink sequence: %" PRIu64 "\n",
             packetinfo->payloadlength,
+            (int)packetinfo->stationidlength,
+            packetinfo->stationid,
             sl_formatstr (packetinfo->payloadformat, packetinfo->payloadsubformat),
             packetinfo->seqnum);
 
@@ -164,17 +169,17 @@ packet_handler (const SLpacketinfo *packetinfo, const char *payload)
   if (packetinfo->payloadformat == SLPAYLOAD_MSEED2 ||
       packetinfo->payloadformat == SLPAYLOAD_MSEED3)
   {
-    mseedret = mseed2orbpkt (payload, packetinfo->payloadlength, calibdb, mappingdb,
-                             remap, srcname, &time, &packet, &nbytes,
-                             &bufsize);
+    retval = mseed2orbpkt (packetinfo->payloadformat, payload, packetinfo->payloadlength,
+                           calibdb, mappingdb,
+                           remap, srcname, &time, &packet, &nbytes, &packetsz);
 
-    if (mseedret == 0)
+    if (retval == 0)
     {
       if (verbose >= 3)
       {
-        char *s = strydtime (time);
-        sl_log (0, 3, "Putting %s %s\n", srcname, s);
-        free (s);
+        char *timestr = strydtime (time);
+        sl_log (0, 3, "Putting %s, %s, %d bytes\n", srcname, timestr, nbytes);
+        free (timestr);
       }
 
       if (orbput (orb, srcname, time, packet, nbytes))
@@ -182,8 +187,8 @@ packet_handler (const SLpacketinfo *packetinfo, const char *payload)
     }
     else
     {
-      sl_log (2, 0, "%s record not forwarded, mseed2orbpkt returned: %d\n",
-              packetinfo->stationid, mseedret);
+      sl_log (2, 0, "%s record not forwarded, mseed2orbpkt() returned: %d\n",
+              packetinfo->stationid, retval);
     }
   }
   else

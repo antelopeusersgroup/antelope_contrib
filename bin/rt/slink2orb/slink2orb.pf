@@ -15,7 +15,7 @@ stateint      100     # interval to save the sequence number (packets)
                       # all packets are sent.  These are the selectors
                       # used in uni-station mode (i.e. if no 'stations'
                       # array).  In multi-station mode, if no selectors
-		      # are provided for a station then these are used.
+                      # are provided for a station then these are used.
 
 # 'stations' array: stations to configure using multi-station mode
 # (Protocol ver. 3), in 'NET_STA' format with following selectors.  If
@@ -27,11 +27,11 @@ stateint      100     # interval to save the sequence number (packets)
 # fields.
 
 #stations &Arr{
-#	NET_STA		[selectors]
-#	GE_EIL		BHZ.D  HHZ.D
-#	IU_KONO		BH?
-#	MN_AQU
-#       TA_*            BHZ
+#   NET_STA   [selectors]
+#   GE_EIL    BHZ.D  HHZ.D
+#   IU_KONO   BH?
+#   MN_AQU
+#   TA_*      BHZ
 #}
 
 #(notes regarding "selectors" from a SeedLink configuration file)
