@@ -1,15 +1,18 @@
 /*
  * mseed2orbpkt.c
- * Wrap a Mini-SEED record to make an Antelope ORB packet of type 'SEED'
+ * Wrap a miniSEED record to make an Antelope ORB packet of type 'SEED'
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
- *                     now: IRIS Data Management Center
+ *                    then: IRIS Data Management Center
+ *                     now: EarthScope Data Services
  *
  * version 2012.244
  */
 
 #include <stdlib.h>
 #include <unistd.h>
+
+#include <libmseed.h>
 
 #include <Pkt.h>
 #include <coords.h>
@@ -22,7 +25,7 @@
 #include <xtra.h>
 
 int
-mseed2orbpkt (char *msrec, int mssize, char *calibdb, char *mappingdb,
+mseed2orbpkt (const char *msrec, uint32_t mssize, char *calibdb, char *mappingdb,
               int remap, char *srcname, double *time, char **packet,
               int *nbytes, int *bufsize)
 {
@@ -51,6 +54,8 @@ mseed2orbpkt (char *msrec, int mssize, char *calibdb, char *mappingdb,
 
   retcode = msdhdr_unpack (msd);
 
+  elog_complain (0, "mseed2orbpkt: msdhdr_unpack() returned %d\n", retcode);
+
   if (retcode == 0)
   {
     msdget (msd,
@@ -64,7 +69,11 @@ mseed2orbpkt (char *msrec, int mssize, char *calibdb, char *mappingdb,
             0);
 
     if (reclen < mssize)
+    {
+      elog_complain (0, "mseed2orbpkt: record length %d < mssize %d\n",
+                     reclen, mssize);
       return -1;
+    }
 
     /* The ORB packet size is SEED type header (14 bytes) plus record length */
     SIZE_BUFFER (char *, *packet, *bufsize, reclen + 14);
@@ -118,7 +127,7 @@ mseed2orbpkt (char *msrec, int mssize, char *calibdb, char *mappingdb,
     HD2NF (cp, &calper, 1);
     cp += 4 * 1;
 
-    /* Stick on the Mini-SEED record */
+    /* Stick on the miniSEED record */
     memcpy (cp, msrec, reclen);
     cp += reclen;
     *nbytes = cp - *packet;

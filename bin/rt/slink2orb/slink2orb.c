@@ -15,10 +15,11 @@
 #include <tr.h>
 
 #include <libslink.h>
+#include <libmseed.h>
 
 #include "mseed2orbpkt.h"
 
-static char *version = "4.4 (2021.028)";
+static char *version = "5.0 (2025.097 DEV)";
 static char *package = "slink2orb";
 static char verbose  = 0;
 static char remap    = 0; /* remap sta and chan from SEED tables */
@@ -31,18 +32,12 @@ static char *mappingdb = 0;              /* the database for SEED name mapping *
 static char *calibdb   = 0;              /* the database for calibration info */
 static char *selectors = 0;              /* default SeedLink selectors */
 static int stateint    = 100;            /* interval to save the state file (pkts) */
-static int matchBOint  = 0;              /* enforce that integer-encoded data matches byte order of header */
 
-static SLCD *slconn;
+static SLCD *slconn = NULL;
 
-static void packet_handler (char *msrecord, int packet_type,
-                            int seqnum, int packet_size);
-static int swap_integer_payload (char *msrecord, SLMSrecord *msr,
-                                 int headerswapflag);
+static void packet_handler (const SLpacketinfo *packetinfo, const char *payload);
 static int parameter_proc (int argcount, char **argvec);
 static void report_environ ();
-static void dummy_handler (int sig);
-static void term_handler (int sig);
 static void elog_printlog (char const *msg);
 static void elog_printerr (char const *msg);
 static void usage (void);
@@ -51,35 +46,25 @@ int
 main (int argc, char **argv)
 {
   Dbptr dbase;
-  SLpacket *slpack;
-  int seqnum;
-  int ptype;
+  static char plbuffer[SL_MAX_PAYLOAD];  /* payload buffer */
+  const SLpacketinfo *packetinfo = NULL; /* packet information */
+  int retval;
   int packetcnt = 0;
 
-  /* Signal handling, use POSIX calls with standardized semantics */
-  struct sigaction sa;
-
-  sa.sa_handler = dummy_handler;
-  sa.sa_flags   = SA_RESTART;
-  sigemptyset (&sa.sa_mask);
-  sigaction (SIGALRM, &sa, NULL);
-
-  sa.sa_handler = term_handler;
-  sigaction (SIGINT, &sa, NULL);
-  sigaction (SIGQUIT, &sa, NULL);
-  sigaction (SIGTERM, &sa, NULL);
-
-  sa.sa_handler = SIG_IGN;
-  sigaction (SIGHUP, &sa, NULL);
-  sigaction (SIGPIPE, &sa, NULL);
-
   /* Allocate and initialize a new connection description */
-  slconn = sl_newslcd ();
+  slconn = sl_initslcd (package, version);
 
   /* Process given parameters (command line and parameter file) */
   if (parameter_proc (argc, argv) < 0)
   {
     sl_log (2, 0, "Parameter processing failed.\n");
+    return -1;
+  }
+
+  /* Set signal handlers for terminating connections */
+  if (sl_set_termination_handler (slconn))
+  {
+    sl_log (2, 0, "sl_set_termination_handler() failed\n");
     return -1;
   }
 
@@ -107,30 +92,40 @@ main (int argc, char **argv)
   }
 
   /* Loop with the connection manager */
-  while (sl_collect (slconn, &slpack))
+  while ((retval = sl_collect (slconn, &packetinfo,
+                               plbuffer, (uint32_t)sizeof (plbuffer))) != SLTERMINATE)
   {
-    ptype  = sl_packettype (slpack);
-    seqnum = sl_sequence (slpack);
-
-    packet_handler ((char *)&slpack->msrecord, ptype, seqnum, SLRECSIZE);
-
-    if (statefile && stateint)
+    /* Check if a packet arrived */
+    if (retval == SLPACKET)
     {
-      if (++packetcnt >= stateint)
+      packet_handler (packetinfo, plbuffer);
+
+      /* Save intermediate state */
+      if (statefile && stateint)
       {
-        sl_savestate (slconn, statefile);
-        packetcnt = 0;
+        if (++packetcnt >= stateint)
+        {
+          sl_savestate (slconn, statefile);
+          packetcnt = 0;
+        }
       }
     }
+    /* Otherwise log unexpected */
+    else
+    {
+      if (retval == SLTOOLARGE)
+        sl_log (2, 0, "%s: Error - packet too large for receiving buffer\n", package);
+      else if (retval == SLNOPACKET)
+        sl_log (2, 0, "%s: Error - sl_collect() returned SLNOPACKET unexpectedly\n", package);
+      else
+        sl_log (2, 0, "%s: Error - sl_collect() returned unexpected value: %d\n", package, retval);
 
-    /* Quit if no streams and terminated INFO is received */
-    if (slconn->streams == NULL && ptype == SLINFT)
       break;
+    }
   }
 
   /* Shutdown */
-  if (slconn->link != -1)
-    sl_disconnect (slconn);
+  sl_disconnect (slconn);
 
   if (orb != -1)
     orbclose (orb);
@@ -145,182 +140,59 @@ main (int argc, char **argv)
 } /* End of main() */
 
 /***************************************************************************
- * local_bigendianhost: Run time test for endianess.
- *
- * Returns 0 if the host is little endian, otherwise 1.
- ***************************************************************************/
-static inline int
-local_bigendianhost (void)
-{
-  const uint16_t endian = 256;
-  return *(const uint8_t *)&endian;
-}
-
-/***************************************************************************
  * packet_handler():
  * Process a received packet based on blocktype
  ***************************************************************************/
-static void
-packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
+void
+packet_handler (const SLpacketinfo *packetinfo, const char *payload)
 {
-  static SLMSrecord *msr = NULL;
   static char *packet;
   static int bufsize = 0;
-  int headerswapflag = 0;
-  int dataswapflag   = 0;
   int mseedret       = 0;
   int nbytes         = 0;
 
   double time;
   char srcname[ORBSRCNAME_SIZE];
 
-  /* Process regular miniSEED records and send them on */
-  if (packet_type >= SLDATA && packet_type <= SLNUM)
+  if (verbose >= 2)
+    sl_log (0, 2, "Received %u bytes of payload format %s, SeedLink sequence: %" PRIu64 "\n",
+            packetinfo->payloadlength,
+            sl_formatstr (packetinfo->payloadformat, packetinfo->payloadsubformat),
+            packetinfo->seqnum);
+
+  /* Process miniSEED records and send them on */
+  if (packetinfo->payloadformat == SLPAYLOAD_MSEED2 ||
+      packetinfo->payloadformat == SLPAYLOAD_MSEED3)
   {
-    /* Enforce that byte order of integer encoded data matches that of header */
-    if (matchBOint)
-    {
-      if (sl_msr_parse (slconn->log, msrecord, &msr, 1, 0) == NULL)
-      {
-        sl_log (2, 0, "sl_msr_parse() failed\n");
-        return;
-      }
-
-      /* Determine byte swapping need for header, compare the raw year to the the parsed year.
-       * The start year in the FSDH is a 2-byte quantity at byte offset 20. */
-      if (msr->fsdh.start_time.year != *((uint16_t *)(msrecord + 20)))
-        headerswapflag = 1;
-
-      /* Determine byte swapping need for data, compare B1000 order to host order */
-      if (msr->Blkt1000 && msr->Blkt1000->word_swap != local_bigendianhost ())
-        dataswapflag = 1;
-
-      if (msr->Blkt1000 &&
-          headerswapflag != dataswapflag &&
-          (msr->Blkt1000->encoding == 1 || msr->Blkt1000->encoding == 3))
-      {
-        if (swap_integer_payload (msrecord, msr, headerswapflag))
-        {
-          sl_log (2, 0, "swap_integer_payload() failed\n");
-          return;
-        }
-      }
-    }
-
-    mseedret = mseed2orbpkt (msrecord, packet_size, calibdb, mappingdb,
+    mseedret = mseed2orbpkt (payload, packetinfo->payloadlength, calibdb, mappingdb,
                              remap, srcname, &time, &packet, &nbytes,
                              &bufsize);
 
-    if (verbose >= 3)
-    {
-      char *s = strydtime (time);
-      sl_log (0, 3, "Received %s %s seq %d\n",
-              srcname, s, seqnum);
-      free (s);
-    }
-
     if (mseedret == 0)
     {
+      if (verbose >= 3)
+      {
+        char *s = strydtime (time);
+        sl_log (0, 3, "Putting %s %s\n", srcname, s);
+        free (s);
+      }
+
       if (orbput (orb, srcname, time, packet, nbytes))
         sl_log (2, 0, "orbput() failed: %s(%d)\n", srcname, nbytes);
     }
     else
     {
-      sl_log (2, 0, "record not forwared, mseed2orbpkt returned: %d\n",
-              mseedret);
+      sl_log (2, 0, "%s record not forwarded, mseed2orbpkt returned: %d\n",
+              packetinfo->stationid, mseedret);
     }
+  }
+  else
+  {
+    sl_log (2, 0, "%s: Error - unhandled payload format: %s\n",
+            package,
+            sl_formatstr (packetinfo->payloadformat, packetinfo->payloadsubformat));
   }
 } /* End of packet_handler() */
-
-/***************************************************************************
- * swap_integer_payload():
- *
- * Byte swap data payload encoded as integers (16 or 32-bit) and reverse
- * the byte order flag in the Blockette 1000.
- *
- * Return 0 on success and non-zero on error.
- ***************************************************************************/
-static int
-swap_integer_payload (char *msrecord, SLMSrecord *msr, int headerswapflag)
-{
-  struct sl_blkt_head_s blkt_head;
-  uint16_t begin_blockette;
-  int reclen;
-  int datalength;
-
-  int sampidx;
-  uint16_t *data16 = NULL;
-  uint32_t *data32 = NULL;
-
-  if (!msrecord || !msr || !msr->Blkt1000)
-    return -1;
-
-  if (msr->Blkt1000->encoding != 1 && msr->Blkt1000->encoding != 3)
-    return -1;
-
-  /* Calculate record size in bytes as 2^(Blkt1000->rec_len) */
-  reclen = (unsigned int)1 << msr->Blkt1000->rec_len;
-
-  datalength = msr->fsdh.num_samples * ((msr->Blkt1000->encoding == 1) ? 2 : 4);
-
-  /* Sanity check, data payload must:
-     - start after fixed header + blockette 1000 (48 + 8)
-     - not extend beyond record length */
-  if (msr->fsdh.begin_data < 56 ||
-      (msr->fsdh.begin_data + datalength) > reclen)
-    return -1;
-
-  /* Loop through blockettes as long as number is non-zero and viable */
-  begin_blockette = msr->fsdh.begin_blockette;
-
-  while ((begin_blockette != 0) &&
-         (begin_blockette <= reclen))
-  {
-    memcpy (&blkt_head, msrecord + begin_blockette, sizeof (struct sl_blkt_head_s));
-
-    if (headerswapflag)
-    {
-      sl_gswap2 (&blkt_head.blkt_type);
-      sl_gswap2 (&blkt_head.next_blkt);
-    }
-
-    /* Reverse the byte order flag in Blockette 1000.
-       The byte order flag is at byte offset 5 in the blockette. */
-    if (blkt_head.blkt_type == 1000)
-    {
-      if (*((uint8_t *)(msrecord + begin_blockette + 5)) == 1)
-        *((uint8_t *)(msrecord + begin_blockette + 5)) = 0;
-      else
-        *((uint8_t *)(msrecord + begin_blockette + 5)) = 1;
-    }
-
-    /* Point to the next blockette */
-    begin_blockette = blkt_head.next_blkt;
-  }
-
-  /* Byte swap 16-bit integer data */
-  if (msr->Blkt1000->encoding == 1)
-  {
-    data16 = (uint16_t *)(msrecord + msr->fsdh.begin_data);
-
-    for (sampidx = 0; sampidx < msr->fsdh.num_samples; sampidx++)
-    {
-      sl_gswap2 (data16 + sampidx);
-    }
-  }
-  /* Byte swap 32-bit integer data */
-  else if (msr->Blkt1000->encoding == 3)
-  {
-    data32 = (uint32_t *)(msrecord + msr->fsdh.begin_data);
-
-    for (sampidx = 0; sampidx < msr->fsdh.num_samples; sampidx++)
-    {
-      sl_gswap4 (data32 + sampidx);
-    }
-  }
-
-  return 0;
-} /* End of swap_integer_payload() */
 
 /***************************************************************************
  * parameter_proc():
@@ -331,10 +203,9 @@ swap_integer_payload (char *msrecord, SLMSrecord *msr, int headerswapflag)
 static int
 parameter_proc (int argcount, char **argvec)
 {
-  int stacount;
   char *tptr;
   char *key;
-  char *netp, *stap, *selp;
+  char *stationid, *staselector;
   Pf *pf;
   Arr *stations = 0;
   Tbl *stakeys;
@@ -386,7 +257,7 @@ parameter_proc (int argcount, char **argvec)
     }
     else if (strcmp (argvec[optind], "-mbi") == 0)
     {
-      matchBOint = 1;
+      elog_complain (0, "Argument -mbi is no longer supported, ignoring\n");
     }
     else if (strcmp (argvec[optind], "-r") == 0)
     {
@@ -412,12 +283,13 @@ parameter_proc (int argcount, char **argvec)
   if ((argcount - optind) < 2)
     usage ();
 
+  /* First value is the SeedLink server, second is the ORB server */
   for (; optind < argcount; optind++)
   {
     if (optind < (argcount - 2))
       usage ();
     if (optind == (argcount - 2))
-      slconn->sladdr = argvec[optind];
+      sl_set_serveraddress (slconn, argvec[optind]);
     if (optind == (argcount - 1))
       orbaddr = argvec[optind];
   }
@@ -459,10 +331,9 @@ parameter_proc (int argcount, char **argvec)
   }
 
   /* Translate the 'stations' Arr, if given */
-  if (stations != 0)
+  if (stations)
   {
     slconn->multistation = 1;
-    stacount             = 0;
     stakeys              = keysarr (stations);
     if (maxtbl (stakeys) <= 0)
     {
@@ -473,44 +344,23 @@ parameter_proc (int argcount, char **argvec)
     /* Go through each entry in the 'stations' Arr */
     while ((key = (char *)shifttbl (stakeys)) != NULL)
     {
-      netp = strdup (key);
+      stationid = strdup (key);
 
-      /* Parse out the net/sta pair */
-      if ((stap = strchr (netp, '_')) == NULL)
-      {
-        sl_log (2, 0, "Not in 'NET_STA' format: %s\n", netp);
-        return -1;
-      }
-      *stap++ = '\0';
-
-      /* Check the net/sta pair */
-      if (strlen (netp) > 5 || strlen (netp) <= 0)
-      {
-        sl_log (2, 0, "Problem with network code: %s\n", key);
-        return -1;
-      }
-      if (strlen (stap) > 5 || strlen (stap) <= 0)
-      {
-        sl_log (2, 0, "Problem with station code: %s\n", key);
-        return -1;
-      }
-
-      /* Retreive selectors for this station, if none use default */
+      /* Retrieve selectors for this station, if none use default */
       tptr = (char *)getarr (stations, key);
       if (strlen (tptr) == 0)
       {
-        selp = selectors;
+        staselector = selectors;
       }
       else
       {
-        selp = tptr;
+        staselector = tptr;
       }
 
-      /* Add this to the list */
-      sl_addstream (slconn, netp, stap, selp, -1, NULL);
+      /* Add stationID */
+      sl_add_stream (slconn, stationid, staselector, SL_UNSETSEQUENCE, NULL);
 
-      stacount++;
-      free (netp);
+      free (stationid);
     }
 
     /* Free the Arr and Tbl */
@@ -518,8 +368,8 @@ parameter_proc (int argcount, char **argvec)
     freetbl (stakeys, 0);
   }
   else
-  { /* No 'stations' array, assuming uni-station mode */
-    sl_setuniparams (slconn, selectors, -1, NULL);
+  { /* No 'stations' array, assuming all-station mode */
+    sl_set_allstation_params (slconn, selectors, SL_UNSETSEQUENCE, NULL);
   }
 
   /* Free the parameter file structure */
@@ -603,46 +453,19 @@ report_environ ()
   sl_log (0, 0, "'stations' array:\n");
   while (curstation != NULL)
   {
-    if (curstation->net)
-      sl_log (0, 0, "  %d - net: %s\n",
-              stacount, curstation->net);
-    else
-      sl_log (0, 0, "'net' not defined\n");
+    sl_log (0, 0, "  %d - station ID: %s\n",
+            stacount, curstation->stationid);
 
-    if (curstation->sta)
-      sl_log (0, 0, "  %d - sta: %s\n",
-              stacount, curstation->sta);
-    else
-      sl_log (0, 0, "'sta' not defined\n");
+    sl_log (0, 0, "  %d - selectors: %s\n",
+            stacount, curstation->selectors);
 
-    if (curstation->selectors)
-      sl_log (0, 0, "  %d - selectors: %s\n",
-              stacount, curstation->selectors);
-    else
-      sl_log (0, 0, "  %d - 'selectors' not defined\n", stacount);
-
-    sl_log (0, 0, "  %d - seqnum: %d\n", stacount, curstation->seqnum);
+    sl_log (0, 0, "  %d - seqnum: %" PRIu64 "\n", stacount, curstation->seqnum);
     sl_log (0, 0, "  %d - timestamp: '%s'\n", stacount, curstation->timestamp);
 
     stacount++;
     curstation = curstation->next;
   }
 } /* End of report_environ() */
-
-/***************************************************************************
- * term_handler() and dummy_handler():
- * Signal handler routines.
- ***************************************************************************/
-static void
-term_handler (int sig)
-{
-  sl_terminate (slconn);
-}
-
-static void
-dummy_handler (int sig)
-{
-}
 
 /***************************************************************************
  * elog_printlog():
@@ -689,8 +512,9 @@ usage (void)
           "Chad Trabant\n"
           "ORFEUS/EC-Project MEREDIAN\n"
           "IRIS Data Management Center\n"
+          "EarthScope Data Services\n"
           "\n"
-          "Please report problems to chad@iris.washington.edu\n"
+          "Please report problems at https://github.com/antelopeusersgroup/antelope_contrib/issues\n"
           "\n");
 
   exit (1);
