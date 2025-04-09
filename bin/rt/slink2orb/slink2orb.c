@@ -208,9 +208,11 @@ packet_handler (const SLpacketinfo *packetinfo, const char *payload)
 static int
 parameter_proc (int argcount, char **argvec)
 {
-  char *tptr;
+  char *stationid;
+  char *staselector;
+  char *seedlinkaddr = NULL;
   char *key;
-  char *stationid, *staselector;
+  char *tptr;
   Pf *pf;
   Arr *stations = 0;
   Tbl *stakeys;
@@ -223,7 +225,7 @@ parameter_proc (int argcount, char **argvec)
     usage ();
 
   /* Process all but last 2 command line arguments */
-  for (optind = 1; optind < (argcount - 2); optind++)
+  for (optind = 1; optind < argcount; optind++)
   {
     if (strncmp (argvec[optind], "-v", 2) == 0)
     {
@@ -270,8 +272,19 @@ parameter_proc (int argcount, char **argvec)
     }
     else
     {
-      elog_complain (0, "Unknown argument: %s\n", argvec[optind]);
-      usage ();
+      if (seedlinkaddr == NULL)
+      {
+        seedlinkaddr = argvec[optind];
+      }
+      else if (orbaddr == NULL)
+      {
+        orbaddr = argvec[optind];
+      }
+      else
+      {
+        elog_complain (0, "Unknown argument: %s\n", argvec[optind]);
+        usage ();
+      }
     }
   }
 
@@ -284,20 +297,16 @@ parameter_proc (int argcount, char **argvec)
 
   sl_log (0, 0, "%s version %s\n", package, version);
 
-  /* For the last two required arguments */
-  if ((argcount - optind) < 2)
-    usage ();
-
-  /* First value is the SeedLink server, second is the ORB server */
-  for (; optind < argcount; optind++)
+  if (seedlinkaddr == NULL || orbaddr == NULL)
   {
-    if (optind < (argcount - 2))
-      usage ();
-    if (optind == (argcount - 2))
-      sl_set_serveraddress (slconn, argvec[optind]);
-    if (optind == (argcount - 1))
-      orbaddr = argvec[optind];
+    if (seedlinkaddr == NULL)
+      sl_log (2, 0, "SeedLink address not specified, try -h for usage\n");
+
+    if (orbaddr == NULL)
+      sl_log (2, 0, "ORB address not specified, try -h for usage\n");
   }
+
+  sl_set_serveraddress (slconn, seedlinkaddr);
 
   /* Read parameter file */
   if ((pfread (paramfile, &pf)) < 0)
