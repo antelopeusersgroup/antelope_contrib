@@ -28,14 +28,20 @@
  * mseed2orbpkt():
  *
  * Convert a miniSEED record to an Antelope ORB packet.
+ * miniSEED v2 records are converted to SEED type packets.
+ * miniSEED v3 records are converted to GENC type packets.
  *
- * Returns 0 on success, -1 on error.
+ * A miniSEED v3 record may be skipped if it cannot be converted to GENC,
+ * For example: 64-bit float (double) samples, Text/ASCII samples,
+ * header-only record.
+ *
+ * Returns 0 on success, 1 when the record is skipped, or -1 on error.
  ***************************************************************************/
 int
 mseed2orbpkt (char payloadformat, const char *msrec, uint32_t mssize,
-              char *calibdb, char *mappingdb,
-              int remap, char *srcname, double *time, char **packet,
-              int *nbytes, int *packetsz)
+              char *calibdb, char *mappingdb, int remap,
+              char *srcname, double *time, char **packet,
+              int *nbytes, int *packetsz, int verbose)
 {
   MS3Record *msr  = NULL;
   int version     = 0;
@@ -138,6 +144,16 @@ mseed2orbpkt (char payloadformat, const char *msrec, uint32_t mssize,
   /* Create GENC type packet for miniSEED v3 record */
   else if (payloadformat == SLPAYLOAD_MSEED3)
   {
+    /* Ensure data is available to convert to GENC, skip if not */
+    if (msr->samplecnt <= 0)
+    {
+      if (verbose >= 3)
+        elog_complain (0, "%s: Header-only miniSEED v3 record, dropping\n",
+                       __func__);
+      msr3_free (&msr);
+      return -1;
+    }
+
     /* Unpack the data samples */
     if (msr3_unpack_data (msr, 0) < 0)
     {
@@ -186,8 +202,9 @@ mseed2orbpkt (char payloadformat, const char *msrec, uint32_t mssize,
     }
     else
     {
-      elog_complain (0, "%s: Error - unsupported sample type: %c\n",
-                     __func__, msr->sampletype);
+      if (verbose >= 3)
+        elog_complain (0, "%s: Unsupported miniSEED sample type (%c), dropping\n",
+                       __func__, msr->sampletype);
       msr3_free (&msr);
       freePkt (pkt);
       return -1;

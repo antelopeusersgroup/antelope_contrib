@@ -52,3 +52,37 @@ stateint      100     # interval to save the sequence number (packets)
 #   BH? E          - BHZ, BHN, BHE plus detection records of all channels
 #   !LCQ !LEP      - exclude LCQ and LEP channels
 #   !L !T          - exclude log and timing records
+
+#tls  0
+                      # Enable TLS (SSL) encryption for the connection,
+                      # which must be supported by the server.  By default
+                      # TLS will be enabled when port 18500 is used, and
+                      # disabled for all others.
+                      # This parameter explicitly enables/disables TLS.
+
+#tls_ca_file  /path/to/ca_file
+                      # Specify a file containing Certificate Authority
+                      # certificates to use to verify a TLS server.
+                      # Some known locations on the host will be searched
+                      # for CA certs but in case none are found they must
+                      # be specified.
+
+#tls_ca_path  /path/to/certs/
+                      # Specify a directory path that contains files with
+                      # Certificate Authority certificates to verify
+                      # a TLS server.
+
+#tls_debug 0
+                      # Enable tLS connection debugging.  Can be set from
+                      # 0 to 5 with 5 being the most detailed.
+
+#tls_unverified_cert_ok 0
+                      # Allow TLS connections even if the server does not
+                      # present a certificate that can be verified.
+
+#userpass user pass
+                      # Specify the username and password to submit to the
+                      # server for authentication.  This only works with
+                      # servers supporting SeedLink protocol version 4.
+                      # It is strongly recommended to only use authentication
+                      # over TLS-encrypted connections.

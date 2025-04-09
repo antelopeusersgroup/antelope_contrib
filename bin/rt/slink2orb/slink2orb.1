@@ -167,10 +167,21 @@ these records are forwarded directly to the ORB as "SEED" type packets.
 
 Because Antelope does not yet understand miniSEED version 3, the program
 will convert these records to GENC packet types.  As a consequence, only
-records containing time-series data are converted.  Records containing
-text data, or header-only records are dropped.  Furthermore, any details
-in the miniSEED header that are not supported by the GENC packet type are
-lost by the conversion.
+records containing time-series data of 32-bit integer and float values
+are converted.  Records containing the following data types are not converted
+and are dropped:
+
+.RS
+.IP \[bu] 2
+64-bit floats (doubles)
+.IP \[bu] 2
+Text data
+.IP \[bu] 2
+Header-only records
+.RE
+
+Furthermore, any details in the miniSEED header that are not supported by
+the GENC packet type are lost by the conversion.
 
 .SH NOTES
 Currently, SeedLink only serves 512-byte Mini-SEED records (with an 8 byte

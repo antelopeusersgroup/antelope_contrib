@@ -170,8 +170,8 @@ packet_handler (const SLpacketinfo *packetinfo, const char *payload)
       packetinfo->payloadformat == SLPAYLOAD_MSEED3)
   {
     retval = mseed2orbpkt (packetinfo->payloadformat, payload, packetinfo->payloadlength,
-                           calibdb, mappingdb,
-                           remap, srcname, &time, &packet, &nbytes, &packetsz);
+                           calibdb, mappingdb, remap,
+                           srcname, &time, &packet, &nbytes, &packetsz, verbose);
 
     if (retval == 0)
     {
@@ -185,7 +185,7 @@ packet_handler (const SLpacketinfo *packetinfo, const char *payload)
       if (orbput (orb, srcname, time, packet, nbytes))
         sl_log (2, 0, "orbput() failed: %s(%d)\n", srcname, nbytes);
     }
-    else
+    else if (retval < 0)
     {
       sl_log (2, 0, "%s record not forwarded, mseed2orbpkt() returned: %d\n",
               packetinfo->stationid, retval);
