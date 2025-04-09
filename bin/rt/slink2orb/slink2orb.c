@@ -29,12 +29,12 @@ static char verbose  = 0;
 static char remap    = 0; /* remap sta and chan from SEED tables */
 
 static int orb         = -1;             /* the ORB descriptor */
-static char *statefile = 0;              /* state file */
+static char *statefile = NULL;           /* state file */
 static char *paramfile = "slink2orb.pf"; /* parameter file with default */
-static char *orbaddr   = 0;              /* the host:port of the destination ORB */
-static char *mappingdb = 0;              /* the database for SEED name mapping */
-static char *calibdb   = 0;              /* the database for calibration info */
-static char *selectors = 0;              /* default SeedLink selectors */
+static char *orbaddr   = NULL;           /* the host:port of the destination ORB */
+static char *mappingdb = NULL;           /* the database for SEED name mapping */
+static char *calibdb   = NULL;           /* the database for calibration info */
+static char *selectors = NULL;           /* default SeedLink selectors */
 static int stateint    = 100;            /* interval to save the state file (pkts) */
 
 static SLCD *slconn = NULL;
@@ -213,13 +213,13 @@ parameter_proc (int argcount, char **argvec)
   char *seedlinkaddr = NULL;
   char *key;
   char *tptr;
-  Pf *pf;
-  Arr *stations = 0;
+  Pf *pf        = NULL;
+  Arr *stations = NULL;
   Tbl *stakeys;
 
-  char netto_argv     = 0;
-  char netdly_argv    = 0;
-  char keepalive_argv = 0;
+  int netto_argv     = 0;
+  int netdly_argv    = 0;
+  int keepalive_argv = 0;
 
   if (argcount <= 2)
     usage ();
@@ -304,6 +304,8 @@ parameter_proc (int argcount, char **argvec)
 
     if (orbaddr == NULL)
       sl_log (2, 0, "ORB address not specified, try -h for usage\n");
+
+    exit (1);
   }
 
   sl_set_serveraddress (slconn, seedlinkaddr);
@@ -316,32 +318,63 @@ parameter_proc (int argcount, char **argvec)
   }
   else
   {
-    /* Do some extra work so parameters are optional */
-
     /* Only read network timeout if not set on command line */
     if (!netto_argv)
-      if ((tptr = pfget_string (pf, "nettimeout")) != 0)
+      if ((tptr = pfget_string (pf, "nettimeout")))
         slconn->netto = atoi ((char *)tptr);
 
     /* Only read network reconnect delay if not set on command line */
     if (!netdly_argv)
-      if ((tptr = pfget_string (pf, "netdelay")) != 0)
+      if ((tptr = pfget_string (pf, "netdelay")))
         slconn->netdly = atoi ((char *)tptr);
 
     /* Only read keepalive interval if not set on command line */
     if (!keepalive_argv)
-      if ((tptr = pfget_string (pf, "keepalive")) != 0)
+      if ((tptr = pfget_string (pf, "keepalive")))
         slconn->keepalive = atoi ((char *)tptr);
 
-    if ((tptr = pfget_string (pf, "stateint")) != 0)
+    if ((tptr = pfget_string (pf, "stateint")))
       stateint = atoi ((char *)tptr);
 
-    if ((tptr = pfget_string (pf, "selectors")) != 0 &&
-        strlen (tptr) > 0)
+    if ((tptr = pfget_string (pf, "selectors")) && strlen (tptr) > 0)
       selectors = strdup ((char *)tptr);
 
     /* 'stations' == 0 if not found */
     stations = pfget_arr (pf, "stations");
+
+    slconn->tls = (pfget_boolean (pf, "tls") == -1) ? 1 : 0;
+
+    if ((tptr = pfget_string (pf, "tls_ca_file")))
+    {
+      if (setenv ("LIBSLINK_CA_CERT_FILE", tptr, 1))
+      {
+        sl_log (2, 0, "Error setting LIBSLINK_CA_CERT_FILE environment variable\n");
+      }
+    }
+
+    if ((tptr = pfget_string (pf, "tls_ca_path")))
+    {
+      if (setenv ("LIBSLINK_CA_CERT_PATH", tptr, 1))
+      {
+        sl_log (2, 0, "Error setting LIBSLINK_CA_CERT_PATH environment variable\n");
+      }
+    }
+
+    if ((tptr = pfget_string (pf, "tls_debug")))
+    {
+      if (setenv ("LIBSLINK_TLS_DEBUG", tptr, 1))
+      {
+        sl_log (2, 0, "Error setting LIBSLINK_TLS_DEBUG environment variable\n");
+      }
+    }
+
+    if ((tptr = pfget_string (pf, "tls_unverified_cert_ok")))
+    {
+      if (setenv ("LIBSLINK_CERT_UNVERIFIED_OK", tptr, 1))
+      {
+        sl_log (2, 0, "Error setting LIBSLINK_CERT_UNVERIFIED_OK environment variable\n");
+      }
+    }
   }
 
   /* Translate the 'stations' Arr, if given */
@@ -415,51 +448,64 @@ report_environ ()
   SLstream *curstation;
 
   if (statefile)
-    sl_log (0, 0, "statefile:\t%s\n", statefile);
+    sl_log (0, 0, "statefile: %s\n", statefile);
   else
     sl_log (0, 0, "'statefile' not defined\n");
 
-  sl_log (0, 0, "stateint:\t%d\n", stateint);
+  sl_log (0, 0, "stateint: %d\n", stateint);
 
   if (paramfile)
-    sl_log (0, 0, "paramfile:\t%s\n", paramfile);
+    sl_log (0, 0, "paramfile: %s\n", paramfile);
   else
     sl_log (0, 0, "'paramfile' not defined\n");
 
   if (mappingdb)
-    sl_log (0, 0, "mappingdb:\t%s\n", mappingdb);
+    sl_log (0, 0, "mappingdb: %s\n", mappingdb);
   else
     sl_log (0, 0, "'mappingdb' not defined\n");
 
   if (calibdb)
-    sl_log (0, 0, "calibdb:\t%s\n", calibdb);
+    sl_log (0, 0, "calibdb: %s\n", calibdb);
   else
     sl_log (0, 0, "'calibdb' not defined\n");
 
-  sl_log (0, 0, "verbose:\t%d\n", verbose);
-  sl_log (0, 0, "remap:\t%d\n", remap);
-  sl_log (0, 0, "nettimeout:\t%d\n", slconn->netto);
-  sl_log (0, 0, "netdelay:\t%d\n", slconn->netdly);
-  sl_log (0, 0, "keepalive:\t%d\n", slconn->keepalive);
+  sl_log (0, 0, "verbose: %d\n", verbose);
+  sl_log (0, 0, "remap: %d\n", remap);
+  sl_log (0, 0, "nettimeout: %d\n", slconn->netto);
+  sl_log (0, 0, "netdelay: %d\n", slconn->netdly);
+  sl_log (0, 0, "keepalive: %d\n", slconn->keepalive);
+  sl_log (0, 0, "tls: %d\n", slconn->tls);
+
+  sl_log (0, 0, "LIBSLINK_CA_CERT_FILE: %s\n",
+          getenv ("LIBSLINK_CA_CERT_FILE") ? getenv ("LIBSLINK_CA_CERT_FILE") : "[not set]");
+
+  sl_log (0, 0, "LIBSLINK_CA_CERT_PATH: %s\n",
+          getenv ("LIBSLINK_CA_CERT_PATH") ? getenv ("LIBSLINK_CA_CERT_PATH") : "[not set]");
+
+  sl_log (0, 0, "LIBSLINK_TLS_DEBUG: %s\n",
+          getenv ("LIBSLINK_TLS_DEBUG") ? getenv ("LIBSLINK_TLS_DEBUG") : "[not set]");
+
+  sl_log (0, 0, "LIBSLINK_CERT_UNVERIFIED_OK: %s\n",
+          getenv ("LIBSLINK_CERT_UNVERIFIED_OK") ? getenv ("LIBSLINK_CERT_UNVERIFIED_OK") : "[not set]");
 
   if (selectors)
-    sl_log (0, 0, "selectors:\t%s\n", selectors);
+    sl_log (0, 0, "selectors: %s\n", selectors);
   else
     sl_log (0, 0, "'selectors' not defined\n");
 
   if (orbaddr)
-    sl_log (0, 0, "orbaddr:\t%s\n", orbaddr);
+    sl_log (0, 0, "orbaddr: %s\n", orbaddr);
   else
     sl_log (0, 0, "'orbaddr' not defined\n");
 
   if (slconn->sladdr)
-    sl_log (0, 0, "sladdr:\t%s\n", slconn->sladdr);
+    sl_log (0, 0, "sladdr: %s\n", slconn->sladdr);
   else
     sl_log (0, 0, "'slconn->sladdr' not defined\n");
 
-  sl_log (0, 0, "link:\t%d\n", slconn->link);
+  sl_log (0, 0, "link: %d\n", slconn->link);
 
-  sl_log (0, 0, "slconn->multistation:\t%d\n", slconn->multistation);
+  sl_log (0, 0, "slconn->multistation: %d\n", slconn->multistation);
 
   stacount   = 0;
   curstation = slconn->streams;
@@ -471,7 +517,7 @@ report_environ ()
             stacount, curstation->stationid);
 
     sl_log (0, 0, "  %d - selectors: %s\n",
-            stacount, curstation->selectors);
+            stacount, (curstation->selectors) ? curstation->selectors : "[not set]");
 
     sl_log (0, 0, "  %d - seqnum: %" PRIu64 "\n", stacount, curstation->seqnum);
     sl_log (0, 0, "  %d - timestamp: '%s'\n", stacount, curstation->timestamp);
