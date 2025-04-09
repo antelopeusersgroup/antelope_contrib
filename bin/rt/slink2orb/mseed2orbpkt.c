@@ -106,6 +106,10 @@ mseed2orbpkt (char payloadformat, const char *msrec, uint32_t mssize,
       strcpy (parts.src_chan, chan);
       strcpy (parts.src_loc, "");
     }
+
+    /* Get calibration information */
+    if (calibdb)
+      dbget_calib (sta, chan, *time, calibdb, &calib, &calper, segtype);
   }
 
   /* Create SEED type packet for miniSEED v2 record */
@@ -114,10 +118,6 @@ mseed2orbpkt (char payloadformat, const char *msrec, uint32_t mssize,
     /* The ORB packet size is SEED type header (14 bytes) plus record length */
     SIZE_BUFFER (char *, *packet, *packetsz, mssize + 14);
     cp = *packet;
-
-    /* Get calibration information */
-    if (calibdb && mappingdb)
-      dbget_calib (sta, chan, *time, calibdb, &calib, &calper, segtype);
 
     version = msr->pubversion;
 
