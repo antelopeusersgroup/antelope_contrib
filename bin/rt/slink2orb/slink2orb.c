@@ -36,6 +36,7 @@ static char *mappingdb = NULL;           /* the database for SEED name mapping *
 static char *calibdb   = NULL;           /* the database for calibration info */
 static char *selectors = NULL;           /* default SeedLink selectors */
 static int stateint    = 100;            /* interval to save the state file (pkts) */
+char auth_buffer[1024] = {0};            /* Buffer for SeedLink authentication */
 
 static SLCD *slconn = NULL;
 
@@ -198,6 +199,23 @@ packet_handler (const SLpacketinfo *packetinfo, const char *payload)
             sl_formatstr (packetinfo->payloadformat, packetinfo->payloadsubformat));
   }
 } /* End of packet_handler() */
+
+/***************************************************************************
+ * auth_value:
+ *
+ * A callback function returning the auth_buffer, which is a string to
+ * be sumitted with the SeedLink AUTH command.
+ *
+ * Returns authorization value string on success, and NULL on failure
+ ***************************************************************************/
+const char *
+auth_value (const char *server, void *data)
+{
+  (void)server; /* Server name is not used in this case */
+  (void)data;   /* User-supplied data is not used in this case */
+
+  return auth_buffer;
+}
 
 /***************************************************************************
  * parameter_proc():
@@ -375,6 +393,24 @@ parameter_proc (int argcount, char **argvec)
         sl_log (2, 0, "Error setting LIBSLINK_CERT_UNVERIFIED_OK environment variable\n");
       }
     }
+
+    if ((tptr = pfget_string (pf, "userpass")))
+    {
+      char user[512] = {0};
+      char pass[512] = {0};
+
+      if (sscanf (tptr, "%511s %511s", user, pass) == 2)
+      {
+        snprintf (auth_buffer, sizeof (auth_buffer), "USERPASS %s %s", user, pass);
+        sl_set_auth_params (slconn, auth_value, NULL, NULL);
+      }
+      else
+      {
+        sl_log (2, 0, "userpass parameter: User and Pass fields are not both specified\n");
+        sl_log (2, 0, "userpass value: '%s'\n", tptr);
+        return -1;
+      }
+    }
   }
 
   /* Translate the 'stations' Arr, if given */
@@ -488,6 +524,15 @@ report_environ ()
   sl_log (0, 0, "LIBSLINK_CERT_UNVERIFIED_OK: %s\n",
           getenv ("LIBSLINK_CERT_UNVERIFIED_OK") ? getenv ("LIBSLINK_CERT_UNVERIFIED_OK") : "[not set]");
 
+  if (auth_buffer[0] != 0)
+  {
+    sl_log (0, 0, "auth value: %s\n", auth_buffer);
+  }
+  else
+  {
+    sl_log (0, 0, "'auth value' not defined\n");
+  }
+
   if (selectors)
     sl_log (0, 0, "selectors: %s\n", selectors);
   else
@@ -519,7 +564,11 @@ report_environ ()
     sl_log (0, 0, "  %d - selectors: %s\n",
             stacount, (curstation->selectors) ? curstation->selectors : "[not set]");
 
-    sl_log (0, 0, "  %d - seqnum: %" PRIu64 "\n", stacount, curstation->seqnum);
+    if (curstation->seqnum == SL_UNSETSEQUENCE)
+      sl_log (0, 0, "  %d - seqnum: [not set]\n", stacount);
+    else
+      sl_log (0, 0, "  %d - seqnum: %" PRIu64 "\n", stacount, curstation->seqnum);
+
     sl_log (0, 0, "  %d - timestamp: '%s'\n", stacount, curstation->timestamp);
 
     stacount++;
