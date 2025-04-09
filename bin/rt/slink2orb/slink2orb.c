@@ -360,7 +360,10 @@ parameter_proc (int argcount, char **argvec)
     /* 'stations' == 0 if not found */
     stations = pfget_arr (pf, "stations");
 
-    slconn->tls = (pfget_boolean (pf, "tls") == -1) ? 1 : 0;
+    if ((tptr = pfget_string (pf, "tls")))
+    {
+      slconn->tls = yesno (tptr);
+    }
 
     if ((tptr = pfget_string (pf, "tls_ca_file")))
     {
