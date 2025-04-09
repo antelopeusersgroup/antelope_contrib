@@ -10,45 +10,67 @@ netdelay      30      # network reconnect delay (seconds)
 keepalive     0       # interval to send keepalive requests (seconds)
 stateint      100     # interval to save the sequence number (packets)
 
-#selectors   BH?.D     # Default selectors recognized by SeedLink server,
-                      # see below.  If no selectors are indicated then
-                      # all packets are sent.  These are the selectors
-                      # used in uni-station mode (i.e. if no 'stations'
-                      # array).  In multi-station mode, if no selectors
-		      # are provided for a station then these are used.
+#selectors   BH?.D    # Default SeedLink selectors.
+                      # These are the selectors used in uni-station or
+                      # all-station mode (i.e. if no 'stations' array).
+                      # In multi-station mode, if no selectors
+                      # are provided for a station then these are used.
 
 # 'stations' array: stations to configure using multi-station mode
-# (Protocol ver. 3), in 'NET_STA' format with following selectors.  If
-# no selectors are indicated then the default selectors are used.  If
-# this array is not present the communication will be configured in
-# all/uni-station mode (Protocol ver. <=2), using the default
-# selectors.  Some SeedLink servers support enhanced selection using
-# wildcards (via '*' or '?' characters) in the network and station
-# fields.
+# in 'NET_STA' format with optional selectors.  If no selectors are
+# indicated then the default selectors are used.  If this array is not
+# specified the connection will be configured in all/uni-station mode,
+# using the default selectors.  Some SeedLink servers support enhanced
+# selection using wildcards (via '*' or '?' characters) in the network
+# and station fields.
 
 #stations &Arr{
-#	NET_STA		[selectors]
-#	GE_EIL		BHZ.D  HHZ.D
-#	IU_KONO		BH?
-#	MN_AQU
-#       TA_*            BHZ
+#   NET_STA   [selectors]
+#   GE_EIL    BHZ.D  HHZ.D
+#   IU_KONO   00BH?
+#   MN_AQU
+#   TA_*      BHZ
 #}
 
-#(notes regarding "selectors" from a SeedLink configuration file)
+# This client will accept both SeedLink v3 and v4 selector formats and
+# translate v3 to v4 when possible.
 #
-#   The "selectors" parameter tells to request packets that match given
-#   selectors. This helps to reduce network traffic. A packet is sent to
-#   client if it matches any positive selector (without leading "!") and
-#   doesn't match any negative selectors (with "!"). General format of
-#   selectors is LLSSS.T, where LL is location, SSS is channel, and T is
-#   type (one of DECOTL for data, event, calibration, blockette, timing,
-#   and log records). "LL", ".T", and "LLSSS." can be omitted, meaning
-#   "any". It is also possible to use "?" in place of L and S.
+# Selector specification for SeedLink v3 is specified here:
+# https://www.seiscomp.de/doc/apps/seedlink.html#commands
 #
-#   Some examples:
-#   BH?            - BHZ, BHN, BHE (all record types)
-#   00BH?.D        - BHZ, BHN, BHE with location code '00' (data records)
-#   BH? !E         - BHZ, BHN, BHE (excluding detection records)
-#   BH? E          - BHZ, BHN, BHE plus detection records of all channels
-#   !LCQ !LEP      - exclude LCQ and LEP channels
-#   !L !T          - exclude log and timing records
+# Selector specification for SeedLink v4 is specified here:
+# https://docs.fdsn.org/projects/seedlink/en/latest/protocol.html#station-id-and-stream-id
+
+
+#tls  0               # Enable TLS (SSL) encryption for the connection,
+                      # which must be supported by the server.  By default
+                      # TLS will be enabled when port 18500 is used, and
+                      # disabled for all others.
+                      # This parameter explicitly enables/disables TLS.
+
+#tls_ca_file  /path/to/ca_file
+                      # Specify a file containing Certificate Authority
+                      # certificates to use to verify a TLS server.
+                      # Some known locations on the host will be searched
+                      # for CA certs but in case none are found they must
+                      # be specified.
+
+#tls_ca_path  /path/to/certs/
+                      # Specify a directory path that contains files with
+                      # Certificate Authority certificates to verify
+                      # a TLS server.
+
+#tls_debug 0
+                      # Enable tLS connection debugging.  Can be set from
+                      # 0 to 5 with 5 being the most detailed.
+
+#tls_unverified_cert_ok 0
+                      # Allow TLS connections even if the server does not
+                      # present a certificate that can be verified.
+
+#userpass user pass
+                      # Specify the username and password to submit to the
+                      # server for authentication.  This only works with
+                      # servers supporting SeedLink protocol version 4.
+                      # It is strongly recommended to only use authentication
+                      # over TLS-encrypted connections.

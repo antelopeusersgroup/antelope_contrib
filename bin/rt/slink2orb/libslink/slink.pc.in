@@ -1,0 +1,11 @@
+prefix=@PREFIX@
+exec_prefix=@EXEC_PREFIX@
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@
+
+Name: libslink
+Description: A C library for the SeedLink client protocol
+URL: https://github.com/earthscope/libslink
+Version: @VERSION@
+Cflags: -I${includedir}
+Libs: -L${libdir} -lslink

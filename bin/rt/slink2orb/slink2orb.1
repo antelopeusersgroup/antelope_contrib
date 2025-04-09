@@ -1,4 +1,4 @@
-.TH SLINK2ORB 1 2018/08/07
+.TH SLINK2ORB 1 2025/04/08
 .SH NAME
 slink2orb \- SeedLink to Antelope ORB module
 .SH SYNOPSIS
@@ -6,16 +6,20 @@ slink2orb \- SeedLink to Antelope ORB module
 slink2orb [-dc database] [-dm database] [-nd delay]
           [-nt timeout] [-k interval] [-pf parameter_file]
           [-S statefile] [-r] [-v] SeedLink ORB
-
 .fi
+
 .SH DESCRIPTION
-\fBslink2orb\fP connects to a \fISeedLink\fR server, requests data and
-forwards it to an \fIORB\fR ring buffer as packet type 'SEED'.  All
-SeedLink data packets are 512-byte Mini-SEED records.
+\fBslink2orb\fP connects to a \fISeedLink\fR server, requests data streams
+and forwards received packets to an \fIORB\fR orbserver.
+
+This client supports both SeedLink v3 and v4 protocols.  All miniSEED
+version 2 records are forwarded directly to the ORB as packet type 'SEED'.
+Any miniSEED version 3 records are converted to 'GENC' packet types
+(SeedLink v4 protocol only).
 
 .SH OPTIONS
 .IP "-dm \fIdatabase\fR"
-Use the specified database for mapping SEED names to CSS database
+Use the specified database for mapping FDSN codes to CSS database
 names.  If the channel names do not exist in the specified database
 they will be inserted.  If this database is not specified the local
 foreignkeys database will be used.
@@ -38,7 +42,7 @@ server.  If no data are received in this time the connection is closed
 and re-established (after the reconnect delay has expired).  The default
 value is 600 seconds. A value of 0 disables the timeout.
 
-.IP "-k \fIinterval\fR (requires SeedLink >= 3)"
+.IP "-k \fIinterval\fR"
 Keepalive packet interval (in seconds) at which keepalive (heartbeat)
 packets are sent to the server.  Keepalive packets are only sent if
 nothing is received within the interval.  Default is a value of 0
@@ -56,10 +60,6 @@ On startup, slink2orb will attempt to read the specified \fIstatefile\fR
 and configure the SeedLink server to start with the next packet, if
 possible.  Intermediate state saves can be enabled and controlled
 with the \fIstateint\fR value in the parameter file (see below).
-
-.IP "-mbi"
-Match the byte order of integer-encoded data (16 and 32-bit) to the
-same order as the header, swapping the data payload if needed.
 
 .IP "-r"
 Use either the database specified with the -dm option or the local
@@ -81,120 +81,64 @@ A required argument.  Specifies the location of the ORB server
 in [host]:port format.  If 'host' is omitted 'localhost' is assumed.
 
 .SH PARAMETER FILE
-An example \fBslink2orb\fP parameter file:
-.nf
 
-#
-#  slink2orb.pf, parameters for the SeedLink to ORB module
-#
+An example \fBslink2orb.pf\fP parameter file is included with the
+program distribution.
 
-# Equivalent command line parameters override those specified here
-# All parameters are optional
+.SH CONVERSION OF MINISEED v3 to GENC
 
-nettimeout    600     # network timeout (seconds), 0 to disable
-netdelay      30      # network reconnect delay (seconds)
-keepalive     0       # interval to send keepalive requests (seconds)
-stateint      300     # interval to save the sequence number (packets)
+The SeedLink v4 protocol can deliver data in either miniSEED version 2
+or the version 3.  Antelope systems support miniSEED version 2 natively and
+these records are forwarded directly to the ORB as "SEED" type packets.
 
-selectors   BH?.D     # selectors recognized by SeedLink server, see below
+Because Antelope does not directly support miniSEED version 3 as
+a packet type, the program will convert these records to GENC packet
+types.  As a consequence, only records containing time-series data
+samples of 32-bit integer and float values are converted.  Records
+containing the following data types are not converted and are dropped:
 
-stations &Arr{
-#       NET_STA         [selectors]
-        GE_EIL          BHZ.D  HHZ.D
-        IU_KONO         BH?
-        MN_AQU
-# Some SeedLink servers can accept wildcards for network and station
-        TA_*            BHZ
-}
+.RS
+.IP \[bu] 2
+64-bit floats (doubles)
+.IP \[bu] 2
+Text data
+.IP \[bu] 2
+Header-only records
+.RE
 
-#(notes regarding "selectors" from a SeedLink configuration file)
-#
-#   The "selectors" parameter tells to request packets that match given
-#   selectors. This helps to reduce network traffic. A packet is sent to
-#   client if it matches any positive selector (without leading "!") and
-#   doesn't match any negative selectors (with "!"). General format of
-#   selectors is LLSSS.T, where LL is location, SSS is channel, and T is
-#   type (one of DECOTL for data, event, calibration, blockette, timing,
-#   and log records). "LL", ".T", and "LLSSS." can be omitted, meaning
-#   "any". It is also possible to use "?" in place of L and S.
-#
-#   Some examples:
-#   BH?            - BHZ, BHN, BHE (all record types)
-#   00BH?.D        - BHZ, BHN, BHE with location code '00' (data records)
-#   BH? !E         - BHZ, BHN, BHE (excluding detection records)
-#   BH? E          - BHZ, BHN, BHE plus detection records of all channels
-#   !LCQ !LEP      - exclude LCQ and LEP channels
-#   !L !T          - exclude log and timing records
+Furthermore, any details in the miniSEED header that are not supported by
+the GENC packet type are lost by the conversion.
 
-.fi
-.LP
-The parameters are further defined below.
-.IP "\fInettimeout\fR"
-Equivalent to the command line version.  Any value given on the command
-line takes precedence.
-
-.IP "\fInetdelay\fR"
-Equivalent to the command line version.  Any value given on the command
-line takes precedence.
-
-.IP "\fIkeepalive\fR"
-Equivalent to the command line version.  Any value given on the command
-line takes precedence.
-
-.IP "\fIstateint\fR"
-If this value and a \fIstatefile\fR are specified, this is the interval (in
-seconds) at which the module will save the last valid SeedLink sequence
-number.  This can be used to protect against abnormal (power failure)
-program exits.  The default value is 0, which disables this feature.
-
-.IP "\fIselectors\fR"
-This can be used, as described above, to limit the data stream sent by
-the SeedLink server to specific channels and types.  Multiple
-selectors are separates by space(s).  The default is no defined
-selectors which causes SeedLink to send all available types and
-channels.  When using multi-station mode ('stations' array is
-defined), this serves as default selectors.
-
-.IP "\fIstations\fR array"
-If this array is present then the connection is configured in
-multi-station mode.  Stations must be specified in 'NET_STA' format with
-following selector(s).  If no selectors are provided for a given station
-then the selectors given with the 'selectors' parameter are used.  There
-is NO expansion/wildcard capability, all stations desired must be
-explicitly listed.
-
-.SH "NOTES"
-Currently, SeedLink only serves 512-byte Mini-SEED records (with an 8 byte
-SeedLink header).  Received records are prepended with an Antelope packet
-type 'SEED' header and are sent to the ORB, optionally including calib,
-calper and segtype from a specified database.
+.SH NOTES
 
 \fBWildcard network and station codes\fP
 
-Some SeedLink server have enhanced selection capability and are able
+Some SeedLink servers have enhanced selection capability and are able
 to handle wildcards ('*' or '?' characters) in the network and station
 codes.  Servers that do not support this will return an error during
 negotiation.
 
 \fBAll/Uni-station Vs. Multi-station:\fP
 
-All/Uni-station mode is an old connection method used for getting all
-(or a single station depending on configuration of the server) data
-streams from a server.  Multi-station mode is the method used for
-requesting specific streams.  Most users do not need to know the
-difference between these modes with the one exception that some
-SeedLink servers implement uni-station mode as all-station mode, if no
-network and station selection is made during negotiation these servers
-will stream all the data to the client (equivalent to wildcarding all
-the data streams).
+Uni-station mode is a legacy connection mode used for getting a single,
+implicit station configured by the server.  Multi-station mode is the method
+used for requesting one or more stations explicitly.
 
+Most users do not need to know the difference between these modes with
+the one exception that some SeedLink servers, e.g. ringserver, implement
+uni-station mode as all-station mode: if no network and station selection
+is made during negotiation these servers will stream all the data to the
+client (equivalent to wild-carding all the data streams).
+
+.SH HISTORY
 The SeedLink protocol was originally developed as part of the SeisComP
 (Seismological Communication Processor) package.  For more information
-see, http://www.gfz-potsdam.de/geofon/
+see, https://www.seiscomp.de/
 
 .SH AUTHOR
 .nf
 Chad Trabant
 ORFEUS Data Center/EC-Project MEREDIAN
 IRIS Data Management Center
+EarthScope Data Services
 .fi
