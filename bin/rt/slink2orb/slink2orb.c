@@ -5,8 +5,8 @@
  *
  * Written by Chad Trabant,
  *       ORFEUS/EC-Project MEREDIAN
- * then: IRIS Data Management Center
- *  now: EarthScope Data Services
+ *       IRIS Data Management Center
+ *       EarthScope Data Services
  ***************************************************************************/
 
 #include <signal.h>
@@ -23,7 +23,7 @@
 
 #include "mseed2orbpkt.h"
 
-static char *version = "5.0 (2025.098 DEV)";
+static char *version = "5.0 (2025.098)";
 static char *package = "slink2orb";
 static char verbose  = 0;
 static char remap    = 0; /* remap sta and chan from SEED tables */

@@ -1,4 +1,4 @@
-7 April 2025
+7 April 2025, version 5.0
   - Update libslink to v4.1.4 with support for SeedLink v4, including:
     * support for miniSEED 2 and 3 data records
     * support for TLS (SSL) connections
