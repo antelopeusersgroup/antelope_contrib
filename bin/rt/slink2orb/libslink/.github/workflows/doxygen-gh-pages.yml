@@ -1,0 +1,27 @@
+name: BuildDocs
+
+on:
+  workflow_dispatch: # Trigger on manual run
+  release:
+    types:
+      - published    # Trigger on release publishing
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    name: Build docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Action Doxygen and GitHub Pages
+        id: ghaction
+        uses: AgarwalSaurav/ghaction-doxygen-ghpages@release/v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: docs
+          doxyfile-path: ./Doxyfile
+          html-output-folder: docs/html
+          branch: gh-pages

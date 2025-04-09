@@ -3,51 +3,37 @@
 # environment variables:
 #   CC : Specify the C compiler to use
 #   CFLAGS : Specify compiler options to use
-
-# GCC specific parameters
-GCC = gcc
-GCCFLAGS = -O2 -Wall -I..
+#   LDFLAGS : Specify linker options to use
+#   CPPFLAGS : Specify c-preprocessor options to use
 
 # Required compiler parameters
 CFLAGS += -I..
- 
+
 LDFLAGS = -L..
 LDLIBS = -lslink
 
 # For Windows w/ Unix-like build environments uncomment the following line
 # This is needed for MinGW but not for Cygwin
-#LDLIBS = -lslink -lws2_32
+#LDLIBS += -lslink -lws2_32
 
 # For SunOS/Solaris uncomment the following line
-#LDLIBS = -lslink -lsocket -lnsl -lrt
+#LDLIBS += -lslink -lsocket -lnsl -lrt
 
-BIN = slclient
- 
-OBJS = slclient.o
+# Build all *.c source as independent programs
+SRCS := $(sort $(wildcard *.c))
+BINS := $(SRCS:%.c=%)
 
-all: $(BIN)
+all: $(BINS)
 
-$(BIN): $(OBJS)
-	$(CC) $(CFLAGS) -o $(BIN) $(OBJS) $(LDFLAGS) $(LDLIBS)
-
-static: $(OBJS)
-	$(CC) -static $(CFLAGS) -o $(BIN) $(OBJS) $(LDFLAGS) $(LDLIBS)
-
-cc:
-	@$(MAKE) "CC=$(CC)" "CFLAGS=$(CFLAGS)"
-
-gcc:
-	@$(MAKE) "CC=$(GCC)" "CFLAGS=$(GCCFLAGS)"
-
-debug:
-	$(MAKE) "CC=$(CC)" "CFLAGS=-g $(CFLAGS)"
-
-gccdebug:
-	$(MAKE) "CC=$(GCC)" "CFLAGS=-g $(GCCFLAGS)"
+# Build programs and check for executable
+$(BINS) : % : %.c
+	@printf 'Building $<\n';
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS) $(LDLIBS)
 
 clean:
-	rm -f $(OBJS) $(BIN)
+	rm -rf *.o $(BINS) *.dSYM
 
-# Implicit rule for building object files
-%.o: %.c
-	$(CC) $(CFLAGS) -c $<
+install:
+	@echo
+	@echo "No install target, copy the executable(s) as needed"
+	@echo

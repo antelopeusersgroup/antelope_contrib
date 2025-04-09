@@ -3,69 +3,106 @@
 # environment variables:
 #   CC : Specify the C compiler to use
 #   CFLAGS : Specify compiler options to use
+#   LDFLAGS : Specify linker options to use
+#   CPPFLAGS : Specify c-preprocessor options to use
 
-MAJOR_VER = 2
-MINOR_VER = 6
-CURRENT_VER = $(MAJOR_VER).$(MINOR_VER)
-COMPAT_VER = $(MAJOR_VER).$(MINOR_VER)
+# Extract version from libslink.h
+MAJOR_VER = $(shell grep -E 'LIBSLINK_VERSION_MAJOR[ \t]+[0-9]+' libslink.h | grep -Eo '[0-9]+')
+MINOR_VER = $(shell grep -E 'LIBSLINK_VERSION_MINOR[ \t]+[0-9]+' libslink.h | grep -Eo '[0-9]+')
+PATCH_VER = $(shell grep -E 'LIBSLINK_VERSION_PATCH[ \t]+[0-9]+' libslink.h | grep -Eo '[0-9]+')
+COMPAT_VER = $(MAJOR_VER).0.0
 
-LIB_SRCS = gswap.c unpack.c msrecord.c genutils.c strutils.c \
-           logging.c network.c statefile.c config.c \
-           globmatch.c slplatform.c slutils.c
+# Default settings for install target
+PREFIX ?= /usr/local
+EXEC_PREFIX ?= $(PREFIX)
+LIBDIR ?= $(EXEC_PREFIX)/lib
+INCLUDEDIR ?= $(PREFIX)/include
+DATAROOTDIR ?= $(PREFIX)/share
+DOCDIR ?= $(DATAROOTDIR)/doc/libslink
+MANDIR ?= $(DATAROOTDIR)/man
+MAN3DIR ?= $(MANDIR)/man3
+
+LIB_SRCS = payload.c genutils.c logging.c network.c statefile.c \
+           config.c globmatch.c slutils.c
 
 LIB_OBJS = $(LIB_SRCS:.c=.o)
-LIB_DOBJS = $(LIB_SRCS:.c=.lo)
+LIB_LOBJS = $(LIB_SRCS:.c=.lo)
 
-LIB_A = libslink.a
-LIB_SO_FILENAME = libslink.so
-LIB_SO_ALIAS = $(LIB_SO_FILENAME).$(MAJOR_VER)
-LIB_SO = $(LIB_SO_FILENAME).$(CURRENT_VER)
-LIB_DYN_ALIAS = libslink.dylib
-LIB_DYN = libslink.$(CURRENT_VER).dylib
+LIB_NAME = libslink
+LIB_A = $(LIB_NAME).a
+
+CFLAGS += -Imbedtls/include
+
+MBEDTLS_SRCS = $(wildcard mbedtls/library/*.c)
+MBEDTLS_OBJS = $(MBEDTLS_SRCS:.c=.o)
+MBEDTLS_LOBJS = $(MBEDTLS_SRCS:.c=.lo)
+
+OS := $(shell uname -s)
+ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+
+# Build dynamic (.dylib) on macOS/Darwin, otherwise shared (.so)
+ifeq ($(OS), Darwin)
+	LIB_SO_BASE = $(LIB_NAME).dylib
+	LIB_SO_MAJOR = $(LIB_NAME).$(MAJOR_VER).dylib
+	LIB_SO = $(LIB_NAME).$(MAJOR_VER).$(MINOR_VER).$(PATCH_VER).dylib
+	LIB_OPTS = -dynamiclib -compatibility_version $(COMPAT_VER) -current_version $(MAJOR_VER).$(MINOR_VER).$(PATCH_VER) -install_name $(LIB_SO)
+else
+	LIB_SO_BASE = $(LIB_NAME).so
+	LIB_SO_MAJOR = $(LIB_NAME).so.$(MAJOR_VER)
+	LIB_SO = $(LIB_NAME).so.$(MAJOR_VER).$(MINOR_VER).$(PATCH_VER)
+	LIB_OPTS = -shared -Wl,--version-script=libslink.map -Wl,-soname,$(LIB_SO_MAJOR)
+endif
 
 all: static
 
 static: $(LIB_A)
 
-shared: $(LIB_SO)
-
-dynamic: $(LIB_DYN)
+shared dynamic: $(LIB_SO)
 
 # Build static library
-$(LIB_A): $(LIB_OBJS)
-	rm -f $(LIB_A)
-	ar -crs $(LIB_A) $(LIB_OBJS)
+$(LIB_A): $(LIB_OBJS) $(MBEDTLS_OBJS) #mbedtls
+	@echo "Building static library $(LIB_A)"
+	$(RM) -f $(LIB_A)
+	$(AR) -crs $(LIB_A) $(LIB_OBJS) $(MBEDTLS_OBJS)
 
-# Build shared library using GCC-style options
-$(LIB_SO): $(LIB_DOBJS)
-	rm -f $(LIB_SO) $(LIB_SO_ALIAS) $(LIB_SO_FILENAME)
-	$(CC) $(CFLAGS) -shared -Wl,-soname -Wl,$(LIB_SO_ALIAS) -o $(LIB_SO) $(LIB_DOBJS)
-	ln -s $(LIB_SO) $(LIB_SO_ALIAS)
-	ln -s $(LIB_SO) $(LIB_SO_FILENAME)
+# Build shared/dynamic library
+$(LIB_SO): $(LIB_LOBJS) $(MBEDTLS_LOBJS) #mbedtls
+	@echo "Building shared library $(LIB_SO)"
+	$(RM) -f $(LIB_SO) $(LIB_SO_MAJOR) $(LIB_SO_BASE)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIB_OPTS) -o $(LIB_SO) $(LIB_LOBJS) $(MBEDTLS_LOBJS)
+	ln -s $(LIB_SO) $(LIB_SO_BASE)
+	ln -s $(LIB_SO) $(LIB_SO_MAJOR)
 
-# Build dynamic library (usually for Mac OSX)
-$(LIB_DYN): $(LIB_DOBJS)
-	rm -f $(LIB_DYN) $(LIB_DYN_ALIAS)
-	$(CC) $(CFLAGS) -dynamiclib -compatibility_version $(COMPAT_VER) -current_version $(CURRENT_VER) -install_name $(LIB_DYN_ALIAS) -o $(LIB_DYN) $(LIB_DOBJS)
-	ln -sf $(LIB_DYN) $(LIB_DYN_ALIAS)
+test check: static FORCE
+	@$(MAKE) -C test test
 
 clean:
-	rm -f $(LIB_OBJS) $(LIB_DOBJS) $(LIB_A) $(LIB_SO) $(LIB_SO_ALIAS) \
-	      $(LIB_SO_FILENAME) $(LIB_DYN) $(LIB_DYN_ALIAS)
+	@$(RM) $(LIB_OBJS) $(LIB_LOBJS) $(LIB_A) $(LIB_SO) $(LIB_SO_MAJOR) $(LIB_SO_BASE) $(MBEDTLS_OBJS) $(MBEDTLS_LOBJS)
+	@echo "All clean."
 
-install:
-	@echo
-	@echo "No install method, copy the library, header files, and"
-	@echo "documentation to the preferred install location"
-	@echo
+install: shared
+	@echo "Installing into $(PREFIX)"
+	@mkdir -p $(DESTDIR)$(PREFIX)/include
+	@cp libslink.h $(DESTDIR)$(PREFIX)/include
+	@mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig
+	@cp -a $(LIB_SO_BASE) $(LIB_SO_MAJOR) $(LIB_SO_NAME) $(LIB_SO) $(DESTDIR)$(LIBDIR)
+	@sed -e 's|@PREFIX@|$(PREFIX)|g' \
+	     -e 's|@EXEC_PREFIX@|$(EXEC_PREFIX)|g' \
+	     -e 's|@LIBDIR@|$(LIBDIR)|g' \
+	     -e 's|@INCLUDEDIR@|$(PREFIX)/include|g' \
+	     -e 's|@VERSION@|$(MAJOR_VER).$(MINOR_VER).$(PATCH_VER)|g' \
+	     slink.pc.in > $(DESTDIR)$(LIBDIR)/pkgconfig/slink.pc
+	@mkdir -p $(DESTDIR)$(DOCDIR)/example
+	@cp -r example $(DESTDIR)$(DOCDIR)/
 
 .SUFFIXES: .c .o .lo
 
 # Standard object building
 .c.o:
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-# Standard object building for dynamic library components using -fPIC
+# Standard object building for shared library using -fPIC
 .c.lo:
-	$(CC) $(CFLAGS) -fPIC -c $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $< -o $@
 
+FORCE:

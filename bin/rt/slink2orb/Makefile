@@ -2,14 +2,14 @@ BIN     = slink2orb
 PF      = $(BIN).pf
 MAN1    = $(BIN).1
 
-cflags  = -Ilibslink
-ldflags = -Llibslink
-ldlibs  = $(ORBLIBS) -lslink
+cflags  = -Ilibslink -Imbedtls/include -Ilibmseed
+ldflags = -Llibslink -Llibmseed
+ldlibs  = $(ORBLIBS) -lslink -lmseed
 
 SUBDIR  = /contrib
 include $(ANTELOPEMAKE)
 
-DIRS    = libslink
+DIRS    = libslink libmseed
 
 OBJS    = mseed2orbpkt.o $(BIN).o
 

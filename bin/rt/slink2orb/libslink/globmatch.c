@@ -47,12 +47,13 @@
 #define SL_GLOBMATCH_TRUE 1
 #define SL_GLOBMATCH_FALSE 0
 
-/***********************************************************************
- * sl_globmatch:
+/******************************************************************/ /**
+ * @brief Check if a string matches a globbing pattern.
  *
- * Check if a string matches a globbing pattern.
+ * @param string  The string to check.
+ * @param pattern The globbing pattern to match.
  *
- * Return 0 if string does not match pattern and non-zero otherwise.
+ * @returns 0 if string does not match pattern and non-zero otherwise.
  **********************************************************************/
 int
 sl_globmatch (char *string, char *pattern)
@@ -159,7 +160,9 @@ sl_globmatch (char *string, char *pattern)
     case '\\':
       if (*pattern)
         c = *pattern++;
-    default:
+      break;
+
+      default:
       if (c != *string)
         return SL_GLOBMATCH_FALSE;
       break;

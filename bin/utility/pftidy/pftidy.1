@@ -1,0 +1,46 @@
+.TH PFTIDY 1 
+.SH NAME
+pftidy \- clean up antelope parameter files 
+.SH SYNOPSIS
+.nf
+pftidy [-v] [-l x] [-c y] [-I z] file
+.fi
+
+.SH DESCRIPTION
+pftidy can help to clean up antelope parameterfiles.
+This can be especially helpful when comparing different parameterfiles.
+The indention tries to rearrange parameter files according to simple rules:
+Whitespace at the beginning all lines is removed, alls indention is done using spaces, 
+no tabs or such.
+The content of lists (&Tbl), hashes (&Arr) and literals is indented by three spaces.
+Values are indented at least 30 characters, remarks are indentend at east 70 characters.
+.SH OPTIONS
+.IP "-v" 
+verbose flag
+.IP "-l x" 
+indention for values
+.IP "-c y" 
+indention for remarks
+.IP "-I z"
+indention level for nested items (Tbl, Arr, Literal)
+.IP "file"
+Name of input parameter file. This needs to be a filename, normal rules for naming and finding 
+parameter files are not applied.
+.SH EXAMPLE
+.nf
+pftidy $ANTELOPE/contrib/data/pf/pftidy.pf
+pftidy $ANTELOPE/data/pf/orbassoc.pf
+.fi
+
+.SH "BUGS AND CAVEATS"
+THe indention rules are rather simple, so please be careful when using this tool.
+
+.SH "SEE ALSO"
+.nf
+pf(5), pfacho(1) 
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2025
+
+GSAT / Vienna, Nikolaus.Horn@geosphere.at
