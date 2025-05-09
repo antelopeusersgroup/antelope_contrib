@@ -3,7 +3,7 @@
 install_obspy \- install the ObsPy package 
 .SH SYNOPSIS
 .nf
-\fBinstall_obspy\fP
+\fBinstall_obspy [-v]\fP
 .fi
 .SH DESCRIPTION
 
@@ -20,6 +20,8 @@ interpreter. On macOS machines, \fBXCode\fP and the \fBxcode\fP command-line too
 .SH METHODS
 .SH "OBJECT CONFIGURATION PARAMETERS"
 .SH OPTIONS
+.IP -v
+verbose. This may be specified up to three times for increasing verbosity. 
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
@@ -68,21 +70,37 @@ Successfully installed obspy-1.1.1
 install_toolchain(1), http://www.obspy.org
 .fi
 .SH "BUGS AND CAVEATS"
+The options on the \fBinstall_obspy\fP command-line are passed directly to
+the \fBpip3\fP executable internally. Thus more options are available to use per
+the \fBpip3\fP documentation, however only the \fI-v\fP verbose option
+is listed here.
+
 The \fBpip3\fP install of \fBObsPy\fP requires compiler access on the machine in
 question, as well as proper system administration of all the components on
 which compilation processes depend -- furthermore in the forms expected
-by the downloaded \fBObsPy\fP package. If installation fails, one's first recourse
+by the downloaded \fBObsPy\fP package. If installation of ObsPy fails, one's first recourse
 should be to local system administrators and to a review of the \fBObsPy\fP build
 requirements. On \fImacOS\fP, compiler toolchains are available by installing 
 \fBXcode\fP and then the \fBxcode\fP command-line tools (per current instructions from 
 Apple, available via Google). On \fILinux\fP, BRTT provides the compiler toolchains 
 used to compile Antelope and the Python interpreter, via the \fBinstall_toolchain\fP(1)
-command.
+command. Here are some of the common problems as of the current writing, along with 
+possible solutions: 
 
-The options on the \fBinstall_obspy\fP command-line are passed directly to
-the \fBpip3\fP executable internally. Thus more options are available to use per
-the \fBpip3\fP documentation, however only the \fI-v\fP verbose option
-is listed here.
+Complaints about no available compiler: Run the install_toolchain(1) command to install the BRTT default 
+toolchain (or use the CC and related environment variables as documented for the pip3 command to point 
+to a different compiler).
+
+cannot find crtbeginS.o: This usually results when the main clang toolchains are installed on Linux 
+but without the parallel gcc toolchain to match. Run 'pfecho install_toolchain download_site' and navigate to 
+the quoted web address with a browser to identify the correct gcc toolchain, which should be straightforward to 
+identify; then use install_toolchain(1) to install it. 
+
+-lffi library not found: Use yum or dnf to install libffi-devel on CentOS7, RHEL8, or RHEL9, or libffi-dev
+on Ubuntu. 
+
+libtinfo.so.5: Use yum or dnf to install ncurses-compat-libs on CentOS7 or RHEL8; on RHEL9 install
+ncurses-libs and link /usr/lib64/libncurses.so.6 to libtinfo.so.5. 
 
 .SH AUTHOR
 .nf

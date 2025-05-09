@@ -3,9 +3,22 @@
  *
  * Log handling routines for libslink
  *
- * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
+ * This file is part of the SeedLink Library.
  *
- * modified: 2005.332
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Copyright (C) 2024
+ * @author Chad Trabant, EarthScope Data Services
  ***************************************************************************/
 
 #include <stdarg.h>
@@ -19,34 +32,44 @@ void sl_loginit_main (SLlog *logp, int verbosity,
                       void (*log_print) (const char *), const char *logprefix,
                       void (*diag_print) (const char *), const char *errprefix);
 
-int sl_log_main (SLlog *logp, int level, int verb, va_list *varlist);
+int sl_log_main (const SLlog *logp, int level, int verb, const char *format, va_list *varlist);
 
 /* Initialize the global logging parameters */
-SLlog gSLlog = {NULL, NULL, NULL, NULL, 0};
+SLlog global_SLlog = {NULL, NULL, NULL, NULL, 0};
 
-/***************************************************************************
- * sl_loginit:
- *
- * Initialize the global logging parameters.
+/**********************************************************************/ /**
+ * @brief Initialize the global logging parameters.
  *
  * See sl_loginit_main() description for usage.
+ *
+ * @param verbosity  The verbosity level
+ * @param log_print  Function pointer to print log entries
+ * @param logprefix  Line prefix for log entries
+ * @param diag_print Function pointer to print diagnostic/error entries
+ * @param errprefix  Line prefix for error entries
  ***************************************************************************/
 void
 sl_loginit (int verbosity,
             void (*log_print) (const char *), const char *logprefix,
             void (*diag_print) (const char *), const char *errprefix)
 {
-  sl_loginit_main (&gSLlog, verbosity, log_print, logprefix, diag_print, errprefix);
+  sl_loginit_main (&global_SLlog, verbosity, log_print, logprefix, diag_print, errprefix);
 } /* End of sl_loginit() */
 
-/***************************************************************************
- * sl_loginit_r:
+/**********************************************************************/ /**
+ * @brief Initialize ::SLCD-specific logging parameters
  *
- * Initialize SLCD specific logging parameters.  If the logging parameters
- * have not been initialized (slconn->log == NULL) new parameter space will
- * be allocated.
+ * If the logging parameters have not been initialized (slconn->log == NULL)
+ * new parameter space will be allocated.
  *
  * See sl_loginit_main() description for usage.
+ *
+ * @param slconn     The ::SLCD to initialize logging parameters for
+ * @param verbosity  The verbosity level
+ * @param log_print  Function pointer to print log entries
+ * @param logprefix  Line prefix for log entries
+ * @param diag_print Function pointer to print diagnostic/error entries
+ * @param errprefix  Line prefix for error entries
  ***************************************************************************/
 void
 sl_loginit_r (SLCD *slconn, int verbosity,
@@ -70,16 +93,22 @@ sl_loginit_r (SLCD *slconn, int verbosity,
   sl_loginit_main (slconn->log, verbosity, log_print, logprefix, diag_print, errprefix);
 } /* End of sl_loginit_r() */
 
-/***************************************************************************
- * sl_loginit_rl:
+/**********************************************************************/ /**
+ * @brief Initialize ::SLlog-specific logging parameters
  *
- * Initialize SLlog specific logging parameters.  If the logging parameters
- * have not been initialized (log == NULL) new parameter space will
- * be allocated.
+ * If the logging parameters have not been initialized (log == NULL)
+ * new parameter space will be allocated.
  *
  * See sl_loginit_main() description for usage.
  *
- * Returns a pointer to the created/re-initialized SLlog struct.
+ * @param log        The ::SLlog to initialize logging parameters for
+ * @param verbosity  The verbosity level
+ * @param log_print  Function pointer to print log entries
+ * @param logprefix  Line prefix for log entries
+ * @param diag_print Function pointer to print diagnostic/error entries
+ * @param errprefix  Line prefix for error entries
+ *
+ * @returns a pointer to the created/re-initialized ::SLlog struct.
  ***************************************************************************/
 SLlog *
 sl_loginit_rl (SLlog *log, int verbosity,
@@ -108,13 +137,12 @@ sl_loginit_rl (SLlog *log, int verbosity,
   return logp;
 } /* End of sl_loginit_rl() */
 
-/***************************************************************************
- * sl_loginit_main:
+/**********************************************************************/ /**
+ * @brief Initialize the central logging system
  *
- * Initialize the logging subsystem.  Given values determine how sl_log()
- * and sl_log_r() emit messages.
+ * Given values determine how sl_log() and sl_log_r() emit messages.
  *
- * This function modifies the logging parameters in the passed SLlog.
+ * This function modifies the logging parameters in the proveided ::SLlog.
  *
  * Any log/error printing functions indicated must except a single
  * argument, namely a string (const char *).  The sl_log() and
@@ -129,6 +157,13 @@ sl_loginit_rl (SLlog *log, int verbosity,
  * of the logging subsystem is given in the example below.
  *
  * Example: sl_loginit_main (0, (void*)&printf, NULL, (void*)&printf, "error: ");
+ *
+ * @param logp       The ::SLlog to initialize logging parameters for
+ * @param verbosity  The verbosity level
+ * @param log_print  Function pointer to print log entries
+ * @param logprefix  Line prefix for log entries
+ * @param diag_print Function pointer to print diagnostic/error entries
+ * @param errprefix  Line prefix for error entries
  ***************************************************************************/
 void
 sl_loginit_main (SLlog *logp, int verbosity,
@@ -173,106 +208,119 @@ sl_loginit_main (SLlog *logp, int verbosity,
   return;
 } /* End of sl_loginit_main() */
 
-/***************************************************************************
- * sl_log:
+/**********************************************************************/ /**
+ * @brief Emit an log message using the global logging parameters
  *
- * A wrapper to sl_log_main() that uses the global logging parameters.
+ * @param level  The message level (0: log, 1: diagnostic, 2+: error)
+ * @param verb   The verbosity level at which to print the message
+ * @param format The fprintf format string
+ * @param ...    The fprintf arguments
  *
- * See sl_log_main() description for return values.
+ * @returns the number of characters formatted on success, and negative on error
+ *
+ * \sa sl_log_main()
  ***************************************************************************/
 int
-sl_log (int level, int verb, ...)
+sl_log (int level, int verb, const char *format, ...)
 {
   int retval;
   va_list varlist;
 
-  va_start (varlist, verb);
+  va_start (varlist, format);
 
-  retval = sl_log_main (&gSLlog, level, verb, &varlist);
+  retval = sl_log_main (&global_SLlog, level, verb, format, &varlist);
 
   va_end (varlist);
 
   return retval;
 } /* End of sl_log() */
 
-/***************************************************************************
- * sl_log_r:
+/**********************************************************************/ /**
+ * @brief Emit an log message using logging parameters in ::SLCD
  *
- * A wrapper to sl_log_main() that uses the logging parameters in a
- * supplied SLCD. If the supplied pointer is NULL the global logging
- * parameters will be used.
+ * If the supplied pointer is NULL the global logging parameters will be used.
  *
- * See sl_log_main() description for return values.
+ * @param slconn The ::SLCD to use for logging parameters
+ * @param level  The message level (0: log, 1: diagnostic, 2+: error)
+ * @param verb   The verbosity level at which to print the message
+ * @param format The fprintf format string
+ * @param ...    The fprintf arguments
+ *
+ * @returns the number of characters formatted on success, and negative on error
+ *
+ * \sa sl_log_main()
  ***************************************************************************/
 int
-sl_log_r (const SLCD *slconn, int level, int verb, ...)
+sl_log_r (const SLCD *slconn, int level, int verb, const char *format, ...)
 {
   int retval;
   va_list varlist;
   SLlog *logp;
 
   if (!slconn)
-    logp = &gSLlog;
+    logp = &global_SLlog;
   else if (!slconn->log)
-    logp = &gSLlog;
+    logp = &global_SLlog;
   else
     logp = slconn->log;
 
-  va_start (varlist, verb);
+  va_start (varlist, format);
 
-  retval = sl_log_main (logp, level, verb, &varlist);
+  retval = sl_log_main (logp, level, verb, format, &varlist);
 
   va_end (varlist);
 
   return retval;
 } /* End of sl_log_r() */
 
-/***************************************************************************
- * sl_log_rl:
+/**********************************************************************/ /**
+ * @brief Emit an log message using logging parameters in ::SLlog
  *
- * A wrapper to sl_log_main() that uses the logging parameters in a
- * supplied SLlog.  If the supplied pointer is NULL the global logging
- * parameters will be used.
+ * If the supplied pointer is NULL the global logging parameters will be used.
  *
- * See sl_log_main() description for return values.
+ * @param log    The ::SLlog to use for logging parameters
+ * @param level  The message level (0: log, 1: diagnostic, 2+: error)
+ * @param verb   The verbosity level at which to print the message
+ * @param format The fprintf format string
+ * @param ...    The fprintf arguments
+ *
+ * @returns the number of characters formatted on success, and negative on error
+ *
+ * \sa sl_log_main()
  ***************************************************************************/
 int
-sl_log_rl (SLlog *log, int level, int verb, ...)
+sl_log_rl (const SLlog *log, int level, int verb, const char *format, ...)
 {
   int retval;
   va_list varlist;
-  SLlog *logp;
+  const SLlog *logp;
 
   if (!log)
-    logp = &gSLlog;
+    logp = &global_SLlog;
   else
     logp = log;
 
-  va_start (varlist, verb);
+  va_start (varlist, format);
 
-  retval = sl_log_main (logp, level, verb, &varlist);
+  retval = sl_log_main (logp, level, verb, format, &varlist);
 
   va_end (varlist);
 
   return retval;
 } /* End of sl_log_rl() */
 
-/***************************************************************************
- * sl_log_main:
- *
- * A standard logging/printing routine.
+/**********************************************************************/ /**
+ * @brief Central log messge facility, emit formatted log messages
  *
  * This routine acts as a central message facility for the all of the
  * libslink functions.
  *
  * The function uses logging parameters specified in the supplied
- * SLlog.
+ * ::SLlog.
  *
- * This function expects 3+ arguments, message level, verbosity level,
- * fprintf format, and fprintf arguments.  If the verbosity level is
- * less than or equal to the set verbosity (see sl_loginit_main()),
- * the fprintf format and arguments will be printed at the appropriate
- * level.
+ * If the specified verbosity level is less than or equal to the set
+ * verbosity (see sl_loginit_main()), the fprintf format and arguments
+ * will be printed at the appropriate level.
  *
  * Three levels are recognized:
  * 0  : Normal log messages, printed using log_print with logprefix
@@ -288,36 +336,45 @@ sl_log_rl (SLlog *log, int level, int verb, ...)
  * If the log/error prefix's have been set with sl_loginit() or
  * sl_loginit_r() they will be pre-pended to the message.
  *
- * All messages will be truncated to the MAX_LOG_MSG_LENGTH, this includes
- * any set prefix.
+ * All messages will be truncated to the \a MAX_LOG_MSG_LENGTH, this
+ * includes any set prefix.
  *
- * Returns the number of characters formatted on success, and a
- * a negative value on error.
+ * @param logp    The ::SLlog to use for logging parameters
+ * @param level   The message level (0: log, 1: diagnostic, 2+: error)
+ * @param verb    The verbosity level at which to print the message
+ * @param format  The fprintf format string
+ * @param varlist The fprintf arguments
+ *
+ * @returns the number of characters formatted on success, and negative on error
  ***************************************************************************/
 int
-sl_log_main (SLlog *logp, int level, int verb, va_list *varlist)
+sl_log_main (const SLlog *logp, int level, int verb, const char *format, va_list *varlist)
 {
   static char message[MAX_LOG_MSG_LENGTH];
   int retvalue = 0;
+  int presize;
+
+  if (!logp)
+  {
+    fprintf (stderr, "%s() called without specifying log parameters", __func__);
+    return -1;
+  }
 
   message[0] = '\0';
 
   if (verb <= logp->verbosity)
   {
-    int presize;
-    const char *format;
-
-    format = va_arg (*varlist, const char *);
-
     if (level >= 2) /* Error message */
     {
       if (logp->errprefix != NULL)
       {
-        strncpy (message, logp->errprefix, MAX_LOG_MSG_LENGTH);
+        strncpy (message, logp->errprefix, MAX_LOG_MSG_LENGTH - 1);
+        message[MAX_LOG_MSG_LENGTH - 1] = '\0';
       }
       else
       {
-        strncpy (message, "error: ", MAX_LOG_MSG_LENGTH);
+        strncpy (message, "error: ", MAX_LOG_MSG_LENGTH - 1);
+        message[MAX_LOG_MSG_LENGTH - 1] = '\0';
       }
 
       presize  = strlen (message);
@@ -329,7 +386,7 @@ sl_log_main (SLlog *logp, int level, int verb, va_list *varlist)
 
       if (logp->diag_print != NULL)
       {
-        logp->diag_print ((const char *)message);
+        logp->diag_print (message);
       }
       else
       {
@@ -340,7 +397,8 @@ sl_log_main (SLlog *logp, int level, int verb, va_list *varlist)
     {
       if (logp->logprefix != NULL)
       {
-        strncpy (message, logp->logprefix, MAX_LOG_MSG_LENGTH);
+        strncpy (message, logp->logprefix, MAX_LOG_MSG_LENGTH - 1);
+        message[MAX_LOG_MSG_LENGTH - 1] = '\0';
       }
 
       presize  = strlen (message);
@@ -352,7 +410,7 @@ sl_log_main (SLlog *logp, int level, int verb, va_list *varlist)
 
       if (logp->diag_print != NULL)
       {
-        logp->diag_print ((const char *)message);
+        logp->diag_print (message);
       }
       else
       {
@@ -363,7 +421,8 @@ sl_log_main (SLlog *logp, int level, int verb, va_list *varlist)
     {
       if (logp->logprefix != NULL)
       {
-        strncpy (message, logp->logprefix, MAX_LOG_MSG_LENGTH);
+        strncpy (message, logp->logprefix, MAX_LOG_MSG_LENGTH - 1);
+        message[MAX_LOG_MSG_LENGTH - 1] = '\0';
       }
 
       presize  = strlen (message);
@@ -375,7 +434,7 @@ sl_log_main (SLlog *logp, int level, int verb, va_list *varlist)
 
       if (logp->log_print != NULL)
       {
-        logp->log_print ((const char *)message);
+        logp->log_print (message);
       }
       else
       {

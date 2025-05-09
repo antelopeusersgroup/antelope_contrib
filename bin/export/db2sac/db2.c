@@ -65,7 +65,7 @@ int
 main(int argc, char **argv)
 {
     char            option	       /* Terse option specifier  */
-      = NULL;
+      = '\0';
     char           *input_name	       /* Name of the input file  */
       = "";
     char           *output_name	       /* Name of the output file  */
@@ -96,7 +96,7 @@ main(int argc, char **argv)
     Program_Name = argv[0];
 
     while ((option = get_option(&argc, argv, option_list, NUM_OPTIONS))
-	   != NULL)
+	   != '\0')
       {
 	switch (option)
 	  {

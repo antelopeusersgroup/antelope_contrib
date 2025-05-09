@@ -1,5 +1,5 @@
 DATADIR=python/ztools
 
-DATA=__init__.pyc
+DATA=__init__.py
 
 include $(ANTELOPEMAKE)
