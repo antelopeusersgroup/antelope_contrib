@@ -1,10 +1,11 @@
-filebase    events                  # output filename
-title Antelope Demo Event Map     # title
+filebase    events                      # output filename
+title       Antelope Demo Event Map     # title
 
-logo_url           https://geoweb.zamg.ac.at/images/zamg_logo_vert.png
-logo_alt           ZAMG Logo
-leaflet_js         https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js
-leaflet_css        https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css
+
+logo_url           https://geoweb.zamg.ac.at/images/GSA_logo_vertikal.png
+logo_alt           Logo GeoSphere Austria
+leaflet_js         https://unpkg.com/leaflet@1.9.4/dist/leaflet.js
+leaflet_css        https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
 leaflet_draw_js    https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js
 leaflet_draw_css   https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css
 leaflet_measurecontrol_js    https://makinacorpus.github.io/Leaflet.MeasureControl/leaflet.measurecontrol.js
@@ -17,9 +18,9 @@ nondefining_icon   https://geoweb.zamg.ac.at/my_icons/tri_26_navy.png
 unassoc_icon       https://geoweb.zamg.ac.at/my_icons/tri_26_grey.png
 
 
-#  Note: we don't need to escape percent signs, but
-#  we need double curly brackets for a single on in the output, while
-#  key-fields must be embracketed only once
+#  Note: we don't need to escape percent signs,
+#  but we need double curly brackets for a single on in the output,
+#  while key-fields must be embracketed only once
 html_template &Literal{
 <!DOCTYPE html>
 <html>
@@ -68,16 +69,6 @@ html_template &Literal{
                 attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
                 maxZoom: 16 }});
 
-        var Stamen_Terrain = L.tileLayer('https://stamen-tiles-{{s}}.a.ssl.fastly.net/terrain/{{z}}/{{x}}/{{y}}{{r}}.{{ext}}', {{
-                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                subdomains: 'abcd',
-                minZoom: 0,
-                maxZoom: 18,
-                ext: 'png' }});
-        var Stamen_Toner = L.tileLayer('https://stamen-tiles-{{s}}.a.ssl.fastly.net/toner/{{z}}/{{x}}/{{y}}{{r}}.{{ext}}', {{
-                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                subdomains: 'abcd', minZoom: 0, maxZoom: 20, ext: 'png' }});
-
         var OpenTopoMap = L.tileLayer('https://{{s}}.tile.opentopomap.org/{{z}}/{{x}}/{{y}}.png', {{
                 maxZoom: 17,
                 attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
@@ -93,8 +84,6 @@ html_template &Literal{
             "OpenstreetMap": normal,
             "ESRI": ESRI,
             "ESRI Nat Geo": ESRI_NatGeo,
-            "Stamen Terrain": Stamen_Terrain,
-            "Black & White": Stamen_Toner,
             "Open Topo": OpenTopoMap,
         }};
 
