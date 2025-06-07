@@ -1,6 +1,6 @@
 """
 check schema definitions for inconsistencies
-this is done in 2 steps, first on the contents of the files parsed and then on the resultin schema in memory.
+this is done in 2 steps, first on the contents of the files parsed and then on the resulting schema in memory.
 The first step - files - is necessary to detect unused attributes, duplicate definitions and multiple definitions in general.
 
 
