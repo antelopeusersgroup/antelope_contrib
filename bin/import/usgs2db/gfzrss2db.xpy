@@ -158,7 +158,7 @@ Unfortunately, RSS or GeoRSS is not fully standardized. I assume this progam is 
     for event in events:
         title = event.getElementsByTagName("title")[0]
         ts = getText(title.childNodes)
-        mag_s, evname = ts.split(",", 1)
+        mag_s, evname = ts.split(",", maxsplit=1)
         mag = float(mag_s[2:])
         description = event.getElementsByTagName("description")[0]
         desc = getText(description.childNodes)

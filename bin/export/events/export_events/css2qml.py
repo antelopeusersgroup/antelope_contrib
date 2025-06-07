@@ -507,7 +507,7 @@ class Css2Qml(object):
 
         if auth is not None:
             if ':' in auth:
-                agency, author = auth.split(':', 1)
+                agency, author = auth.split(':', maxsplit=1)
             else:
                 agency, author = '', auth
             agency = agency.strip().strip('{}').strip()
@@ -625,7 +625,7 @@ class Css2Qml(object):
 
         if algorithm is not None:
             if ':' in algorithm:
-                module, model = algorithm.split(':', 1)
+                module, model = algorithm.split(':', maxsplit=1)
             elif '(' in algorithm and ')':
                 module, model = 'grassoc', algorithm
                 model, quality = model.split('(')
@@ -808,7 +808,7 @@ class Css2Qml(object):
 
         if auth is not None:
             if ':' in auth and ':v' not in auth:
-                agency, author = auth.split(':', 1)
+                agency, author = auth.split(':', maxsplit=1)
             else:
                 module = auth
 
@@ -1039,7 +1039,7 @@ class Css2Qml(object):
 
         if auth is not None:
             if ':' in auth:
-                module, author, info = auth.split(':', 2)
+                module, author, info = auth.split(':', maxsplit=2)
             else:
                 author = auth
 

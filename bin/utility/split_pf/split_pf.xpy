@@ -91,7 +91,7 @@ def main():
         mode = "q3302orb"
         dls = pf["dataloggers"]
         for dl in dls:
-            dlname, net, sta, __ = dl.split(None, 3)
+            dlname, net, sta, __ = dl.split(None, maxsplit=3)
             try:
                 order = dbsite.find("sta == '%s'" % sta, first=-1)
             except Exception as __:
@@ -102,7 +102,7 @@ def main():
         mode = "slink2orb"
         stalist = pf["stations"]
         for netsta in stalist.keys():
-            net, sta = netsta.split("_", 1)
+            net, sta = netsta.split("_", maxsplit=1)
             try:
                 order = dbsite.find("sta == '%s'" % sta, first=-1)
             except Exception as __:
@@ -122,7 +122,7 @@ def main():
         mode = "rtexec"
         jobs = pf["Processes"]
         for job in jobs:
-            name, cmdline = job.split(None, 1)
+            name, cmdline = job.split(None, maxsplit=1)
             if name.startswith("slink2orb"):
                 sta = name.replace("slink2orb", "")
                 try:

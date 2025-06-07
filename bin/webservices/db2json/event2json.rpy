@@ -160,7 +160,7 @@ class Events(Resource):
     def render_GET(self, uri):
 
         try:
-            (host,port) = uri.getHeader('host').split(':', 1)
+            (host,port) = uri.getHeader('host').split(':', maxsplit=1)
         except:
             host = uri.getHeader('host')
             port = '-'

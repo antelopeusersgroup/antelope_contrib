@@ -165,7 +165,7 @@ def main():
                 magauth,
                 evname,
                 rest,
-            ) = line.split("|", 14)
+            ) = line.split("|", maxsplit=14)
             mag = float(mags)
             lat = float(lats)
             lon = float(lons)

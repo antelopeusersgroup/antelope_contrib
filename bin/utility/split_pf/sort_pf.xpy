@@ -71,12 +71,12 @@ def main():
 
     for myline in nsc_list:
         try:
-            nsc, __ = myline.split(None, 1)
+            nsc, __ = myline.split(None, maxsplit=1)
         except ValueError as ve:
             nsc = myline
         if not "_" in nsc:
             continue
-        net, sta, __ = nsc.split("_", 2)
+        net, sta, __ = nsc.split("_", maxsplit=2)
         try:
             order = dbsite.find("sta == '%s'" % sta, first=-1)
         except Exception as __:
