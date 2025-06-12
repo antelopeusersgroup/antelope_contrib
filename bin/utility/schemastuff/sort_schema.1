@@ -1,0 +1,35 @@
+.TH SORT_SCHEMA 1 
+.SH NAME
+sort_schema - sort attributes and relations aplhabetically.
+Usefile when cleaning up databases schemata and extension tables.
+.SH SYNOPSIS
+.nf
+sort_schema schemafile sorted_schema
+.fi
+
+.SH DESCRIPTION
+sort_schema sorts the contents of an input database schema or table definition.
+Firts, all attribute definitions are listed in alphabetical orer, then all relations.
+.SH OPTIONS
+.IP "sechemafile"
+filename of the input schema or table definition. This argument is required.
+
+.IP "sorted_schema"
+Output filename. This argument is required.
+
+.SH EXAMPLE
+.nf
+sort_schema css3.0 /tmp/testfile
+.fi
+
+.SH "BUGS AND CAVEATS"
+Flawless if the input schema is correct.
+.SH "SEE ALSO"
+.nf
+dbschema(5), dbe(1), check_schema(1), schema2tables(1) 
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2014
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at

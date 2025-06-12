@@ -1,74 +1,81 @@
-if ( "$#" < 1 || "$#" >2 ) then
+#!/bin/sh
+
+if [ "$#" > 1 ]  || [ "$#" < 2 ]; then
     echo "usage $0 [baseschema] schemafile" 
     echo " "
     echo "little helper to split schema to extension tables"
     exit 1
-endif
-if ( "$#" > 1 ) then
+fi
+if [ "$#" > 1 ]; then
     set baseschema=$1
     set schemafile=$2
 else
     set baseschema=''
     set schemafile=$1
-endif
-if ( -f $ANTELOPE/contrib/data/awk/splitschema.awk ) then
-    set SPLITS=$ANTELOPE/contrib/data/awk/splitschema.awk
-else if (-f $ANTELOPE/data/awk/splitschema.awk ) then
-    set SPLITS=$ANTELOPE/data/awk/splitschema.awk
+fi
+if [ -f $ANTELOPE/contrib/data/awk/splitschema.awk ]; then
+    SPLITS=$ANTELOPE/contrib/data/awk/splitschema.awk
+elif [-f $ANTELOPE/data/awk/splitschema.awk ]; then
+    SPLITS=$ANTELOPE/data/awk/splitschema.awk
 else
     echo "helper splitschema.awk not found!"
     exit 1
-endif
+fi
 
 #split extension schema to extension tables
 egrep "^Attribute" $schemafile | awk '{print $2}' > Attributes
-if ( $baseschema != '' ) then
+if [ $baseschema != '' ]; then
     egrep "^Attribute" $baseschema | awk '{print $2}' > base_Attributes
     comm -1 -3 base_Attributes Attributes > new_Attributes
     mv -f new_Attributes Attributes
-endif
+fi
 egrep "^Relation" $schemafile|awk '{print $2}' > Relations
-foreach att (`cat Attributes`) 
+for att in `cat Attributes` 
+do
     awk -f $SPLITS -v var=$att -v type=a $schemafile > att_$att
-end
-foreach rel (`cat Relations`) 
-
+done
+for rel in `cat Relations`
+do
     awk -f $SPLITS -v var=$rel -v type=r $schemafile > rel_$rel
-    grep Fields rel_$rel | sed 's/.*(//g' | sed 's/).*//g' > fds
+    grep Fields rel_$rel | sed 's/.*[//g' | sed 's/].*//g' > fds
     #ufds- unique fields
     rm -f ufds
-    foreach ff (`cat fds`) 
+    for ff in `cat fds`
+	do
         echo $ff >> ufds
-    end
+	done
     #sfds - sorted fields
     cat ufds | sort  > sfds
     rm -f  $rel
-    foreach ff (`cat sfds`) 
+    for ff in `cat sfds`
+	do
         #echo "rel: $rel $ff"
-        if (-e att_$ff) then
+        if [-e att_$ff]; then
             cat att_$ff >> $rel
         else    
             echo "Attribute $ff not found!"
-        endif
-    end    
+		fi
+	done    
     cat rel_$rel >> $rel
-end
+done
 #cleanup
 rm -f fds sfds ufds
-foreach att (`cat Attributes`) 
+for att in `cat Attributes`
+do
     rm -f att_$att
-end
+done
 rm -f Attributes
-set MF="Makefile_$schemafile"
+MF="Makefile_$schemafile"
 echo "DATADIR=schemas/css3.0.ext" > $MF
-echo "DATA= \" >> $MF
-foreach rel (`cat Relations`) 
+echo "DATA= \\" >> $MF
+for rel in `cat Relations`
+do
     rm -f rel_$rel
 
     printf " %s"  $rel >> $MF
-end
+done
 printf "\n" >> $MF
-echo 'include $(ANTELOPEMAKE)' >> $MF
+echo 'include $[ANTELOPEMAKE]' >> $MF
 rm -f Relations Attributes base_Attributes
 
 echo "New makefile $MF"
