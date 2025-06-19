@@ -11,10 +11,10 @@
 static void usage ()
 {
     char *usage = "[-v] [-s subset] dbin dbout";
-    char *version = "1.1";
+    char *version = "1.2";
     char *author = "Nikolaus Horn";
-    char *location = "ZAMG / Vienna";
-    char *email = "Nikolaus.Horn@zamg.ac.at";
+    char *location = "GSAT / Vienna";
+    char *email = "Nikolaus.Horn@geosphere.at";
     cbanner (version, usage, author, location, email);
     exit (1);
 }
@@ -85,7 +85,7 @@ int main (int argc, char **argv)
     if (verbose)
         elog_notify (0, "creating database descriptor %s", dboutname);
 
-    if (dbcreate (dboutname, "places1.2", 0, 0, 0)) {
+    if (dbcreate (dboutname, "places1.2", 0, 0, 0, 0, 0)) {
         elog_die (1, "cannot create database %s", dboutname);
     }
     dbopen (dboutname, "r+", &dbout);
