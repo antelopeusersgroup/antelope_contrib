@@ -41,7 +41,7 @@ class Synthetics():
         # Recursive directory creation function
         try:
             if not os.path.exists(self.archive): os.makedirs(self.archive)
-        except Exception,e:
+        except Exception as e:
             elog.error('Cannot create directory (%s) %s => %s' % (self.archive,Exception,e))
 
         if not os.path.exists(self.archive):
@@ -51,7 +51,7 @@ class Synthetics():
         try:
             self.db = datascope.dbopen( self.database, "r+" )
             self.db = self.db.lookup(table='wfdisc')
-        except Exception,e:
+        except Exception as e:
             elog.error('Problems opening wfdisc: %s %s' % (self.database,e) )
 
     def get_synth(self, depth, distance, tw=-1, response='', filters=None, debug_plot=False):
@@ -206,7 +206,7 @@ class Synthetics():
             f = open('%s/TEMP_MODEL' % self.tmp_folder, 'w')
             f.write(model)
             f.close()
-        except Exception,e:
+        except Exception as e:
             elog.error('Cannot open temp file TEMP_MODEL %s %s'% (Exception,e))
 
 
@@ -220,8 +220,8 @@ class Synthetics():
         script = 'run_fkrsort'
         script = self._new_script( script, self.tmp_folder, self._new_fkrsort_script(self.DT) )
 
-        cmd = './run_fkrsort temp_data %s %s %s' % (self.distances[0], self.depth,len(self.distances))
-        run(fix_exec(cmd),self.tmp_folder)
+        cmd = 'csh -c "run_fkrsort temp_data %s %s %s"' % (self.distances[0], self.depth,len(self.distances))
+        run(cmd,self.tmp_folder)
 
         for dist in self.distances:
             newfile = 'temp_data%sd%s.raw_synthetics' % (dist,self.depth)
@@ -248,7 +248,7 @@ class Synthetics():
         global executables
         if len(executables):
             for line in content.split("\n"):
-                for src, target in executables.iteritems():
+                for src, target in executables.items():
                     line = re.sub(r"^%s " % src, "%s " % target, line)
                 outfile.write(line+"\n")
         else:
@@ -258,7 +258,7 @@ class Synthetics():
         outfile.close()
 
         st = os.stat(filename)
-        os.chmod(filename, st.st_mode | stat.S_IEXEC)
+        os.chmod(filename, 0x774)
 
         return filename
 
@@ -311,7 +311,7 @@ class Synthetics():
                 elog.debug('trloadchan(%s,%s)'% (time,endtime))
                 tr = dbview.trload_cssgrp(time,endtime)
                 tr.trsplice()
-            except Exception, e:
+            except Exception as e:
                 elog.error('Could not read synthetics for %s:%s [%s]' % (self.depth,self.distance, e))
                 return False
 
@@ -364,10 +364,10 @@ class Synthetics():
 
                     # Extract the element name from the channel text (distance)
                     try:
-                        m = re.match(".*_(\w{3})",chan)
+                        m = re.match(".*_(\\w{3})",chan)
                         element = m.group(1)
-                    except Exception,e:
-                        elog.error('Problems in regex [.*_(\w{3})] on [%s] %s: %s' % (chan,Exception,e))
+                    except Exception as e:
+                        elog.error('Problems in regex [.*_(\\w{3})] on [%s] %s: %s' % (chan,Exception,e))
 
                     if not element:
                         elog.error('Cannot find component name in wfdisc entry: %s_%s' % (self.depth,self.distance))
@@ -440,7 +440,7 @@ class Synthetics():
 
         try:
             f = open("%s/%s"%(self.archive,dfile), 'w')
-        except Exception,e:
+        except Exception as e:
             elog.error('Cannot open file %s %s %s'% (dfile,Exception,e))
 
         for element,data in record:
@@ -471,15 +471,15 @@ class Synthetics():
                         'calib','datatype','dir','dfile','foff','wfid')
                 values = (sta,chan_loc,time,endtime,nsamp,samprate,1.0,
                         'as','files/',dfile,start,wfid)
-                keyvals = zip(keys,values)
+                keyvals = list(zip(keys,values))
 
                 self.db.addv(*keyvals)
-            except Exception,e:
+            except Exception as e:
                 elog.error('Cannot add new line [%s] %s %s'% (element,Exception,e))
 
         try:
             f.close()
-        except Exception,e:
+        except Exception as e:
             elog.error('Cannot close file %s %s %s'% (file,Exception,e))
 
 
@@ -543,12 +543,12 @@ class Synthetics():
 
         try:
             self.DT = float(self.model['samplerate'])
-        except Exception,e:
+        except Exception as e:
             elog.error('Wrong Format of samplerate PF file[%s]. %s %s'% (self.model,Exception,e))
 
         try:
             self.DECAY = float(self.model['decay'])
-        except Exception,e:
+        except Exception as e:
             elog.error('Wrong Format of decay PF file[%s]. %s %s'% (self.model,Exception,e))
 
         try:
@@ -557,7 +557,7 @@ class Synthetics():
 
             #self.N  = (self.N2-self.N1+1)*4 # 2 times the total number of freqs
             self.N  = (self.N2)*4 # 4 times the total number of freqs
-        except Exception,e:
+        except Exception as e:
             elog.error('Wrong Format of PF file[%s]. %s %s'% (self.model,Exception,e))
 
         elog.debug("read_model()  -  DECAY=%s N1=%s N2=%s N=%s DT=%s " % (self.DECAY,self.N1,self.N2,self.N,self.DT))
@@ -597,7 +597,7 @@ class Synthetics():
                 self.QB.append( 1/float(t[5]) )
                 elog.debug('D:%s A:%s B:%s RHO:%s QA:%s QB:%s' % (self.D[x],self.A[x],self.B[x],self.RHO[x],self.QA[x],self.QB[x]))
 
-        except Exception,e:
+        except Exception as e:
             elog.error('Wrong Format of input file[%s]. %s(%s) RAW: %s'% (self.model,Exception,e,temp))
 
 
@@ -618,7 +618,7 @@ class Synthetics():
 
         if not self.d_min: self.d_min = self.d_step
 
-        self.distances = range(self.d_min, self.d_max + self.d_step, self.d_step)
+        self.distances = list(range(self.d_min, self.d_max + self.d_step, self.d_step))
 
         return
 
@@ -645,7 +645,7 @@ class Synthetics():
                 data = self.DATA[trace]['data']
                 pyplot.plot(data[start:end])
                 pyplot.legend([trace])
-            except Exception,e:
+            except Exception as e:
                 elog.error('Problem plotting green functions.[%s => %s]' % (Exception,e) )
 
         pyplot.suptitle("Green Functions: depth:%s distance:%s" % (self.DEPTH,self.DISTANCE))
