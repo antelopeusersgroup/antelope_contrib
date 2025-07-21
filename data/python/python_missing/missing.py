@@ -1,6 +1,16 @@
 import zamg._missing as _missing
 
 
+def wfchanid(db):
+    """lookup chanid for a wfdisc record"""
+    chanid = _missing._wfchanid(db)
+    return chanid
+
+def arrchanid(db):
+    """lookup chanid for an arrival record"""
+    chanid = _missing._arrchanid(db)
+    return chanid
+
 def dbget_calib(sta, chan, time, dbname):
     """lookup calib, calper, segtype from calibration database"""
     ret = _missing._dbget_calib(sta, chan, time, dbname)

@@ -20,6 +20,9 @@ else:
 .SH DESCRIPTION
 An interface to important functions missing in the Python interface
 .SH FUNCTIONS
+.SS wfchanid, arrchanid
+chanid = wfchanid(db), chanid=arrchanid(db).
+Lookup chanid for records in the wfdisc or arrival table.
 .SS dbget_calib
 [calib, calper, segtype] = dbget_calib(sta, chan, time, dbname). Returns a tuple with calib, calper and segtype.
 If nothing is found, calib is returned as 0
@@ -36,3 +39,4 @@ antelope_python(3y), dbget_calib(3), trutil(3)
 This is an interface to some more or less important Antelope-functions missing in the 'official' Python interface from BRTT
 .SH AUTHOR
 Nikolaus Horn
+GSAT / Vienna, nikolaus.horn@geosphere.at
