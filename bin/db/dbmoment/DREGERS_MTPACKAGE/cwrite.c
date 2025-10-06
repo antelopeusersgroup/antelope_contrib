@@ -2,16 +2,16 @@
 #include<fcntl.h>
 #include<stdio.h>
 
-cwrite_(data,n,nd,l)
-  float *data;
-  int *n,*nd,*l;
+void cwrite_(float *data, int *n, int *nd, int *l)
   {
-  int bytes,fd;
+  FILE *fd;
+  int bytes;
   bytes=*n;
   if(*nd==1 && *l==1)
-    fd=open("vec",O_WRONLY | O_CREAT | O_TRUNC,0644);
+    fd=fopen("vec","w");
   else
-    fd=open("vec",O_WRONLY | O_CREAT | O_APPEND,0644);
-  write(fd,data,bytes*sizeof(float));
-  close(fd);
+    fd=fopen("vec","a");
+  //write(fd,data,bytes*sizeof(float));
+  fwrite(data, sizeof(float), bytes, fd);
+  fclose(fd);
   }

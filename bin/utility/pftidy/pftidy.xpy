@@ -109,7 +109,7 @@ def main():
             if "#" in line:
                 # split on first non-escaped pound-sign
                 try:
-                    stuff, remark = re.split(r"[^\\]#", sline, 1)
+                    stuff, remark = re.split(r"[^\\]#", sline, maxsplit=1)
                 except Exception as __:
                     key = sline
                     remark = None
@@ -153,7 +153,7 @@ def main():
                     val = re.sub(key, "", sline, 1).lstrip()
                 elif nm:
                     key = nm.group(0)
-                    __, val = sline.split(None, 1)
+                    __, val = sline.split(None, maxsplit=1)
                 else:
                     val = sline
                 cc = None

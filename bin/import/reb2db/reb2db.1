@@ -10,9 +10,9 @@ reb2db [-dv] [-0] filename [filename ...] dbname
 reb2db converts Reviewed Event Bulletin files from the International
 Data Centre of the Center for Monitoring Research (www.cdidc.org)
 into css database format. Acceptable input formats include GSE2.0, 
-IMS1.0, IMS1.0:SHORT, IMS2.0, and IMS2.0:SHORT. 
+ISF2.1, IMS1.0, IMS1.0:SHORT, IMS2.0, and IMS2.0:SHORT. 
 Raw mail files with REB information may be fed to reb2db.
-Note that for recent data from CTBT, the  \fIcss3.1\fP schema is required since the ids 
+Note that for recent data from CTBT or in ISF2.1 format, the  \fIcss3.1\fP schema is required since the ids 
 became too large for the original \fIcss3.0\fP schema.
 
 The algorithm field of the origin table abbreviates the analysis 
@@ -34,7 +34,7 @@ create new database using css3.0 schema. Default is to use css3.1 since CTBT use
 .SH LIBRARY
 .SH DIAGNOSTICS
 .nf
-Not in IMS1.0, IMS1.0:SHORT, IMS2.0, IMS2.0:SHORT or GSE2.0 format
+Not in ISF2.1, IMS1.0, IMS1.0:SHORT, IMS2.0, IMS2.0:SHORT or GSE2.0 format
 
 No DATA_TYPE line--assume IMS1.0 format
 (reb2db expects to find either 
@@ -56,7 +56,7 @@ If no DATA_TYPE line is found, reb2db assumes IMS1.0 format at the
 first instance that it hits an EVENT line. reb2db is a state-machine
 that reads input lines successively from all supplied input files. If a 
 file after the first file does not have an explicitly specified DATA_TYPE, 
-the format (IMS1.0, IMS1.0:SHORT, IMS2.0, IMS2.0:SHORT or GSE2.0) will 
+the format (ISF2.1, IMS1.0, IMS1.0:SHORT, IMS2.0, IMS2.0:SHORT or GSE2.0) will 
 carry over from the previous file. 
 
 The seaz field of the assoc table is not filled in since it does not appear

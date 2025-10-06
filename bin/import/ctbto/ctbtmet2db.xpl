@@ -31,7 +31,7 @@ sub stateswitch {
 
 	if( $line =~ /^\s*BEGIN\s+(\S+)\s+/i ) {
 		$format = uc( $1 );
-		if( $format ne "IMS2.0" &&
+		if( $format ne "IMS1.0" &&
 		    $format ne "IMS2.0" ) {
 			die( "File $ARGV Not in IMS1.0, " .
 			     "or IMS2.0 format\n" ); 
@@ -86,9 +86,9 @@ sub addline {
             $endtime=str2epoch($ts);
         };
 		$endtime -= 0.001;
-		#whow, they are using DIFFERENT null values. 
-		#This here ignores everythoin starting with -99
-		# physically, this should be ok. Only winddirection could be affected...
+		# whow, they are using DIFFERENT null values.
+		# This code here ignores everything starting with -99
+		# physically, this should be ok. Only winddirection could be wrong when ignoring values of -99 degrees...
 		$temperature = $temperature_NULL if ($temperature =~ /-99/ );
 		$winddirection = $winddirection_NULL if ($winddirection =~ /-99/ );
 		$windspeed = $windspeed_NULL if ($windspeed =~ /-99/ );

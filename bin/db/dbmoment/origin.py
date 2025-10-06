@@ -53,9 +53,9 @@ class Origin():
         self.distance_step = step
 
     def station_list(self):
-        return  sorted(self.stations.keys(), key=lambda x: self.stations[x]['realdistance'])
+        return  sorted(list(self.stations.keys()), key=lambda x: self.stations[x]['realdistance'])
 
-    def next(self):
+    def __next__(self):
         try:
             return self.station_list.pop(0)
         except:
@@ -128,7 +128,7 @@ class Origin():
         if self.db:
             try:
                 self.db.free()
-            except Exception,e:
+            except Exception as e:
                 elog.warning('Problems cleaning database: %s %s' % (self.database,e) )
 
         if not self.database:
@@ -136,7 +136,7 @@ class Origin():
 
         try:
             self.db = datascope.dbopen( self.database, "r+" )
-        except Exception,e:
+        except Exception as e:
             elog.error('Problems opening database: %s %s' % (self.database,e) )
 
 

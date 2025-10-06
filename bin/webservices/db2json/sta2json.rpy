@@ -309,7 +309,7 @@ class Stations(Resource):
         self._log('render_GET() uri.uri:%s' % uri.uri)
 
         try:
-            (host,port) = uri.getHeader('host').split(':', 1)
+            (host,port) = uri.getHeader('host').split(':', maxsplit=1)
         except:
             host = uri.getHeader('host')
             port = '-'
@@ -422,7 +422,7 @@ class Stations(Resource):
                     temp.getv('dlname','chident','snident','snmodel',
                             'dlsensor.time','dlsensor.endtime')
 
-                snet,sta = name.split('_',1)
+                snet,sta = name.split('_',maxsplit=1)
                 time = int(time)
                 endtime = int(endtime)
 
@@ -563,7 +563,7 @@ class Stations(Resource):
 
             for temp in dbview.iter_record():
 
-                snet,sta = temp.getv('dlname')[0].split('_',1)
+                snet,sta = temp.getv('dlname')[0].split('_',maxsplit=1)
                 ssident = temp.getv('ssident')[0]
 
                 dl = dict( zip(fields, temp.getv(*fields)) )

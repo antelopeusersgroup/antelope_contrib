@@ -308,9 +308,12 @@ def rfc33392epoch(timestring):
     return epoch
 
 
-def epoch2rfc3339(epoch):
+def epoch2rfc3339(*args):
     """epoch time as RFC3339 compatible string"""
-    return stock.epoch2str(epoch, "%Y-%M-%DT%H:%M:%S.%sZ")
+    if len(args) == 1:
+        return stock.epoch2str(args[0], "%Y-%M-%DT%H:%M:%S.%sZ")
+    elif len(args) > 1:
+        return stock.epoch2str(args[0], "%Y-%M-%DT%H:%M:%S.%sZ")
 
 
 # def mydist2(lt

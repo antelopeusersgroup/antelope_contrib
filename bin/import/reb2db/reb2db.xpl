@@ -1,6 +1,6 @@
 
 # reb2db for IMS1.0, IMS1.0:SHORT, and GSE2.0 format REB bulletins
-# this version modified by Nikolaus Horn also for IMS2.0, IMS2.0:SHORT and ARRIVALS
+# this version modified by Nikolaus Horn also for IMS2.0, IMS2.0:SHORT, ISF2.1 and ARRIVALS
 #
 # Kent Lindquist
 # Geophysical Institute
@@ -15,6 +15,7 @@
 #	 		 allow for multiple origins, assuming last one is preferred (ISC practice)
 # Niko Horn
 # March 2022: IMS2.0 and such
+# May   2025: ISF2.1
 
 use Datascope;
 
@@ -59,10 +60,16 @@ sub init_globals {
 
     # format change ~ Aug 2005
     #   $Event_unpack{"IMS1.0-line1"} = "A22 A1 x A5 x A5 x A8 x A9 A1 x A4 " .
+	
     $Event_unpack{"IMS1.0-line1"} =
         "A10 x A11 A1 x A5 x A5 x A8 x A9 A1 A5 "
       . "x A5 x A3 x A5 A1 x A4 x A4 x A4 x A3 x A6 x A6 x A1 x A1 x A2 "
       . "x A9 x A8";
+
+    $Event_unpack{"ISF2.1-line1"} =
+        "A10 x A11 A1 x A5 x A5 x A8 x A9 A1 A5 "
+      . "x A5 x A3 x A5 A1 x A4 x A4 x A4 x A3 x A6 x A6 x A1 x A1 x A2 "
+      . "x A9 x A11";
 
     $Event_names{"IMS1.0-line1"} = [
         "or_datestr", "or_timestr",  "or_fixedtime", "or_timeerr",  "or_rms",
@@ -80,6 +87,7 @@ sub init_globals {
     $Event_names{"IMS1.0:SHORT-line1"} = $Event_names{"IMS1.0-line1"};
     $Event_names{"IMS2.0-line1"}       = $Event_names{"IMS1.0-line1"};
     $Event_names{"IMS2.0:SHORT-line1"} = $Event_names{"IMS1.0-line1"};
+    $Event_names{"ISF2.1-line1"}       = $Event_names{"IMS1.0-line1"};
 
     $Event_unpack{"GSE2.0-line1"} =
         "A10 x A10 x A1 x2 A8 x A9 x A1 x2 A5 x "
@@ -108,6 +116,9 @@ sub init_globals {
     $Phase_unpack{"IMS1.0"} = "A5 x A6 x A5 x A8 x A12 x A5 x A5 x A5 x "
       . "A6 x A6 x A1 A1 A1 x A5 x A9 x A5 x A1 A1 A1 x A5 A1 A4 x A9";
 
+    $Phase_unpack{"ISF2.1"} = "A5 x A6 x A5 x A8 x A12 x A5 x A5 x A5 x "
+      . "A6 x A6 x A1 A1 A1 x A5 x A9 x A5 x A1 A1 A1 x A5 A1 A4 x A11";
+
     $Phase_names{"IMS1.0"} = [
         "ph_sta",     "ph_delta",   "ph_esaz",    "ph_code",
         "ph_arrtime", "ph_timeres", "ph_az",      "ph_azres",
@@ -124,6 +135,7 @@ sub init_globals {
     $Phase_names{"IMS1.0:SHORT"} = $Phase_names{"IMS1.0"};
     $Phase_names{"IMS2.0"}       = $Phase_names{"IMS1.0"};
     $Phase_names{"IMS2.0:SHORT"} = $Phase_names{"IMS1.0"};
+    $Phase_names{"ISF2.1"}       = $Phase_names{"IMS1.0"};
 
     $Phase_unpack{"GSE2.0"} = "A5 x A6 x A5 x A1 A1 A1 x A7 x A21 x A5 x "
       . "A5 x A6 x A5 x A5 x A1 A1 A1 x A5 x A9 x A5 x A2 A4 x A2 A4 x A8";
@@ -138,6 +150,7 @@ sub init_globals {
     ];
 
     $Mag_unpack{"IMS1.0"} = "A5 A1 A4 x A3 x A4 x A9 x A8";
+    $Mag_unpack{"ISF2.1"} = "A5 A1 A4 x A3 x A4 x A9 x A11";
 
     $Mag_names{"IMS1.0"} = [
         "mag_type", "mag_minmax", "mag_val", "mag_err",
@@ -151,6 +164,7 @@ sub init_globals {
     $Mag_names{"IMS1.0:SHORT"} = $Mag_names{"IMS1.0"};
     $Mag_names{"IMS2.0"}       = $Mag_names{"IMS1.0"};
     $Mag_names{"IMS2.0:SHORT"} = $Mag_names{"IMS1.0"};
+    $Mag_names{"ISF2.1"}       = $Mag_names{"IMS1.0"};
 
     use vars qw(%Phase_unpack %Event_unpack %Mag_unpack
       $or_strike $or_antype $or_deptherr $or_smaj $or_smin
@@ -180,9 +194,11 @@ sub stateswitch {
             && $format ne "IMS1.0:SHORT"
             && $format ne "IMS2.0"
             && $format ne "IMS2.0:SHORT"
+            && $format ne "ISF2.1"
             && $format ne "GSE2.0" )
         {
             die(    "File $ARGV Not in IMS1.0, IMS1.0:SHORT, "
+                  . "IMS2.0, IMS2.0:SHORT, ISF2.1 "
                   . "or GSE2.0 format\n" );
         }
         $State = "searching";
@@ -211,6 +227,7 @@ sub stateswitch {
         $format    = uc($2);
         if (   $format ne "IMS1.0"
             && $format ne "IMS2.0"
+            && $format ne "ISF2.1"
             && $format ne "GSE2.0"
             && $subformat ne "AUTOMATIC"
             && $subformt ne "REVIEWED"
@@ -218,7 +235,7 @@ sub stateswitch {
             && $subformt ne "ASSOCIATED"
             && $subformt ne "UNASSOCIATED" )
         {
-            die(    "File $ARGV Not in IMS1.0, IMS1.0:SHORT, "
+            die(    "File $ARGV Not in IMS1.0, IMS2.0, ISF2.1 "
                   . "or GSE2.0 format\n" );
         }
         $format = "$format:ARRIVAL:$subformat";
@@ -382,7 +399,7 @@ sub write_netmag_row {
         "magid", $magid,
 
         #        "net", $net,
-        "orid",        $orid,
+        "orid",        $mag_orid,
         "evid",        $evid,
         "magtype",     $type,
         "nsta",        $nsta ne "" ? $nsta : -1,
@@ -414,6 +431,7 @@ sub write_net_magnitude {
 
     } elsif ( $format eq "IMS1.0"
         || $format eq "IMS1.0:SHORT"
+        || $format eq "ISF2.1"
         || $format eq "IMS2.0"
         || $format eq "IMS2.0:SHORT" )
     {
@@ -822,6 +840,7 @@ sub event {
     if (   $format eq "IMS1.0"
         || $format eq "IMS1.0:SHORT"
         || $format eq "IMS2.0"
+        || $format eq "ISF2.1"
         || $format eq "IMS2.0:SHORT"
         || ( $format eq "GSE2.0" && $Event_line == 2 ) )
     {
