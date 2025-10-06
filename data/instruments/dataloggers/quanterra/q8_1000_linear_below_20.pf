@@ -1,0 +1,308 @@
+originator     Boulder Real Time Technologies
+last_modified  2025-08-01
+
+category       Quanterra
+configuration  Q8-1000 Digitizer Sample Rate Linear Phase Below 20 Composite
+
+description    Q8-1000 Digitizer Sample Rate Linear Phase Below 20 Composite
+dfile          q8_1000lb20c
+
+info    &Literal{
+This is the configuration for a Q8 datalogger with 1000sps input and produces 200sps or below output with linear phase below 20sps.
+}
+
+streams        200sps 100sps 50sps 40sps 20sps 10sps 1sps 
+
+#definitions of streams
+200sps	200	a/d200	FTK-Lbelow20-200
+100sps	100	a/d100	FTK-Lbelow20-100
+50sps	50	a/d50	FTK-Lbelow20-50
+40sps	40	a/d40	FTK-Lbelow20-40
+20sps	20	a/d20	FTK-Lbelow20-20
+10sps	10	a/d10	FTK-Lbelow20-10
+1sps	1	a/d1	FTK-Lbelow20-1
+
+gains 419463  # in units of counts/volt
+
+# Stages
+a/d200	&Arr{
+samprate	200
+gtype		digitizer
+iunits		V
+ounits		counts
+sn			datalogger
+}
+
+a/d100	&Arr{
+samprate	100
+gtype		digitizer
+iunits		V
+ounits		counts
+sn			datalogger
+}
+
+a/d50	&Arr{
+samprate	50
+gtype		digitizer
+iunits		V
+ounits		counts
+sn			datalogger
+}
+
+a/d40	&Arr{
+samprate	40
+gtype		digitizer
+iunits		V
+ounits		counts
+sn			datalogger
+}
+
+a/d20	&Arr{
+samprate	20
+gtype		digitizer
+iunits		V
+ounits		counts
+sn			datalogger
+}
+
+a/d10	&Arr{
+samprate	10
+gtype		digitizer
+iunits		V
+ounits		counts
+sn			datalogger
+}
+
+a/d1	&Arr{
+samprate	1
+gtype		digitizer
+iunits		V
+ounits		counts
+sn			datalogger
+}
+
+FTK-Lbelow20-200	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FTK-Lbelow20-200)
+samprate	200
+}
+
+FTK-Lbelow20-100	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FTK-Lbelow20-100)
+samprate	100
+}
+
+FTK-Lbelow20-50	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FTK-Lbelow20-50)
+samprate	50
+}
+
+FTK-Lbelow20-40	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FTK-Lbelow20-40)
+samprate	40
+}
+
+FTK-Lbelow20-20	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FTK-Lbelow20-20)
+samprate	20
+}
+
+FTK-Lbelow20-10	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FTK-Lbelow20-10)
+samprate	10
+}
+
+FTK-Lbelow20-1	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FTK-Lbelow20-1)
+samprate	1
+}
+
+
+# Described on page 153 of Q8 Reference Guide R5
+soh		LCE LCQ VCO VEA VEC VEP VKI VMZ VMN VME VMA VMB VMC VPB
+
+LCE	&Arr{
+stages 		phase 
+iunits  	s
+ounits		counts
+samprate 	1
+}
+ 
+LCQ	&Arr{
+stages 		clk_qual 
+iunits  	percent
+ounits		counts
+samprate 	1
+rsptype		p
+} 
+
+VCO      &Arr{
+stages 		vco 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+ 
+VEA       &Arr{
+stages 		mamp 
+iunits  	A
+ounits		counts
+samprate 	.1
+rsptype		i
+}
+
+VEC       &Arr{
+stages 		mamp 
+iunits  	A
+ounits		counts
+samprate 	.1
+rsptype		i
+}
+
+VEP       &Arr{
+stages		mvolt
+iunits		V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VKI       &Arr{
+stages 		temp 
+iunits  	Celsius
+ounits		counts
+samprate 	.1
+rsptype		t
+}
+
+VMZ       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VMN       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VME       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VMA       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VMB       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VMC       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+rsptype		v
+}
+
+VPB      &Arr{
+stages 		buf_use 
+iunits  	percent
+ounits		counts
+samprate 	.1
+rsptype		p
+}
+
+phase &Arr{
+gtype		clock phase
+gnom		1000000
+iunits		s
+ounits		counts
+sn		datalogger
+}
+
+clk_qual &Arr{
+gtype		clock quality
+iunits		percent
+ounits		counts
+sn		datalogger
+}
+
+vco &Arr{
+gtype		VCO control voltage
+gnom		1000
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+mamp &Arr{
+gtype		current meter
+gnom		10000
+iunits		A
+ounits		counts
+sn		datalogger
+}
+
+mvolt &Arr{
+gtype		volt meter
+gnom		500
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+temp &Arr{
+gtype		thermometer
+iunits		Celsius
+ounits		counts
+sn		datalogger
+}
+
+mp &Arr{
+gtype		mass position
+gnom		1000
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+buf_use &Arr{
+gtype		Q8 buffer usage
+gnom		10
+iunits		percent
+ounits		counts
+sn		datalogger
+}
