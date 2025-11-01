@@ -1,30 +1,35 @@
-.TH PFTIDY 1 
+.TH PFTIDY 1
 .SH NAME
-pftidy \- clean up antelope parameter files 
+pftidy \- clean up antelope parameter files
 .SH SYNOPSIS
 .nf
-pftidy [-v] [-l x] [-c y] [-I z] file
+pftidy [-vI] [-l x] [-c y] [-I z] file
 .fi
 
 .SH DESCRIPTION
 pftidy can help to clean up antelope parameterfiles.
 This can be especially helpful when comparing different parameterfiles.
 The indention tries to rearrange parameter files according to simple rules:
-Whitespace at the beginning all lines is removed, alls indention is done using spaces, 
+Whitespace at the beginning of all lines is removed, indention is done using spaces only,
 no tabs or such.
 The content of lists (&Tbl), hashes (&Arr) and literals is indented by three spaces.
 Values are indented at least 30 characters, remarks are indentend at east 70 characters.
+The indention levels can be changed on the command line.
+There exists a parameterfile named after the program, \fIpftidy.pf\fP, but only for demonstration purposes.
 .SH OPTIONS
-.IP "-v" 
+.IP "-v"
 verbose flag
-.IP "-l x" 
+.IP "-l x"
 indention for values
-.IP "-c y" 
+.IP "-c y"
 indention for remarks
-.IP "-I z"
-indention level for nested items (Tbl, Arr, Literal)
+.IP "-t z"
+indention level for nested items (Tbl, Arr, Literal) - tab width
+.IP "-I"
+indent alle remarks, even lines with only remarks following a blank line. Default is not to indent lines
+containing only remarks when preceeded by a blank line.
 .IP "file"
-Name of input parameter file. This needs to be a filename, normal rules for naming and finding 
+Name of input parameter file. This needs to be a full filepath, normal rules for naming and finding
 parameter files are not applied.
 .SH EXAMPLE
 .nf
@@ -37,7 +42,7 @@ THe indention rules are rather simple, so please be careful when using this tool
 
 .SH "SEE ALSO"
 .nf
-pf(5), pfacho(1) 
+pf(5), pfecho(1), pfdiff(1)
 .fi
 .SH AUTHOR
 .nf
