@@ -101,7 +101,7 @@ class MomentTensor():
             f = open(destination, 'w')
             f.write(output)
             f.close()
-        except Exception,e:
+        except Exception as e:
             elog.error('Cannot create new file %s %s'% (destination,e))
 
         elog.debug('new file %s' % destination)
@@ -110,12 +110,12 @@ class MomentTensor():
 
         try:
             os.remove( "%s/mt_inv.out" % self.tmp_folder )
-        except Exception,e:
+        except Exception as e:
             pass
 
         try:
             os.remove( "%s/tdmt.results" % self.tmp_folder )
-        except Exception,e:
+        except Exception as e:
             pass
 
         # Clean variables
@@ -135,7 +135,7 @@ class MomentTensor():
         for line in temp_results:
             valid = True
             elog.debug(line)
-            match_variance = re.match("^Station\((.+)\)=(\S+) +(\S+)$",line)
+            match_variance = re.match("^Station\\((.+)\\)=(\\S+) +(\\S+)$",line)
             if match_variance:
                 sta = self.station_cache[match_variance.group(1)]
                 elog.debug('Got station %s =%s %s' % \
@@ -170,11 +170,11 @@ class MomentTensor():
             line = line.strip()
             #elog.debug(line )
 
-            match_zcor = re.match("^Station\((.+)\):.*Zcor=(.+)$",line)
-            #match_variance = re.match("^Station\((.+)\)=(\d+) +(\d+)$",line)
-            strike = re.match("^Strike=(-?\d+) +; +(-?\d+)$",line)
-            rake = re.match("^Rake=(-?\d+) +; +(-?\d+)$",line)
-            dip = re.match("^Dip=(-?\d+) +; +(-?\d+)$",line)
+            match_zcor = re.match("^Station\\((.+)\\):.*Zcor=(.+)$",line)
+            #match_variance = re.match("^Station\\((.+)\\)=(\\d+) +(\\d+)$",line)
+            strike = re.match("^Strike=(-?\\d+) +; +(-?\\d+)$",line)
+            rake = re.match("^Rake=(-?\\d+) +; +(-?\\d+)$",line)
+            dip = re.match("^Dip=(-?\\d+) +; +(-?\\d+)$",line)
             varred = re.match("^VarRed=(.+)$",line)
             quality = re.match("^Quality=(.+)$",line)
             mw = re.match("^Mw=(.+)$",line)

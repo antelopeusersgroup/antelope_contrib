@@ -31,21 +31,21 @@ class DbMoment(Station):
         try:
             elog.debug( 'event_obj.Origin(%s)' % database )
             self.my_event = event.Origin( database )
-        except Exception,e:
+        except Exception as e:
             elog.error("EVENT module init error: [%s]" % e)
 
         # Instantiate Data Class
         try:
             elog.debug( 'data_obj.Data(%s,%s)' % (options.wave_db, options.allowed_segtype) )
             self.my_data = data.Waveforms(options.wave_db, options.allowed_segtype)
-        except Exception,e:
+        except Exception as e:
             elog.error("DATA module init error: [%s]" % e)
 
         # Instantiate Synthetics Class
         try:
             elog.debug( 'synty_obj.Synthetics(%s,%s)' % (options.synth_db_folder, options.tmp_folder) )
             self.my_synth = synth.Synthetics( options.synth_db_folder, options.tmp_folder)
-        except Exception,e:
+        except Exception as e:
             elog.error("Synthetics module Init Error: [%s]" % e)
 
         # Instantiate Inversion Classes. Dreger's code wrapper.
@@ -53,7 +53,7 @@ class DbMoment(Station):
             elog.debug( 'inv_obj.MomentTensor()' )
             self.my_inv = inv.MomentTensor()
             pass
-        except Exception,e:
+        except Exception as e:
             elog.error("Inversion Module Init Error: [%s]" % e)
 
 
@@ -178,14 +178,14 @@ class DbMoment(Station):
         elog.info( 'Valid stations for inversion: %s ' % ', '.join(sorted(self.stations.keys())  ) )
 
         # Verify that we have min number of stations
-        if len(self.stations.keys()) < self.sta_min:
+        if len(list(self.stations.keys())) < self.sta_min:
             elog.error('NOT enough stations [%s] for this event. Need [%s]' % \
                     (len(self.stations), self.sta_min))
 
 
         # Maybe we have too many sites. Let's keep the best ones.
         while len(self.stations) > ( self.sta_max * 2 ):
-            worst = sorted(self.stations.keys(),
+            worst = sorted(list(self.stations.keys()),
                     key=lambda x: float( self.stations[x].vr ) )[0]
             elog.info('Too many stations. To be removed: [%s] [%s]' % \
                     (worst, self.stations[worst].vr) )
@@ -226,7 +226,7 @@ class DbMoment(Station):
             worst_vr = None
             keep_site = None
 
-            elog.debug('RecursiveTest: original station list: %s)' % self.stations.keys() )
+            elog.debug('RecursiveTest: original station list: %s)' % list(self.stations.keys()) )
             for test in sorted(self.stations.keys()):
 
                 elog.debug('\tRecursiveTest: TEST ON REJECTING: %s)' % test )
@@ -277,7 +277,7 @@ class DbMoment(Station):
                 del( self.stations[ avoid_site ] )
                 continue
 
-            elif len( self.stations.keys() ) > self.sta_max:
+            elif len( list(self.stations.keys()) ) > self.sta_max:
                 elog.notify('Remove %s. Too many sites. VR %s=>%0.1f' % \
                         (avoid_site, self.results['VarRed'], keep_results['VarRed']) )
 
@@ -293,7 +293,7 @@ class DbMoment(Station):
 
             # Might need to review final solution for individual VarRed
             # VERIFY INDIVIDUAL SITES IN THIS POSSIBLE SOLUTION
-            if len( self.stations.keys() ) > self.sta_min:
+            if len( list(self.stations.keys()) ) > self.sta_min:
                 # only get here if no station was removed on last loop
                 worst = sorted(self.results['variance'],
                         key=lambda x: float(self.results['variance'][x]) )[0]
@@ -427,7 +427,7 @@ class DbMoment(Station):
             try:
                 temp = self.my_inv.invert( {sta:results} )
                 results.clean()
-            except Exception,e:
+            except Exception as e:
                 elog.warning('%s %s' % (Exception,e) )
                 elog.error('Invertion on {0} failed!'.format(sta) )
 
@@ -449,7 +449,7 @@ class DbMoment(Station):
                 return None
 
 
-        best = sorted(variance_results.items(), key=operator.itemgetter(1))[-1]
+        best = sorted(list(variance_results.items()), key=operator.itemgetter(1))[-1]
         best_filter = best[0]
         best_vr = best[1]
         best_zcor = zcor_results[ best_filter]

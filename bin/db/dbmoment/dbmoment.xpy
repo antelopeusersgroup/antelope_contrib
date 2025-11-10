@@ -37,7 +37,7 @@ import json
 import inspect
 
 from tempfile import mkstemp
-from distutils import spawn
+from shutil import which
 from datetime import datetime
 from optparse import OptionParser
 from collections import defaultdict
@@ -66,7 +66,7 @@ try:
     import antelope.elog as elog
 
 
-except Exception,e:
+except Exception as e:
     sys.exit("Import Error: [%s] Do you have ANTELOPE installed correctly?" % e)
 
 # CONFIGURE ELOG
@@ -83,7 +83,7 @@ def niceprint(msg):
     else:
         try:
             return json.dumps( msg, indent=4)
-        except Exception, e:
+        except Exception as e:
             return ' *(invalid msg)*  %s: %s' % (Exception,e)
 
     return msg
@@ -93,7 +93,7 @@ def elog_to_file(msg):
     global  log_fh
 
     if log_fh:
-        if isinstance(msg, basestring):
+        if isinstance(msg, str):
             log_fh.write( "%s\n" % msg )
         else:
             log_fh.write( "%s\n" % niceprint( msg ) )
@@ -141,32 +141,32 @@ try:
     from pylab import insert, concatenate, pi
     from pylab import fft, fftfreq, irfft
     from pylab import concatenate
-except Exception,e:
+except Exception as e:
     try:
         from numpy import array, zeros, ones, sin, cos, delete
         from numpy import insert, concatenate, pi, interp
         from numpy.fft import fft
         from numpy.fft import fftfreq
         from numpy.fft import irfft
-    except Exception,e:
+    except Exception as e:
         sys.exit("Import Error: [%s] Do you have PYLAB or NUMPY installed correctly?" % e)
 
 # Matplotlib
 try:
     from matplotlib  import pyplot, colors
-except Exception,e:
+except Exception as e:
     sys.exit("Import Error: [%s] Do you have PYLAB installed correctly?" % e)
 
 # OBSPY - optional
 try:
     from obspy.imaging.mopad_wrapper import beach as beachball
-except Exception,e:
+except Exception as e:
     beachball = False
 
 try:
     from dbmoment.functions import *
     from dbmoment.mt import *
-except Exception,e:
+except Exception as e:
     sys.exit("Import Error: [%s] Problem with dbmoment function load." % e)
 
 
@@ -316,14 +316,14 @@ pf_object = open_verify_pf(options.pf,mttime=1500940800)
 
 execs = safe_pf_get(pf_object, 'find_executables', [])
 acknowledgement  = safe_pf_get(pf_object, 'acknowledgement', '')
-clean_tmp = stock.yesno(str(safe_pf_get(pf_object, 'clean_tmp', True)))
-plot_all = stock.yesno(str(safe_pf_get(pf_object, 'plot_all', False)))
+clean_tmp = stock.yesno(str(safe_pf_get(pf_object, 'clean_tmp', 'True')))
+plot_all = stock.yesno(str(safe_pf_get(pf_object, 'plot_all', 'False')))
 img_folder = os.path.relpath( safe_pf_get(pf_object, 'img_folder','dbmoment_images') )
 tmp_folder = os.path.relpath( safe_pf_get(pf_object, 'tmp_folder','.dbmoment'))
 model_path = safe_pf_get(pf_object, 'model_path')
 
 # Log file configuration
-log_folder = safe_pf_get(pf_object, 'log_folder',False)
+log_folder = stock.yesno(str(safe_pf_get(pf_object, 'log_folder','False')))
 log_max_count = int(safe_pf_get(pf_object, 'log_max_count',0))
 
 # BB colors
@@ -336,8 +336,8 @@ if not options.model:
 # MT options
 options.tmp_folder = tmp_folder
 options.allowed_segtype = safe_pf_get(pf_object, 'allowed_segtype',['D','V'])
-options.arrivals_only = stock.yesno( safe_pf_get(pf_object, 'stations_arrivals_only',True) )
-options.recursive = stock.yesno( safe_pf_get(pf_object, 'recursive_analysis',True) )
+options.arrivals_only = stock.yesno( str(safe_pf_get(pf_object, 'stations_arrivals_only','True') ) )
+options.recursive = stock.yesno( str(safe_pf_get(pf_object, 'recursive_analysis','True') ) )
 options.min_quality = int( safe_pf_get(pf_object, 'min_quality',2) )
 
 
@@ -386,7 +386,7 @@ if log_folder:
         log_folder = os.path.relpath( log_folder )
         if not os.path.isdir(log_folder):
             os.makedirs(log_folder)
-    except Exception,e:
+    except Exception as e:
         sys.exit("Problems while creating folder [%s] %s" % (log_folder,e))
 
     # Using an ORID variable but at this point it could be an EVID. Just
@@ -468,25 +468,25 @@ on each of them.
 # Instantiate Origin Class
 try:
     event_obj = dynamic_loader( event_lib )
-except Exception,e:
+except Exception as e:
     elog.error("EVENT module loading error: [%s]" % e)
 
 # Instantiate Data Class
 try:
     data_obj = dynamic_loader( data_lib )
-except Exception,e:
+except Exception as e:
     elog.error("DATA module loading error: [%s]" % e)
 
 # Instantiate Synthetics Class
 try:
     synth_obj = dynamic_loader( synth_lib )
-except Exception,e:
+except Exception as e:
     elog.error("Synthetics module loading Error: [%s]" % e)
 
 # Instantiate Inversion Classes. Dreger's code wrapper.
 try:
     inv_obj = dynamic_loader( inv_lib )
-except Exception,e:
+except Exception as e:
     elog.error("Inversion Module loading Error: [%s]" % e)
 
 
@@ -643,7 +643,7 @@ cleanup_db(mt_table, 'orid==%s && auth=~/mt.%s/' % (orid,model_name) )
 elog.info('Insert values to MT table')
 try:
     new_rec = mt_table.addv(*to_insert)
-except Exception,e:
+except Exception as e:
     elog.error('Problems inserting values into table: %s' % e)
 elog.debug(to_insert)
 
@@ -673,7 +673,7 @@ to_insert = [
     ('magtype',results['drmagt']),
     ('magnitude',results['drmag']),
     ('auth', "mt.%s" % model_name),
-    ('nsta',len(results['variance'].keys()))
+    ('nsta',len(list(results['variance'].keys())))
     ]
 
 elog.info('Insert values to netmag table')
@@ -681,7 +681,7 @@ elog.debug(to_insert)
 
 try:
     new_rec = netmag_table.addv(*to_insert)
-except Exception,e:
+except Exception as e:
     elog.error('Problems inserting values into table: %s' % e)
 
 elog.notify('New record on netmag table [%s]' % new_rec)

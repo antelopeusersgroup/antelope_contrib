@@ -32,7 +32,7 @@ class Waveforms():
         elog.debug('Start data extraction for %s' % sta )
         results = False
 
-        if isinstance(chans, basestring):
+        if isinstance(chans, str):
             chans = [chans]
 
         start = start_time - tw
@@ -64,7 +64,7 @@ class Waveforms():
         try:
             self.database = datascope.dbopen( self.databasename, "r+" )
             self.db = self.database.lookup(table='wfdisc')
-        except Exception,e:
+        except Exception as e:
             elog.error('Problems opening wfdisc: %s %s' % (self.database,e) )
 
         if not self.db.record_count:
@@ -171,7 +171,7 @@ class Waveforms():
             tr = dbview.trload_cssgrp( start, end )
             tr.trsplice()
             tr.trsplit()
-        except Exception, e:
+        except Exception as e:
             elog.warning('Could not read data for %s:%s [%s]' % (sta,chans, e))
             return False
 
@@ -245,7 +245,7 @@ class Waveforms():
             """
             try:
                 tr.trrotate(  float(esaz), 0, self.seismic_channels )
-            except Exception,e:
+            except Exception as e:
                 elog.warning('Problems with trrotate %s => %s' % (Exception,e))
                 return False
 
@@ -290,7 +290,7 @@ class Waveforms():
             elog.debug('Filter data from %s with %s' % (sta, f))
             try:
                 tr.trfilter( f )
-            except Exception,e:
+            except Exception as e:
                 elog.warning('Problems with the filter %s => %s:%s' % \
                         (f,Exception,e))
                 return False

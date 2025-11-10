@@ -26,6 +26,7 @@ use Tk::Bplot;
 use ptkform;
 use ptkalert;
 use POSIX qw(_exit);
+use POSIX qw(locale_h);
 
 use Vector;
 
@@ -34,6 +35,8 @@ use Encode 'from_to';
 our( $opt_v, $opt_o, $opt_O, $opt_p, $opt_r, $opt_f, $opt_l, $opt_L );
 our $items;
 use Getopt::Std;
+
+POSIX::setlocale(LC_ALL, 'C');
 
 if ( !getopts('f:l:L:o:O:p:r:v') || @ARGV < 1 ) {
     die (
