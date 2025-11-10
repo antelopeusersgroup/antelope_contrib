@@ -86,6 +86,15 @@ DATA= taurus_inf_aa   \
       centaur_200sps_s1 \
       centaur_200sps_s2 \
       centaur_200sps_s3 \
+      centaur_500sps_s1 \
+      centaur_500sps_s2 \
+      centaur_500sps_s3 \
+      centaur_1000sps_s1 \
+      centaur_1000sps_s2 \
+      centaur_1000sps_s3 \
+      titan_200sps_fir1 \
+      titan_200sps_fir2 \
+      titan_200sps_fir3 \
 	  trilliumcompact_userguide.pdf \
       trillium_compact_20 \
       trillium_compact_120
