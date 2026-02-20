@@ -8,8 +8,8 @@ Indent antelope parameterfiles
 idea ist to tidy up antelope parameterfiles
 
 name value # remark ->
-name           value                 # 
-0              -l defines this       -c defines the indention level of comments 
+name           value                 #
+0              -l defines this       -c defines the indention level of comments
 
 """
 
@@ -64,7 +64,7 @@ def main():
         if o == "-v":
             verbose = 1
         elif o == "-I":
-            indent_step = int(a)    
+            indent_step = int(a)
         elif o == "-l":
             indent_value = int(a)
         elif o == "-c":
@@ -99,7 +99,6 @@ def main():
         elif sline.startswith("#"):
             remarkonly = True
             remark = sline[1:]
-            remarkonly = False
         else:
             # if starts with " or ':
             # check if starts with quoted word
@@ -123,7 +122,7 @@ def main():
                 if verbose:
                     print("    closed!!!")
                 closing_char.pop()
-                #do it immediate, not after outputting the stuff
+                # do it immediate, not after outputting the stuff
                 indent -= indent_step
                 delta = 0
                 key = sline
@@ -142,10 +141,9 @@ def main():
                     closing_char.append("}")
                     delta = indent_step
             else:  # there are spaces
-
                 # match for quoted key
                 qm = re.match(r"([\'\"])(.*)\1", sline)
-                # match for regular unquoted key key
+                # match for regular unquoted key
                 nm = re.match(r"(\S+)", sline)
                 if qm:
                     key = qm.group(0)
@@ -190,7 +188,7 @@ def main():
             else:
                 outstr += " " * (indent_value - strlen) + val
         if remarkonly:
-            outstr = "# " + remark        
+            outstr = "# " + remark
         elif remark is not None:
             strlen = len(outstr)
             if strlen + 2 > indent_remark:
