@@ -1,6 +1,6 @@
 .TH PYTHON_PJ 3Y
 .SH NAME
-init_statefile, update_statefile, rfc33392epoch, epoch2rfc3339, string_charsplit, utf8len, string_maxbytes, set_remark, add_remark, get_remark, mark_remar, create_dbdesc, spherical_distance, haversine_distance \- little helpers
+init_statefile, update_statefile, rfc33392epoch, epoch2rfc3339, string_charsplit, utf8len, string_maxbytes, set_remark, add_remark, get_remark, mark_remark, next_number, create_dbdesc, spherical_distance, haversine_distance \- little helpers
 .SH SYNOPSIS
 .nf
 sys.path.append(os.environ['ANTELOPE'] + "/contrib/data/python")
