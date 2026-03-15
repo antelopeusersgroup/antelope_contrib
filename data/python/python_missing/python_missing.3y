@@ -1,6 +1,6 @@
 .TH PYTHON_MISSING 3Y
 .SH NAME
-dbget_calib TIME2SAMP SAMP2TIME SAMPRATE NSAMP ENDTIME python_missing \- antelope functions where an interface is missing
+dbget_calib dbadd_remark dbget_remark TIME2SAMP SAMP2TIME SAMPRATE NSAMP ENDTIME python_missing \- antelope functions where an interface is missing
 .SH SYNOPSIS
 .nf
 sys.path.append(os.environ['ANTELOPE'] + "/contrib/data/python")
