@@ -1,3 +1,6 @@
+26 March 2026, version 5.1
+  - Update libslink to v3.2.4
+
 7 April 2025, version 5.0
   - Update libslink to v4.1.4 with support for SeedLink v4, including:
     * support for miniSEED 2 and 3 data records

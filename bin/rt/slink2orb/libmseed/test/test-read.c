@@ -20,11 +20,12 @@ TEST (read, v3_parse)
 
   /* General parsing */
   flags = MSF_UNPACKDATA;
+  flags |= MSF_VALIDATECRC;
   rv = ms3_readmsr (&msr, path, flags, 0);
 
   CHECK (rv == MS_NOERROR, "ms3_readmsr() did not return expected MS_NOERROR");
   REQUIRE (msr != NULL, "ms3_readmsr() did not populate 'msr'");
-  CHECK (msr->reclen == 478, "msr->reclen is not expected 478");
+  CHECK (msr->reclen == 414, "msr->reclen is not expected 478");
   CHECK_STREQ (msr->sid, "FDSN:IU_COLA_00_L_H_1");
   CHECK (msr->formatversion == 3, "msr->formatversion is not expected 3");
   CHECK (msr->flags == 4, "msr->flags is not expected 4");
@@ -33,11 +34,12 @@ TEST (read, v3_parse)
   CHECK (msr->encoding == 11, "msr->encoding is not expected 11");
   CHECK (msr->pubversion == 4, "msr->pubversion is not expected 4");
   CHECK (msr->samplecnt == 135, "msr->samplecnt is not expected 135");
-  CHECK (msr->crc == 0x4F3EAB65, "msr->crc is not expected 0x4F3EAB65");
+  CHECK (msr->crc == 0xCE52C9F7, "msr->crc is not expected 0x4F3EAB65");
   CHECK (msr->extralength == 33, "msr->extralength is not expected 33");
-  CHECK (msr->datalength == 384, "msr->datalength is not expected 384");
+  CHECK (msr->datalength == 320, "msr->datalength is not expected 384");
   CHECK_STREQ (msr->extra, "{\"FDSN\":{\"Time\":{\"Quality\":100}}}");
-  CHECK (msr->datasize == 540, "msr->datasize is not expected 540");
+  CHECK (msr->datasize == 540 || msr->datasize == libmseed_prealloc_block_size,
+         "msr->datasize is not 540 or prealloc block size");
   CHECK (msr->numsamples == 135, "msr->numsamples is not expected 135");
   CHECK (msr->sampletype == 'i', "msr->sampletype is not expected 'i'");
 
@@ -87,7 +89,8 @@ TEST (read, v2_parse)
   CHECK (msr->extralength == 33, "msr->extralength is not expected 33");
   CHECK (msr->datalength == 448, "msr->datalength is not expected 448");
   CHECK_STREQ (msr->extra, "{\"FDSN\":{\"Time\":{\"Quality\":100}}}");
-  CHECK (msr->datasize == 540, "msr->datasize is not expected 540");
+  CHECK (msr->datasize == 540 || msr->datasize == libmseed_prealloc_block_size,
+         "msr->datasize is not 540 or prealloc block size");
   CHECK (msr->numsamples == 135, "msr->numsamples is not expected 135");
   CHECK (msr->sampletype == 'i', "msr->sampletype is not expected 'i'");
 
@@ -111,16 +114,16 @@ TEST (read, v3_encodings)
 {
   MS3Record *msr = NULL;
   uint32_t flags = MSF_UNPACKDATA; /* Set data decode/unpack flag */
-  int32_t sinedata[SINE_DATA_SAMPLES];
-  double dsinedata[SINE_DATA_SAMPLES];
+  int32_t isinedata[SINE_DATA_SAMPLES];
+  float fsinedata[SINE_DATA_SAMPLES];
   int rv;
   int idx;
 
   /* Create integer and double sine data sets */
   for (idx = 0; idx < SINE_DATA_SAMPLES; idx++)
   {
-    sinedata[idx] = (int32_t)(fsinedata[idx]);
-    dsinedata[idx] = (double)(fsinedata[idx]);
+    isinedata[idx] = (int32_t)(dsinedata[idx]);
+    fsinedata[idx] = (float)(dsinedata[idx]);
   }
 
   /* Text */
@@ -156,7 +159,7 @@ TEST (read, v3_encodings)
   REQUIRE (msr != NULL, "ms3_readmsr() did not populate 'msr'");
   REQUIRE (msr->datasamples != NULL, "ms3_readmsr() did not populate 'msr->datasamples'");
 
-  CHECK (!cmpint32s ((int32_t *)msr->datasamples, sinedata, msr->numsamples), "Decoded sample mismatch, int16");
+  CHECK (!cmpint32s ((int32_t *)msr->datasamples, isinedata, msr->numsamples), "Decoded sample mismatch, int16");
   ms3_readmsr(&msr, NULL, flags, 0);
 
   /* Int32 */
@@ -165,7 +168,7 @@ TEST (read, v3_encodings)
   REQUIRE (msr != NULL, "ms3_readmsr() did not populate 'msr'");
   REQUIRE (msr->datasamples != NULL, "ms3_readmsr() did not populate 'msr->datasamples'");
 
-  CHECK (!cmpint32s ((int32_t *)msr->datasamples, sinedata, msr->numsamples), "Decoded sample mismatch, int32");
+  CHECK (!cmpint32s ((int32_t *)msr->datasamples, isinedata, msr->numsamples), "Decoded sample mismatch, int32");
   ms3_readmsr(&msr, NULL, flags, 0);
 
   /* Steim-1 big endian */
@@ -174,7 +177,7 @@ TEST (read, v3_encodings)
   REQUIRE (msr != NULL, "ms3_readmsr() did not populate 'msr'");
   REQUIRE (msr->datasamples != NULL, "ms3_readmsr() did not populate 'msr->datasamples'");
 
-  CHECK (!cmpint32s ((int32_t *)msr->datasamples, sinedata, msr->numsamples), "Decoded sample mismatch, Steim-1");
+  CHECK (!cmpint32s ((int32_t *)msr->datasamples, isinedata, msr->numsamples), "Decoded sample mismatch, Steim-1");
   ms3_readmsr(&msr, NULL, flags, 0);
 
   /* Steim-2 big endian */
@@ -183,7 +186,7 @@ TEST (read, v3_encodings)
   REQUIRE (msr != NULL, "ms3_readmsr() did not populate 'msr'");
   REQUIRE (msr->datasamples != NULL, "ms3_readmsr() did not populate 'msr->datasamples'");
 
-  CHECK (!cmpint32s ((int32_t *)msr->datasamples, sinedata, msr->numsamples), "Decoded sample mismatch, Steim-2");
+  CHECK (!cmpint32s ((int32_t *)msr->datasamples, isinedata, msr->numsamples), "Decoded sample mismatch, Steim-2");
   ms3_readmsr(&msr, NULL, flags, 0);
 }
 
@@ -191,8 +194,8 @@ TEST (read, v2_encodings)
 {
   MS3Record *msr = NULL;
   uint32_t flags = MSF_UNPACKDATA; /* Set data decode/unpack flag */
-  int32_t sinedata[SINE_DATA_SAMPLES];
-  double dsinedata[SINE_DATA_SAMPLES];
+  int32_t isinedata[SINE_DATA_SAMPLES];
+  float fsinedata[SINE_DATA_SAMPLES];
   float *float32s;
   int32_t *int32s;
   int rv;
@@ -201,8 +204,8 @@ TEST (read, v2_encodings)
   /* Create integer and double sine data sets */
   for (idx = 0; idx < SINE_DATA_SAMPLES; idx++)
   {
-    sinedata[idx] = (int32_t)(fsinedata[idx]);
-    dsinedata[idx] = (double)(fsinedata[idx]);
+    isinedata[idx] = (int32_t)(dsinedata[idx]);
+    fsinedata[idx] = (float)(dsinedata[idx]);
   }
 
   /* Text */
@@ -298,7 +301,7 @@ TEST (read, v2_encodings)
   REQUIRE (msr != NULL, "ms3_readmsr() did not populate 'msr'");
   REQUIRE (msr->datasamples != NULL, "ms3_readmsr() did not populate 'msr->datasamples'");
 
-  CHECK (!cmpint32s ((int32_t *)msr->datasamples, sinedata, msr->numsamples), "Decoded sample mismatch, int16");
+  CHECK (!cmpint32s ((int32_t *)msr->datasamples, isinedata, msr->numsamples), "Decoded sample mismatch, int16");
   ms3_readmsr(&msr, NULL, flags, 0);
 
   /* Int32 */
@@ -307,7 +310,7 @@ TEST (read, v2_encodings)
   REQUIRE (msr != NULL, "ms3_readmsr() did not populate 'msr'");
   REQUIRE (msr->datasamples != NULL, "ms3_readmsr() did not populate 'msr->datasamples'");
 
-  CHECK (!cmpint32s ((int32_t *)msr->datasamples, sinedata, msr->numsamples), "Decoded sample mismatch, int32");
+  CHECK (!cmpint32s ((int32_t *)msr->datasamples, isinedata, msr->numsamples), "Decoded sample mismatch, int32");
   ms3_readmsr(&msr, NULL, flags, 0);
 
   /* Steim-1 big endian */
@@ -316,7 +319,7 @@ TEST (read, v2_encodings)
   REQUIRE (msr != NULL, "ms3_readmsr() did not populate 'msr'");
   REQUIRE (msr->datasamples != NULL, "ms3_readmsr() did not populate 'msr->datasamples'");
 
-  CHECK (!cmpint32s ((int32_t *)msr->datasamples, sinedata, msr->numsamples), "Decoded sample mismatch, Steim-1");
+  CHECK (!cmpint32s ((int32_t *)msr->datasamples, isinedata, msr->numsamples), "Decoded sample mismatch, Steim-1");
   ms3_readmsr(&msr, NULL, flags, 0);
 
   /* Steim-1 little endian */
@@ -325,7 +328,7 @@ TEST (read, v2_encodings)
   REQUIRE (msr != NULL, "ms3_readmsr() did not populate 'msr'");
   REQUIRE (msr->datasamples != NULL, "ms3_readmsr() did not populate 'msr->datasamples'");
 
-  CHECK (!cmpint32s ((int32_t *)msr->datasamples, sinedata, msr->numsamples), "Decoded sample mismatch, Steim-1 LE");
+  CHECK (!cmpint32s ((int32_t *)msr->datasamples, isinedata, msr->numsamples), "Decoded sample mismatch, Steim-1 LE");
   ms3_readmsr(&msr, NULL, flags, 0);
 
   /* Steim-2 big endian */
@@ -334,7 +337,7 @@ TEST (read, v2_encodings)
   REQUIRE (msr != NULL, "ms3_readmsr() did not populate 'msr'");
   REQUIRE (msr->datasamples != NULL, "ms3_readmsr() did not populate 'msr->datasamples'");
 
-  CHECK (!cmpint32s ((int32_t *)msr->datasamples, sinedata, msr->numsamples), "Decoded sample mismatch, Steim-2");
+  CHECK (!cmpint32s ((int32_t *)msr->datasamples, isinedata, msr->numsamples), "Decoded sample mismatch, Steim-2");
   ms3_readmsr(&msr, NULL, flags, 0);
 
   /* Steim-2 little endian */
@@ -343,7 +346,7 @@ TEST (read, v2_encodings)
   REQUIRE (msr != NULL, "ms3_readmsr() did not populate 'msr'");
   REQUIRE (msr->datasamples != NULL, "ms3_readmsr() did not populate 'msr->datasamples'");
 
-  CHECK (!cmpint32s ((int32_t *)msr->datasamples, sinedata, msr->numsamples), "Decoded sample mismatch, Steim-2 LE");
+  CHECK (!cmpint32s ((int32_t *)msr->datasamples, isinedata, msr->numsamples), "Decoded sample mismatch, Steim-2 LE");
   ms3_readmsr(&msr, NULL, flags, 0);
 }
 

@@ -22,15 +22,15 @@
 
 #include "libmseed.h"
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Determine data sample size for each type
  *
  * @param[in] sampletype Library sample type code:
  * @parblock
- *   - \c 't' - Text data type
- *   - \c 'i' - 32-bit integer data type
- *   - \c 'f' - 32-bit float data type
- *   - \c 'd' - 64-bit float (double) data type
+ *   - @c 't' - Text data type
+ *   - @c 'i' - 32-bit integer data type
+ *   - @c 'f' - 32-bit float data type
+ *   - @c 'd' - 64-bit float (double) data type
  * @endparblock
  *
  * @returns The sample size based on type code or 0 for unknown.
@@ -57,16 +57,16 @@ ms_samplesize (char sampletype)
 
 } /* End of ms_samplesize() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Return sample size and/or type for given encoding value
  *
  * Determine the decoded sample size and/or type based on data
- * encoding.  The \a samplesize and \a sampletype values will only be
+ * encoding.  The @p samplesize and @p sampletype values will only be
  * set if not NULL, allowing lookup of either value or both.
  *
  * @param[in] encoding Data sample encoding code
  * @param[out] samplesize Size of sample, pointer that will be set
- * @param[out] sampletype Sample type, pointer to \c char that will be set
+ * @param[out] sampletype Sample type, pointer to @c char that will be set
  *
  * @returns 0 on success, -1 on error
  ***************************************************************************/
@@ -115,7 +115,7 @@ ms_encoding_sizetype (uint8_t encoding, uint8_t *samplesize, char *sampletype)
   return 0;
 } /* End of ms_encodingstr_sizetype() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Descriptive string for data encodings
  *
  * @param[in] encoding Data sample encoding code
@@ -193,7 +193,7 @@ ms_encodingstr (uint8_t encoding)
 
 } /* End of ms_encodingstr() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Descriptive string for library @ref return-values
  *
  * @param[in] errorcode Library error code
