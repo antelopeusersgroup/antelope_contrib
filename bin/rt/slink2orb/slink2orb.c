@@ -23,7 +23,7 @@
 
 #include "mseed2orbpkt.h"
 
-static char *version = "5.0 (2025.098)";
+static char *version = "5.0 (2026.085)";
 static char *package = "slink2orb";
 static char verbose  = 0;
 static char remap    = 0; /* remap sta and chan from SEED tables */
@@ -415,6 +415,30 @@ parameter_proc (int argcount, char **argvec)
         sl_log (2, 0, "userpass value: '%s'\n", tptr);
         return -1;
       }
+    }
+
+    if (pfhas_key (pf, "protocol_version"))
+    {
+      LIBPROTOCOL protocol_version    = UNSET_PROTO;
+      long requested_protocol_version = pfget_int (pf, "protocol_version");
+
+      if (requested_protocol_version == 3)
+      {
+        protocol_version = SLPROTO3X;
+      }
+      else if (requested_protocol_version == 4)
+      {
+        protocol_version = SLPROTO40;
+      }
+      else if (requested_protocol_version != 0)
+      {
+        sl_log (2, 0, "Invalid protocol_version: %ld\n", requested_protocol_version);
+        return -1;
+      }
+
+      /* Configure the protocol version */
+      if (protocol_version != UNSET_PROTO)
+        sl_set_protocol (slconn, protocol_version);
     }
   }
 

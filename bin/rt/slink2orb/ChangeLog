@@ -2,6 +2,7 @@
   - Update libslink to v4.2 including:
     * Restore reconnection behavior for sl_collect()
   - Update libmseed to v3.2.4
+  - Add protocol_version parameter to specify the SeedLink protocol
 
 7 April 2025, version 5.0
   - Update libslink to v4.1.4 with support for SeedLink v4, including:
