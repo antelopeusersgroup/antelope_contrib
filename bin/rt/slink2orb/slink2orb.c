@@ -23,7 +23,7 @@
 
 #include "mseed2orbpkt.h"
 
-static char *version = "5.0 (2026.085)";
+static char *version = "5.1 (2026.085)";
 static char *package = "slink2orb";
 static char verbose  = 0;
 static char remap    = 0; /* remap sta and chan from SEED tables */
