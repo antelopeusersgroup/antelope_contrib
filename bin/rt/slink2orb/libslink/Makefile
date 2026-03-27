@@ -60,13 +60,13 @@ static: $(LIB_A)
 shared dynamic: $(LIB_SO)
 
 # Build static library
-$(LIB_A): $(LIB_OBJS) $(MBEDTLS_OBJS) #mbedtls
+$(LIB_A): $(MBEDTLS_OBJS) $(LIB_OBJS)
 	@echo "Building static library $(LIB_A)"
 	$(RM) -f $(LIB_A)
 	$(AR) -crs $(LIB_A) $(LIB_OBJS) $(MBEDTLS_OBJS)
 
 # Build shared/dynamic library
-$(LIB_SO): $(LIB_LOBJS) $(MBEDTLS_LOBJS) #mbedtls
+$(LIB_SO): $(MBEDTLS_LOBJS) $(LIB_LOBJS)
 	@echo "Building shared library $(LIB_SO)"
 	$(RM) -f $(LIB_SO) $(LIB_SO_MAJOR) $(LIB_SO_BASE)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(LIB_OPTS) -o $(LIB_SO) $(LIB_LOBJS) $(MBEDTLS_LOBJS)

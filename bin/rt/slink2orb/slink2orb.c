@@ -120,10 +120,12 @@ main (int argc, char **argv)
     {
       if (retval == SLTOOLARGE)
         sl_log (2, 0, "%s: Error - packet too large for receiving buffer\n", package);
+      else if (retval == SLAUTHFAIL)
+        sl_log (2, 0, "%s: Error - authentication failed\n", package);
       else if (retval == SLNOPACKET)
-        sl_log (2, 0, "%s: Error - sl_collect() returned SLNOPACKET unexpectedly\n", package);
+        sl_log (2, 0, "%s: Error - unexpected SLNOPACKET from sl_collect()\n", package);
       else
-        sl_log (2, 0, "%s: Error - sl_collect() returned unexpected value: %d\n", package, retval);
+        sl_log (2, 0, "%s: Error - unknown return value from sl_collect(): %d\n", package, retval);
 
       break;
     }
