@@ -15,6 +15,7 @@ usgs2db, emsc2db \- utilities to retrieve earthquake feeds in GeoJSON format fro
 .SH DESCRIPTION
 .I usgs2db and emsc2db read feeds in GeoJSON format and stores the event information in a database.
 The programs keeps track of event ids in a separate table and updates the output database if new information is available.
+Usgs2db and emsc2db are in fact the same script. When called as \fIusgs2db\fP, the depth is corrected to be a negative vertical coordinate.
 .br
 .SH OPTIONS
 .IP "-v"
@@ -77,5 +78,6 @@ https://docs.python-requests.org/en/master, USGS2orb(1), antelope_python(3y), or
 The error handling is simple. I implemented my personal understanding of the data offered. There might be wiser ways to use the save the information in a database.
 The feeds provided by USGS are subject to the feed life cycle policy as explained on the website of the USGS. See there for more information if a feed stops working.
 This module uses the python modules requests with all its bugs and limitations. And of course I added many more problems...
+USGS specifies depth correctly as a positive number. But in the "coordinates" part of the geojson, depth is incorrectly specified as a positive number. This is corrected if the script is named usgs2db, but not with emsc2db. When specifying the proper URL, it would be possible to import data from USGS, but unfortunately then the depth would not be corrected. Sigh. 
 .SH AUTHOR
 Nikolaus Horn (nikolaus.horn@geosphere.at)
