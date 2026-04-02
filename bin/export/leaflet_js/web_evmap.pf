@@ -27,6 +27,7 @@ html_template &Literal{
 <head>
     <title>{title}</title>
     <meta charset="utf-8" />
+    <meta name="referrer" content="origin" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{leaflet_css}" />
     <link rel="stylesheet" href="{leaflet_draw_css}" />
