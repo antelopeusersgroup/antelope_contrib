@@ -7,8 +7,8 @@ web_stamap [-v] [-p pffile] dbname
 .fi
 
 .SH DESCRIPTION
-This utility produces a webpage for an interactive display of stations in a database. The stations can be grouped using search expressions in the paramter file.
-The display relies on the \fIleaflet\fP javascript library written by Vladimir Agafonkin.
+This utility produces a webpage for an interactive display of stations in a database. The stations can be grouped using search expressions in the parameter file.
+The display relies on the \fIleaflet\fP JavaScript library written by Vladimir Agafonkin.
 
 .SH OPTIONS
 .IP "-v" 
@@ -35,12 +35,12 @@ dontshow    X[123456]TA|BSTA|CUVW|CXYZ|CO[ABCD]   # ignore sites matching this e
 layers &Tbl{
     &Arr{
         stations B0.*
-        icon     http://geoweb.zamg.ac.at/my_icons/tri_26_pink.png
+        icon     http://geoweb.geosphere.at/my_icons/tri_26_pink.png
         description Some array in the desert
     }
     &Arr{
         stations PFO
-        icon     http://geoweb.zamg.ac.at/my_icons/tri_26_pink.png
+        icon     http://geoweb.geosphere.at/my_icons/tri_26_pink.png
         description Pinion Flat
     }
     &Arr{
@@ -50,7 +50,7 @@ layers &Tbl{
     }
 }
 
-logo_url           https://geoweb.zamg.ac.at/images/zamg_logo_vert.png
+logo_url           https://geoweb.geosphere.at/images/zamg_logo_vert.png
 logo_alt           ZAMG Logo
 
 leaflet_js         https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js
@@ -66,20 +66,20 @@ html_template  ...
 .ft R
 .in
 .IP filebase
-Output filename without extension (".html"). This can be overriden on the commandline
+Output filename without extension (".html"). This can be overridden on the command-line
 .IP dontshow
 Filter out stations
 .IP layers
-Different groups of stations selecte by the parameter \fIstations\fP. 
+Different groups of stations selected by the parameter \fIstations\fP. 
 Each group should be given a different icon. You may use the icons specified here, 
 but it would be kind to provide locally hosted copies.
 The last groups with an empty parameter \fIstations\fP contains all stations left after excluding stations
-either selected by the paramter \fIdontshow\fP or in one of the previous groups.
+either selected by the parameter \fIdontshow\fP or in one of the previous groups.
 .IP "logo_url, logo_alt"
 Replace with your own logo
 .IP "leaflet_..."
-Javascript libraries used here. You may want to provide locally hosted versions of these libraries
-to increase stability and reliability. The plugins \fBdraw\fP and \fBmeasurecontrol\fP are needed for the interactive ruler taht can be activated by clicking on the icon below the zoom control ("+/-") on the left side of the webpage. See https://github.com/makinacorpus/Leaflet.MeasureControl for more information.
+JavaScript libraries used here. You may want to provide locally hosted versions of these libraries
+to increase stability and reliability. The plugins \fBdraw\fP and \fBmeasurecontrol\fP are needed for the interactive ruler that can be activated by clicking on the icon below the zoom control ("+/-") on the left side of the webpage. See https://github.com/makinacorpus/Leaflet.MeasureControl for more information.
 .IP html_template
 Template for the new webpage. See https://leaflet-extras.github.io/leaflet-providers/preview/ for a list of alternative map layers.
 All curly brackets must be doubled because of the antelope parameter file quoting conventions. See \fIpf(5)\fP for an explanation.
@@ -90,7 +90,7 @@ All curly brackets must be doubled because of the antelope parameter file quotin
 .fi
 
 .SH "BUGS AND CAVEATS"
-The default parameter file is using icons and java-script libraries and stylesheets provided by the cloudflare CDN, github and GeoSphere Austria. For productive usage, I would recommend to provide locally hosted copies.
+The default parameter file is using icons and Java-script libraries and style sheets provided by the cloudflare CDN, github and GeoSphere Austria. For productive usage, I would recommend to provide locally hosted copies.
 
 .SH "SEE ALSO"
 .nf

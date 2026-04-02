@@ -2,7 +2,7 @@ filebase    events                      # output filename
 title       Antelope Demo Event Map     # title
 
 
-logo_url           https://geoweb.zamg.ac.at/images/GSA_logo_vertikal.png
+logo_url           https://geoweb.geosphere.at/images/GSA_logo_vertikal.png
 logo_alt           Logo GeoSphere Austria
 leaflet_js         https://unpkg.com/leaflet@1.9.4/dist/leaflet.js
 leaflet_css        https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
@@ -11,11 +11,11 @@ leaflet_draw_css   https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/lea
 leaflet_measurecontrol_js    https://makinacorpus.github.io/Leaflet.MeasureControl/leaflet.measurecontrol.js
 leaflet_measurecontrol_css   https://makinacorpus.github.io/Leaflet.MeasureControl/leaflet.measurecontrol.css
 
-prefor_icon        https://geoweb.zamg.ac.at/my_icons/star_red.png
-origin_icon        https://geoweb.zamg.ac.at/my_icons/star_blue.png
-defining_icon      https://geoweb.zamg.ac.at/my_icons/tri_26_magenta.png
-nondefining_icon   https://geoweb.zamg.ac.at/my_icons/tri_26_navy.png
-unassoc_icon       https://geoweb.zamg.ac.at/my_icons/tri_26_grey.png
+prefor_icon        https://geoweb.geosphere.at/my_icons/star_red.png
+origin_icon        https://geoweb.geosphere.at/my_icons/star_blue.png
+defining_icon      https://geoweb.geosphere.at/my_icons/tri_26_magenta.png
+nondefining_icon   https://geoweb.geosphere.at/my_icons/tri_26_navy.png
+unassoc_icon       https://geoweb.geosphere.at/my_icons/tri_26_grey.png
 
 
 #  Note: we don't need to escape percent signs,
