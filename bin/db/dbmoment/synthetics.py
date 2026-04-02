@@ -220,7 +220,7 @@ class Synthetics():
         script = 'run_fkrsort'
         script = self._new_script( script, self.tmp_folder, self._new_fkrsort_script(self.DT) )
 
-        cmd = 'csh -c "run_fkrsort temp_data %s %s %s"' % (self.distances[0], self.depth,len(self.distances))
+        cmd = 'csh -c "./run_fkrsort temp_data %s %s %s"' % (self.distances[0], self.depth,len(self.distances))
         run(cmd,self.tmp_folder)
 
         for dist in self.distances:
