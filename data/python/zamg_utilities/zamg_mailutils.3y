@@ -7,8 +7,8 @@ sys.path.append(os.environ['ANTELOPE'] + "/contrib/data/python")
 
 import zamg.mailutils as zm
 text="Hallö Niko"
-html="Hallö <a href='mailto:nikolaus.horn@zamg.ac.at'>Niko</a>"
-zm.send_multipartemail("horn@zamg.ac.at", "Mäil mit Ümläuten im Sübject ünd im Bödy",html, text)
+html="Hallö <a href='mailto:nikolaus.horn@geosphere.at'>Niko</a>"
+zm.send_multipartemail("horn@geosphere.at", "Mäil mit Ümläuten im Sübject ünd im Bödy",html, text)
 
 .fi
 .SH DESCRIPTION

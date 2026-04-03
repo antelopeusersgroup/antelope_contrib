@@ -10,12 +10,12 @@ ctbtrr2db \- save CTBT Radionuclide Reports into a database
 Contributed: NO BRTT support -- please contact nikolaus.horn@zamg.ac.at for questions.
 .SH DESCRIPTION
 \fBctbtrr2db\fP converts radionuclide reports from the International
-Data Centre of the Comprehensive Nuclear Test ban Treaty Organization (www.ctbto.org)
-into an antelop database in ctbto1.2 format. Acceptable input formats include ARR and RRR,
+Data Center of the Comprehensive Nuclear Test ban Treaty Organization (www.ctbto.org)
+into an antelope database in ctbto1.2 format. Acceptable input formats include ARR and RRR,
 the different reports are saved to different tables according to the bulletin format.
 Since the measured nuclides can differ, the nuclide details are stored in separate tables.
 .SH OPTIONS
-.IP filenamed
+.IP filename
 file holding automated or reviewed radionuclide bulletin in IMS2.0 format
 .IP dbname
 output database in format ctbto1.2. This database will be created when not existing
@@ -36,7 +36,7 @@ The message seems to have the  wrong format
 .in
 .SH "BUGS AND CAVEATS"
 This script parses only the most basic information from the reports.
-The reports can hold detailed information on gory details of everythin, which is completed ignored here.
+The reports can hold detailed information on gory details of everything, which is completed ignored here.
 .br
 If no DATA_TYPE line is found, \fBctbtrr2db\fP assumes IMS1.0 format at the
 first instance that it hits an EVENT line. \fBctbtrr2db\fP is a state-machine

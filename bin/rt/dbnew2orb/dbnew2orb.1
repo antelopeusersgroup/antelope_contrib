@@ -30,7 +30,7 @@ modified after the start of the program.
 transfer lastid table. I cannot think of a situation where it might be safe to transfer the lastid table, therefore this 
 is disabled by default.
 .IP "-wfdisc"
-transfer wfdisc table. Since the wfdisc table is igenerally modified frequent, this can result 
+transfer wfdisc table. Since the wfdisc table is generally modified frequent, this can result 
 in high data volume. There is a dozen more intelligent methods to transfer waveforms within 
 \fBAntelope\fP. The default is to ignore the \fBwfdisc\fP table.
 .IP "-v"
@@ -48,7 +48,7 @@ The \fBdbnew2orb\fP parameter file contains parameter that control how and when 
 
 .ne 10
 
-sleep   60                     #naptime between checks
+sleep   60                     #nap time between checks
 check_lddate_interval   5      #check lddate every nth iteration
 prefix  dbn2orb                #sourcenames <prefix>/db/<tablename>
 ignore_tables   &Tbl{
@@ -66,10 +66,10 @@ This is the \fItime\fP in \fIseconds\fP to wait between iterations over all tabl
 .IP check_lddate_interval
 Since a check of lddate is \fItime\fP consuming, the program checks most of the times only the modification times of the database tables. But to see also modifications of existing rows, a check of the lddates is performed only every check_lddate_interval.
 .IP prefix
-This \fIprefix\fP can be used to distinguish between several datanase on the destination orbserver.
+This \fIprefix\fP can be used to distinguish between several databases on the destination orbserver.
 .IP "ignore_tables, check_tables"
-List of tablenames that wil (or will not) be transferred to the orbserver.
-Note that both \fBwfdisc\fP and \fBlastid\fP need to be specified on the \fIcommandline\fP.
+List of table names that will (or will not) be transferred to the orbserver.
+Note that both \fBwfdisc\fP and \fBlastid\fP need to be specified on the \fIcommand line\fP.
 .SH EXAMPLE
 .in 2c
 .ft CW
@@ -102,7 +102,7 @@ The current version of the program transfers external files, i.e. those referenc
 This could result in large data volume transferred.
 It can happen that orb2orb refuses to transfer database rows whose format is unknown on the instance transferring the data. This can be solved by installing database extensions on the transmitting machine as well, not only on the sending and receiving sides.
 Sometimes one might see strange log entries coming from orb2dbt on the receiving side. While this looks
-frigthening, it still seems to work fine.
+frightening, it still seems to work fine.
 
 .SH "SEE ALSO"
 .nf
