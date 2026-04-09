@@ -5,12 +5,12 @@ dontshow    X[123456]TA|BSTA|CUVW|CXYZ|CO[ABCD]   # ignore sites matching this e
 layers &Tbl{
     &Arr{
         stations B0.*
-        icon     https://geoweb.zamg.ac.at/my_icons/tri_26_red.png
+        icon     https://geoweb.geosphere.at/my_icons/tri_26_red.png
         description Some array in the desert
     }
     &Arr{
         stations PFO
-        icon     https://geoweb.zamg.ac.at/my_icons/tri_26_blue.png
+        icon     https://geoweb.geosphere.at/my_icons/tri_26_blue.png
         description Pinion Flat
     }
     &Arr{
@@ -20,7 +20,7 @@ layers &Tbl{
     }
 }
 
-logo_url           https://geoweb.zamg.ac.at/images/GSA_logo_vertikal.png
+logo_url           https://geoweb.geosphere.at/images/GSA_logo_vertikal.png
 logo_alt           Logo GeoSphere Austria
 leaflet_js         https://unpkg.com/leaflet@1.9.4/dist/leaflet.js
 leaflet_css        https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
@@ -37,6 +37,7 @@ html_template &Literal{
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="referrer" content="origin" />
     <title>{title}</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

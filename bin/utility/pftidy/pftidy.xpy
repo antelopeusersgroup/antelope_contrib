@@ -2,14 +2,14 @@
 Indent antelope parameterfiles
 
 @author      Nikolaus Horn
-@created     Jan 10, 2025
-@version     1.0
+@created     Nov 1, 2025
+@version     1.1
 
-idea ist to tidy up antelope parameterfiles
+idea is to tidy up antelope parameterfiles
 
 name value # remark ->
-name           value                 # 
-0              -l defines this       -c defines the indention level of comments 
+name           value                 #
+0              -l defines this       -c defines the indention level of comments
 
 """
 
@@ -22,12 +22,13 @@ import antelope.elog as elog
 
 
 def usage(progname):
-    print(progname, " [-v] [-l x] [-c y] [-I z] filename")
+    print(progname, " [-vI] [-l x] [-c y] [-I z] filename")
     print()
     print(" indent Antelope parameterfiles")
+    print(" -I indent lines with only remarks")
     print(" -l x -  indent values to at least x (30) chars")
-    print(" -c y -  indent comments - '#' - to at least y (70) chars")
-    print(" -I z -  indent nested items by z (3) spaces")
+    print(" -c y -  indent comments (remarks) - '#' - to at least y (70) chars")
+    print(" -t z -  indent nested items by z (3) spaces")
     print("default values in brackets")
 
 
@@ -49,10 +50,11 @@ def main():
     indent_step = 3
     indent_value = 20
     indent_remark = 40
+    indent_all_remarks = False
     opts = []
     args = []
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "vs:l:c:", "")
+        opts, args = getopt.getopt(sys.argv[1:], "vt:l:c:I", "")
     except getopt.GetoptError:
         print("illegal option")
         usage(progname)
@@ -63,8 +65,10 @@ def main():
     for o, a in opts:
         if o == "-v":
             verbose = 1
+        elif o == "-t":
+            indent_step = int(a)
         elif o == "-I":
-            indent_step = int(a)    
+            indent_all_remarks = True
         elif o == "-l":
             indent_value = int(a)
         elif o == "-c":
@@ -84,7 +88,7 @@ def main():
     indent = 0
     recno = -1
     closing_char = []
-
+    lastblank = True
     for line in lines:
         delta = 0
         remarkonly = False
@@ -99,7 +103,7 @@ def main():
         elif sline.startswith("#"):
             remarkonly = True
             remark = sline[1:]
-            remarkonly = False
+            # remarkonly = False
         else:
             # if starts with " or ':
             # check if starts with quoted word
@@ -123,7 +127,7 @@ def main():
                 if verbose:
                     print("    closed!!!")
                 closing_char.pop()
-                #do it immediate, not after outputting the stuff
+                # do it immediate, not after outputting the stuff
                 indent -= indent_step
                 delta = 0
                 key = sline
@@ -142,7 +146,6 @@ def main():
                     closing_char.append("}")
                     delta = indent_step
             else:  # there are spaces
-
                 # match for quoted key
                 qm = re.match(r"([\'\"])(.*)\1", sline)
                 # match for regular unquoted key key
@@ -150,7 +153,7 @@ def main():
                 if qm:
                     key = qm.group(0)
                     # remove first occurence of key in string
-                    val = re.sub(key, "", sline, 1).lstrip()
+                    val = re.sub(key, "", sline, count=1).lstrip()
                 elif nm:
                     key = nm.group(0)
                     __, val = sline.split(None, maxsplit=1)
@@ -180,24 +183,34 @@ def main():
                     else:
                         print("problem: unknown opening character for Literal:", oc)
         outstr = ""
+        if indent_all_remarks:  # force all remarks to be indented
+            lastblank = False
         if key is not None:
+            lastblank = False
             ic = " " * indent
             outstr = ic + key
             strlen = len(outstr)
+            # print("ic:%s:%s:" % (ic,outstr))
         if val is not None:
+            lastblank = False
             if strlen + 1 > indent_value:
                 outstr += " " + val
             else:
                 outstr += " " * (indent_value - strlen) + val
-        if remarkonly:
-            outstr = "# " + remark        
+        if remarkonly and lastblank:
+            outstr = "# " + remark.strip()
+            lastblank = True
         elif remark is not None:
+            remark = remark.strip()
+            lastblank = False
             strlen = len(outstr)
             if strlen + 2 > indent_remark:
                 outstr += " # " + remark
             else:
                 outstr += " " * (indent_remark - strlen) + "# " + remark
         indent += delta  # change indent level AFTER output!
+        if outstr == "":
+            lastblank = True
         print(outstr)
 
     return 0

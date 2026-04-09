@@ -7,7 +7,7 @@ gfzrss2db \- utility to retrieve earthquake information in text format from \fBF
       [-k \fIkeydbname\fP] [-u \fIservice-url\fP] \fIdbname\fP
 .fi
 .SH DESCRIPTION
-\fBgfzrss2db\fP queries the RSS-Feed of GPZ
+\fBgfzrss2db\fP queries the RSS-Feed of GFZ
 and stores the event information in a database.
 The programs keeps track of event ids in a separate table and updates 
 the output database if new information is available.
@@ -42,11 +42,11 @@ To update event information every 10 minutes, add the following to your rtexec.p
 GFZ   UTC   0,10,20,30,40,50   *  *  *  *  gfzrss2db -k db/gfz_ids db/gfz 
 .fi
 .SH ENVIRONMENT
-The program uses the Python module \fIrequests\fP to retrieve data from a 
-webservice. This module supports proxy configuration based on the standard 
-environment variables \fIhttp_proxy\fP, \fIhttps_proxy\fP. 
+The program uses the Python module \fi requests\fP to retrieve data from a 
+web service. This module supports proxy configuration based on the standard 
+environment variables\fi http_proxy\fP,\fi https_proxy\fP. 
 If you need more control over proxy settings, feel free to 
-contact the author, Nikolaus.Horn@zamg.ac.at.
+contact the author, Nikolaus.Horn@geosphere.at.
 .SH "SEE ALSO"
 .nf
 
@@ -63,4 +63,4 @@ be wiser ways to use the save the information in a database.
 This module uses the python modules requests with all their bugs and 
 limitations. And of course I added many more problems...
 .SH AUTHOR
-Nikolaus Horn (nikolaus.horn@zamg.ac.at)
+Nikolaus Horn (nikolaus.horn@geosphere.at)

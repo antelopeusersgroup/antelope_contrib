@@ -1287,7 +1287,7 @@ ahhed          *ahheadp;
     pf = ahheadp->extra;
     ppf = &pf;
     if (!xdr_array (xdrsp, (char **) ppf, &l, NEXTRAS, sizeof (float),
-		    xdr_float))
+		    (xdrproc_t) xdr_float))
 	return (0);
 
 

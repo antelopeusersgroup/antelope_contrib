@@ -4,7 +4,7 @@ this is done in 2 steps, first on the contents of the files parsed and then on t
 The first step - files - is necessary to detect unused attributes, duplicate definitions and multiple definitions in general.
 
 
-@author      Nikolaus Horn <nikolaus.horn@zamg.ac.at
+@author      Nikolaus Horn <nikolaus.horn@geosphere..at
 @created     May 9, 2022
 @version     1.0
 @license     MIT-style license

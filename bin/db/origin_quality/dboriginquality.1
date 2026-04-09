@@ -8,13 +8,13 @@ dboriginquality [-v] db [dbout]
 
 .SH DESCRIPTION
 Some basic origin quality parameters are missing in the css3.0 database definition and are thus not used.
-This script determines \fIazimuth gap\fP, \fIsecondary azimuth gap\fP, \fIminumum distance\fP, number of stations
+This script determines \fIazimuth gap\fP, \fIsecondary azimuth gap\fP, \fIminimum distance\fP, number of stations
 for various distances and time residuals from defining stations. Based on this, it is determined if the criteria for Ground Truth Events GT5 as defined by Bóndar et. al are met.
 .SH OPTIONS
 .IP "-v" 
 verbose flag
 .IP "-F"
-force reprocessing of all origins
+force re-processing of all origins
 .IP "-S statefile"
 Start after last origin id from \fIstatefile\fP.
 .IP "db"
@@ -28,7 +28,7 @@ dboriginquality -v mydb
 .fi
 
 .SH "BUGS AND CAVEATS"
-THis script requires the presence of the table origqual.
+This script requires the presence of the table origqual.
 
 .SH "SEE ALSO"
 .nf

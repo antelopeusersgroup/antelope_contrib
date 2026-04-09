@@ -1,7 +1,7 @@
 """
 Create HTML for seismic event(s)
 
-@author      Nikolaus Horn <nikolaus.horn@zamg.ac.at
+@author      Nikolaus Horn <nikolaus.horn@geosphere.at
 @created     2015-01-08
 @modified    2022-04-10
 @version     1.1
