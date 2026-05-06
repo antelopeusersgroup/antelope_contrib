@@ -134,3 +134,17 @@ gtype           FIR_decimator
 decifac         2 
 response        &datafile(responses/centaur_100sps_s3) 
 } 
+
+possible_streams_py &Literal{
+    chosen_set = set(chosen)
+    if '1000sps' in chosen_set:
+        return ['1000sps']
+    elif '500sps' in chosen_set:
+        return ['500sps']
+    elif '200sps' in chosen_set:
+        return ['200sps']
+    elif '100sps' in chosen_set:
+        return ['100sps']
+    else:
+        return ['1000sps', '500sps', '200sps', '100sps']
+}

@@ -82,3 +82,23 @@ decifac		2
 response	&datafile(responses/cf3)
 }
 
+
+possible_streams_py &Literal{
+    chosen_set = set(chosen)
+    if '2000sps' in chosen_set:
+        return ['2000sps']
+    elif '1000sps' in chosen_set:
+        return ['1000sps']
+    elif '500sps' in chosen_set:
+        return ['500sps']
+    elif '250sps' in chosen_set:
+        return ['250sps']
+    elif '125sps' in chosen_set:
+        return ['125sps']
+    elif '62.5sps' in chosen_set:
+        return ['62.5sps']
+    elif '31.25sps' in chosen_set:
+        return ['31.25sps']
+    else:
+        return ['2000sps', '1000sps', '500sps', '250sps', '125sps', '62.5sps', '31.25sps']
+}
