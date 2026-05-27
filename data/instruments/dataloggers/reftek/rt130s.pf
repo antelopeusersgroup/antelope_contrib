@@ -131,3 +131,23 @@ iunits
 ounits		
 sn		datalogger
 }
+
+possible_streams_py &Literal{
+    chosen_set = set(chosen)
+    if '1000sps' in chosen_set:
+        return ['1000sps']
+    elif '500sps' in chosen_set:
+        return ['500sps']
+    elif '250sps' in chosen_set:
+        return ['250sps']
+    elif '125sps' in chosen_set:
+        return ['125sps']
+    elif '50sps' in chosen_set:
+        return ['50sps']
+    elif '25sps' in chosen_set:
+        return ['25sps']
+    elif chosen_set & {'200sps', '100sps', '40sps', '20sps', '10sps', '5sps', '1sps'}:
+        return ['200sps', '100sps', '40sps', '20sps', '10sps', '5sps', '1sps']
+    else:
+        return ['1000sps', '500sps', '250sps', '200sps', '125sps', '100sps', '50sps', '40sps', '25sps', '20sps', '10sps', '5sps', '1sps']
+}

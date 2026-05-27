@@ -78,3 +78,15 @@ decifac		2
 response	&datafile(responses/FIRBNC)
 }
 
+
+possible_streams_py &Literal{
+    chosen_set = set(chosen)
+    if '250sps' in chosen_set:
+        return ['250sps']
+    elif '200sps' in chosen_set:
+        return ['200sps']
+    elif '100sps' in chosen_set:
+        return ['100sps']
+    else:
+        return ['250sps', '200sps', '100sps']
+}
