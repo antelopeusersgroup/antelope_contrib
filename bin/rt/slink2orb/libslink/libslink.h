@@ -17,7 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Copyright (C) 2024:
+ * Copyright (C) 2025:
  * @author Chad Trabant, EarthScope Data Services
  ***************************************************************************/
 
@@ -28,10 +28,10 @@
 extern "C" {
 #endif
 
-#define LIBSLINK_RELEASE "2025.083"    /**< libslink release date */
+#define LIBSLINK_RELEASE "2025.340"    /**< libslink release date */
 #define LIBSLINK_VERSION_MAJOR  4      /**< libslink major version */
-#define LIBSLINK_VERSION_MINOR  1      /**< libslink minor version */
-#define LIBSLINK_VERSION_PATCH  4      /**< libslink patch version */
+#define LIBSLINK_VERSION_MINOR  2      /**< libslink minor version */
+#define LIBSLINK_VERSION_PATCH  0      /**< libslink patch version */
 #define LIBSLINK_STRINGIFY(a)   LIBSLINK_XSTRINGIFY(a)
 #define LIBSLINK_XSTRINGIFY(a)  #a
 /** @def LIBSLINK_VERSION
@@ -244,6 +244,7 @@ typedef enum
 #define SLTERMINATE              0  //!< Error or connection termination
 #define SLNOPACKET              -1  //!< No packet available for non-blocking
 #define SLTOOLARGE              -2  //!< Received packet is too large for buffer
+#define SLAUTHFAIL              -3  //!< Authentication failed
 /** @} */
 
 /** @def SL_UNSETSEQUENCE
@@ -355,7 +356,7 @@ typedef struct SLCD
   int8_t      lastpkttime;      //!< Boolean flag to control last packet time usage
   int8_t      terminate;        //!< Flag to control connection termination
   int8_t      resume;           //!< Boolean flag to control resuming with seq. numbers
-  int8_t      multistation;     //!< Boolean flag to indicate v3 multistation mode
+  int8_t      multistation;     //!< Boolean flag to indicate v3 multi-station mode
 
   /// @cond HIDDEN_FIELDS
   SOCKET      link;             //The network socket descriptor
@@ -384,6 +385,7 @@ extern int sl_set_auth_params (SLCD *slconn,
                                const char *(*auth_value) (const char *server, void *auth_data),
                                void (*auth_finish) (const char *server, void *auth_data),
                                void *auth_data);
+extern int sl_set_auth_envvars (SLCD *slconn, const char *uservar, const char *passvar);
 extern int sl_set_keepalive (SLCD *slconn, int keepalive);
 extern int sl_set_iotimeout (SLCD *slconn, int iotimeout);
 extern int sl_set_idletimeout (SLCD *slconn, int idletimeout);
@@ -392,6 +394,7 @@ extern int sl_set_blockingmode (SLCD *slconn, int nonblock);
 extern int sl_set_dialupmode (SLCD *slconn, int dialup);
 extern int sl_set_batchmode (SLCD *slconn, int batchmode);
 extern int sl_set_tlsmode (SLCD *slconn, int tlsmode);
+extern int sl_set_protocol (SLCD *slconn, LIBPROTOCOL protocol);
 extern int sl_add_stream (SLCD *slconn, const char *stationid,
                           const char *selectors, uint64_t seqnum,
                           const char *timestamp);

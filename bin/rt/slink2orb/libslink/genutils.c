@@ -30,7 +30,7 @@
 #include "libslink.h"
 
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Return true if the byte order of the host is little endian
  *
  * Due to the lack of portable defines to determine host byte order this
@@ -45,7 +45,7 @@ sl_littleendianhost (void)
   return *((uint8_t *)(&host));
 } /* End of sl_littleendianhost() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Compute the month and day-of-month from a year and day-of-year.
  *
  * @returns 0 on success and -1 on error.
@@ -92,7 +92,7 @@ sl_doy2md (int year, int jday, int *month, int *mday)
   return 0;
 } /* End of sl_doy2md() */
 
-/***********************************************************************/ /**
+/** ************************************************************************
  * @brief Return protocol details for a specified type
  *
  * @param protocol Protocol identifier
@@ -127,7 +127,7 @@ sl_protocol_details (LIBPROTOCOL protocol, uint8_t *major, uint8_t *minor)
   }
 }
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Return human readable description for specified payload format
  *
  * @returns Descriptive string for payload format
@@ -139,57 +139,44 @@ sl_formatstr (char format, char subformat)
   {
   case SLPAYLOAD_UNKNOWN:
     return "Unknown";
-    break;
   case SLPAYLOAD_MSEED2INFO:
     return "INFO as XML in miniSEED 2";
-    break;
   case SLPAYLOAD_MSEED2INFOTERM:
     return "INFO (terminated) as XML in miniSEED 2";
-    break;
   case SLPAYLOAD_MSEED2:
     switch (subformat)
     {
     case 'E':
       return "miniSEED 2 event detection";
-      break;
     case 'C':
       return "miniSEED 2 calibration";
-      break;
     case 'T':
       return "miniSEED 2 timing exception";
-      break;
     case 'L':
       return "miniSEED 2 log";
-      break;
     case 'O':
       return "miniSEED 2 opaque";
-      break;
     default:
       return "miniSEED 2";
     }
-    break;
   case SLPAYLOAD_MSEED3:
     return "miniSEED 3";
-    break;
   case SLPAYLOAD_JSON:
     switch (subformat)
     {
     case SLPAYLOAD_JSON_INFO:
       return "INFO in JSON";
-      break;
     case SLPAYLOAD_JSON_ERROR:
       return "ERROR in JSON";
-      break;
     default:
       return "JSON";
     }
-    break;
   default:
     return "Unrecognized payload type";
   }
 } /* End of sl_typestr() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Return desriptive error message for system errno
  *
  * Return a description of the last system error, in the case of Win32
@@ -210,7 +197,7 @@ sl_strerror (void)
 #endif
 } /* End of sl_strerror() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Get current time as nanosecond resolution Unix/POSIX time
  *
  * Actual resolution depends on system, nanosecond resolution should
@@ -248,7 +235,7 @@ sl_nstime (void)
 #endif
 } /* End of sl_nstime() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Return ISO-compatible date-time formatted string
  *
  * Convert date-time string deliminters to match the following
@@ -357,7 +344,7 @@ sl_isodatetime (char *isodatetime, const char *datetime)
   return isodatetime;
 } /* End of sl_isodatetime() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Return legacy SeedLink comma-deliminted date-time formatted string
  *
  * Convert date-time string deliminters to match the following
@@ -448,7 +435,7 @@ sl_commadatetime (char *commadatetime, const char *datetime)
   return commadatetime;
 } /* End of sl_commadatetime() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Convert SeedLink v3 to v4 selector string if possible
  *
  * SeedLink v3 seletcors are recognized in the following form:
@@ -555,7 +542,7 @@ sl_v3to4selector (char *v4selector, int v4selectorlength, const char *selector)
   return NULL;
 } /* End of sl_v3to4selector() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Sleep for a given number of microseconds
  *
  ***************************************************************************/
@@ -570,15 +557,15 @@ sl_usleep (unsigned long int useconds)
 
   struct timespec treq, trem;
 
-  treq.tv_sec  = (time_t) (useconds / 1e6);
-  treq.tv_nsec = (long)((useconds * 1e3) - (treq.tv_sec * 1e9));
+  treq.tv_sec  = (time_t)(useconds / 1000000);
+  treq.tv_nsec = (long)((useconds % 1000000) * 1000);
 
   nanosleep (&treq, &trem);
 
 #endif
 } /* End of sl_usleep() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Copy 'source' string to 'dest' while removing spaces.
  *
  * Copy 'length' characters from 'source' to 'dest' while removing all

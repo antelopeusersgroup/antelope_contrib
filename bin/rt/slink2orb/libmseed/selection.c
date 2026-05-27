@@ -29,7 +29,7 @@
 static int ms_isinteger (const char *string);
 static int ms_globmatch (const char *string, const char *pattern);
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Test the specified parameters for a matching selection entry
  *
  * Search the ::MS3Selections for an entry matching the provided
@@ -51,8 +51,8 @@ static int ms_globmatch (const char *string, const char *pattern);
  * @param[in] pubversion Publication version to match
  * @param[out] ppselecttime Pointer-to-pointer to return the matching ::MS3SelectTime entry
  *
- * @returns A pointer to matching ::MS3Selections entry successful
- * match and NULL for no match or error.
+ * @returns A pointer to matching ::MS3Selections entry on success and NULL for
+ * no match or error.
  ***************************************************************************/
 const MS3Selections *
 ms3_matchselect (const MS3Selections *selections, const char *sid, nstime_t starttime,
@@ -88,16 +88,18 @@ ms3_matchselect (const MS3Selections *selections, const char *sid, nstime_t star
         findst = findsl->timewindows;
         while (findst)
         {
-          if (starttime != NSTERROR && starttime != NSTUNSET &&
-              findst->starttime != NSTERROR && findst->starttime != NSTUNSET &&
-              (starttime < findst->starttime && !(starttime <= findst->starttime && endtime >= findst->starttime)))
+          if (starttime != NSTERROR && starttime != NSTUNSET && findst->starttime != NSTERROR &&
+              findst->starttime != NSTUNSET &&
+              (starttime < findst->starttime &&
+               !(starttime <= findst->starttime && endtime >= findst->starttime)))
           {
             findst = findst->next;
             continue;
           }
-          else if (endtime != NSTERROR && endtime != NSTUNSET &&
-                   findst->endtime != NSTERROR && findst->endtime != NSTUNSET &&
-                   (endtime > findst->endtime && !(starttime <= findst->endtime && endtime >= findst->endtime)))
+          else if (endtime != NSTERROR && endtime != NSTUNSET && findst->endtime != NSTERROR &&
+                   findst->endtime != NSTUNSET &&
+                   (endtime > findst->endtime &&
+                    !(starttime <= findst->endtime && endtime >= findst->endtime)))
           {
             findst = findst->next;
             continue;
@@ -121,7 +123,7 @@ ms3_matchselect (const MS3Selections *selections, const char *sid, nstime_t star
   return (matchst) ? findsl : NULL;
 } /* End of ms3_matchselect() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Test the ::MS3Record for a matching selection entry
  *
  * Search the ::MS3Selections for an entry matching the provided
@@ -152,19 +154,19 @@ msr3_matchselect (const MS3Selections *selections, const MS3Record *msr,
 
   endtime = msr3_endtime (msr);
 
-  return ms3_matchselect (selections, msr->sid, msr->starttime, endtime,
-                          msr->pubversion, ppselecttime);
+  return ms3_matchselect (selections, msr->sid, msr->starttime, endtime, msr->pubversion,
+                          ppselecttime);
 } /* End of msr3_matchselect() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Add selection parameters to selection list.
  *
- * The \a sidpattern may contain globbing characters.
+ * The @p sidpattern may contain globbing characters.
  *
- * The \a starttime and \a endtime may be set to ::NSTUNSET to denote
+ * The @p starttime and @p endtime may be set to ::NSTUNSET to denote
  * "open" times.
  *
- * The \a pubversion may be set to 0 to match any publication
+ * The @p pubversion may be set to 0 to match any publication
  * version.
  *
  * @param[in] ppselections ::MS3Selections to add new selection to
@@ -175,19 +177,18 @@ msr3_matchselect (const MS3Selections *selections, const MS3Record *msr,
  *
  * @returns 0 on success and -1 on error.
  *
- * \ref MessageOnError - this function logs a message on error
+ * @ref MessageOnError - this function logs a message on error
  ***************************************************************************/
 int
-ms3_addselect (MS3Selections **ppselections, const char *sidpattern,
-               nstime_t starttime, nstime_t endtime, uint8_t pubversion)
+ms3_addselect (MS3Selections **ppselections, const char *sidpattern, nstime_t starttime,
+               nstime_t endtime, uint8_t pubversion)
 {
   MS3Selections *newsl = NULL;
   MS3SelectTime *newst = NULL;
 
   if (!ppselections || !sidpattern)
   {
-    ms_log (2, "%s(): Required input not defined: 'ppselections' or 'sidpattern'\n",
-            __func__);
+    ms_log (2, "%s(): Required input not defined: 'ppselections' or 'sidpattern'\n", __func__);
     return -1;
   }
 
@@ -224,7 +225,7 @@ ms3_addselect (MS3Selections **ppselections, const char *sidpattern,
   else
   {
     MS3Selections *findsl = *ppselections;
-    MS3Selections *matchsl = 0;
+    MS3Selections *matchsl = NULL;
 
     /* Search for matching MS3Selections entry */
     while (findsl)
@@ -268,43 +269,42 @@ ms3_addselect (MS3Selections **ppselections, const char *sidpattern,
   return 0;
 } /* End of ms3_addselect() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Add selection parameters to a selection list based on
  * separate source name codes
  *
- * The \a network, \a station, \a location, and \a channel arguments may
+ * The @p network, @p station, @p location, and @p channel arguments may
  * contain globbing parameters.
 
- * The \a starttime and \a endtime may be set to ::NSTUNSET to denote
+ * The @p starttime and @p endtime may be set to ::NSTUNSET to denote
  * "open" times.
  *
- * The \a pubversion may be set to 0 to match any publication
+ * The @p pubversion may be set to 0 to match any publication
  * version.
  *
  * If any of the naming parameters are not supplied (pointer is NULL)
  * a wildcard for all matches is substituted.
  *
- * As a special case, if the location code (loc) is set to \c "--" to
- * match an empty location code it will be translated to an empty string
- * to match libmseed's notation.
+ * As a special case, if the location code is set to @c "--" to match an empty
+ * location code it will be translated to an empty string to match the internal
+ * handling of empty location codes.
  *
  * @param[in] ppselections ::MS3Selections to add new selection to
  * @param[in] network Network code, may contain globbing characters
- * @param[in] station Statoin code, may contain globbing characters
+ * @param[in] station Station code, may contain globbing characters
  * @param[in] location Location code, may contain globbing characters
- * @param[in] channel channel code, may contain globbing characters
+ * @param[in] channel Channel code, may contain globbing characters
  * @param[in] starttime Start time for selection, ::NSTUNSET for open
  * @param[in] endtime End time for selection, ::NSTUNSET for open
  * @param[in] pubversion Publication version for selection, 0 for any
  *
  * @return 0 on success and -1 on error.
  *
- * \ref MessageOnError - this function logs a message on error
+ * @ref MessageOnError - this function logs a message on error
  ***************************************************************************/
 int
-ms3_addselect_comp (MS3Selections **ppselections, char *network, char *station,
-                    char *location, char *channel, nstime_t starttime,
-                    nstime_t endtime, uint8_t pubversion)
+ms3_addselect_comp (MS3Selections **ppselections, char *network, char *station, char *location,
+                    char *channel, nstime_t starttime, nstime_t endtime, uint8_t pubversion)
 {
   char sidpattern[100];
   char selnet[20];
@@ -375,8 +375,7 @@ ms3_addselect_comp (MS3Selections **ppselections, char *network, char *station,
   }
 
   /* Create the source identifier globbing match for this entry */
-  if (ms_nslc2sid (sidpattern, sizeof (sidpattern), 0,
-                   selnet, selsta, selloc, selchan) < 0)
+  if (ms_nslc2sid (sidpattern, sizeof (sidpattern), 0, selnet, selsta, selloc, selchan) < 0)
     return -1;
 
   /* Add selection to list */
@@ -388,7 +387,7 @@ ms3_addselect_comp (MS3Selections **ppselections, char *network, char *station,
 
 #define MAX_SELECTION_FIELDS 8
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Read data selections from a file
  *
  * Selections from a file are added to the specified selections list.
@@ -408,7 +407,7 @@ ms3_addselect_comp (MS3Selections **ppselections, char *network, char *station,
  *   Network  Station  Location  Channel  [Pubversion  [Starttime  [Endtime]]]
  * @endcode
  *
- * The \c Starttime and \c Endtime values must be in a form recognized
+ * The @c Starttime and @c Endtime values must be in a form recognized
  * by ms_timestr2nstime() and include a full date (i.e. just a year is
  * not allowed).
  *
@@ -422,7 +421,7 @@ ms3_addselect_comp (MS3Selections **ppselections, char *network, char *station,
  *
  * @returns Count of selections added on success and -1 on error.
  *
- * \ref MessageOnError - this function logs a message on error
+ * @ref MessageOnError - this function logs a message on error
  ***************************************************************************/
 int
 ms3_readselectionsfile (MS3Selections **ppselections, const char *filename)
@@ -446,8 +445,7 @@ ms3_readselectionsfile (MS3Selections **ppselections, const char *filename)
 
   if (!ppselections || !filename)
   {
-    ms_log (2, "%s(): Required input not defined: 'ppselections' or 'filename'\n",
-            __func__);
+    ms_log (2, "%s(): Required input not defined: 'ppselections' or 'filename'\n", __func__);
     return -1;
   }
 
@@ -485,7 +483,7 @@ ms3_readselectionsfile (MS3Selections **ppselections, const char *filename)
       cp++;
     }
     cp--;
-    while (cp >= line && isspace((int)(*cp)))
+    while (cp >= line && isspace ((int)(*cp)))
     {
       *cp = '\0';
       cp--;
@@ -493,9 +491,9 @@ ms3_readselectionsfile (MS3Selections **ppselections, const char *filename)
 
     /* Trim leading whitespace if any */
     cp = line;
-    while (isspace((int)(*cp)))
+    while (isspace ((int)(*cp)))
     {
-      line = cp = cp+1;
+      line = cp = cp + 1;
     }
 
     /* Skip empty lines */
@@ -508,7 +506,7 @@ ms3_readselectionsfile (MS3Selections **ppselections, const char *filename)
 
     /* Set fields array to whitespace delimited fields */
     cp = line;
-    next = 0;  /* For this loop: 0 = whitespace, 1 = non-whitespace */
+    next = 0; /* For this loop: 0 = whitespace, 1 = non-whitespace */
     fieldidx = 0;
     while (*cp && fieldidx < MAX_SELECTION_FIELDS)
     {
@@ -578,10 +576,8 @@ ms3_readselectionsfile (MS3Selections **ppselections, const char *filename)
     }
 
     /* Test for "SourceID  [Starttime  [Endtime  [Pubversion]]]" */
-    if (fieldidx == 1 ||
-        (fieldidx == 2 && isstart2) ||
-        (fieldidx == 3 && isstart2 && isend3) ||
-        (fieldidx == 4 && isstart2 && isend3 && ms_isinteger(fields[3])))
+    if (fieldidx == 1 || (fieldidx == 2 && isstart2) || (fieldidx == 3 && isstart2 && isend3) ||
+        (fieldidx == 4 && isstart2 && isend3 && ms_isinteger (fields[3])))
     {
       /* Convert publication version to integer */
       pubversion = 0;
@@ -591,14 +587,14 @@ ms3_readselectionsfile (MS3Selections **ppselections, const char *filename)
 
         longpver = strtol (fields[3], NULL, 10);
 
-        if (longpver < 0 || longpver > 255 )
+        if (longpver < 0 || longpver > 255)
         {
           ms_log (2, "Cannot convert publication version (line %d): %s\n", linecount, fields[3]);
           return -1;
         }
         else
         {
-          pubversion = (uint8_t) longpver;
+          pubversion = (uint8_t)longpver;
         }
       }
 
@@ -610,31 +606,30 @@ ms3_readselectionsfile (MS3Selections **ppselections, const char *filename)
       }
     }
     /* Test for "Network  Station  Location  Channel  [Quality  [Starttime  [Endtime]]]" */
-    else if (fieldidx == 4 || fieldidx == 5 ||
-             (fieldidx == 6 && isstart6) ||
+    else if (fieldidx == 4 || fieldidx == 5 || (fieldidx == 6 && isstart6) ||
              (fieldidx == 7 && isstart6 && isend7))
     {
       /* Convert quality field to publication version if integer */
       pubversion = 0;
-      if (fields[4] && ms_isinteger(fields[4]))
+      if (fields[4] && ms_isinteger (fields[4]))
       {
         long int longpver;
 
         longpver = strtol (fields[4], NULL, 10);
 
-        if (longpver < 0 || longpver > 255 )
+        if (longpver < 0 || longpver > 255)
         {
           ms_log (2, "Cannot convert publication version (line %d): %s\n", linecount, fields[4]);
           return -1;
         }
         else
         {
-          pubversion = (uint8_t) longpver;
+          pubversion = (uint8_t)longpver;
         }
       }
 
-      if (ms3_addselect_comp (ppselections, fields[0], fields[1], fields[2], fields[3],
-                              starttime, endtime, pubversion))
+      if (ms3_addselect_comp (ppselections, fields[0], fields[1], fields[2], fields[3], starttime,
+                              endtime, pubversion))
       {
         ms_log (2, "%s: Error adding selection on line %d\n", filename, linecount);
         return -1;
@@ -654,7 +649,7 @@ ms3_readselectionsfile (MS3Selections **ppselections, const char *filename)
   return selectcount;
 } /* End of ms_readselectionsfile() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Free all memory associated with a ::MS3Selections
  *
  * All memory from one or more ::MS3Selections (in a linked list) are freed.
@@ -696,7 +691,7 @@ ms3_freeselections (MS3Selections *selections)
 
 } /* End of ms3_freeselections() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Print the selections list using the ms_log() facility.
  *
  * All selections are printed with simple formatting.
@@ -717,19 +712,20 @@ ms3_printselections (const MS3Selections *selections)
   select = selections;
   while (select)
   {
-    ms_log (0, "Selection: %s  pubversion: %d\n",
-            select->sidpattern, select->pubversion);
+    ms_log (0, "Selection: %s  pubversion: %d\n", select->sidpattern, select->pubversion);
 
     selecttime = select->timewindows;
     while (selecttime)
     {
       if (selecttime->starttime != NSTERROR && selecttime->starttime != NSTUNSET)
-        ms_nstime2timestr (selecttime->starttime, starttime, ISOMONTHDAY_Z, NANO_MICRO_NONE);
+        ms_nstime2timestr_n (selecttime->starttime, starttime, sizeof (starttime), ISOMONTHDAY_Z,
+                             NANO_MICRO_NONE);
       else
         strncpy (starttime, "No start time", sizeof (starttime) - 1);
 
       if (selecttime->endtime != NSTERROR && selecttime->endtime != NSTUNSET)
-        ms_nstime2timestr (selecttime->endtime, endtime, ISOMONTHDAY_Z, NANO_MICRO_NONE);
+        ms_nstime2timestr_n (selecttime->endtime, endtime, sizeof (endtime), ISOMONTHDAY_Z,
+                             NANO_MICRO_NONE);
       else
         strncpy (endtime, "No end time", sizeof (endtime) - 1);
 
@@ -754,7 +750,7 @@ ms_isinteger (const char *string)
 {
   while (*string)
   {
-    if (!isdigit((int)(*string)))
+    if (!isdigit ((int)(*string)))
       return 0;
     string++;
   }
@@ -762,170 +758,200 @@ ms_isinteger (const char *string)
   return 1;
 }
 
-/***********************************************************************
- * robust glob pattern matcher
- * ozan s. yigit/dec 1994
- * public domain
- *
- * glob patterns:
- *	*	matches zero or more characters
- *	?	matches any single character
- *	[set]	matches any character in the set
- *	[^set]	matches any character NOT in the set
- *		where a set is a group of characters or ranges. a range
- *		is written as two characters seperated with a hyphen: a-z denotes
- *		all characters between a to z inclusive.
- *	[-set]	set matches a literal hypen and any character in the set
- *	[]set]	matches a literal close bracket and any character in the set
- *
- *	char	matches itself except where char is '*' or '?' or '['
- *	\char	matches char, including any pattern character
- *
- * examples:
- *	a*c		ac abc abbc ...
- *	a?c		acc abc aXc ...
- *	a[a-z]c		aac abc acc ...
- *	a[-a-z]c	a-c aac abc ...
- *
- * Revision 1.4  2004/12/26  12:38:00  ct
- * Changed function name (amatch -> globmatch), variables and
- * formatting for clarity.  Also add matching header globmatch.h.
- *
- * Revision 1.3  1995/09/14  23:24:23  oz
- * removed boring test/main code.
- *
- * Revision 1.2  94/12/11  10:38:15  oz
- * charset code fixed. it is now robust and interprets all
- * variations of charset [i think] correctly, including [z-a] etc.
- *
- * Revision 1.1  94/12/08  12:45:23  oz
- * Initial revision
- ***********************************************************************/
+static int _match_charclass (const char **pp, unsigned char c);
 
-#define GLOBMATCH_TRUE 1
-#define GLOBMATCH_FALSE 0
-#define GLOBMATCH_NEGATE '^' /* std char set negation char */
-
-/***********************************************************************
- * ms_globmatch:
+/** ************************************************************************
+ * @brief Check if a string matches a globbing pattern.
  *
- * Check if a string matches a globbing pattern.
+ * Supported semantics:
+ * `*` matches zero or more characters, e.g. `*.txt`
+ * `?` matches a single character, e.g. `a?c`
+ * `[]` matches a set of characters `[abc]`
+ * `[a-z]` matches a range of characters `[A-Z]`
+ * `[!abc]` negation, matches when no characters in the set, e.g. `[!ABC]` or `[^ABC]`
+ * `[!a-z]` negation, matches when no characters in the range, e.g. `[!A-Z]` or `[^A-Z]`
+ * `\` prefix to match a literal character, e.g. `\*`, `\?`, `\[`
  *
- * Return 0 if string does not match pattern and non-zero otherwise.
- **********************************************************************/
+ * @param string  The string to check.
+ * @param pattern The globbing pattern to match.
+ *
+ * @returns 0 if string does not match pattern and non-zero otherwise.
+ ***************************************************************************/
 static int
 ms_globmatch (const char *string, const char *pattern)
 {
-  int negate;
-  int match;
-  int c;
+  const char *star_p = NULL; /* position of last '*' in pattern */
+  const char *star_s = NULL; /* position in string when last '*' seen */
+  unsigned char c;
 
-  while (*pattern)
+  if (string == NULL || pattern == NULL)
+    return 0;
+
+  for (;;)
   {
-    if (!*string && *pattern != '*')
-      return GLOBMATCH_FALSE;
+    c = (unsigned char)*pattern++;
 
-    switch (c = *pattern++)
+    switch (c)
     {
+    case '\0':
+      /* End of pattern: must also be end of string unless a previous '*'
+         can consume more characters. */
+      if (*string == '\0')
+        return 1;
+      if (star_p)
+        goto star_backtrack;
+      return 0;
+
+    case '?':
+      if (*string == '\0')
+        goto star_backtrack;
+      string++;
+      break;
 
     case '*':
+      /* Collapse consecutive '*' */
       while (*pattern == '*')
         pattern++;
 
-      if (!*pattern)
-        return GLOBMATCH_TRUE;
+      /* Trailing '*' matches everything */
+      if (*pattern == '\0')
+        return 1;
 
-      if (*pattern != '?' && *pattern != '[' && *pattern != '\\')
-        while (*string && *pattern != *string)
-          string++;
-
-      while (*string)
+      /* If the next significant pattern character is a literal, fast-forward
+         the string to its next occurrence to reduce backtracking. */
       {
-        if (ms_globmatch (string, pattern))
-          return GLOBMATCH_TRUE;
-        string++;
+        unsigned char next = (unsigned char)*pattern;
+
+        if (next == '\\' && pattern[1])
+          next = (unsigned char)pattern[1];
+
+        if (next != '?' && next != '[' && next != '*')
+        {
+          while (*string && (unsigned char)*string != next)
+            string++;
+        }
       }
-      return GLOBMATCH_FALSE;
 
-    case '?':
-      if (*string)
-        break;
-      return GLOBMATCH_FALSE;
+      star_p = pattern - 1; /* remember position of '*' */
+      star_s = string;      /* remember current string position */
+      continue;
 
-      /* set specification is inclusive, that is [a-z] is a, z and
-       * everything in between. this means [z-a] may be interpreted
-       * as a set that contains z, a and nothing in between.
-       */
     case '[':
-      if (*pattern != GLOBMATCH_NEGATE)
-        negate = GLOBMATCH_FALSE;
-      else
-      {
-        negate = GLOBMATCH_TRUE;
-        pattern++;
-      }
-
-      match = GLOBMATCH_FALSE;
-
-      while (!match && (c = *pattern++))
-      {
-        if (!*pattern)
-          return GLOBMATCH_FALSE;
-
-        if (*pattern == '-') /* c-c */
-        {
-          if (!*++pattern)
-            return GLOBMATCH_FALSE;
-          if (*pattern != ']')
-          {
-            if (*string == c || *string == *pattern ||
-                (*string > c && *string < *pattern))
-              match = GLOBMATCH_TRUE;
-          }
-          else
-          { /* c-] */
-            if (*string >= c)
-              match = GLOBMATCH_TRUE;
-            break;
-          }
-        }
-        else /* cc or c] */
-        {
-          if (c == *string)
-            match = GLOBMATCH_TRUE;
-          if (*pattern != ']')
-          {
-            if (*pattern == *string)
-              match = GLOBMATCH_TRUE;
-          }
-          else
-            break;
-        }
-      }
-
-      if (negate == match)
-        return GLOBMATCH_FALSE;
-
-      /* If there is a match, skip past the charset and continue on */
-      while (*pattern && *pattern != ']')
-        pattern++;
-      if (!*pattern++) /* oops! */
-        return GLOBMATCH_FALSE;
-      break;
-
-    case '\\':
-      if (*pattern)
-        c = *pattern++;
-      break;
-
-    default:
-      if (c != *string)
-        return GLOBMATCH_FALSE;
+    {
+      const char *pp = pattern;
+      if (*string == '\0')
+        goto star_backtrack;
+      if (!_match_charclass (&pp, (unsigned char)*string))
+        goto star_backtrack;
+      pattern = pp;
+      string++;
       break;
     }
 
-    string++;
+    case '\\':
+      if (*pattern)
+        c = (unsigned char)*pattern++;
+      /* FALLTHROUGH */
+
+    default:
+      if ((unsigned char)*string != c)
+        goto star_backtrack;
+      string++;
+      break;
+    }
+
+    continue;
+
+  star_backtrack:
+    /* If there was a previous '*', backtrack: let it consume one more
+       character and retry from pattern just after that '*'. */
+    if (star_p)
+    {
+      if (*star_s == '\0')
+        return 0;
+      string = ++star_s;
+      pattern = star_p + 1;
+      continue;
+    }
+    return 0;
+  }
+}
+
+/***************************************************************************
+ * Character class parser helper function.
+ *
+ *   On entry: *pp points just past '['.
+ *             If the class is negated, the next character will be '^'
+ *             and is handled inside this function.
+ *
+ *   On return: *pp is advanced past the closing ']'.
+ *
+ * Return 1 if c matches the class, 0 otherwise.
+ ***************************************************************************/
+static int
+_match_charclass (const char **pp, unsigned char c)
+{
+  const char *p;
+  int negate = 0;
+  int matched = 0;
+
+  if (pp == NULL || *pp == NULL)
+    return 0;
+
+  p = *pp;
+
+  /* Handle negation */
+  if (*p == '^' || *p == '!')
+  {
+    negate = 1;
+    p++;
   }
 
-  return !*string;
-} /* End of ms_globmatch() */
+  /* Per glob rules, leading ']' is literal */
+  if (*p == ']')
+  {
+    matched = (c == ']');
+    p++;
+  }
+
+  /* Per glob rules, leading '-' is literal */
+  if (*p == '-')
+  {
+    matched |= (c == '-');
+    p++;
+  }
+
+  /* Main loop until ']' or end of string */
+  while (*p && *p != ']')
+  {
+    unsigned char pc = (unsigned char)*p;
+
+    if (p[1] == '-' && p[2] && p[2] != ']' && (unsigned char)pc <= (unsigned char)p[2])
+    {
+      /* Range X-Y (only ascending ranges are supported) */
+      unsigned char start = pc;
+      unsigned char end = (unsigned char)p[2];
+
+      matched |= (c >= start && c <= end);
+
+      p += 3; /* skip X-Y */
+    }
+    else
+    {
+      /* Literal character */
+      matched |= (c == pc);
+      p++;
+    }
+  }
+
+  /* Malformed class (no closing ']') → no match */
+  if (*p != ']')
+  {
+    *pp = p;
+    return 0;
+  }
+
+  *pp = p + 1; /* skip ']' */
+
+  return negate ? !matched : matched;
+}

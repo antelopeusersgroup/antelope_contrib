@@ -7,6 +7,7 @@ EXPORTS
   sl_set_serveraddress
   sl_set_timewindow
   sl_set_auth_params
+  sl_set_auth_envvars
   sl_set_keepalive
   sl_set_iotimeout
   sl_set_idletimeout

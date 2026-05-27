@@ -1,7 +1,8 @@
 #include <tau/tau.h>
 #include <libmseed.h>
+#include <time.h>
 
-TEST (time, nstime)
+TEST (time, nstime2timestr)
 {
   char timestr[50];
   nstime_t nstime;
@@ -14,63 +15,74 @@ TEST (time, nstime)
   CHECK (nstime == 1084345689123456788, "Failed to convert time string: '2004-05-12T7:8:9.123456788Z'");
 
   /* Format variations */
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY, NANO_MICRO_NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY, NANO_MICRO_NONE);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09.123456788");
 
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_Z, NANO_MICRO_NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_Z, NANO_MICRO_NONE);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09.123456788Z");
 
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_DOY, NANO_MICRO_NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_DOY, NANO_MICRO_NONE);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09.123456788 (133)");
 
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_DOY_Z, NANO_MICRO_NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_DOY_Z, NANO_MICRO_NONE);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09.123456788Z (133)");
 
-  ms_nstime2timestr (nstime, timestr, SEEDORDINAL, NANO_MICRO_NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), SEEDORDINAL, NANO_MICRO_NONE);
   CHECK_STREQ (timestr, "2004,133,07:08:09.123456788");
 
-  ms_nstime2timestr (nstime, timestr, UNIXEPOCH, NANO_MICRO_NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), UNIXEPOCH, NANO_MICRO_NONE);
   CHECK_STREQ (timestr, "1084345689.123456788");
 
-  ms_nstime2timestr (nstime, timestr, NANOSECONDEPOCH, NANO_MICRO_NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), NANOSECONDEPOCH, NANO_MICRO_NONE);
   CHECK_STREQ (timestr, "1084345689123456788");
 
   /* Subsecond variations */
 
   /* Nano subseconds */
   nstime = ms_timestr2nstime ("2004-05-12T7:8:9.123456788Z");
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_Z, NANO);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_Z, NANO);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09.123456788Z");
 
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_Z, MICRO);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_Z, MICRO);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09.123456Z");
 
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_Z, NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_Z, NONE);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09Z");
 
   /* Micro subseconds */
   nstime = ms_timestr2nstime ("2004-05-12T7:8:9.1234Z");
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_Z, NANO_MICRO_NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_Z, NANO_MICRO_NONE);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09.123400Z");
 
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_Z, NANO_MICRO);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_Z, NANO_MICRO);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09.123400Z");
 
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_Z, MICRO_NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_Z, MICRO_NONE);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09.123400Z");
 
   /* No subseconds */
   nstime = ms_timestr2nstime ("2004-05-12T7:8:9Z");
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_Z, NANO_MICRO_NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_Z, NANO_MICRO_NONE);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09Z");
 
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_Z, NANO_MICRO);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_Z, NANO_MICRO);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09.000000Z");
 
-  ms_nstime2timestr (nstime, timestr, ISOMONTHDAY_Z, MICRO_NONE);
+  ms_nstime2timestr_n (nstime, timestr, sizeof(timestr), ISOMONTHDAY_Z, MICRO_NONE);
   CHECK_STREQ (timestr, "2004-05-12T07:08:09Z");
 
-  /* Time string variations */
+  /* Unset time */
+  ms_nstime2timestr_n (NSTUNSET, timestr, sizeof(timestr), ISOMONTHDAY_Z, NANO_MICRO_NONE);
+  CHECK_STREQ (timestr, "UNSET");
+
+  /* Error time */
+  ms_nstime2timestr_n (NSTERROR, timestr, sizeof(timestr), ISOMONTHDAY_Z, NANO_MICRO_NONE);
+  CHECK_STREQ (timestr, "ERROR");
+}
+
+TEST (time, timestr2nstime)
+{
+  nstime_t nstime;
 
   nstime = ms_timestr2nstime ("2004");
   CHECK (nstime == 1072915200000000000, "Failed to convert time string: '2004'");
@@ -111,4 +123,21 @@ TEST (time, nstime)
 
   nstime = ms_timestr2nstime ("20040512T000000");
   CHECK (nstime == NSTERROR, "Failed to produce error for time string: '20040512T000000'");
+}
+
+TEST (time, systemtime)
+{
+  time_t timeval;
+  nstime_t currenttime;
+  nstime_t difference;
+
+  currenttime = lmp_systemtime();
+  timeval = time (NULL);
+
+  CHECK (currenttime > 0, "lmp_systemtime() failed to get current time");
+
+  /* Check that the current time is within 1 second of the system time */
+  difference = currenttime - (nstime_t)timeval * NSTMODULUS;
+
+  CHECK (difference < 1 * NSTMODULUS, "lmp_systemtime() is not within 1 second of system time");
 }

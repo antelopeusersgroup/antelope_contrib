@@ -1,6 +1,12 @@
 BasedOnStyle: LLVM
-AlwaysBreakAfterDefinitionReturnType: TopLevel
+ColumnLimit: 100
+AlwaysBreakAfterReturnType: TopLevelDefinitions
+AlignEscapedNewlines: Left
 SpaceBeforeParens: Always
 BreakBeforeBraces: Allman
-AlignConsecutiveAssignments: true
-ColumnLimit: 0
+IndentExternBlock: NoIndent
+BinPackArguments: true
+BinPackParameters: true
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AlignAfterOpenBracket: Align

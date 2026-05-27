@@ -74,3 +74,9 @@ stateint      100     # interval to save the sequence number (packets)
                       # servers supporting SeedLink protocol version 4.
                       # It is strongly recommended to only use authentication
                       # over TLS-encrypted connections.
+
+#protocol_version 0
+                      # Specify the version of SeedLink protocol to use.
+                      # By default the version is auto-detected and the
+                      # program will use the latest supported version.
+                      # Valid values are 3 and 4.

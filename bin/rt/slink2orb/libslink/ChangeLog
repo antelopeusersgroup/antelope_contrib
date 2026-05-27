@@ -1,3 +1,18 @@
+2025.340: v4.2.0
+	- Fix re-connection logic in sl_collect().  The function will now
+	reconnect on most connection errors with a few exceptions such as
+	authentication failure, end of dial-up stream, and internal errors.
+	- Add new return status of `SLAUTHFAIL` for `sl_collect()` to indicate
+	a fatal error.  The caller can choose to reconnect if desired.
+	- Add `sl_set_protocol()` to allow caller specified protocol version.
+	- Many small fixes and improvements.
+	- Update Mbed-TLS to v3.6.5.
+
+2025.130: v4.1.5
+	- Change authentication failures to fatal errors
+	- Add sl_set_auth_envvars() to set authentication of username and
+  password from specified environment variables.
+
 2025.083: v4.1.4
 	- Update Mbed-TLS to v3.6.3.
 	- Change many sprintf() calls to snprintf() for safety.
@@ -34,7 +49,7 @@
 
 	Key features of SeedLink v4 include:
 	* Optional use of TLS (SSL) for encrypted connections and a default
-  	port to use for TLS-based connections (18500).
+	port to use for TLS-based connections (18500).
 	* Optional capability to submit authentication credentials.  The
 	specification identifies user-password and JWT mechanisms, and
 	allows for others to be added in the future.
@@ -47,7 +62,7 @@
 	A number of API changes were made to allow for new features and
 	improve usability.
 
-  	The full list of changes is as follows, API changes below:
+  The full list of changes is as follows, API changes below:
 
 	- Add TLS (SSL) support for encrypted connections.  The following
 	environment variables allow for debugging and providing locations of
@@ -57,8 +72,7 @@
 	`LIBSLINK_TLS_DEBUG` = TLS debugging output level (integer)
 	`LIBSLINK_CERT_UNVERIFIED_OK` = Allow unverified certs (for TLS 1.2)
 	- Update internal sequence numbers to unsigned 64-bit values.
-	- Header contains separate major, minor, patch versioning,
-        thanks @yensoon2!
+	- Header contains separate major, minor, patch versioning, thanks @yensoon2!
 	- Internal date-time representation now ISO compatible format,
 	conversion to-from legacy SeedLink time format included.
 	- Saved state file now using combined station ID syntax instead of
