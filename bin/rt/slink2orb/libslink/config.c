@@ -28,7 +28,7 @@
 
 #include "libslink.h"
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Add a list of streams and selectors from a file to the ::SLCD
  *
  * Streams and selectors are added to the stream list for the ::SLCD
@@ -67,7 +67,6 @@ sl_add_streamlist_file (SLCD *slconn, const char *streamfile,
   char line[200];
   int fields = 0;
   int streamcount = 0;
-  int linecount = 0;
 
   /* Open the stream list file */
   if ((fp = fopen (streamfile, "rb")) == NULL)
@@ -88,7 +87,6 @@ sl_add_streamlist_file (SLCD *slconn, const char *streamfile,
 
   while (fgets (line, sizeof (line), fp))
   {
-    linecount += 1;
     memset (stationid, 0, sizeof(stationid));
     memset (selectors, 0, sizeof(selectors));
 
@@ -101,13 +99,6 @@ sl_add_streamlist_file (SLCD *slconn, const char *streamfile,
     /* Skip blank or comment lines */
     if (fields <= 0 || stationid[0] == '#')
       continue;
-
-    if (fields < 1)
-    {
-      sl_log_r (slconn, 2, 0, "cannot parse line %d of stream list: '%s'\n",
-                linecount, line);
-      continue;
-    }
 
     /* Add this stream to the stream list */
     if (fields == 2)
@@ -131,7 +122,7 @@ sl_add_streamlist_file (SLCD *slconn, const char *streamfile,
   {
     sl_log_r (slconn, 2, 0, "no streams defined in %s\n", streamfile);
   }
-  else if (streamcount > 0)
+  else
   {
     sl_log_r (slconn, 1, 2, "Read %d streams from %s\n", streamcount, streamfile);
   }
@@ -145,7 +136,7 @@ sl_add_streamlist_file (SLCD *slconn, const char *streamfile,
   return streamcount;
 } /* End of sl_read_streamlist() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Add a list of streams and selectors from a string to the ::SLCD
  *
  * Parsed streams and selectors are added to the stream list for configuring
@@ -181,7 +172,11 @@ sl_add_streamlist (SLCD *slconn, const char *streamlist,
     return -1;
 
   /* Make a copy that can freely be modified */
-  parselist = strdup (streamlist);
+  if ((parselist = strdup (streamlist)) == NULL)
+  {
+    sl_log_r (slconn, 2, 0, "cannot allocate memory for stream list\n");
+    return -1;
+  }
 
   stream = parselist;
   while (stream)
@@ -206,9 +201,9 @@ sl_add_streamlist (SLCD *slconn, const char *streamlist,
       sl_add_stream (slconn, stream,
                      (selectors) ? selectors : defselect,
                      SL_UNSETSEQUENCE, NULL);
+      streamcount++;
     }
 
-    streamcount++;
     stream = nextstream;
   }
 

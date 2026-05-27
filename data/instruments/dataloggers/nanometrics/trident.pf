@@ -262,3 +262,27 @@ decifac         2
 response        &datafile(responses/trident_50sps_fir3) 
 } 
 
+
+possible_streams_py &Literal{
+    chosen_set = set(chosen)
+    if '1000sps' in chosen_set:
+        return ['1000sps']
+    elif '500sps' in chosen_set:
+        return ['500sps']
+    elif '200sps' in chosen_set:
+        return ['200sps']
+    elif '120sps' in chosen_set:
+        return ['120sps']
+    elif '100sps' in chosen_set:
+        return ['100sps']
+    elif '50sps' in chosen_set:
+        return ['50sps']
+    elif '40sps' in chosen_set:
+        return ['40sps']
+    elif '20sps' in chosen_set:
+        return ['20sps']
+    elif '10sps' in chosen_set:
+        return ['10sps']
+    else:
+        return ['1000sps', '500sps', '200sps', '120sps', '100sps', '50sps', '40sps', '20sps', '10sps']
+}

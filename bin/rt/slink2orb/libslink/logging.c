@@ -37,7 +37,7 @@ int sl_log_main (const SLlog *logp, int level, int verb, const char *format, va_
 /* Initialize the global logging parameters */
 SLlog global_SLlog = {NULL, NULL, NULL, NULL, 0};
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Initialize the global logging parameters.
  *
  * See sl_loginit_main() description for usage.
@@ -56,7 +56,7 @@ sl_loginit (int verbosity,
   sl_loginit_main (&global_SLlog, verbosity, log_print, logprefix, diag_print, errprefix);
 } /* End of sl_loginit() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Initialize ::SLCD-specific logging parameters
  *
  * If the logging parameters have not been initialized (slconn->log == NULL)
@@ -83,6 +83,9 @@ sl_loginit_r (SLCD *slconn, int verbosity,
   {
     slconn->log = (SLlog *)malloc (sizeof (SLlog));
 
+    if (slconn->log == NULL)
+      return;
+
     slconn->log->log_print  = NULL;
     slconn->log->logprefix  = NULL;
     slconn->log->diag_print = NULL;
@@ -93,7 +96,7 @@ sl_loginit_r (SLCD *slconn, int verbosity,
   sl_loginit_main (slconn->log, verbosity, log_print, logprefix, diag_print, errprefix);
 } /* End of sl_loginit_r() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Initialize ::SLlog-specific logging parameters
  *
  * If the logging parameters have not been initialized (log == NULL)
@@ -121,6 +124,9 @@ sl_loginit_rl (SLlog *log, int verbosity,
   {
     logp = (SLlog *)malloc (sizeof (SLlog));
 
+    if (logp == NULL)
+      return NULL;
+
     logp->log_print  = NULL;
     logp->logprefix  = NULL;
     logp->diag_print = NULL;
@@ -137,7 +143,7 @@ sl_loginit_rl (SLlog *log, int verbosity,
   return logp;
 } /* End of sl_loginit_rl() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Initialize the central logging system
  *
  * Given values determine how sl_log() and sl_log_r() emit messages.
@@ -204,11 +210,9 @@ sl_loginit_main (SLlog *logp, int verbosity,
       logp->errprefix = errprefix;
     }
   }
-
-  return;
 } /* End of sl_loginit_main() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Emit an log message using the global logging parameters
  *
  * @param level  The message level (0: log, 1: diagnostic, 2+: error)
@@ -235,7 +239,7 @@ sl_log (int level, int verb, const char *format, ...)
   return retval;
 } /* End of sl_log() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Emit an log message using logging parameters in ::SLCD
  *
  * If the supplied pointer is NULL the global logging parameters will be used.
@@ -257,12 +261,7 @@ sl_log_r (const SLCD *slconn, int level, int verb, const char *format, ...)
   va_list varlist;
   SLlog *logp;
 
-  if (!slconn)
-    logp = &global_SLlog;
-  else if (!slconn->log)
-    logp = &global_SLlog;
-  else
-    logp = slconn->log;
+  logp = (slconn && slconn->log) ? slconn->log : &global_SLlog;
 
   va_start (varlist, format);
 
@@ -273,7 +272,7 @@ sl_log_r (const SLCD *slconn, int level, int verb, const char *format, ...)
   return retval;
 } /* End of sl_log_r() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Emit an log message using logging parameters in ::SLlog
  *
  * If the supplied pointer is NULL the global logging parameters will be used.
@@ -309,7 +308,7 @@ sl_log_rl (const SLlog *log, int level, int verb, const char *format, ...)
   return retval;
 } /* End of sl_log_rl() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Central log messge facility, emit formatted log messages
  *
  * This routine acts as a central message facility for the all of the

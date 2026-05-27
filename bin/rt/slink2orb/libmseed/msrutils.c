@@ -25,12 +25,12 @@
 
 #include "libmseed.h"
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Initialize and return an ::MS3Record
  *
- * Memory is allocated if for a new ::MS3Record if \a msr is NULL.
+ * Memory is allocated if for a new ::MS3Record if @p msr is NULL.
  *
- * If memory for the \c datasamples field has been allocated the pointer
+ * If memory for the @c datasamples field has been allocated the pointer
  * will be retained for reuse.  If memory for extra headers has been
  * allocated it will be released.
  *
@@ -38,11 +38,12 @@
  *
  * @returns a pointer to a ::MS3Record struct on success or NULL on error.
  *
- * \ref MessageOnError - this function logs a message on error
+ * @ref MessageOnError - this function logs a message on error
  ***************************************************************************/
 MS3Record *
 msr3_init (MS3Record *msr)
 {
+  MS3Record msr_initialized = MS3Record_INITIALIZER;
   void *datasamples = NULL;
   size_t datasize = 0;
 
@@ -65,19 +66,15 @@ msr3_init (MS3Record *msr)
     return NULL;
   }
 
-  memset (msr, 0, sizeof (MS3Record));
+  memcpy (msr, &msr_initialized, sizeof (MS3Record));
 
   msr->datasamples = datasamples;
   msr->datasize = datasize;
 
-  msr->reclen    = -1;
-  msr->samplecnt = -1;
-  msr->encoding  = -1;
-
   return msr;
 } /* End of msr3_init() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Free all memory associated with a ::MS3Record
  *
  * Free all memory associated with a ::MS3Record, including extra
@@ -102,12 +99,12 @@ msr3_free (MS3Record **ppmsr)
   }
 } /* End of msr3_free() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Duplicate a ::MS3Record
  *
  * Extra headers are duplicated as well.
  *
- * If the \a datadup flag is true (non-zero) and the source
+ * If the @p datadup flag is true (non-zero) and the source
  * ::MS3Record has associated data samples copy them as well.
  *
  * @param[in] msr ::MS3Record to duplicate
@@ -115,12 +112,12 @@ msr3_free (MS3Record **ppmsr)
  *
  * @returns Pointer to a new ::MS3Record on success and NULL on error
  *
- * \ref MessageOnError - this function logs a message on error
+ * @ref MessageOnError - this function logs a message on error
  ***************************************************************************/
 MS3Record *
 msr3_duplicate (const MS3Record *msr, int8_t datadup)
 {
-  MS3Record *dupmsr = 0;
+  MS3Record *dupmsr = NULL;
 
   if (!msr)
   {
@@ -146,14 +143,15 @@ msr3_duplicate (const MS3Record *msr, int8_t datadup)
   if (msr->extralength > 0 && msr->extra)
   {
     /* Allocate memory for new FSDH structure */
-    if ((dupmsr->extra = (char *)libmseed_memory.malloc (msr->extralength)) == NULL)
+    if ((dupmsr->extra = (char *)libmseed_memory.malloc (msr->extralength + 1)) == NULL)
     {
       ms_log (2, "Error allocating memory\n");
       msr3_free (&dupmsr);
       return NULL;
     }
 
-    memcpy (dupmsr->extra, msr->extra, msr->extralength);
+    /* Copy extra headers and terminating NULL */
+    memcpy (dupmsr->extra, msr->extra, msr->extralength + 1);
 
     if (dupmsr->extra)
       dupmsr->extralength = msr->extralength;
@@ -163,7 +161,7 @@ msr3_duplicate (const MS3Record *msr, int8_t datadup)
   if (datadup && msr->numsamples > 0 && msr->datasize > 0 && msr->datasamples)
   {
     /* Allocate memory for new data array */
-    if ((dupmsr->datasamples = libmseed_memory.malloc ((size_t) (msr->datasize))) == NULL)
+    if ((dupmsr->datasamples = libmseed_memory.malloc ((size_t)(msr->datasize))) == NULL)
     {
       ms_log (2, "Error allocating memory\n");
       msr3_free (&dupmsr);
@@ -174,7 +172,7 @@ msr3_duplicate (const MS3Record *msr, int8_t datadup)
 
     if (dupmsr->datasamples)
     {
-      dupmsr->datasize   = msr->datasize;
+      dupmsr->datasize = msr->datasize;
       dupmsr->numsamples = msr->numsamples;
     }
   }
@@ -182,7 +180,7 @@ msr3_duplicate (const MS3Record *msr, int8_t datadup)
   return dupmsr;
 } /* End of msr3_duplicate() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Calculate time of the last sample in a record
  *
  * If leap seconds have been loaded into the internal library list:
@@ -192,7 +190,7 @@ msr3_duplicate (const MS3Record *msr, int8_t datadup)
  * @note On the epoch time scale the value of a leap second is the
  * same as the second following the leap second, without external
  * information the values are ambiguous.
- * \sa ms_readleapsecondfile()
+ * @see ms_readleapsecondfile()
  *
  * @param[in] msr ::MS3Record to calculate end time of
  *
@@ -212,16 +210,15 @@ msr3_endtime (const MS3Record *msr)
   return ms_sampletime (msr->starttime, sampleoffset, msr->samprate);
 } /* End of msr3_endtime() */
 
-
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Print header values of an MS3Record
  *
  * @param[in] msr ::MS3Record to print
  * @param[in] details Flags to control the level of details:
  * @parblock
- *  - \c 0 - print a single summary line
- *  - \c 1 - print most details of header
- *  - \c >1 - print all details of header and extra headers if present
+ *  - @c 0 - print a single summary line
+ *  - @c 1 - print most details of header
+ *  - @c >1 - print all details of header and extra headers if present
  * @endparblock
  ***************************************************************************/
 void
@@ -234,23 +231,23 @@ msr3_print (const MS3Record *msr, int8_t details)
     return;
 
   /* Generate a start time string */
-  ms_nstime2timestr (msr->starttime, time, ISOMONTHDAY_DOY_Z, NANO_MICRO);
+  ms_nstime2timestr_n (msr->starttime, time, sizeof (time), ISOMONTHDAY_DOY_Z, NANO_MICRO);
 
   /* Report information in the fixed header */
   if (details > 0)
   {
-    ms_log (0, "%s, version %d, %d bytes (format: %d)\n",
-            msr->sid, msr->pubversion, msr->reclen, msr->formatversion);
+    ms_log (0, "%s, version %d, %d bytes (format: %d)\n", msr->sid, msr->pubversion, msr->reclen,
+            msr->formatversion);
     ms_log (0, "             start time: %s\n", time);
     ms_log (0, "      number of samples: %" PRId64 "\n", msr->samplecnt);
-    ms_log (0, "       sample rate (Hz): %.10g\n", msr3_sampratehz(msr));
+    ms_log (0, "       sample rate (Hz): %g\n", msr3_sampratehz (msr));
 
     if (details > 1)
     {
       b = msr->flags;
-      ms_log (0, "                  flags: [%d%d%d%d%d%d%d%d] 8 bits\n",
-              bit (b, 0x80), bit (b, 0x40), bit (b, 0x20), bit (b, 0x10),
-              bit (b, 0x08), bit (b, 0x04), bit (b, 0x02), bit (b, 0x01));
+      ms_log (0, "                  flags: [%d%d%d%d%d%d%d%d] 8 bits\n", bit (b, 0x80),
+              bit (b, 0x40), bit (b, 0x20), bit (b, 0x10), bit (b, 0x08), bit (b, 0x04),
+              bit (b, 0x02), bit (b, 0x01));
       if (b & 0x01)
         ms_log (0, "                         [Bit 0] Calibration signals present\n");
       if (b & 0x02)
@@ -283,13 +280,12 @@ msr3_print (const MS3Record *msr, int8_t details)
   }
   else
   {
-    ms_log (0, "%s, %d, %d, %" PRId64 " samples, %-.10g Hz, %s\n",
-            msr->sid, msr->pubversion, msr->reclen,
-            msr->samplecnt, msr3_sampratehz(msr), time);
+    ms_log (0, "%s, %d, %d, %" PRId64 " samples, %g Hz, %s\n", msr->sid, msr->pubversion,
+            msr->reclen, msr->samplecnt, msr3_sampratehz (msr), time);
   }
 } /* End of msr3_print() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Resize data sample buffer of ::MS3Record to what is needed
  *
  * This routine should only be used if pre-allocation of memory, via
@@ -299,7 +295,7 @@ msr3_print (const MS3Record *msr, int8_t details)
  *
  * @returns Return 0 on success, otherwise returns a libmseed error code.
  *
- * \ref MessageOnError - this function logs a message on error
+ * @ref MessageOnError - this function logs a message on error
  ***************************************************************************/
 int
 msr3_resize_buffer (MS3Record *msr)
@@ -313,11 +309,11 @@ msr3_resize_buffer (MS3Record *msr)
     return MS_GENERROR;
   }
 
-  samplesize = ms_samplesize(msr->sampletype);
+  samplesize = ms_samplesize (msr->sampletype);
 
   if (samplesize && msr->datasamples && msr->numsamples > 0)
   {
-    datasize = (size_t) msr->numsamples * samplesize;
+    datasize = (size_t)msr->numsamples * samplesize;
 
     if (msr->datasize > datasize)
     {
@@ -336,7 +332,7 @@ msr3_resize_buffer (MS3Record *msr)
   return 0;
 } /* End of msr3_resize_buffer() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Calculate sample rate in samples/second (Hertz) for a given ::MS3Record
  *
  * @param[in] msr ::MS3Record to calculate sample rate for
@@ -355,7 +351,7 @@ msr3_sampratehz (const MS3Record *msr)
     return msr->samprate;
 } /* End of msr3_sampratehz() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Calculate sample period in nanoseconds/sample for a given ::MS3Record
  *
  * @param[in] msr ::MS3Record to calculate sample period for
@@ -378,7 +374,7 @@ msr3_nsperiod (const MS3Record *msr)
   return 0;
 } /* End of msr3_nsperiod() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Calculate data latency based on the host time
  *
  * Calculation is based on the time of the last sample in the record; in

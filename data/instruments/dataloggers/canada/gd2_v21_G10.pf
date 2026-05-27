@@ -85,3 +85,15 @@ gtype			FIR_decimator
 decifac			10
 response		&datafile(responses/gd2_firz_20)
 }
+
+possible_streams_py &Literal{
+    chosen_set = set(chosen)
+    if '100sps' in chosen_set:
+        return ['100sps']
+    elif '40sps' in chosen_set:
+        return ['40sps']
+    elif '20sps' in chosen_set:
+        return ['20sps']
+    else:
+        return ['100sps', '40sps', '20sps']
+}

@@ -1,2 +1,24 @@
+# C build objects
+*.a
+*.so
+*.lo
+*.o
+*.dylib
+*.so
+*.dll
+*.dSYM/
+
+# Docs
 doc/working/
 doc/gh-pages/
+
+# Test artifacts
+test/testdata-*
+Testing
+
+TODO
+TODO.txt
+
+# CMake directories 
+build
+install

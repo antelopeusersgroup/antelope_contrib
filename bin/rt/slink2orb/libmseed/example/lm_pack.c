@@ -3,7 +3,7 @@
  *
  * This file is part of the miniSEED Library.
  *
- * Copyright (c) 2023 Chad Trabant, EarthScope Data Services
+ * Copyright (c) 2024 Chad Trabant, EarthScope Data Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,14 @@
 #define VERSION "[libmseed " LIBMSEED_VERSION " example]"
 #define PACKAGE "lm_pack"
 
-static flag verbose  = 0;
-static int reclen    = -1;
-static int encoding  = 10;
-static int msformat  = 3;
-static char *outfile = NULL;
+static flag verbose       = 0;
+static int reclen         = -1;
+static double samprate    = 1.0;
+static char *sourceid     = "FDSN:XX_TEST__X_Y_Z";
+static int encoding       = 10;
+static int msformat       = 3;
+static nstime_t starttime = NSTUNSET;
+static char *outfile      = NULL;
 
 static int parameter_proc (int argcount, char **argvec);
 static void usage (void);
@@ -49,7 +52,7 @@ static void usage (void);
  * Values 1 through up to 220 do not require more than 16-bits.
  ***************************************************************************/
 #define SINE_DATA_SAMPLES 500
-static float fsinedata[SINE_DATA_SAMPLES] =
+static double dsinedata[SINE_DATA_SAMPLES] =
     {0.000000,6.109208,10.246826,10.609957,6.764728,-0.075704,-7.409461,-12.346208,
     -12.731430,-8.062958,0.182060,8.985442,14.875067,15.276420,9.609196,-0.328370,
     -10.895428,-17.921131,-18.329336,-11.450576,0.526448,13.209973,21.590023,21.991385,
@@ -155,22 +158,24 @@ main (int argc, char **argv)
 {
   MS3Record *msr = NULL;
   uint32_t flags = 0;
-  int32_t sinedata[SINE_DATA_SAMPLES];
-  double dsinedata[SINE_DATA_SAMPLES];
+  int32_t isinedata[SINE_DATA_SAMPLES];
+  float fsinedata[SINE_DATA_SAMPLES];
   int idx;
   int rv;
 
   /* Create integer and double sine data sets */
   for (idx = 0; idx < SINE_DATA_SAMPLES; idx++)
   {
-    sinedata[idx] = (int32_t)(fsinedata[idx]);
-    dsinedata[idx] = (double)(fsinedata[idx]);
+    isinedata[idx] = (int32_t)(dsinedata[idx]);
+    fsinedata[idx] = (float)(dsinedata[idx]);
   }
 
   /* Process command line arguments */
   if (parameter_proc (argc, argv) < 0)
     return -1;
 
+  if (starttime == NSTUNSET)
+    starttime = ms_timestr2nstime ("2012-01-01T00:00:00Z");
 
   if (!(msr = msr3_init (msr)))
   {
@@ -179,11 +184,11 @@ main (int argc, char **argv)
   }
 
   /* Set up record parameters */
-  strcpy (msr->sid, "FDSN:XX_TEST__X_Y_Z");
+  strcpy (msr->sid, sourceid);
   msr->reclen = reclen;
   msr->pubversion = 1;
-  msr->starttime = ms_timestr2nstime ("2012-01-01T00:00:00");
-  msr->samprate = 1.0;
+  msr->starttime = starttime;
+  msr->samprate = samprate;
   msr->encoding = encoding;
 
   if (encoding == DE_TEXT)
@@ -207,25 +212,25 @@ main (int argc, char **argv)
   else if (encoding == DE_INT16)
   {
     msr->numsamples  = 220; /* The first 220 samples can be represented in 16-bits */
-    msr->datasamples = sinedata;
+    msr->datasamples = isinedata;
     msr->sampletype  = 'i';
   }
   else if (encoding == DE_INT32)
   {
     msr->numsamples  = SINE_DATA_SAMPLES;
-    msr->datasamples = sinedata;
+    msr->datasamples = isinedata;
     msr->sampletype  = 'i';
   }
   else if (encoding == DE_STEIM1)
   {
     msr->numsamples  = SINE_DATA_SAMPLES;
-    msr->datasamples = sinedata;
+    msr->datasamples = isinedata;
     msr->sampletype  = 'i';
   }
   else if (encoding == DE_STEIM2)
   {
     msr->numsamples  = SINE_DATA_SAMPLES - 1; /* Steim-2 can represent all but the last difference */
-    msr->datasamples = sinedata;
+    msr->datasamples = isinedata;
     msr->sampletype  = 'i';
   }
   else
@@ -292,9 +297,27 @@ parameter_proc (int argcount, char **argvec)
     {
       reclen = strtol (argvec[++optind], NULL, 10);
     }
+    else if (strcmp (argvec[optind], "-R") == 0)
+    {
+      samprate = strtod (argvec[++optind], NULL);
+    }
+    else if (strcmp (argvec[optind], "-i") == 0)
+    {
+      sourceid = argvec[++optind];
+    }
     else if (strcmp (argvec[optind], "-e") == 0)
     {
       encoding = strtol (argvec[++optind], NULL, 10);
+    }
+    else if (strcmp (argvec[optind], "-s") == 0)
+    {
+      starttime = ms_timestr2nstime (argvec[++optind]);
+
+      if (starttime == NSTERROR)
+      {
+        ms_log (2, "Invalid start time: %s\n", argvec[optind]);
+        exit (1);
+      }
     }
     else if (strcmp (argvec[optind], "-o") == 0)
     {
@@ -344,7 +367,10 @@ usage (void)
            " -v             Be more verbose, multiple flags can be used\n"
            " -F format      Specify miniSEED version format, default is v3\n"
            " -r bytes       Specify maximum record length in bytes, default 4096\n"
+           " -R samprate    Specify sample rate, default is 1.0\n"
+           " -i sourceid    Specify source identifier, default is FDSN:XX_TEST__X_Y_Z\n"
            " -e encoding    Specify encoding format\n"
+           " -s starttime   Specify the start time, default is 2012-01-01T00:00:00Z\n"
            "\n"
            " -o outfile     Specify the output file, required\n"
            "\n"

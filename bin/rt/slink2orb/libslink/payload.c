@@ -30,7 +30,7 @@
 #include "mseedformat.h"
 
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Generate a summary string for a specified packet
  *
  * The summary generally includes the source identifier, number of samples,
@@ -75,7 +75,7 @@ sl_payload_summary (const SLlog *log, const SLpacketinfo *packetinfo,
                    sourceid, samplecount, samplerate, starttimestr);
 } /* End of sl_payload_summary() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Return selected values (if possible) from a SeedLink packet
  *
  * Parses a SeedLink packet payload and optionally return extracted values.
@@ -188,6 +188,8 @@ sl_payload_info (const SLlog *log, const SLpacketinfo *packetinfo,
       samprate_fact = HO2d (*pMS2FSDH_SAMPLERATEFACT (plbuffer), swapflag);
       samprate_mult = HO2d (*pMS2FSDH_SAMPLERATEMULT (plbuffer), swapflag);
 
+      *samplerate = 0.0;
+
       if (samprate_fact > 0)
         *samplerate = (double)samprate_fact;
       else if (samprate_fact < 0)
@@ -207,7 +209,8 @@ sl_payload_info (const SLlog *log, const SLpacketinfo *packetinfo,
   /* Parse requested details from miniSEED v3 */
   else if (packetinfo->payloadformat == SLPAYLOAD_MSEED3)
   {
-    if (packetinfo->payloadlength < MS3FSDH_LENGTH + *pMS3FSDH_SIDLENGTH(plbuffer))
+    if (packetinfo->payloadlength < MS3FSDH_LENGTH ||
+        packetinfo->payloadlength < MS3FSDH_LENGTH + *pMS3FSDH_SIDLENGTH(plbuffer))
     {
       sl_log_rl (log, 2, 1, "%s(): payload too short for miniSEEDv3\n", __func__);
       return -1;
