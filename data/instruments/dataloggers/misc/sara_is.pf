@@ -1,11 +1,11 @@
 # https://www.mertl-research.at/en/projects/macro_seismic_network/
 originator    	Nikolaus Horn, ZAMG 
-last_modified  	2022-04-05
+last_modified  	2026-07-21
 
 category	SARA
-configuration	Sara SL06 for Infrasound
+configuration	Sara SL06 infrasound
 
-description	 
+description	 SARA SL06 configuration for infrasound monitoring
 dfile 		sl06	# no response, a mystery
 
 streams		20sps
