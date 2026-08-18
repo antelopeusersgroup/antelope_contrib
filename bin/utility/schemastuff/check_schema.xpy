@@ -14,6 +14,8 @@ DESCRIPTION, DETAIL are optional
 definitions from $ANTELOPE are taken for granted,
 contributed definitions should follow the following rules 
 
+todo: follow directories in $SCHEMA_DIR
+
 """
 global pedantic
 pedantic = False
@@ -768,16 +770,24 @@ def main():
     # 1st check on stuff read from files
     if file_checks:
         err = False
-        err, check_schema_files(schemaname)
+        err = check_schema_files(schemaname)
         if err:
             error_seen = True
     # 2nd check on the object in memory
     if schema_checks:
-        # trange enough, try... does not work with dbtmp
+        # strange enough, try... does not work with dbtmp
         db = ds.dbtmp(schemaname)
-        # but fortunately it retruns dbinvalid in case of a problem
+        # but fortunately it returns dbinvalid in case of a problem
         if db == ds.dbinvalid():
-            # elog.flush(False, -1)
+            elog.notify("")
+            elog.notify("If you have opened one of the files in one of the directories in $SCHEMA_DIR")
+            elog.notify("in an editor, this could prevent datascope from using the database.")
+            elog.notify("The reason for this strange behavour are hidden temporary files that are unfortunately")
+            elog.notify("interpreted by the datascope engine")
+            elog.notify("In the case of 'vi', the error message would be: syntax error at 'b0VIM' near line0 ... ")
+            elog.notify("")
+            elog.flush(False,0 )
+       
             elog.die(
                 "problem with database schema '%s'. Maybe the schema does not exist?"
                 % schemaname
