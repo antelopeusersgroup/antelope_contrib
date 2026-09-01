@@ -4,10 +4,10 @@ net_sim \- estimate network magnitude threshold
 .SH SYNOPSIS
 .nf
 \fBnet_sim \fP[-v] [-n \fInsta\fP] [-p \fIpf\fP] [-i \fIsta\fP[,\fIsta2\fP]]
-				[-s \fIsnr\fP] [-r \fIrmsdb\fP | -R \fIrms\fP] [-t \fItime\fP]
-				[-D dist_title] [-M mag_title]
-				[-c] [-b] [-m] [-d] [-L] [-Y]
-			   	[-S \fIsta/lat/lon/rms\fP] [-f \fIgridfilename\fP] \fIdbname\fP [\fIplotfile\fP]
+	[-s \fIsnr\fP] [-r \fIrmsdb\fP | -R \fIrms\fP] [-t \fItime\fP]
+	[-D dist_title] [-M mag_title]
+	[-c] [-b] [-m] [-d] [-L] [-Y]
+	[-S \fIsta/lat/lon/rms\fP] [-P \fIdpi\fP] [-f \fIgridfilename\fP] \fIdbname\fP [\fIplotfile\fP]
 .fi
 
 .SH DESCRIPTION
@@ -37,6 +37,8 @@ Add a virtual station. Multiple stations can be specified by repeating the argum
 specify \fIsnr\fP. This overrides the value from the paramter file.
 .IP "-t time"
 Time for \fIrms\fP values when a database is used to lookup the \fIrms\fP values. If not specified, the program looks for recent values. How recent exactly is infuenced by the \fIsnr_latency\fP from the parameter file.
+.IP "-P dpi"
+Specify resolution in dots per inch (dpi) of plot when saving to a file.
 .IP "-D dist_title"
 Specify title for station-distance plot. Defaults to "minimum distance to {nsta}th station (km)". Note that {nsta} will be replaced by the actual number of stations used. This number can be specified by the option \fI-n\fP or in the parameterfile.
 .IP "-M mag_title"
