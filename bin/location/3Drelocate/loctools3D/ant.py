@@ -744,7 +744,7 @@ def pfile_2_cfg(pfile, config_file):
                      'test_pfile_2_cfg')
     Out[3]: 0
     '''
-    import ConfigParser
+    import configparser
     from antelope.stock import pfin,\
                                pfread
     config_file = '%s.cfg' % config_file
@@ -752,10 +752,10 @@ def pfile_2_cfg(pfile, config_file):
         try:
             os.remove(config_file)
         except OSError:
-            print 'Could not remove potentially stale configuration file - %s.'\
-                    '\nPlease remove and try again.' % config_file
+            print('Could not remove potentially stale configuration file - %s.'\
+                    '\nPlease remove and try again.' % config_file)
             sys.exit(-1)
-    config = ConfigParser.RawConfigParser()
+    config = configparser.RawConfigParser()
     config.add_section('misc')
     if pfile:
         if os.path.splitext(pfile)[1] != '.pf':
@@ -763,7 +763,7 @@ def pfile_2_cfg(pfile, config_file):
         pfile = pfin(pfile)
     else:
         pfile = pfread('3Drelocate')
-    for key1 in pfile.keys():
+    for key1 in list(pfile.keys()):
         if isinstance(pfile[key1], dict):
             config.add_section(key1)
             for key2 in pfile[key1]:

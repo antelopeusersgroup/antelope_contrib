@@ -31,7 +31,7 @@ import zamg.utilities as zu
 def usage(progname):
     print(
         progname,
-        "[-v] [-p pf] [-t time] [-D dist_title] [-M mag_title] [-n nsta] [-i sta[,sta2]]\n\t[-s snr] [-r rmsdb | -R rms] [-S sta/lat/lon/rms] [-Y] [-L] [-f gridfilename] dbname [outfile]",
+        "[-v] [-p pf] [-t time] [-D dist_title] [-M mag_title] [-n nsta] [-i sta[,sta2]]\n\t[-s snr] [-r rmsdb | -R rms] [-S sta/lat/lon/rms] [-Y] [-L] [-f gridfilename] [-P dpi] dbname [outfile]",
     )
 
 
@@ -71,9 +71,10 @@ def main():
     plot_cities = False
     plot_stanames = True
     plot_stas = True
+    dpi = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "D:M:LYvf:i:n:p:r:R:s:S:t:dmcb", "")
+        opts, args = getopt.getopt(sys.argv[1:], "dD:M:LYvf:i:n:p:P:r:R:s:S:t:mcb", "")
     except getopt.GetoptError:
         usage(progname)
         elog.die("Illegal option")
@@ -158,6 +159,8 @@ def main():
             plot_cities = False
         elif o == "-b":
             plot_borders = False
+        elif o == "-P":
+            dpi = int(a)
         elif o == "-i":
             i_list = a.replace("/", ",").split(",")
             stations_to_ignore = stations_to_ignore + i_list
@@ -273,7 +276,8 @@ def main():
     number_sites = 0
     for dbsite.record in range(nsites):
         [sta, slat, slon, selev] = dbsite.getv("sta", "lat", "lon", "elev")
-        print("sta: %s" % sta)
+        if verbose:
+            print("sta: %s" % sta)
         if sta in stations_to_ignore:
             if verbose:
                 print("ignore station %s" % sta)
@@ -350,7 +354,6 @@ def main():
 
     if pf.has_key("ymin") and pf["ymin"] != "":
         latmin = float(pf["ymin"])
-        print("ymin")
     else:
         latmin = math.floor(min(stalat))
 
@@ -528,7 +531,10 @@ def main():
     plt.tight_layout(pad=3.0)
 
     if plotfilename != "":
-        plt.savefig(plotfilename)
+        if dpi is not None:
+            plt.savefig(plotfilename, dpi=dpi)
+        else:
+            plt.savefig(plotfilename)
         if verbose:
             elog.log("plotfile saved to %s" % plotfilename)
     else:

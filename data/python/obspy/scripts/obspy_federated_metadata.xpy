@@ -17,14 +17,16 @@ sys.path.append(os.environ["ANTELOPE"] + "/contrib/data/python")
 
 # import zamg.utilities as zu
 # import zamg.missing as zm
-# import zamg.obspy2db as o2db
 
 
 def usage(progname):
-    print(progname, "[-vd] [-I|-E] [-l level] [-f fmt] file [file2 [file3 ...]] db")
+    print(progname, "[-vd] [-D db] [-I|-E] [-l level] [-f fmt] sta [sta2 [sta3 ...]]")
     print()
     print("\t-l network|station|channel|response (defaults to response)")
     print("\t-I query the IRIS federator (defaults to EIDA)")
+    print("\t-D db - save inventory to database db")
+    print("\t        default is to save inventory to file(s) named after the station")
+
 
 
 progname = sys.argv[0].split("/")[-1]
@@ -37,10 +39,11 @@ level = "response"  # default?
 fedarator = "eida-routing"
 verbose = False
 debug = False
+dbname = None
 opts = []
 args = []
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "df:l:op:v", "")
+    opts, args = getopt.getopt(sys.argv[1:], "dD:f:l:op:v", "")
 except getopt.GetoptError:
     usage(progname)
     elog.die("Illegal option")
@@ -51,6 +54,8 @@ for o, a in opts:
         verbose = True
     elif o == "-d":
         debug = True
+    elif o == "-D":
+        dbname = a
     elif o == "-f":
         inventoryformat = a
     elif o == "-I":
@@ -65,13 +70,14 @@ for o, a in opts:
         pfname = a
 
 
-if len(args) < 2:
+if len(args) < 1:
     usage(progname)
     sys.exit(1)
+if dbname is not None:
+    import obspy2db as o2db
 
 client = RoutingClient(fedarator)
-dbname = args[-1]
-for ndx in range(len(args) - 1):
+for ndx in range(len(args)):
     staname = args[ndx]
     try:
         inv = client.get_stations(
@@ -84,6 +90,8 @@ for ndx in range(len(args) - 1):
         if verbose or debug:
             print("nothing found for station %s" % staname)
     else:
+        if dbname is not None:
+            o2db.inventory2db(inventory, db, params)
         foutname = "inv_%s.xml" % staname
         inv.write(foutname, format="STATIONXML")
         if verbose:

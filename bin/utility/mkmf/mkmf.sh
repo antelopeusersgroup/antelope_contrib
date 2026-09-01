@@ -1,7 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
-# Version 1.1 2023-03-13
+
+# Version 1.2 2023-06-30
 # translated from csh to bash, since csh seems to disappear from our computers...
+# fixed to work on Ubuntu as well (gosh! on Ubuntu, sh and bash are NOT the same!)
 
 declare -a mybins=()
 patterns=".c .cpp .F .f .sh .csh .tcl .xpl .xppl .xpls .ptk .xtcl .xwish .xvwish .xwish8 .oxwish .xpy .xbqpy .xbqpyn .xbqpyx .xpys"

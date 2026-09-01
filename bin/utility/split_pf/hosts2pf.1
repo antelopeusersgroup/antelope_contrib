@@ -3,14 +3,14 @@
 hosts2pf \- read hosts file and populate stations in a parameterfile with primary and backup network addresses.
 .SH SYNOPSIS
 .nf
-\fBhosts2pf \fP\fIhostsfile\fP \fIparameterfile\fP
+\fBhosts2pf \fP\fIhosts-file\fP \fIparameterfile\fP
 .fi
 
 .SH DESCRIPTION
 This little helper prepares a list of primary and backup ip addresses per station. This list can then be used as input for the program \fIsplit_pf\fP.
 .SH OPTIONS
-.IP "hostfile"
-File with primary and backup addresses of stations in the format: network address followed by one or more names, as described in hosts.5. A suffix of -backup after a sitename indicates the backup address.
+.IP "host-file"
+File with primary and backup addresses of stations in the format: network address followed by one or more names, as described in hosts.5. A suffix of -backup after a site name indicates the backup address.
 .IP "parameterfile"
 New Antelope parameterfile. 
 .SH EXAMPLE

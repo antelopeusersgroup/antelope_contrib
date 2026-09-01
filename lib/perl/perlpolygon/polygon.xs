@@ -15,6 +15,7 @@ elogmsgs()
 
 MODULE = polygon		PACKAGE = polygon		
 PROTOTYPES: DISABLE
+# prototypes: enable -> @db geht nicht mehr!!! (also ein array(
 
 
 void
@@ -25,11 +26,11 @@ inWhichPolygons(idatabase, itable, ifield, irecord, lat, lon)
 	int 	irecord
 	double	lat
 	double	lon
-	PPCODE:
-	{ 
+	PREINIT:
 	Dbptr db;
 	Dbptr dbr;
 	Point P;
+	PPCODE:
 	db.database= idatabase;
 	db.table= itable;
 	db.field= ifield;
@@ -42,7 +43,6 @@ inWhichPolygons(idatabase, itable, ifield, irecord, lat, lon)
 	PUSHs(sv_2mortal(newSViv(dbr.table)));	
 	PUSHs(sv_2mortal(newSViv(dbr.field)));	
 	PUSHs(sv_2mortal(newSViv(dbr.record)));	
-	}
 
 char *
 windrose(azimuth)

@@ -1,17 +1,21 @@
-# nonsensical paramterfile for testing and demonstration only
-# the program 'pftidy' needs no paramterfile
+# nonsensical parameterfile for testing and demonstration only
+# the program 'pftidy' needs no parameterfile
 'spaced key1' spaceval1
 "spaced key2"    spaceval2
 key1  value1 # remark1
+# remark2
 
 'qkey' qvalue1
 #how about Umlauts and such?
 blöderkey   blödervalue
 
+# remark after blank line
+   # continued
+
 array &Arr{
-    eins 
-zwei
-    drei
+eins 
+    zwei
+        drei
 }
 lit1 &Literal[
         square brackets
@@ -25,18 +29,18 @@ lit3 &Literal<
 lit4 &Literal`
         ticks
 '
-table &Tbl{ # some remark
-    one
-    two \#
+dict &Arr{ # some remark
+    one first value
+    two \# # a pound sign as value
     three &Arr{
         sval3-1
         sval3-2 # random remark in the middle of nowhere
     }    
-    &Tbl{
+    four &Tbl{
         0th value here
         1st value in anonymous table # a remark behind the nowmal indention
         2nd value in anonymous table - wider # another remark here
-        subkey &Tbl{
+        &Tbl{
             subsubkey   subsubval
             subsubkey1   subsubval1
         }

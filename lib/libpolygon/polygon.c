@@ -533,8 +533,14 @@ Dbptr           inWhichPolygons (Dbptr db, Point P)
     lat = P.lat;
     lon = P.lon;
 
+	/*printf("lib:dbd: %ld\n",db.database);
+	printf("lib:dbt: %ld\n",db.table);
+	printf("lib:dbf: %ld\n",db.field);
+	printf("lib:dbr: %ld\n",db.record);
+	*/
     if (db.table < 0) {
         dbs = dblookup (db, 0, "polygon", 0, 0);
+
     } else {
         dbs = db;
     }
@@ -547,7 +553,13 @@ Dbptr           inWhichPolygons (Dbptr db, Point P)
     if (db.record < 0) {
         sprintf (expr, "north >= %f && south <= %f && east >= %f && west <= %f",
                  lat, lat, lon, lon);
-        dbs = dbsubset (dbs, expr, 0);
+		/*
+		char *rec;
+		char pf_schema_name[256];
+		dbquery (db, dbSCHEMA_NAME, &rec);
+		strcpy (pf_schema_name, rec);        
+		*/
+		dbs = dbsubset (dbs, expr, 0);
         free_dbs = 1;
         dbquery (dbs, dbRECORD_COUNT, &nrec);
         firstrecord = 0;
@@ -561,7 +573,7 @@ Dbptr           inWhichPolygons (Dbptr db, Point P)
         }
     } else {
         /*
-         * make sure we ca use the for-loop below both for one record and a
+         * make sure we can use the for-loop below both for one record and a
          * whole series...
          */
         dbgetv (dbs, 0, "north", &north, "east", &east, "west", &west, "south", &south, NULL);

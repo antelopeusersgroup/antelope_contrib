@@ -61,6 +61,8 @@ sub ampmag_compmag {
             log($amplitude_in_nanometers_per_second)/log(10) + 
             ( $c1*log($distance)/log(10) ); 
     }
+	#prevent obvious nonsense
+    $magnitude = -99.000 if ( $magnitude ) > 9.7;
     return $magnitude ;
 }
 

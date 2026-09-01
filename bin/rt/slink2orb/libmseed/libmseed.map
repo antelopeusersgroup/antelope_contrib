@@ -5,9 +5,11 @@
       msr_*;
       msr3_*;
       mstl3_*;
+      mstraceseg3_pack;
       mseh_*;
+      lmp_systemtime;
       leapsecondlist;
-      libmseed_memory;
+      libmseed_*;
   local:
       *;
 };

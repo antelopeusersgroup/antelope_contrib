@@ -30,6 +30,19 @@ DATA= 	qx80-90.pf \
     q330splus_linear_below_100_ANF.pf \
     q4120.pf \
     q730.pf \
+	q8_1000_linear_below_100.pf \
+	q8_1000_linear_below_20.pf \
+	q8_1000_linear_below_40.pf \
+	q8_1000_linear.pf \
+	q8_1000_minimum.pf \
+	q8_200_linear_below_100.pf \
+	q8_200_linear_below_20.pf \
+	q8_200_linear_below_40.pf \
+	q8_200_linear.pf \
+	q8_int_linear_below_100.pf \
+	q8_int_linear_below_20.pf \
+	q8_int_linear_below_40.pf \
+	q8_int_linear.pf \
     qep_ANF.pf \
     qep_soh_only.pf \
     qep_with_sensors.pf \

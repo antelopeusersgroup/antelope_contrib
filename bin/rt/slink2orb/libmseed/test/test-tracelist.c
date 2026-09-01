@@ -1,7 +1,18 @@
 #include <tau/tau.h>
 #include <libmseed.h>
+#include <time.h>
 
-TEST (trace, read)
+/* This test reads a miniSEED file directly into a MS3TraceList and verifies the
+ * contents of the trace list against expected values.
+ *
+ * The test data is a miniSEED file with one series of data with mixed lengths
+ * and mixed time order.
+ *
+ * The test verifies basic functionality of reading data from files of miniSEED
+ * into a trace list and that data added to the trace list are reconstructed as a
+ * continuous time series, regardless of the order in which the data are added.
+ */
+TEST (tracelist, ms3_readtracelist_mixedlengths_mixedorder)
 {
   MS3TraceList *mstl = NULL;
   MS3TraceID *id     = NULL;
@@ -43,7 +54,11 @@ TEST (trace, read)
   mstl3_free (&mstl, 1);
 }
 
-TEST (read, recptr_file)
+/* This test reads a miniSEED file directly into a MS3TraceList while using the
+ * MSF_RECORDLIST flag to build a record list for each trace segment.  The
+ * expected contents of the record list are verified.
+ */
+TEST (tracelist, ms3_readtracelist_recptr)
 {
   MS3TraceList *mstl   = NULL;
   MS3TraceID *id       = NULL;
@@ -106,13 +121,17 @@ TEST (read, recptr_file)
   mstl3_free (&mstl, 1);
 }
 
-TEST (read, recptr_buffer)
+/* This test reads miniSEED from a buffer into a MS3TraceList while using the
+ * MSF_RECORDLIST flag to build a record list for each trace segment.  The
+ * expected contents of the record list are verified.
+ */
+TEST (tracelist, mstl3_readbuffer_recptr)
 {
   char buffer[16256];
   FILE *fp = NULL;
 
-  MS3TraceList *mstl   = NULL;
-  MS3TraceID *id       = NULL;
+  MS3TraceList *mstl = NULL;
+  MS3TraceID *id = NULL;
   MS3RecordPtr *recptr = NULL;
   nstime_t endtime;
   int64_t unpacked;
@@ -179,6 +198,81 @@ TEST (read, recptr_buffer)
   CHECK (int32s[3949] == -9565, "Decoded sample value mismatch");
   CHECK (int32s[3950] == -71961, "Decoded sample value mismatch");
   CHECK (int32s[3951] == -146622, "Decoded sample value mismatch");
+
+  mstl3_free (&mstl, 1);
+}
+
+/* This test reads miniSEED from a file into a MS3TraceList while using the
+ * MSF_PPUPDATETIME flag to set the segment prvtptr to the update time of the
+ * record.  The expected value of the segment prvtptr is verified to be within
+ * 1 second of the system time.
+ */
+TEST (tracelist, ms3_readtracelist_ppupdatetime)
+{
+  MS3TraceList *mstl = NULL;
+  MS3TraceID *id = NULL;
+  uint32_t flags;
+  nstime_t difference;
+  time_t timeval;
+  int rv;
+
+  char *path = "data/testdata-oneseries-mixedlengths-mixedorder.mseed2";
+
+  timeval = time(NULL);
+
+  /* Set bit flag to set segment prvtptr to nstime_t value of update time */
+  flags = MSF_PPUPDATETIME;
+
+  rv = ms3_readtracelist (&mstl, path, NULL, 0, flags, 0);
+
+  CHECK (rv == MS_NOERROR, "ms3_readtracelist() did not return expected MS_NOERROR");
+  REQUIRE (mstl != NULL, "ms3_readtracelist() did not populate 'mstl'");
+  CHECK (mstl->numtraceids == 1, "mstl->numtraceids is not expected 1");
+
+  id = mstl->traces.next[0];
+
+  REQUIRE (id != NULL, "mstl->traces.next[0] is not populated");
+  REQUIRE (id->first != NULL, "id->first is not populated");
+
+  CHECK (id->first->prvtptr != NULL, "id->first->prvtptr is not populated");
+
+  /* Check that update time is within 1 second of system time */
+  difference = *(nstime_t *)id->first->prvtptr - (nstime_t)timeval * NSTMODULUS;
+
+  CHECK (difference < 1 * NSTMODULUS, "update time at id->first->prvtptr is not within 1 second of system time");
+
+  mstl3_free (&mstl, 1);
+}
+
+/* This test reads miniSEED from a file into a MS3TraceList while using the
+ * MSF_SPLITISVERSION flag to use the value of splitversion as the version
+ * instead of the record publication version.  The expected value of the trace
+ * ID's version is verified.
+ */
+TEST (tracelist, ms3_readtracelist_splitisversion)
+{
+  MS3TraceList *mstl = NULL;
+  MS3TraceID *id = NULL;
+  uint32_t flags;
+  int rv;
+
+  char *path = "data/testdata-oneseries-mixedlengths-mixedorder.mseed3";
+
+  /* Set bit flag to use the value of splitversion as the version
+   * instead of the record publication version. */
+  flags = MSF_SPLITISVERSION;
+
+  rv = ms3_readtracelist (&mstl, path, NULL, 99, flags, 0);
+
+  CHECK (rv == MS_NOERROR, "ms3_readtracelist() did not return expected MS_NOERROR");
+  REQUIRE (mstl != NULL, "ms3_readtracelist() did not populate 'mstl'");
+  CHECK (mstl->numtraceids == 1, "mstl->numtraceids is not expected 1");
+
+  id = mstl->traces.next[0];
+
+  REQUIRE (id != NULL, "mstl->traces.next[0] is not populated");
+
+  CHECK (id->pubversion == 99, "id->pubversion is not expected 99");
 
   mstl3_free (&mstl, 1);
 }

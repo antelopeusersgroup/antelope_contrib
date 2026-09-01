@@ -29,7 +29,7 @@
 
 #define HEADER_V2 "#V2 StationID  Sequence  [Timestamp]"
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Save the sequence numbers and time stamps into the given state file.
  *
  * The state file is a simple text file with one line per stream containing
@@ -93,6 +93,7 @@ sl_savestate (SLCD *slconn, const char *statefile)
     else if (fputs (line, fp) == EOF)
     {
       sl_log_r (slconn, 2, 0, "cannot write to state file, %s\n", strerror (errno));
+      fclose (fp);
       return -1;
     }
 
@@ -108,7 +109,7 @@ sl_savestate (SLCD *slconn, const char *statefile)
   return 0;
 } /* End of sl_savestate() */
 
-/**********************************************************************/ /**
+/** ************************************************************************
  * @brief Recover the state of a SeedLink connection from a file.
  *
  * The specified state file is read, and details of streams, selectors, etc.
@@ -217,7 +218,7 @@ sl_recoverstate (SLCD *slconn, const char *statefile)
     }
 
     /* Check for recognized version declaration */
-    if (fields >= 1 && strncasecmp (field[0], "#V2", 2) == 0)
+    if (fields >= 1 && strncasecmp (field[0], "#V2", 3) == 0)
     {
       format = 2;
       count++;
@@ -290,7 +291,8 @@ sl_recoverstate (SLCD *slconn, const char *statefile)
       {
         sl_log_r (slconn, 2, 0, "could not parse sequence number from line %d of state file: '%s'\n",
                   count, sequencestr);
-        break;
+        retval = -1;
+        continue;
       }
     }
 
@@ -303,7 +305,10 @@ sl_recoverstate (SLCD *slconn, const char *statefile)
         curstream->seqnum = seqnum;
 
         if (timestr)
-          strncpy (curstream->timestamp, timestr, sizeof(curstream->timestamp));
+        {
+          strncpy (curstream->timestamp, timestr, sizeof(curstream->timestamp) - 1);
+          curstream->timestamp[sizeof(curstream->timestamp) - 1] = '\0';
+        }
 
         break;
       }

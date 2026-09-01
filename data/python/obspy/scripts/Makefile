@@ -1,6 +1,6 @@
 BIN=nordic_station2db obspy_dump_mseed_hdr \
 	obspy_event2db obspy_inventory2db obspy_wf2db \
-	obspy_federated_metadata
+	obspy_federated_metadata obspy_spgram
 PF=obspy_wf2db.pf \
    obspy_inventory2db.pf \
    obspy_event2db.pf

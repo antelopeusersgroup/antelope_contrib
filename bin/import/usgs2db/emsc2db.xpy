@@ -7,11 +7,11 @@
 @credits     ZAMG for my visit to EGU 2014
 """
 
-
 import getopt
 import requests
 import json
 import warnings
+import math
 
 # Import Antelope modules
 import antelope.datascope as ds
@@ -26,10 +26,19 @@ import zamg.utilities as zu
 
 def usage(progname):
     # print(progname, "[-v] [-h] [-AB] [-P prefix] [-O|-o orb] [-p proxy_url] [-a auth] [-k keydb] [-u url] dbname")
+    spaces = " " * len(progname)  # as many spaces as name length
     print(
         progname,
         "[-v] [-h] [-AB] [-P prefix] [-o|-O orb] [-p proxy_url] [-a auth] [-k keydb] [-u url] [-s schema] dbname",
     )
+    print()
+    print(spaces, " -o - send to orb as pfpackets (-P for prefix)")
+    print(spaces, " -O - send to orb as database packets (-P for prefix)")
+    print(spaces, " -P - prefix for packest sent to the orb")
+    print(spaces, " -a - author, defaults to EMSC (emsc2db) or USGS (usgs2db)")
+    print(spaces, " -u - url, can be used to select more data or such...")
+    print(spaces, " -s - output database schema")
+    print(spaces, " -k - lookup table to match external ids with Antelope evids")
 
 
 progname = sys.argv[0].split("/")[-1]
@@ -154,7 +163,7 @@ if proxy_url != "":
     with warnings.catch_warnings():
         warnings.simplefilter(
             "ignore"
-        )  # ignore silly warnings on SSL verification, especially needed on 5.9
+        )  # ignore silly warnings on SSL verification, especially needed on Antelope 5.9
         try:
             req = requests.get(BASE_URL, proxies=proxy, verify=False, timeout=30)
             req.raise_for_status()
@@ -206,15 +215,15 @@ for index in range(i):
     lat = float(coordinates[1])
     depth = float(coordinates[2])
     # EMSC correctly specifies depth as a negative number :-)
+    print("progname:",progname)
     if progname == "emsc2db":
         depth *= -1.0
+    print("depth:",depth)
     properties = fdata["properties"]
     mb = ms = ml = mlnull
-    time = (
-        status
-    ) = (
-        cdi
-    ) = place = code = felt = mag = magtype = net = evtype = auth_str = source_id = ""
+    time = status = cdi = place = code = felt = mag = magtype = net = evtype = (
+        auth_str
+    ) = source_id = ""
     ml = mb = ms = mlnull
     for propk, propv in properties.items():
         if propk == "time":
@@ -244,11 +253,11 @@ for index in range(i):
             net = str(propv)
         elif propk == "auth":
             auth_str = str(propv)
-        # elif propk == "unid": #emsc repeats the id in Features as it "unid"
+        # elif propk == "unid": #emsc repeats the id in Features as "unid"
         #    unid = str(propv)
-        # elif propk == "code": # usgs calls id code
+        # elif propk == "code": # usgs calls the id code
         #    code = str(propv)
-        # elif propk == "source_id":
+        # elif propk == "source_id": # the original author
         #    source_id = str(propv)
         elif propk == "updated":
             updated = propv / 1000.0
@@ -259,7 +268,6 @@ for index in range(i):
         elif propk == "place":
             place = str(propv)
 
-    # push M to mb, seems to make sense to Niko at least...
     lmt = magtype.lower()
     if lmt == "m":
         magtype = "mb"
@@ -269,7 +277,7 @@ for index in range(i):
         mb = mag
     elif lmt == "ms":
         ms = mag
-    # save mag to origin.mb to for the sake of alarming using orb_quake_alarm
+    # save mag to origin.mb for the sake of alarming using orb_quake_alarm
     if mag_also_to_mb:
         mb = mag
 
@@ -302,7 +310,8 @@ for index in range(i):
             [ftime, kname, kval] = idmatch.getv("ftime", "keyname", "keyvalue")
             if kname == "evid":
                 evid = kval
-                if updated > ftime:
+                # compare rounded update time to avoid rounding errors and different precision in different table fields
+                if math.floor(updated) > ftime:
                     new_event = False
                     updated_event = True
                 else:
@@ -313,11 +322,11 @@ for index in range(i):
 
     if new_event:
         problem = False
-        if verbose:
-            elog.notify("new event %s" % unid)
         evid = dborigin.nextid("evid")
         orid = dborigin.nextid("orid")
         magid = dborigin.nextid("magid")
+        if verbose:
+            elog.notify("new event %s (evid %d)" % (unid, evid))
         try:
             orecno = dborigin.addv(
                 ("time", etime),
@@ -465,8 +474,10 @@ for index in range(i):
                     )
     elif updated_event:
         if verbose:
-            elog.notify("updated event %s" % unid)
-        idmatch.putv(("ftime", updated))
+            elog.notify("updated event %s (evid %d)" % (unid, evid))
+        idmatch.putv(
+            ("ftime", math.ceil(updated))
+        )  # avoid rounding and granularity problems
         kmatch = db.lookup(table="event", record="dbSCRATCH")
         kmatch.putv(("evid", evid))
         evmatcher = kmatch.matches(dbevent, "evid")

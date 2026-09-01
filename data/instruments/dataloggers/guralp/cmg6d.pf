@@ -93,3 +93,19 @@ decifac	2
 response	&datafile(responses/cmg6d_2)
 }
 
+
+possible_streams_py &Literal{
+    chosen_set = set(chosen)
+    if '250sps' in chosen_set:
+        return ['50sps', '10sps', '1sps']
+    elif '200sps' in chosen_set:
+        return ['200sps', '100sps', '10sps', '1sps']
+    elif '100sps' in chosen_set:
+        return ['100sps', '10sps', '1sps']
+    elif '50sps' in chosen_set and '25sps' in chosen_set:
+        return ['50sps', '25sps', '5sps']
+    elif '50sps' in chosen_set:
+        return ['50sps', '25sps', '10sps', '5sps', '1sps']
+    else:
+        return ['200sps', '100sps', '50sps', '40sps', '25sps', '20sps', '10sps', '8sps', '5sps', '4sps', '2sps', '1sps']
+}

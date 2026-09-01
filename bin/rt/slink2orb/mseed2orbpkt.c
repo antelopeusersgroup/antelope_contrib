@@ -62,7 +62,10 @@ mseed2orbpkt (char payloadformat, const char *msrec, uint32_t mssize,
   }
 
   /* Parse SEED (or extended) codes from Source ID */
-  if (ms_sid2nslc (msr->sid, snet, ssta, sloc, schan) < 0)
+  if (ms_sid2nslc_n (msr->sid, snet, sizeof (snet),
+                     ssta, sizeof (ssta),
+                     sloc, sizeof (sloc),
+                     schan, sizeof (schan)) < 0)
   {
     elog_complain (0, "%s: Error parsing Source ID: %s\n", __func__, msr->sid);
     msr3_free (&msr);

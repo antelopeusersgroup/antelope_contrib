@@ -13,20 +13,20 @@ net_sim \- estimate network magnitude threshold
 .SH DESCRIPTION
 net_sim estimates network magnitude threshold by calculation of magnitudes based on measures or assumed \fIrms\fP and a specified \fIsnr\fP.
 The number of stations required is selectable.
-Two plots describe the network capabilty. One shows the distance to the \fBn\fPth closest station or the maximum distance to \fBn\fP stations.
-The second plot shows for each gridpoint the lowest detectable magnitude when using \fBn\fP stations, using either measured or theoretical rms values. The actual input signal is the multiplication of \fIrms\fP and the user selectable \fIsnr\fP - the signal to noise ratio.
+Two plots describe the network capability. One shows the distance to the \fBn\fPth closest station or the maximum distance to \fBn\fP stations.
+The second plot shows for each grid point the lowest detectable magnitude when using \fBn\fP stations, using either measured or theoretical rms values. The actual input signal is the multiplication of \fIrms\fP and the user selectable \fIsnr\fP - the signal to noise ratio.
 
 .SH OPTIONS
 .IP "-v"
 verbose flag
 .IP "-f file"
-Filename for output gridfile. The file contains data in four columns: lon, lat, minimum magnitude and distance to nth closest stations in km. 
+Filename for output grid file. The file contains data in four columns: lon, lat, minimum magnitude and distance to nth closest stations in km. 
 .IP "-p pf"
 parameter file
 .IP "-i sta"
-Stations to ignore. Multiple stations can be separated by a comma ',' or by repeating the argument. Note that specifing this overrides the stations ignored from the parameter file.
+Stations to ignore. Multiple stations can be separated by a comma ',' or by repeating the argument. Note that specifying this overrides the stations ignored from the parameter file.
 .IP "-n nsta"
-Minumum number of stations for detection. Overrides \fInsta\fP from the parameter file.
+Minimum number of stations for detection. Overrides \fInsta\fP from the parameter file.
 .IP "-r db"
 Specify a database for \fIrms\fP values. These values are read form the table wfrms. The \fItime\fP for \fIrms\fP values can be specified the the option -t.
 .IP "-R rms"
@@ -34,21 +34,21 @@ Specify a \fIrms\fP value used all stations. This has no effect if a database fo
 .IP "-S sta/lat/lon/rms"
 Add a virtual station. Multiple stations can be specified by repeating the argument.
 .IP "-s snr"
-specify \fIsnr\fP. This overrides the value from the paramter file.
+specify \fIsnr\fP. This overrides the value from the parameter file.
 .IP "-t time"
 Time for \fIrms\fP values when a database is used to lookup the \fIrms\fP values. If not specified, the program looks for recent values. How recent exactly is infuenced by the \fIsnr_latency\fP from the parameter file.
 .IP "-P dpi"
 Specify resolution in dots per inch (dpi) of plot when saving to a file.
 .IP "-D dist_title"
-Specify title for station-distance plot. Defaults to "minimum distance to {nsta}th station (km)". Note that {nsta} will be replaced by the actual number of stations used. This number can be specified by the option \fI-n\fP or in the parameterfile.
+Specify title for station-distance plot. Defaults to "minimum distance to {nsta}th station (km)". Note that {nsta} will be replaced by the actual number of stations used. This number can be specified by the option \fI-n\fP or in the parameter-file.
 .IP "-M mag_title"
 Specify title for magnitude threshold plot. Defaults to "{mag_type} magnitude threshold using {nsta} stations". Note that {nsta} and {mag_type} will be replaced by actual parameters used.
 .IP "-c
-Plotting cities (from a table \fBplaces\fI) is enabled by configuring the optional parameters \fIcities_dbname\fP and \fIcities_subset\fP in the parameterfile.
-The commandline paramter c disables plotting of cities. 
+Plotting cities (from a table \fBplaces\fI) is enabled by configuring the optional parameters \fIcities_dbname\fP and \fIcities_subset\fP in the parameter file.
+The command line parameter c disables plotting of cities. 
 .IP "-b
-Plotting borders (from a database with polygons) is enabled by configuring the optional parameters \fIplaces_dbname\fP and \fIplaces_subset\fP in the parameterfile.
-The commandline paramter b disables plotting of borders. 
+Plotting borders (from a database with polygons) is enabled by configuring the optional parameters \fIplaces_dbname\fP and \fIplaces_subset\fP in the parameter file.
+The command line parameter b disables plotting of borders. 
 .IP "-m"
 Don't plot magnitude thresholds.
 .IP "-d"
@@ -94,7 +94,7 @@ station_rms &Arr{
 .in
 
 .IP nsta
-Minimum number of stations for detection. This results in showing the nstath closest distance or the nstath lowest magnitude
+Minimum number of stations for detection. This results in showing the nsta-th closest distance or the nsta-th lowest magnitude
 .IP "nx,ny"
 Specifies number of gridpoints
 .IP "xmax,ymin,ymax,ymin"
@@ -103,7 +103,7 @@ If this is not specified, the program will automatically determine the plotting 
 .IP snr
 Signal to noise ratio. The amplitude used in magnitude computation here is \fIrms\fP times \fIsnr\fP. For a simulation of manual processing, this can realistically be a low as 2, but for simulation of automatic detection, this should be something around 4 to 5.
 .IP default_rms
-Default \fIrms\fP value used for all stations. Used only if \fIrms\fP values are not read from a database. For good stations in austria, this can be as low as 3 with an average of about 15. Not that this default value can be overriden on a per-staion basis with \fBstation_rms\fP in the parameter-file. 
+Default \fIrms\fP value used for all stations. Used only if \fIrms\fP values are not read from a database. For good stations in Austria, this can be as low as 3 with an average of about 15. Not that this default value can be overridden on a per-station basis with \fBstation_rms\fP in the parameter-file. 
 .IP "c0,c1"
 Coefficients in magnitude formula. The actual formula is \fBc0\fP+log10(\fBamp\fP)+\fBc1\fP*log10(\fIdelta\fP). Units for amp are nm/sec while the units for delta are degrees.
 .IP magtype
@@ -111,7 +111,7 @@ Magtype for display.
 .IP stations_used
 List of stations to be used for network simulation. If this is not specified, all stations are used.
 .IP stations_ignored.
-List of stations to be ignored. If this is not specified, all stations are used. Not that the commandline parameter \fI-i\fP overrides this list.
+List of stations to be ignored. If this is not specified, all stations are used. Not that the command line parameter \fI-i\fP overrides this list.
 .IP station_rms
 List of individual rms values. This can be useful for simulations. If a value is found here, this overrides the default rms value for that station. For monitoring purposes this can also be used if recent rms values are not available for all stations.
 
@@ -129,7 +129,7 @@ dbsubset $DEMODB.site "offdate == NULL|| offdate > now()"| net_sim
 .in
 
 .SH "BUGS AND CAVEATS"
-The programm assumes the earth is a sphere. The magnitude computation is a bit simple and does not allow for station corrections. The plots would need some fixup, at the moment they are rather ugly. 
+The program assumes the earth is a sphere. The magnitude computation is a bit simple and does not allow for station corrections. The plots would need some fix-up, at the moment they are rather ugly. 
 .SH "SEE ALSO"
 .nf
 orbwfrms(1), antelope(1), rtexec(1), antelope_python(3Y) 

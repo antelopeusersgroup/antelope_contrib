@@ -82,7 +82,7 @@ def grid_search_dbgrassoc(qx, qy, qz, arrivals, tt_map_dir):
                          "%s/ttgrid" % tt_map_dir])
         tbl_origin = db.lookup(table='origin')
         for record in tbl_origin.iter_record():
-            print record.getv('lat', 'lon', 'depth', 'time', 'auth')
+            print(record.getv('lat', 'lon', 'depth', 'time', 'auth'))
         tbl_origin.record = 0
         lon, lat, depth, time = tbl_origin.getv('lon', 'lat', 'depth', 'time')
         ix = find_nearest_index(lon, qx)[0]
@@ -131,8 +131,8 @@ def parse_cfg(config_file):
                                      }
     }
     '''
-    import ConfigParser
-    config = ConfigParser.RawConfigParser()
+    import configparser
+    config = configparser.RawConfigParser()
     config.read(config_file)
     mydict = {}
     for section in config.sections():
@@ -409,9 +409,9 @@ class Locator:
                                                              nz)
 #Perform a grid search
         logger.debug("[evid: %d] Starting grid search." % event.evid)
-        qx = range(0, nlon - 1)
-        qy = range(0, nlat - 1)
-        qz = range(0, nz - 1)
+        qx = list(range(0, nlon - 1))
+        qy = list(range(0, nlat - 1))
+        qz = list(range(0, nz - 1))
         minx, miny, minz, otime, ha = grid_search(qx,
                                                  qy,
                                                  qz,
@@ -502,7 +502,7 @@ class Locator:
                     'propagation_grid': self.propagation_grid}
         logger.debug('[evid: %d] Updating predicted arrival times.' %\
                 event.evid)
-        print new_origin.lat, new_origin.lon, new_origin.depth
+        print(new_origin.lat, new_origin.lon, new_origin.depth)
         #new_origin.update_predarr_times(cfg_dict, predicted_travel_times)
         logger.debug('[evid: %d] Predicted arrival times updated.' %\
                 event.evid)
@@ -1848,13 +1848,13 @@ def grid_search_abs(qx, qy, qz,
     stas = [arrival.sta for arrival in arrivals]
     if subgrid:
         minx, miny, minz = subgrid
-        irange = range(max([minx - SUBGRID_NX, 0]), min([minx + SUBGRID_NX + 1, nx]))
-        jrange = range(max([miny - SUBGRID_NY, 0]), min([miny + SUBGRID_NY + 1, ny]))
-        krange = range(max([minz - SUBGRID_NZ, 0]), min([minz + SUBGRID_NZ + 1, nz]))
+        irange = list(range(max([minx - SUBGRID_NX, 0]), min([minx + SUBGRID_NX + 1, nx])))
+        jrange = list(range(max([miny - SUBGRID_NY, 0]), min([miny + SUBGRID_NY + 1, ny])))
+        krange = list(range(max([minz - SUBGRID_NZ, 0]), min([minz + SUBGRID_NZ + 1, nz])))
     else:
-        irange = range(nx)
-        jrange = range(ny)
-        krange = range(nz)
+        irange = list(range(nx))
+        jrange = list(range(ny))
+        krange = list(range(nz))
     for i in irange:
         for j in jrange:
             for k in krange:

@@ -8,7 +8,8 @@ char *testheaders = "{ \
   \"FDSN\": {\
     \"Time\": {\
       \"Quality\": 100,\
-      \"Correction\": 1.234\
+      \"Correction\": 1.234,\
+      \"LeapSecond\": -1\
     },\
     \"Event\": { \
       \"Begin\": true,\
@@ -33,19 +34,24 @@ char *testheaders = "{ \
   }\
 }";
 
-TEST (extraheaders, get_set)
+TEST (extraheaders, get_set_ptr_r)
 {
   MS3Record *msr = NULL;
+  uint64_t getuint;
   int64_t getint;
   double getnum;
   char getstr[100];
   int getbool;
   int rv;
 
+  uint64_t setuint;
   int64_t setint;
   double setnum;
   char *setstr;
   int setbool;
+
+  /* Suppress error and warning messages by accumulating them */
+  ms_rloginit (NULL, NULL, NULL, NULL, 10);
 
   msr = msr3_init (msr);
   REQUIRE (msr != NULL, "msr3_init() returned unexpected NULL");
@@ -62,13 +68,17 @@ TEST (extraheaders, get_set)
   rv = mseh_exists (msr, "/FDSN/Event/Detection/0");
   CHECK (rv, "mseh_exists() returned unexpected false for array element");
 
-  rv = mseh_get_number (msr, "/FDSN/Time/Correction", &getnum);
-  CHECK (rv == 0, "mseh_get_number() returned unexpected non-match");
-  CHECK (getnum == 1.234, "/FDSN/Time/Correction is not expected 1.234");
+  rv = mseh_get_uint64 (msr, "/FDSN/Time/Quality", &getuint);
+  CHECK (rv == 0, "mseh_get_uint64() returned unexpected non-match");
+  CHECK (getuint == 100, "/FDSN/Time/Quality is not expected 100");
 
   rv = mseh_get_int64 (msr, "/FDSN/Time/Quality", &getint);
   CHECK (rv == 0, "mseh_get_int64() returned unexpected non-match");
   CHECK (getint == 100, "/FDSN/Time/Quality is not expected 100");
+
+  rv = mseh_get_number (msr, "/FDSN/Time/Correction", &getnum);
+  CHECK (rv == 0, "mseh_get_number() returned unexpected non-match");
+  CHECK (getnum == 1.234, "/FDSN/Time/Correction is not expected 1.234");
 
   /* Key in first (0th) object of /FDSN/Event/Detection array */
   rv = mseh_get_string (msr, "/FDSN/Event/Detection/0/Type", getstr, sizeof(getstr));
@@ -87,6 +97,22 @@ TEST (extraheaders, get_set)
   CHECK (rv != 0, "mseh_get_int64() returned unexpected match");
 
   /* Set and get */
+  setuint = 18446744073709551615ULL;
+  rv = mseh_set_uint64 (msr, "/New/UnsignedInteger", &setuint);
+  CHECK (rv == 0, "mseh_set_uint64() returned unexpected error");
+
+  rv = mseh_get_uint64 (msr, "/New/UnsignedInteger", &getuint);
+  CHECK (rv == 0, "mseh_get_uint64() returned unexpected non-match");
+  CHECK (getuint == setuint);
+
+  setint = -51204;
+  rv = mseh_set_int64 (msr, "/New/Integer", &setint);
+  CHECK (rv == 0, "mseh_set_int64() returned unexpected error");
+
+  rv = mseh_get_int64 (msr, "/New/Integer", &getint);
+  CHECK (rv == 0, "mseh_get_int64() returned unexpected non-match");
+  CHECK (getint == setint);
+
   setnum = 3.14159;
   rv = mseh_set_number (msr, "/New/Number", &setnum);
   CHECK (rv == 0, "mseh_set_num() returned unexpected error");
@@ -94,14 +120,6 @@ TEST (extraheaders, get_set)
   rv = mseh_get_number (msr, "/New/Number", &getnum);
   CHECK (rv == 0, "mseh_get_num() returned unexpected non-match");
   CHECK (getnum == setnum);
-
-  setint = 51204;
-  rv = mseh_set_int64 (msr, "/New/Integer", &setint);
-  CHECK (rv == 0, "mseh_set_int64() returned unexpected error");
-
-  rv = mseh_get_int64 (msr, "/New/Integer", &getint);
-  CHECK (rv == 0, "mseh_set_int64() returned unexpected non-match");
-  CHECK (getint == setint);
 
   setstr = "Value";
   rv = mseh_set_string (msr, "/New/String", setstr);
@@ -116,8 +134,75 @@ TEST (extraheaders, get_set)
   CHECK (rv == 0, "mseh_set_boolean() returned unexpected error");
 
   rv = mseh_get_boolean (msr, "/New/Boolean", &getbool);
-  CHECK (rv == 0, "mseh_set_boolean() returned unexpected non-match");
+  CHECK (rv == 0, "mseh_get_boolean() returned unexpected non-match");
   CHECK (getbool == setbool);
+
+  /* Invalid JSON Pointer */
+  rv = mseh_get_ptr_r (msr, "invalid", NULL, 0, 0, NULL);
+  CHECK (rv < 0, "mseh_get_ptr_type() returned unexpected match");
+
+  rv = mseh_set_ptr_r (msr, "invalid", &setuint, 'u', NULL);
+  CHECK (rv < 0, "mseh_set_uint64() returned unexpected match");
+
+  msr3_free (&msr);
+}
+
+TEST (extraheaders, get_ptr_type)
+{
+  MS3Record *msr = NULL;
+  int rv;
+
+  /* Suppress error and warning messages by accumulating them */
+  ms_rloginit (NULL, NULL, NULL, NULL, 10);
+
+  msr = msr3_init (msr);
+  REQUIRE (msr != NULL, "msr3_init() returned unexpected NULL");
+
+  msr->extralength = strlen (testheaders);
+  msr->extra = malloc (msr->extralength);
+  REQUIRE (msr->extra != NULL, "Error allocating memory for msr->extra");
+  memcpy (msr->extra, testheaders, msr->extralength);
+
+  /* Existing headers */
+
+  /* Unsigned integer */
+  rv = mseh_get_ptr_type (msr, "/FDSN/Time/Quality", NULL);
+  CHECK (rv == 'u', "mseh_get_ptr_type() returned unexpected type");
+
+  /* Integer */
+  rv = mseh_get_ptr_type (msr, "/FDSN/Time/LeapSecond", NULL);
+  CHECK (rv == 'i', "mseh_get_ptr_type() returned unexpected type");
+
+  /* Number */
+  rv = mseh_get_ptr_type (msr, "/FDSN/Time/Correction", NULL);
+  CHECK (rv == 'n', "mseh_get_ptr_type() returned unexpected type");
+
+  /* String, key in first (0th) object of /FDSN/Event/Detection array */
+  rv = mseh_get_ptr_type (msr, "/FDSN/Event/Detection/0/Type", NULL);
+  CHECK (rv == 's', "mseh_get_ptr_type() returned unexpected type");
+
+  rv = mseh_get_ptr_type (msr, "/FDSN/Event/Begin", NULL);
+  CHECK (rv == 'b', "mseh_get_ptr_type() returned unexpected type");
+
+  /* Array */
+  rv = mseh_get_ptr_type (msr, "/FDSN/Event/Detection", NULL);
+  CHECK (rv == 'a', "mseh_get_ptr_type() returned unexpected type");
+
+  /* Object */
+  rv = mseh_get_ptr_type (msr, "/FDSN/Event", NULL);
+  CHECK (rv == 'o', "mseh_get_ptr_type() returned unexpected type");
+
+  /* Root object */
+  rv = mseh_get_ptr_type (msr, "", NULL);
+  CHECK (rv == 'o', "mseh_get_ptr_type() returned unexpected type");
+
+  /* Non-existent header */
+  rv = mseh_get_ptr_type (msr, "/FDSN/Non/Existant/Header", NULL);
+  CHECK (rv == 0, "mseh_get_ptr_type() returned unexpected type");
+
+  /* Invalid JSON Pointer */
+  rv = mseh_get_ptr_type (msr, "invalid", NULL);
+  CHECK (rv < 0, "mseh_get_ptr_type() returned unexpected match");
 
   msr3_free (&msr);
 }
@@ -132,14 +217,15 @@ TEST (extraheaders, mergepatch)
   msr = msr3_init (msr);
   REQUIRE (msr != NULL, "msr3_init() returned unexpected NULL");
 
-  /* Populate initial header JSON */
-  jsondoc = "{\"root\":{\"string\":\"value\"}}";
-  msr->extralength = strlen (jsondoc);
-  msr->extra = malloc (msr->extralength);
-  REQUIRE (msr->extra != NULL, "Error allocating memory for msr->extra");
-  memcpy (msr->extra, jsondoc, msr->extralength);
+  /* No existing headers, create a header value with Merge Patch at root pointer ("") */
+  patchdoc = "{\"root\":{\"string\":\"value\"}}";
+  rv = mseh_set_ptr_r (msr, "", patchdoc, 'M', NULL);
+  CHECK (rv == 0, "mseh_set_ptr_r() returned unexpected error");
+  REQUIRE (msr->extra != NULL, "msr->extra cannot be NULL");
+  jsondoc = patchdoc;
+  CHECK_SUBSTREQ (msr->extra, jsondoc, strlen (jsondoc));
 
-  /* Replace /root/string value with a pointer to the whole document ("") */
+  /* Replace /root/string value with a root pointer to the entire document ("") */
   patchdoc = "{\"root\":{\"string\":\"Updated value\"}}";
   rv = mseh_set_ptr_r (msr, "", patchdoc, 'M', NULL);
   CHECK (rv == 0, "mseh_set_ptr_r() returned unexpected error");
@@ -148,7 +234,7 @@ TEST (extraheaders, mergepatch)
   CHECK_SUBSTREQ (msr->extra, jsondoc, strlen(jsondoc));
 
   /* Add the /root/array value with pointer to /root */
-  patchdoc = "{\"array\":[1,2,3]}";
+  patchdoc = "{\"array\": [1,2,3]}";
   rv = mseh_set_ptr_r (msr, "/root", patchdoc, 'M', NULL);
   CHECK (rv == 0, "mseh_set_ptr_r() returned unexpected error");
   REQUIRE (msr->extra != NULL, "msr->extra cannot be NULL");
@@ -156,12 +242,22 @@ TEST (extraheaders, mergepatch)
   CHECK_SUBSTREQ (msr->extra, jsondoc, strlen(jsondoc));
 
   /* Remove /root/string, /root/array, and add /root/boolean */
-  patchdoc = "{\"root\":{\"string\":null,\"array\":null,\"boolean\":true}}";
+  patchdoc = "{\"root\": {\"string\": null, \"array\": null, \"boolean\": true}}";
   rv = mseh_set_ptr_r (msr, "", patchdoc, 'M', NULL);
   CHECK (rv == 0, "mseh_set_ptr_r() returned unexpected error");
   REQUIRE (msr->extra != NULL, "msr->extra cannot be NULL");
   jsondoc = "{\"root\":{\"boolean\":true}}";
   CHECK_SUBSTREQ (msr->extra, jsondoc, strlen(jsondoc));
+
+  /* Fail to set a header value with Merge Patch, no existing target value */
+  patchdoc = "{\"key\":\"value\"}";
+  rv = mseh_set_ptr_r (msr, "/root/doesnotexist", patchdoc, 'M', NULL);
+  CHECK (rv < 0, "mseh_set_ptr_r() returned unexpected match");
+
+  /* Fail to set a header value with Merge Patch, invalid JSON Pointer */
+  patchdoc = "{\"root\":{\"string\":\"value\"}}";
+  rv = mseh_set_ptr_r (msr, "invalid", patchdoc, 'M', NULL);
+  CHECK (rv < 0, "mseh_set_ptr_r() returned unexpected match");
 
   msr3_free (&msr);
 }

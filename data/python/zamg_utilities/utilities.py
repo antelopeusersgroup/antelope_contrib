@@ -361,8 +361,11 @@ def haversine_distance(lat1, lon1, lat2, lon2, degrees=False):
         return np.round(res, 2)
 
 
-def next_number(inp, unit=1, log=False):
+def next_number(inp, unit=1, log=False, back=False):
     """Next number divisible by _unit_ or next power of _unit_"""
     q = int(inp / unit)
-    nn = unit * (q + 1)
+    if back:
+        nn = unit * (q - 1)
+    else:
+        nn = unit * (q + 1)
     return nn

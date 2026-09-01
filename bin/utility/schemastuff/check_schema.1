@@ -7,12 +7,12 @@ check_schema [-a] [-s|-f] [-h] schema
 .fi
 
 .SH DESCRIPTION
-check_schema reads in schema definitions as all other antelope databaase processing does: schema definitions are read from one or more files found along a path that can be influenced by the environment variable \fBSCHEMA_DIR\fP as described in the manpage \fIdbschema\fP. Schema definitions can be redundant, i.e. something may be defined several times in varios files. It seems self-understanding that these definitions should be identical on all places. The program tries to detect all kind of inconsistencies in these definitions like:
+check_schema reads in schema definitions as all other antelope database processing does: schema definitions are read from one or more files found along a path that can be influenced by the environment variable \fBSCHEMA_DIR\fP as described in the manual page \fIdbschema\fP. Schema definitions can be redundant, i.e. something may be defined several times in various files. It seems self-understanding that these definitions should be identical on all places. The program tries to detect all kind of inconsistencies in these definitions like:
 .nf
   \(bu incomplete attribute definitions, i.e missing properties.
   \(bu contradicting definitions, like range definitions out 
     of scope, null values in a different format than the actual 
-    values, format definitions that use a datatype different 
+    values, format definitions that use a data type different 
     from the actual entry and so on.
   \(bu incomplete definition of database tables (i.e. relations), 
     e.g. missing attributes, undefined keys and such.
@@ -47,4 +47,4 @@ dbverify(1), dbschema(5), antelopeenv(5)
 .nf
 Nikolaus Horn, 2022
 
-GSAT / Vienna, Nikolaus.Horn@cwgeosphere.at
+GSAT / Vienna, Nikolaus.Horn@geosphere.at
