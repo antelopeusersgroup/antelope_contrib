@@ -49,7 +49,7 @@ Output orb. This obtion also selects the packettype: lowercase -o selects databa
 .IP "-P prefix"
 Prefix to the packet name(s). Parameter file packets will be named <prefix>/pf/orb2dbt while database packets will be named <prefix>/db/origin and so on.
 .IP "-p proxy_url"
-Output orb. This option also selects the output format. For database packets, use \fBo\fP. For parameter-file packets, as e.g. written by USGS2orb, use uppercase \fBO\fP.
+Proxy specification (url). Note that the underlying module \fIrequests\fP supports additional methods to configure a proxy. Here you should specify a complete url in the form of \Bhttps://my.proxy.url:port\fP.
 .IP database
 The name of the output database. This argument is required.
 .SH EXAMPLE
